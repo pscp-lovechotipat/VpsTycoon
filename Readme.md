@@ -149,3 +149,13 @@ classDiagram
 ```
 
 ---
+
+## ToDo
+- [x] Main Menu
+- [x] Pause Menu
+    - [x] New Game btn
+    - [x] Resume btn
+- [x] Setting Screen
+    - [x] Resolution
+    - [x] Fullscreen 
+- [x] Empty Screen
