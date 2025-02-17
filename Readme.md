@@ -3,10 +3,14 @@
 ---
 
 ### กรณี download javaFX มาเองในเครื่อง
-ใส่ใน VM OPTION ที่ Run > Edit Configurations... กด Modifly options...
-```
---module-path "C:\javafx-sdk-23.0.2\lib" --add-modules javafx.controls,javafx.fxml
-```
+
+- ใส่ใน `VM OPTION` 
+- ที่ `Run > Edit Configurations...` 
+- กด `Modifly options...`
+
+  ```
+  --module-path "C:\javafx-sdk-23.0.2\lib" --add-modules javafx.controls,javafx.fxml
+  ```
 ---
 
 ### กรณีใช้ maven javaFX 
