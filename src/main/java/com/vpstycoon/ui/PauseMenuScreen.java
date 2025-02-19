@@ -15,6 +15,7 @@ import java.util.Objects;
 public class PauseMenuScreen {
     private Stage primaryStage;
     private Screen gameScreen;
+    private NeonShadow neonShadow = new NeonShadow();
 
     public PauseMenuScreen(Stage primaryStage, Screen gameScreen) {
         this.primaryStage = primaryStage;
@@ -32,14 +33,39 @@ public class PauseMenuScreen {
         bgImageView.setPreserveRatio(false);
 
         // Pause Menu Buttons
-        Button resumeButton = new Button("Resume");
+        Image resumeGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/d9305b78-eee2-11ef-ab9b-394195046342.gif");
+        ImageView resumeImageView = new ImageView(resumeGif);
+        resumeImageView.setFitWidth(43*4);
+        resumeImageView.setFitHeight(11*4);
+        Button resumeButton = new Button("", resumeImageView);
+        resumeButton.setStyle("-fx-background-color: transparent;");
         resumeButton.setOnAction(event -> gameScreen.show());
+        //hover
+        resumeButton.setOnMouseEntered(event -> resumeImageView.setEffect(neonShadow.neon()));
+        resumeButton.setOnMouseExited(event -> resumeImageView.setEffect(null));
 
-        Button mainMenuButton = new Button("Main Menu");
+        Image mainMenuGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/0a750657-eee2-11ef-9fd5-394195046342.gif");
+        ImageView mainMenuImageView = new ImageView(mainMenuGif);
+        mainMenuImageView.setFitWidth(43*4);
+        mainMenuImageView.setFitHeight(11*4);
+        Button mainMenuButton = new Button("", mainMenuImageView);
+        mainMenuButton.setStyle("-fx-background-color: transparent;");
         mainMenuButton.setOnAction(event -> new MainMenu(primaryStage).show());
+        //hover
+        mainMenuButton.setOnMouseEntered(event -> mainMenuImageView.setEffect(neonShadow.neon()));
+        mainMenuButton.setOnMouseExited(event -> mainMenuImageView.setEffect(null));
 
-        Button quitButton = new Button("Quit");
-        quitButton.setOnAction(event -> System.exit(0));
+        // Quit Button
+        Image imageGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/4484816e-eed0-11ef-8022-394195046342.gif");
+        ImageView quitImageView = new ImageView(imageGif);
+        quitImageView.setFitWidth(43*4);
+        quitImageView.setFitHeight(11*4);
+        Button quitButton = new Button("", quitImageView);
+        quitButton.setStyle("-fx-background-color: transparent;");
+        quitButton.setOnAction(e -> System.exit(0));
+        //hover
+        quitButton.setOnMouseEntered(event -> quitImageView.setEffect(neonShadow.neon()));
+        quitButton.setOnMouseExited(event -> quitImageView.setEffect(null));
 
         VBox pauseMenu = new VBox(20, resumeButton, mainMenuButton, quitButton);
         pauseMenu.setAlignment(Pos.CENTER);

@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 
 public class GameMenu {
     private Stage primaryStage;
+    private NeonShadow neonShadow = new NeonShadow();
 
     public GameMenu(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -30,6 +31,9 @@ public class GameMenu {
         Button newGameButton = new Button("",newGameImageView);
         newGameButton.setStyle("-fx-background-color: transparent;");
         newGameButton.setOnAction(e -> startNewGame());
+        //hover
+        newGameButton.setOnMouseEntered(event -> newGameImageView.setEffect(neonShadow.neon()));
+        newGameButton.setOnMouseExited(event -> newGameImageView.setEffect(null));
 
         Image conGIF = new Image("url:https://piskel-imgstore-b.appspot.com/img/4dc4d421-eec6-11ef-b542-394195046342.gif");
         ImageView continueImageView = new ImageView(conGIF);
@@ -39,6 +43,9 @@ public class GameMenu {
         continueButton.setStyle("-fx-background-color: transparent;");
         continueButton.setDisable(!Config.hasSavedGame()); // ✅ Disable if no saved game
         continueButton.setOnAction(e -> startGame());
+        //hover
+        continueButton.setOnMouseEntered(event -> continueImageView.setEffect(neonShadow.neon()));
+        continueButton.setOnMouseExited(event -> continueImageView.setEffect(null));
 
         Image backGIF = new Image("url:https://piskel-imgstore-b.appspot.com/img/35e760ca-eecd-11ef-8c4c-394195046342.gif");
         ImageView backImageView = new ImageView(backGIF);
@@ -47,6 +54,9 @@ public class GameMenu {
         Button backButton = new Button("", backImageView);
         backButton.setStyle("-fx-background-color: transparent;");
         backButton.setOnAction(e -> new MainMenu(primaryStage).show());
+        //hover
+        backButton.setOnMouseEntered(event -> backImageView.setEffect(neonShadow.neon()));
+        backButton.setOnMouseExited(event -> backImageView.setEffect(null));
 
         VBox vbox = new VBox(20, titleLabel, newGameButton, continueButton, backButton);
         vbox.setAlignment(Pos.CENTER);

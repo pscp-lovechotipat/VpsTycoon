@@ -7,6 +7,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -15,6 +17,7 @@ public class SettingsMenu {
     private Stage primaryStage;
     private ScreenResolution selectedResolution = Config.getResolution();
     private boolean fullscreen = Config.isFullscreen();
+    private NeonShadow neonShadow = new NeonShadow();
 
     public SettingsMenu(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -45,8 +48,16 @@ public class SettingsMenu {
         });
 
         // Back Button
-        Button backButton = new Button("Back");
+        Image backGIF = new Image("url:https://piskel-imgstore-b.appspot.com/img/35e760ca-eecd-11ef-8c4c-394195046342.gif");
+        ImageView backImageView = new ImageView(backGIF);
+        backImageView.setFitWidth(43*4);
+        backImageView.setFitHeight(11*4);
+        Button backButton = new Button("", backImageView);
+        backButton.setStyle("-fx-background-color: transparent;");
         backButton.setOnAction(e -> new MainMenu(primaryStage).show());
+        //hover
+        backButton.setOnMouseEntered(event -> backImageView.setEffect(neonShadow.neon()));
+        backButton.setOnMouseExited(event -> backImageView.setEffect(null));
 
         VBox vbox = new VBox(20, resolutionComboBox, fullscreenCheckBox, applyButton, backButton);
         vbox.setAlignment(Pos.CENTER);

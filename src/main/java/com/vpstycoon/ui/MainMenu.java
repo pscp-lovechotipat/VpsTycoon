@@ -6,8 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -16,6 +14,7 @@ import java.util.Objects;
 
 public class MainMenu {
     private Stage primaryStage;
+    private NeonShadow neonShadow = new NeonShadow();
 
     public MainMenu(Stage primaryStage) {
         this.primaryStage = primaryStage;
@@ -40,9 +39,10 @@ public class MainMenu {
         Button playButton = new Button("", playImageView);
         playButton.setStyle("-fx-background-color: transparent;");
         playButton.setOnAction(e -> new GameMenu(primaryStage).show());
+
         //hover
-        playButton.setOnMouseEntered(event -> playImageView.setOpacity(0.7));
-        playButton.setOnMouseExited(event -> playImageView.setOpacity(1));
+        playButton.setOnMouseEntered(event -> playImageView.setEffect(neonShadow.neon()));
+        playButton.setOnMouseExited(event -> playImageView.setEffect(null));
 
         // Settings Button
         Image settingsGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/32b02251-eed2-11ef-a5d3-394195046342.gif");
@@ -53,8 +53,8 @@ public class MainMenu {
         settingsButton.setStyle("-fx-background-color: transparent;");
         settingsButton.setOnAction(e -> new SettingsMenu(primaryStage).show());
         //Hover
-        settingsButton.setOnMouseEntered(event -> settingsImageView.setOpacity(0.7));
-        settingsButton.setOnMouseExited(event -> settingsImageView.setOpacity(1));
+        settingsButton.setOnMouseEntered(event -> settingsImageView.setEffect(neonShadow.neon()));
+        settingsButton.setOnMouseExited(event -> settingsImageView.setEffect(null));
 
         // Quit Button
         Image imageGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/4484816e-eed0-11ef-8022-394195046342.gif");
@@ -65,8 +65,8 @@ public class MainMenu {
         quitButton.setStyle("-fx-background-color: transparent;");
         quitButton.setOnAction(e -> System.exit(0));
         //hover
-        quitButton.setOnMouseEntered(event -> quitImageView.setOpacity(0.7));
-        quitButton.setOnMouseExited(event -> quitImageView.setOpacity(1));
+        quitButton.setOnMouseEntered(event -> quitImageView.setEffect(neonShadow.neon()));
+        quitButton.setOnMouseExited(event -> quitImageView.setEffect(null));
 
         VBox vbox = new VBox(20, logoView, playButton, settingsButton, quitButton);
         vbox.setAlignment(Pos.CENTER);
