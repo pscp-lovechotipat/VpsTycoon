@@ -37,11 +37,16 @@ public class MainMenu {
         settingsButton.setOnAction(e -> new SettingsMenu(primaryStage).show());
 
         // Quit Button
-        Button quitButton = new Button("Quit");
+        Image imageGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/b4a169f5-eec0-11ef-b3e4-394195046342.gif");
+        ImageView quitButtonImage = new ImageView(imageGif);
+        quitButtonImage.setFitWidth(100);
+        quitButtonImage.setFitHeight(50);
+        Button quitButton = new Button("",quitButtonImage);
+        quitButton.setStyle("-fx-background-color: transparent;");
         quitButton.setOnAction(e -> System.exit(0));
-
         VBox vbox = new VBox(20, logoView, playButton, settingsButton, quitButton);
         vbox.setAlignment(Pos.CENTER);
+
 
         BorderPane root = new BorderPane();
         root.setCenter(vbox);
