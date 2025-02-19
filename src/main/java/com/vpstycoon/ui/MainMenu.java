@@ -6,6 +6,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -21,6 +23,8 @@ public class MainMenu {
 
     public void show() {
         primaryStage.setTitle("VPS Hosting Tycoon");
+        primaryStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/images/logo.png")).toExternalForm()));
+
 
         // Load logo
         Image logo = new Image(Objects.requireNonNull(getClass().getResource("/images/logo.png")).toExternalForm());
@@ -29,21 +33,41 @@ public class MainMenu {
         logoView.setPreserveRatio(true);
 
         // Play Button
-        Button playButton = new Button("Play");
+        Image playGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/3246b851-eed3-11ef-92ec-394195046342.gif");
+        ImageView playImageView = new ImageView(playGif);
+        playImageView.setFitWidth(43*4);
+        playImageView.setFitHeight(11*4);
+        Button playButton = new Button("", playImageView);
+        playButton.setStyle("-fx-background-color: transparent;");
         playButton.setOnAction(e -> new GameMenu(primaryStage).show());
+        //hover
+        playButton.setOnMouseEntered(event -> playImageView.setOpacity(0.7));
+        playButton.setOnMouseExited(event -> playImageView.setOpacity(1));
 
         // Settings Button
-        Button settingsButton = new Button("Settings");
+        Image settingsGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/32b02251-eed2-11ef-a5d3-394195046342.gif");
+        ImageView settingsImageView = new ImageView(settingsGif);
+        settingsImageView.setFitWidth(43*4);
+        settingsImageView.setFitHeight(11*4);
+        Button settingsButton = new Button("", settingsImageView);
+        settingsButton.setStyle("-fx-background-color: transparent;");
         settingsButton.setOnAction(e -> new SettingsMenu(primaryStage).show());
+        //Hover
+        settingsButton.setOnMouseEntered(event -> settingsImageView.setOpacity(0.7));
+        settingsButton.setOnMouseExited(event -> settingsImageView.setOpacity(1));
 
         // Quit Button
-        Image imageGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/b4a169f5-eec0-11ef-b3e4-394195046342.gif");
-        ImageView quitButtonImage = new ImageView(imageGif);
-        quitButtonImage.setFitWidth(100);
-        quitButtonImage.setFitHeight(50);
-        Button quitButton = new Button("",quitButtonImage);
+        Image imageGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/4484816e-eed0-11ef-8022-394195046342.gif");
+        ImageView quitImageView = new ImageView(imageGif);
+        quitImageView.setFitWidth(43*4);
+        quitImageView.setFitHeight(11*4);
+        Button quitButton = new Button("", quitImageView);
         quitButton.setStyle("-fx-background-color: transparent;");
         quitButton.setOnAction(e -> System.exit(0));
+        //hover
+        quitButton.setOnMouseEntered(event -> quitImageView.setOpacity(0.7));
+        quitButton.setOnMouseExited(event -> quitImageView.setOpacity(1));
+
         VBox vbox = new VBox(20, logoView, playButton, settingsButton, quitButton);
         vbox.setAlignment(Pos.CENTER);
 
