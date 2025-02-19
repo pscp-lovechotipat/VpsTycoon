@@ -2,6 +2,7 @@ package com.vpstycoon.ui;
 
 import com.vpstycoon.Config;
 import com.vpstycoon.ScreenResolution;
+import com.vpstycoon.utils.StageUtils;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -15,22 +16,27 @@ import javafx.stage.Stage;
 
 public class SettingsMenu {
     private Stage primaryStage;
-    private ScreenResolution selectedResolution = Config.getResolution();
+    private ScreenResolution selectedResolution;
     private boolean fullscreen = Config.isFullscreen();
     private NeonShadow neonShadow = new NeonShadow();
 
     public SettingsMenu(Stage primaryStage) {
         this.primaryStage = primaryStage;
+        this.selectedResolution = ScreenResolution.getAvailableResolutions().get(0);
     }
 
     public void show() {
         primaryStage.setTitle("Settings");
+        StageUtils.setFixedSize(primaryStage, selectedResolution);
 
         // Resolution Selector
         ComboBox<ScreenResolution> resolutionComboBox = new ComboBox<>();
-        resolutionComboBox.getItems().addAll(ScreenResolution.values());
+        resolutionComboBox.getItems().addAll(ScreenResolution.getAvailableResolutions());
         resolutionComboBox.setValue(selectedResolution);
-        resolutionComboBox.setOnAction(e -> selectedResolution = resolutionComboBox.getValue());
+        resolutionComboBox.setOnAction(e -> {
+            selectedResolution = resolutionComboBox.getValue();
+            StageUtils.setFixedSize(primaryStage, selectedResolution);
+        });
 
         // Fullscreen Toggle
         CheckBox fullscreenCheckBox = new CheckBox("Enable Fullscreen");

@@ -1,6 +1,8 @@
 package com.vpstycoon.ui;
 
 import com.vpstycoon.Config;
+import com.vpstycoon.ScreenResolution;
+import com.vpstycoon.utils.StageUtils;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -15,13 +17,16 @@ import java.util.Objects;
 public class MainMenu {
     private Stage primaryStage;
     private NeonShadow neonShadow = new NeonShadow();
+    private ScreenResolution selectedResolution;
 
     public MainMenu(Stage primaryStage) {
         this.primaryStage = primaryStage;
+        this.selectedResolution = ScreenResolution.getAvailableResolutions().get(0);
     }
 
     public void show() {
-        primaryStage.setTitle("VPS Hosting Tycoon");
+        primaryStage.setTitle("Main Menu");
+        StageUtils.setFixedSize(primaryStage, selectedResolution);
         primaryStage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/images/logo.png")).toExternalForm()));
 
 
