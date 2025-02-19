@@ -33,7 +33,7 @@ public class PauseMenuScreen {
         bgImageView.setPreserveRatio(false);
 
         // Pause Menu Buttons
-        Image resumeGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/d9305b78-eee2-11ef-ab9b-394195046342.gif");
+        Image resumeGif = new Image(Objects.requireNonNull(getClass().getResource("/images/resume.gif")).toExternalForm());
         ImageView resumeImageView = new ImageView(resumeGif);
         resumeImageView.setFitWidth(43*4);
         resumeImageView.setFitHeight(11*4);
@@ -44,7 +44,7 @@ public class PauseMenuScreen {
         resumeButton.setOnMouseEntered(event -> resumeImageView.setEffect(neonShadow.neon()));
         resumeButton.setOnMouseExited(event -> resumeImageView.setEffect(null));
 
-        Image mainMenuGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/0a750657-eee2-11ef-9fd5-394195046342.gif");
+        Image mainMenuGif = new Image(Objects.requireNonNull(getClass().getResource("/images/mainmenu.gif")).toExternalForm());
         ImageView mainMenuImageView = new ImageView(mainMenuGif);
         mainMenuImageView.setFitWidth(43*4);
         mainMenuImageView.setFitHeight(11*4);
@@ -56,7 +56,7 @@ public class PauseMenuScreen {
         mainMenuButton.setOnMouseExited(event -> mainMenuImageView.setEffect(null));
 
         // Quit Button
-        Image imageGif = new Image("url:https://piskel-imgstore-b.appspot.com/img/4484816e-eed0-11ef-8022-394195046342.gif");
+        Image imageGif = new Image(Objects.requireNonNull(getClass().getResource("/images/quit.gif")).toExternalForm());
         ImageView quitImageView = new ImageView(imageGif);
         quitImageView.setFitWidth(43*4);
         quitImageView.setFitHeight(11*4);

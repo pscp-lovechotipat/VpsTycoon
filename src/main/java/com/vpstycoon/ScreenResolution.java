@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum ScreenResolution {
-    HD(1280, 720),
+    HD0(1280, 720),
+    HD1(1600, 900),
     FULL_HD(1920, 1080),
     QHD(2560, 1440),
     UHD(3840, 2160);

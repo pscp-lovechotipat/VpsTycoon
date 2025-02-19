@@ -10,8 +10,8 @@ public class GameScreen {
 
     public GameScreen(Stage primaryStage) {
         this.primaryStage = primaryStage;
-        // กำหนดค่าเริ่มต้นเป็นความละเอียดแรกที่รองรับ
-        this.selectedResolution = ScreenResolution.getAvailableResolutions().get(0);
+        // init resolution
+        this.selectedResolution = ScreenResolution.getAvailableResolutions().getFirst();
     }
 
     public void show() {

@@ -13,6 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.util.Objects;
 
 public class SettingsMenu {
     private Stage primaryStage;
@@ -44,7 +45,7 @@ public class SettingsMenu {
         fullscreenCheckBox.setOnAction(e -> fullscreen = fullscreenCheckBox.isSelected());
 
         // Apply Button (Saves the settings)
-        Image applyGIF = new Image("url:https://piskel-imgstore-b.appspot.com/img/0ff0e5b3-eee6-11ef-a53f-394195046342.gif");
+        Image applyGIF = new Image(Objects.requireNonNull(getClass().getResource("/images/apply.gif")).toExternalForm());
         ImageView applyImageView = new ImageView(applyGIF);
         applyImageView.setFitWidth(43*4);
         applyImageView.setFitHeight(11*4);
@@ -63,7 +64,7 @@ public class SettingsMenu {
 
 
         // Back Button
-        Image backGIF = new Image("url:https://piskel-imgstore-b.appspot.com/img/35e760ca-eecd-11ef-8c4c-394195046342.gif");
+        Image backGIF = new Image(Objects.requireNonNull(getClass().getResource("/images/back.gif")).toExternalForm());
         ImageView backImageView = new ImageView(backGIF);
         backImageView.setFitWidth(43*4);
         backImageView.setFitHeight(11*4);
