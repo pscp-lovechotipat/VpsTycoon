@@ -38,7 +38,12 @@ public class SettingsMenu {
         fullscreenCheckBox.setOnAction(e -> fullscreen = fullscreenCheckBox.isSelected());
 
         // Apply Button (Saves the settings)
-        Button applyButton = new Button("Apply");
+        Image applyGIF = new Image("url:https://piskel-imgstore-b.appspot.com/img/0ff0e5b3-eee6-11ef-a53f-394195046342.gif");
+        ImageView applyImageView = new ImageView(applyGIF);
+        applyImageView.setFitWidth(43*4);
+        applyImageView.setFitHeight(11*4);
+        Button applyButton = new Button("", applyImageView);
+        applyButton.setStyle("-fx-background-color: transparent;");
         applyButton.setOnAction(e -> {
             Config.setResolution(selectedResolution);
             Config.setFullscreen(fullscreen);
@@ -46,6 +51,10 @@ public class SettingsMenu {
             System.out.println("Applied Resolution: " + selectedResolution + " | Fullscreen: " + fullscreen);
             new MainMenu(primaryStage).show();
         });
+        //hover
+        applyButton.setOnMouseEntered(event -> applyImageView.setEffect(neonShadow.neon()));
+        applyButton.setOnMouseExited(event -> applyImageView.setEffect(null));
+
 
         // Back Button
         Image backGIF = new Image("url:https://piskel-imgstore-b.appspot.com/img/35e760ca-eecd-11ef-8c4c-394195046342.gif");
