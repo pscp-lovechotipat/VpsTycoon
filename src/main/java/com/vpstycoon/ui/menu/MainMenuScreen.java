@@ -21,7 +21,7 @@ import com.vpstycoon.ui.settings.SettingsScreen;
 import com.vpstycoon.ui.navigation.Navigator;
 
 public class MainMenuScreen extends GameScreen {
-    private static final double BUTTON_WIDTH = 200;
+    private static final double BUTTON_WIDTH = 160;
     private static final double BUTTON_HEIGHT = 40;
     private SettingsScreen settingsScreen;
     private PlayMenuScreen playMenuScreen;

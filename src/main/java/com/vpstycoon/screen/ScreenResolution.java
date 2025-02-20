@@ -3,9 +3,14 @@ package com.vpstycoon.screen;
 import javafx.stage.Screen;
 
 public enum ScreenResolution {
-    HD(1280, 720, "1280x720 (HD)"),
-    HD_PLUS(1600, 900, "1600x900 (HD+)"),
-    FULL_HD(1920, 1080, "1920x1080 (Full HD)");
+    RES_1280x720(1280, 720, "1280x720 (HD)"),
+    RES_1366x768(1366, 768, "1366x768 (HD)"),
+    RES_1600x900(1600, 900, "1600x900 (HD+)"),
+    RES_1920x1080(1920, 1080, "1920x1080 (Full HD)"),
+    RES_2048x1152(2048, 1152, "2048x1152 (2K)"),
+    RES_2560x1440(2560, 1440, "2560x1440 (QHD)"),
+    RES_3440x1440(3440, 1440, "3440x1440 (UWQHD)"),
+    RES_3840x2160(3840, 2160, "3840x2160 (4K UHD)");
 
     private final int width;
     private final int height;
@@ -17,24 +22,31 @@ public enum ScreenResolution {
         this.displayName = displayName;
     }
 
-    public int getWidth() { return width; }
-    public int getHeight() { return height; }
-    public String getDisplayName() { return displayName; }
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public static ScreenResolution getMaxSupportedResolution() {
+        Screen primaryScreen = Screen.getPrimary();
+        double maxWidth = primaryScreen.getBounds().getWidth();
+        double maxHeight = primaryScreen.getBounds().getHeight();
+
+        ScreenResolution maxRes = RES_1280x720; // Default minimum
+        for (ScreenResolution res : values()) {
+            if (res.width <= maxWidth && res.height <= maxHeight 
+                && (res.width > maxRes.width || res.height > maxRes.height)) {
+                maxRes = res;
+            }
+        }
+        return maxRes;
+    }
 
     @Override
     public String toString() {
         return displayName;
-    }
-
-    public static ScreenResolution getMaxSupportedResolution() {
-        javafx.geometry.Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
-        ScreenResolution[] resolutions = values();
-        for (int i = resolutions.length - 1; i >= 0; i--) {
-            if (resolutions[i].width <= bounds.getWidth() && 
-                resolutions[i].height <= bounds.getHeight()) {
-                return resolutions[i];
-            }
-        }
-        return HD; // fallback to minimum resolution
     }
 } 

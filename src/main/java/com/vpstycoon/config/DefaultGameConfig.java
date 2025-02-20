@@ -7,7 +7,7 @@ import com.vpstycoon.config.ConfigSerializer;
 public class DefaultGameConfig implements GameConfig {
     @JsonIgnore
     private static DefaultGameConfig instance;
-    private ScreenResolution selectedResolution = ScreenResolution.HD;
+    private ScreenResolution selectedResolution = ScreenResolution.RES_1280x720;
     private boolean isFullscreen = false;
     private double musicVolume = 0.5;
     private double sfxVolume = 0.5;

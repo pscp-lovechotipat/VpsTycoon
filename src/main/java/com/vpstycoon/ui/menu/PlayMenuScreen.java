@@ -25,7 +25,7 @@ import com.vpstycoon.resource.ResourceManager;
 
 public class PlayMenuScreen extends VBox {
     private static final String SAVE_FILE = "savegame.dat";
-    private static final double BUTTON_WIDTH = 200;
+    private static final double BUTTON_WIDTH = 160;
     private static final double BUTTON_HEIGHT = 40;
     private static final double SPACING = 20;
 
