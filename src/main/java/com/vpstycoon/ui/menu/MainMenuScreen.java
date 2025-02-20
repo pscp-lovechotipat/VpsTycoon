@@ -11,10 +11,15 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Effect;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 
 import java.net.URL;
 
@@ -105,24 +110,11 @@ public class MainMenuScreen extends GameScreen {
         
         // เพิ่ม hover effect ด้วย stroke
         button.setOnMouseEntered(e -> 
-            button.setStyle("""
-                -fx-background-color: transparent;
-                -fx-background-radius: 0;
-                -fx-border-color: #FFD700;
-                -fx-border-width: 2;
-                -fx-padding: 0;
-                -fx-effect: dropshadow(three-pass-box, #FFD700, 10, 0, 0, 0);
-                """)
+            button.setEffect(neon())
         );
         
         button.setOnMouseExited(e -> 
-            button.setStyle("""
-                -fx-background-color: transparent;
-                -fx-background-radius: 0;
-                -fx-border-color: transparent;
-                -fx-border-width: 2;
-                -fx-padding: 0;
-                """)
+            button.setEffect(null)
         );
         
         return button;
@@ -149,5 +141,19 @@ public class MainMenuScreen extends GameScreen {
         );
         
         return button;
+    }
+
+    private Effect neon() {
+        Glow glow = new Glow(1);
+        DropShadow neonShadow = new DropShadow(20, Color.rgb(145, 0, 255, 0.6));
+        ColorAdjust colorAdjust = new ColorAdjust();
+
+        neonShadow.setSpread(0.2);
+        colorAdjust.setBrightness(0.15);
+        colorAdjust.setSaturation(0.4);
+
+        glow.setInput(colorAdjust);
+        neonShadow.setInput(glow);
+        return neonShadow;
     }
 } 
