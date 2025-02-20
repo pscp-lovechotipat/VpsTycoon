@@ -1,15 +1,11 @@
 package com.vpstycoon.screen;
 
+import com.vpstycoon.config.GameConfig;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import javafx.scene.input.KeyCombination;
-import javafx.stage.Screen;
-
-import com.vpstycoon.config.GameConfig;
-import com.vpstycoon.screen.ScreenManager;
-import com.vpstycoon.screen.ScreenResolution;
 
 public class JavaFXScreenManager implements ScreenManager {
     private final GameConfig config;

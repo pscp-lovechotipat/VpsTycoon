@@ -1,21 +1,17 @@
 package com.vpstycoon.ui.settings;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.Region;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import com.vpstycoon.screen.ScreenResolution;
-
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.screen.ScreenManager;
-import com.vpstycoon.ui.base.GameScreen;
+import com.vpstycoon.screen.ScreenResolution;
 import com.vpstycoon.ui.SceneController;
+import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.navigation.Navigator;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 public class SettingsScreen extends GameScreen {
     private final SettingsViewModel viewModel;

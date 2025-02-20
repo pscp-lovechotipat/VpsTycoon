@@ -1,24 +1,22 @@
 package com.vpstycoon.ui.menu;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import javafx.application.Platform;
-import javafx.scene.layout.Region;
-import javafx.scene.control.Label;
-import java.net.URL;
-import javafx.scene.image.Image;
-
 import com.vpstycoon.config.GameConfig;
+import com.vpstycoon.resource.ResourceManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
-import com.vpstycoon.resource.ResourceManager;
-import com.vpstycoon.ui.settings.SettingsScreen;
 import com.vpstycoon.ui.navigation.Navigator;
+import com.vpstycoon.ui.settings.SettingsScreen;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+
+import java.net.URL;
 
 public class MainMenuScreen extends GameScreen {
     private static final double BUTTON_WIDTH = 160;

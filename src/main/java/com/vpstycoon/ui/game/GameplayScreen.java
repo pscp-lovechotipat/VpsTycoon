@@ -1,29 +1,22 @@
 package com.vpstycoon.ui.game;
 
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.Label;
-import javafx.scene.control.Button;
-import javafx.scene.control.Separator;
-import javafx.scene.shape.Rectangle;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.scene.Scene;
-import java.util.List;
-import java.util.ArrayList;
-import javafx.scene.input.KeyCode;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-
 import com.vpstycoon.config.GameConfig;
+import com.vpstycoon.game.GameObject;
+import com.vpstycoon.game.GameSaveManager;
+import com.vpstycoon.game.GameState;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.navigation.Navigator;
-import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.GameSaveManager;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.input.KeyCode;
+import javafx.scene.layout.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameplayScreen extends GameScreen {
     private final Navigator navigator;

@@ -1,27 +1,20 @@
 package com.vpstycoon.ui.menu;
 
+import com.vpstycoon.game.GameSaveManager;
+import com.vpstycoon.resource.ResourceManager;
+import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.Region;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import java.net.URL;
-
-import com.vpstycoon.config.GameConfig;
-import com.vpstycoon.screen.ScreenManager;
-import com.vpstycoon.ui.base.GameScreen;
-import com.vpstycoon.ui.navigation.Navigator;
-import com.vpstycoon.game.GameSaveManager;
-import com.vpstycoon.resource.ResourceManager;
 
 public class PlayMenuScreen extends VBox {
     private static final String SAVE_FILE = "savegame.dat";

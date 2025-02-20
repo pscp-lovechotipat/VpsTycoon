@@ -7,12 +7,12 @@ import java.util.Map;
 public class GameObject implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    private String id;
-    private String type;
+    private final String id;
+    private final String type;
     private double x;
     private double y;
     private boolean active;
-    private Map<String, Object> properties;
+    private final Map<String, Object> properties;
     private String name;
     private int level;
     private String status;

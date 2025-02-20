@@ -1,16 +1,15 @@
 package com.vpstycoon.audio;
 
-import java.util.Map;
-import java.util.HashMap;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import javafx.application.Platform;
-import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
-import com.vpstycoon.event.EventListener;
 import com.vpstycoon.event.SettingsChangedEvent;
 import com.vpstycoon.resource.ResourceManager;
+import javafx.application.Platform;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AudioManager {
     private static final AudioManager instance = new AudioManager();

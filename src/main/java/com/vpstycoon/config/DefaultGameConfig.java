@@ -2,7 +2,6 @@ package com.vpstycoon.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vpstycoon.screen.ScreenResolution;
-import com.vpstycoon.config.ConfigSerializer;
 
 public class DefaultGameConfig implements GameConfig {
     @JsonIgnore

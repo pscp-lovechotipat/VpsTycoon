@@ -1,10 +1,9 @@
 package com.vpstycoon.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.File;
 import java.io.IOException;
-import com.vpstycoon.config.GameConfig;
-import com.vpstycoon.config.DefaultGameConfig;
 
 public class ConfigSerializer {
     private static final String CONFIG_FILE = "game_config.json";
