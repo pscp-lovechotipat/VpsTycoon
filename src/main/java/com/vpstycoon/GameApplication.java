@@ -72,6 +72,7 @@ public class GameApplication extends Application implements Navigator {
         
         // Setup primary stage
         primaryStage.setTitle("VPS Tycoon");
+        primaryStage.setResizable(false);
         primaryStage.setOnCloseRequest(e -> shutdown());
         
         // Subscribe to settings changes
