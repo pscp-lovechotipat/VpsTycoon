@@ -1,0 +1,1 @@
+{"gameObjects":[{"name":"Server","x":100.0,"y":100.0,"level":1,"status":"Normal"},{"name":"Database","x":300.0,"y":200.0,"level":1,"status":"Normal"},{"name":"Network","x":500.0,"y":150.0,"level":1,"status":"Normal"}]}
