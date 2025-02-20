@@ -1,3 +1,81 @@
+# How Contribute by Nong Claude Kung :
+# VPS Tycoon - Game Development Guide
+
+## โครงสร้างโปรเจค
+
+โปรเจคนี้เป็นเกม Tycoon ที่พัฒนาด้วย JavaFX แบ่งเป็นแพ็คเกจหลักๆ ดังนี้:
+
+### 1. com.vpstycoon
+- `GameApplication.java` - คลาสหลักที่เริ่มต้นเกม จัดการ navigation ระหว่างหน้าต่างๆ
+
+### 2. com.vpstycoon.config
+- จัดการการตั้งค่าเกม เช่น ความละเอียดหน้าจอ, เสียง
+- ใช้ Jackson สำหรับ serialize/deserialize ข้อมูล
+
+### 3. com.vpstycoon.game
+- ตัวเกมหลัก จัดการ game state และ objects ในเกม
+- `GameManager.java` - จัดการสถานะเกม การเซฟ/โหลด
+- `GameObject.java` - คลาสพื้นฐานสำหรับวัตถุในเกม
+
+### 4. com.vpstycoon.ui
+- ส่วน UI ทั้งหมด แบ่งเป็น:
+  - menu/ - หน้าเมนูต่างๆ
+  - settings/ - หน้าตั้งค่า
+  - game/ - หน้าเล่นเกม
+
+### 5. com.vpstycoon.event
+- ระบบ Event Bus สำหรับการสื่อสารระหว่างคอมโพเนนต์
+
+### 6. com.vpstycoon.audio
+- จัดการเสียงเพลงและเอฟเฟค
+
+## การเริ่มต้นพัฒนา
+
+1. ติดตั้ง JavaFX SDK
+2. เพิ่ม VM Options:
+   ```
+   --module-path "path/to/javafx-sdk/lib" --add-modules javafx.controls,javafx.fxml
+   ```
+
+## แนวทางการพัฒนา
+
+1. **Model-View Pattern**
+   - แยก logic ออกจาก UI ชัดเจน
+   - ใช้ Properties และ Bindings ของ JavaFX
+
+2. **Event-Driven Architecture**
+   - ใช้ EventBus ลดการ coupling
+   - แยก concerns ด้วย event handlers
+
+3. **Config Management**
+   - ใช้ JSON สำหรับบันทึกการตั้งค่า
+   - รองรับการ hot-reload
+
+4. **Resource Management**
+   - จัดการ assets (ภาพ, เสียง) แบบ lazy loading
+   - มีระบบ cache
+
+## Tips สำหรับมือใหม่
+
+1. เริ่มจากการทำความเข้าใจ `GameApplication.java`
+2. ศึกษาการทำงานของ UI ใน package ui/
+3. ดูตัวอย่างการสร้าง GameObject ใน game/
+4. ทดลองเพิ่ม features ใหม่โดยดู pattern จากโค้ดที่มีอยู่
+
+## การ Build & Run
+
+1. ใช้ Maven:
+   ```
+   mvn clean package
+   java -jar target/vpstycoon.jar
+   ```
+
+2. ใช้ IDE:
+   - เปิดโปรเจคใน IntelliJ IDEA
+   - Run GameApplication
+
+# ลายละเอียดเกม
+
 ## Intellij Install
 
 ---
@@ -178,3 +256,5 @@ classDiagram
     - [x] Resolution
     - [x] Fullscreen 
 - [x] Empty Screen
+
+
