@@ -12,6 +12,10 @@ target/
 *.iml
 *.ipr
 
+backups
+savegame.dat
+game_config.json
+
 ### Eclipse ###
 .apt_generated
 .classpath
