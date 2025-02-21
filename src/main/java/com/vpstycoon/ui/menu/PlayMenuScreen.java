@@ -1,31 +1,29 @@
 package com.vpstycoon.ui.menu;
 
+import com.vpstycoon.game.GameSaveManager;
+import com.vpstycoon.resource.ResourceManager;
+import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.Region;
 import javafx.scene.control.Label;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Effect;
+import javafx.scene.effect.Glow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import java.net.URL;
-
-import com.vpstycoon.config.GameConfig;
-import com.vpstycoon.screen.ScreenManager;
-import com.vpstycoon.ui.base.GameScreen;
-import com.vpstycoon.ui.navigation.Navigator;
-import com.vpstycoon.game.GameSaveManager;
-import com.vpstycoon.resource.ResourceManager;
 
 public class PlayMenuScreen extends VBox {
     private static final String SAVE_FILE = "savegame.dat";
-    private static final double BUTTON_WIDTH = 200;
+    private static final double BUTTON_WIDTH = 160;
     private static final double BUTTON_HEIGHT = 40;
     private static final double SPACING = 20;
 
@@ -217,24 +215,11 @@ public class PlayMenuScreen extends VBox {
             """);
         
         button.setOnMouseEntered(e -> 
-            button.setStyle("""
-                -fx-background-color: transparent;
-                -fx-background-radius: 0;
-                -fx-border-color: #FFD700;
-                -fx-border-width: 2;
-                -fx-padding: 0;
-                -fx-effect: dropshadow(three-pass-box, #FFD700, 10, 0, 0, 0);
-                """)
+            button.setEffect(neon())
         );
         
         button.setOnMouseExited(e -> 
-            button.setStyle("""
-                -fx-background-color: transparent;
-                -fx-background-radius: 0;
-                -fx-border-color: transparent;
-                -fx-border-width: 2;
-                -fx-padding: 0;
-                """)
+            button.setEffect(null)
         );
         
         return button;
@@ -260,6 +245,20 @@ public class PlayMenuScreen extends VBox {
         );
         
         return button;
+    }
+
+    private Effect neon() {
+        Glow glow = new Glow(1);
+        DropShadow neonShadow = new DropShadow(20, Color.rgb(145, 0, 255, 0.6));
+        ColorAdjust colorAdjust = new ColorAdjust();
+
+        neonShadow.setSpread(0.2);
+        colorAdjust.setBrightness(0.15);
+        colorAdjust.setSaturation(0.4);
+
+        glow.setInput(colorAdjust);
+        neonShadow.setInput(glow);
+        return neonShadow;
     }
 
     private boolean saveGameExists() {

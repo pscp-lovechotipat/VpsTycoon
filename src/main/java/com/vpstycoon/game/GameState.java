@@ -10,8 +10,8 @@ public class GameState implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private long money;
-    private Map<String, Integer> resources;
-    private Map<String, Boolean> upgrades;
+    private final Map<String, Integer> resources;
+    private final Map<String, Boolean> upgrades;
     private long lastSaveTime;
     private List<GameObject> gameObjects;
     

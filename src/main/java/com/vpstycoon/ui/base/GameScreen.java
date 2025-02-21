@@ -1,10 +1,10 @@
 package com.vpstycoon.ui.base;
 
-import javafx.scene.layout.Region;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
 import com.vpstycoon.ui.SceneController;
+import javafx.scene.layout.Region;
 
 public abstract class GameScreen {
     protected final GameConfig config;

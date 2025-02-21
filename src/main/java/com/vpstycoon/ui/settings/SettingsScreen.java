@@ -1,19 +1,17 @@
 package com.vpstycoon.ui.settings;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.scene.layout.Region;
-
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
-import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.SceneController;
+import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.navigation.Navigator;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 
 public class SettingsScreen extends GameScreen {
     private final SettingsViewModel viewModel;
@@ -130,60 +128,48 @@ public class SettingsScreen extends GameScreen {
         fullscreenCheck.setStyle("-fx-text-fill: white;");
         fullscreenCheck.selectedProperty().bindBidirectional(viewModel.fullscreenProperty());
 
-        // Resolution options
-        resolutionBox = new VBox(10);
-        resolutionBox.setStyle("-fx-padding: 10 0 0 20;"); // Add some padding
+        // Resolution dropdown
+        HBox resolutionBox = new HBox(10);
+        resolutionBox.setAlignment(Pos.CENTER_LEFT);
         Label resolutionLabel = new Label("Screen Resolution:");
         resolutionLabel.setStyle("-fx-text-fill: white;");
         
-        resolutionGroup = new ToggleGroup();
+        ComboBox<ScreenResolution> resolutionComboBox = new ComboBox<>();
+        resolutionComboBox.setStyle("""
+            -fx-background-color: #34495E;
+            -fx-text-fill: white;
+            -fx-mark-color: white;
+            -fx-font-size: 14px;
+            """);
         
-        // Create radio buttons for each resolution
+        // Add available resolutions to the combo box
         ScreenResolution maxRes = ScreenResolution.getMaxSupportedResolution();
         for (ScreenResolution res : ScreenResolution.values()) {
             if (res.getWidth() <= maxRes.getWidth() && res.getHeight() <= maxRes.getHeight()) {
-                RadioButton rb = new RadioButton(res.getDisplayName());
-                rb.setStyle("-fx-text-fill: white;");
-                rb.setToggleGroup(resolutionGroup);
-                rb.setUserData(res);
-                if (res == viewModel.resolutionProperty().get()) {
-                    rb.setSelected(true);
-                }
-                resolutionBox.getChildren().add(rb);
+                resolutionComboBox.getItems().add(res);
             }
         }
-
+        
+        // Set current resolution
+        resolutionComboBox.setValue(viewModel.resolutionProperty().get());
+        
         // Bind resolution selection to viewModel
-        resolutionGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+        resolutionComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                viewModel.resolutionProperty().set((ScreenResolution) newVal.getUserData());
+                viewModel.resolutionProperty().set(newVal);
             }
         });
 
         // Bind fullscreen to disable resolution selection
         fullscreenCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
-            resolutionBox.setDisable(newVal);
+            resolutionComboBox.setDisable(newVal);
             if (newVal) {
-                // When fullscreen is enabled, automatically select max resolution
-                for (Toggle toggle : resolutionGroup.getToggles()) {
-                    if (((ScreenResolution) toggle.getUserData()) == maxRes) {
-                        resolutionGroup.selectToggle(toggle);
-                        break;
-                    }
-                }
+                resolutionComboBox.setValue(maxRes);
             }
         });
 
-        // Style disabled state
-        resolutionBox.disabledProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal) {
-                resolutionBox.setStyle("-fx-opacity: 0.5;");
-            } else {
-                resolutionBox.setStyle("-fx-opacity: 1.0;");
-            }
-        });
-
-        settings.getChildren().addAll(fullscreenCheck, resolutionLabel, resolutionBox);
+        resolutionBox.getChildren().addAll(resolutionLabel, resolutionComboBox);
+        settings.getChildren().addAll(fullscreenCheck, resolutionBox);
         return settings;
     }
 

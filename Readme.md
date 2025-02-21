@@ -29,14 +29,6 @@
 ### 6. com.vpstycoon.audio
 - จัดการเสียงเพลงและเอฟเฟค
 
-## การเริ่มต้นพัฒนา
-
-1. ติดตั้ง JavaFX SDK
-2. เพิ่ม VM Options:
-   ```
-   --module-path "path/to/javafx-sdk/lib" --add-modules javafx.controls,javafx.fxml
-   ```
-
 ## แนวทางการพัฒนา
 
 1. **Model-View Pattern**
@@ -62,22 +54,9 @@
 3. ดูตัวอย่างการสร้าง GameObject ใน game/
 4. ทดลองเพิ่ม features ใหม่โดยดู pattern จากโค้ดที่มีอยู่
 
-## การ Build & Run
-
-1. ใช้ Maven:
-   ```
-   mvn clean package
-   java -jar target/vpstycoon.jar
-   ```
-
-2. ใช้ IDE:
-   - เปิดโปรเจคใน IntelliJ IDEA
-   - Run GameApplication
-
 # ลายละเอียดเกม
 
 ## Intellij Install
-
 ---
 
 ### กรณี download javaFX มาเองในเครื่อง
@@ -90,9 +69,6 @@
   --module-path "C:\javafx-sdk-23.0.2\lib" --add-modules javafx.controls,javafx.fxml
   ```
 ---
-
-### กรณีใช้ maven javaFX 
-**ไม่รู้ทำไงเหมือนกัน**
 
 ---
 

@@ -1,7 +1,7 @@
 package com.vpstycoon.event;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -17,7 +17,7 @@ public class GameEventBus {
 
     public <T> void subscribe(Class<T> eventType, EventListener<T> listener) {
         listeners.computeIfAbsent(eventType, k -> new CopyOnWriteArrayList<>())
-                .add((EventListener<?>) listener);
+                .add(listener);
     }
 
     public <T> void unsubscribe(Class<T> eventType, EventListener<T> listener) {

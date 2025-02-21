@@ -1,34 +1,27 @@
 package com.vpstycoon;
 
-import javafx.application.Application;
-import javafx.stage.Stage;
-import javafx.application.Platform;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.DialogPane;
-import java.util.Optional;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-
-import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.config.DefaultGameConfig;
-import com.vpstycoon.screen.ScreenManager;
-import com.vpstycoon.screen.JavaFXScreenManager;
-import com.vpstycoon.ui.settings.SettingsScreen;
-import com.vpstycoon.ui.menu.MainMenuScreen;
-import com.vpstycoon.ui.menu.PlayMenuScreen;
-import com.vpstycoon.ui.game.GameplayScreen;
-import com.vpstycoon.ui.SceneController;
-import com.vpstycoon.ui.navigation.Navigator;
+import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
+import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.GameManager;
+import com.vpstycoon.screen.JavaFXScreenManager;
+import com.vpstycoon.screen.ScreenManager;
+import com.vpstycoon.ui.SceneController;
+import com.vpstycoon.ui.game.GameplayScreen;
+import com.vpstycoon.ui.menu.MainMenuScreen;
+import com.vpstycoon.ui.menu.PlayMenuScreen;
+import com.vpstycoon.ui.navigation.Navigator;
 import com.vpstycoon.ui.screen.GameScreen;
+import com.vpstycoon.ui.settings.SettingsScreen;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class GameApplication extends Application implements Navigator {
     private Stage primaryStage;
@@ -72,6 +65,7 @@ public class GameApplication extends Application implements Navigator {
         
         // Setup primary stage
         primaryStage.setTitle("VPS Tycoon");
+        primaryStage.setResizable(false);
         primaryStage.setOnCloseRequest(e -> shutdown());
         
         // Subscribe to settings changes

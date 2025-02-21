@@ -1,11 +1,11 @@
 package com.vpstycoon.ui.game;
 
-import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.paint.Color;
+import com.vpstycoon.game.GameObject;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
-import com.vpstycoon.game.GameObject;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 
 public class GameObjectView extends StackPane {
     private final Rectangle background;

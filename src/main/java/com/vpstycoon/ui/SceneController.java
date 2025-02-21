@@ -1,13 +1,12 @@
 package com.vpstycoon.ui;
 
-import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
-import javafx.scene.Parent;
-
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 
 public class SceneController {
     private static SceneController instance;

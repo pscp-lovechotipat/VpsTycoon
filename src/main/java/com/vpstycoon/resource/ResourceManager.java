@@ -1,11 +1,12 @@
 package com.vpstycoon.resource;
 
+import javafx.scene.image.Image;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import javafx.scene.image.Image;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.net.URL;
 
 public class ResourceManager {
     private static final ResourceManager instance = new ResourceManager();

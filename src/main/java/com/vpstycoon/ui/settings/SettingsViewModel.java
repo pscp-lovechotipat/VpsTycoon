@@ -1,13 +1,12 @@
 package com.vpstycoon.ui.settings;
 
-import javafx.application.Platform;
-import javafx.beans.property.*;
-import javafx.scene.control.Alert;
-
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
 import com.vpstycoon.screen.ScreenResolution;
+import javafx.application.Platform;
+import javafx.beans.property.*;
+import javafx.scene.control.Alert;
 
 public class SettingsViewModel {
     private final GameConfig config;
