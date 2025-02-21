@@ -2,11 +2,14 @@ package com.vpstycoon.ui.menu;
 
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.resource.ResourceManager;
+import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
+import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Effect;
@@ -39,13 +42,13 @@ public class PlayMenuScreen extends VBox {
         
         super.setAlignment(Pos.CENTER);
         super.setSpacing(SPACING);
-        
-        Button newGameButton = createMenuButton("NewGame");
-        Button continueButton = createMenuButton("Continue");
-        Button backButton = createMenuButton("Back");
-        
-        newGameButton.setOnAction(e -> navigator.startNewGame());
+
+        MenuButton continueButton = new MenuButton(MenuButtonType.CONTINUE);
+        MenuButton newGameButton = new MenuButton(MenuButtonType.NEW_GAME);
+        MenuButton backButton = new MenuButton(MenuButtonType.BACK);
+
         continueButton.setOnAction(e -> navigator.showLoadGame());
+        newGameButton.setOnAction(e -> navigator.startNewGame());
         backButton.setOnAction(e -> navigator.showMainMenu());
         
         super.getChildren().addAll(continueButton, newGameButton, backButton);
@@ -154,7 +157,7 @@ public class PlayMenuScreen extends VBox {
         Label titleLabel = new Label("Play Game");
         titleLabel.setStyle("-fx-font-size: 32px; -fx-text-fill: white; -fx-font-weight: bold;");
 
-        continueButton = createMenuButton("Continue");
+        continueButton = new MenuButton(MenuButtonType.CONTINUE);
         continueButton.setDisable(!saveManager.saveExists());
         continueButton.setOnAction(e -> {
             if (saveManager.saveExists()) {
@@ -162,7 +165,7 @@ public class PlayMenuScreen extends VBox {
             }
         });
 
-        Button newGameButton = createMenuButton("NewGame");
+        MenuButton newGameButton = new MenuButton(MenuButtonType.NEW_GAME);
         newGameButton.setOnAction(e -> {
             if (saveManager.saveExists()) {
                 showNewGameConfirmation();
@@ -171,7 +174,7 @@ public class PlayMenuScreen extends VBox {
             }
         });
 
-        Button backButton = createMenuButton("Back");
+        MenuButton backButton = new MenuButton(MenuButtonType.BACK);
         backButton.setOnAction(e -> navigator.showMainMenu());
 
         content.getChildren().addAll(
@@ -183,82 +186,6 @@ public class PlayMenuScreen extends VBox {
 
         root.getChildren().add(content);
         return root;
-    }
-
-    private Button createMenuButton(String text) {
-        Button button = new Button();
-        button.setPrefWidth(BUTTON_WIDTH);
-        button.setPrefHeight(BUTTON_HEIGHT);
-        
-        String gifPath = "/images/buttons/" + text.toLowerCase() + ".gif";
-        URL gifUrl = ResourceManager.getResource(gifPath);
-        
-        if (gifUrl == null) {
-            System.err.println("GIF resource not found for button: " + text);
-            return createFallbackButton(text);
-        }
-
-        ImageView imageView = new ImageView(new Image(gifUrl.toExternalForm()));
-        
-        imageView.setFitWidth(BUTTON_WIDTH);
-        imageView.setFitHeight(BUTTON_HEIGHT);
-        imageView.setPreserveRatio(true);
-        
-        button.setGraphic(imageView);
-        
-        button.setStyle("""
-            -fx-background-color: transparent;
-            -fx-background-radius: 0;
-            -fx-border-color: transparent;
-            -fx-border-width: 2;
-            -fx-padding: 0;
-            """);
-        
-        button.setOnMouseEntered(e -> 
-            button.setEffect(neon())
-        );
-        
-        button.setOnMouseExited(e -> 
-            button.setEffect(null)
-        );
-        
-        return button;
-    }
-
-    private Button createFallbackButton(String text) {
-        Button button = new Button(text);
-        button.setPrefWidth(BUTTON_WIDTH);
-        button.setPrefHeight(BUTTON_HEIGHT);
-        button.setStyle("""
-            -fx-background-color: #3498DB;
-            -fx-text-fill: white;
-            -fx-font-size: 18px;
-            -fx-font-weight: bold;
-            -fx-background-radius: 5;
-            """);
-        
-        button.setOnMouseEntered(e -> 
-            button.setStyle(button.getStyle() + "-fx-background-color: #2980B9;")
-        );
-        button.setOnMouseExited(e -> 
-            button.setStyle(button.getStyle() + "-fx-background-color: #3498DB;")
-        );
-        
-        return button;
-    }
-
-    private Effect neon() {
-        Glow glow = new Glow(1);
-        DropShadow neonShadow = new DropShadow(20, Color.rgb(145, 0, 255, 0.6));
-        ColorAdjust colorAdjust = new ColorAdjust();
-
-        neonShadow.setSpread(0.2);
-        colorAdjust.setBrightness(0.15);
-        colorAdjust.setSaturation(0.4);
-
-        glow.setInput(colorAdjust);
-        neonShadow.setInput(glow);
-        return neonShadow;
     }
 
     private boolean saveGameExists() {

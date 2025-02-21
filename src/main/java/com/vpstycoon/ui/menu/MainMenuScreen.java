@@ -4,6 +4,8 @@ import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.resource.ResourceManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
+import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
+import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
 import com.vpstycoon.ui.navigation.Navigator;
 import com.vpstycoon.ui.settings.SettingsScreen;
 import javafx.application.Platform;
@@ -58,102 +60,19 @@ public class MainMenuScreen extends GameScreen {
         titleLabel.setStyle("-fx-font-size: 48px; -fx-text-fill: white; -fx-font-weight: bold;");
 
         // Play Button
-        Button playButton = createMenuButton("Play");
+        MenuButton playButton = new MenuButton(MenuButtonType.PLAY);
         playButton.setOnAction(e -> navigator.showPlayMenu());
 
         // Settings Button
-        Button settingsButton = createMenuButton("Settings");
+        MenuButton settingsButton = new MenuButton(MenuButtonType.SETTINGS);
         settingsButton.setOnAction(e -> navigator.showSettings());
 
         // Quit Button
-        Button quitButton = createMenuButton("Quit");
+        MenuButton quitButton = new MenuButton(MenuButtonType.QUIT);
         quitButton.setOnAction(e -> Platform.exit());
 
         root.getChildren().addAll(titleLabel, playButton, settingsButton, quitButton);
         
         return root;
-    }
-
-    private Button createMenuButton(String text) {
-        Button button = new Button();
-        button.setPrefWidth(BUTTON_WIDTH);
-        button.setPrefHeight(BUTTON_HEIGHT);
-        
-        // โหลด GIF สำหรับปุ่ม
-        String gifPath = "/images/buttons/" + text.toLowerCase() + ".gif";
-        URL gifUrl = ResourceManager.getResource(gifPath);
-        
-        if (gifUrl == null) {
-            System.err.println("GIF resource not found for button: " + text);
-            return createFallbackButton(text);
-        }
-
-        // สร้าง ImageView สำหรับ GIF
-        ImageView imageView = new ImageView(new Image(gifUrl.toExternalForm()));
-        
-        // ตั้งค่าขนาดของ ImageView
-        imageView.setFitWidth(BUTTON_WIDTH);
-        imageView.setFitHeight(BUTTON_HEIGHT);
-        imageView.setPreserveRatio(true);
-        
-        // ตั้งค่า graphic
-        button.setGraphic(imageView);
-        
-        // สไตล์พื้นฐานของปุ่ม
-        button.setStyle("""
-            -fx-background-color: transparent;
-            -fx-background-radius: 0;
-            -fx-border-color: transparent;
-            -fx-border-width: 2;
-            -fx-padding: 0;
-            """);
-        
-        // เพิ่ม hover effect ด้วย stroke
-        button.setOnMouseEntered(e -> 
-            button.setEffect(neon())
-        );
-        
-        button.setOnMouseExited(e -> 
-            button.setEffect(null)
-        );
-        
-        return button;
-    }
-
-    private Button createFallbackButton(String text) {
-        // ใช้ปุ่มแบบเดิมเป็น fallback
-        Button button = new Button(text);
-        button.setPrefWidth(BUTTON_WIDTH);
-        button.setPrefHeight(BUTTON_HEIGHT);
-        button.setStyle("""
-            -fx-background-color: #3498DB;
-            -fx-text-fill: white;
-            -fx-font-size: 18px;
-            -fx-font-weight: bold;
-            -fx-background-radius: 5;
-            """);
-        
-        button.setOnMouseEntered(e -> 
-            button.setStyle(button.getStyle() + "-fx-background-color: #2980B9;")
-        );
-        button.setOnMouseExited(e -> 
-            button.setStyle(button.getStyle() + "-fx-background-color: #3498DB;")
-        );
-        
-        return button;
-    }
-
-    private Effect neon() {
-        Glow glow = new Glow(1);
-        DropShadow neonShadow = new DropShadow(20, Color.rgb(145, 0, 255, 0.6));
-        ColorAdjust colorAdjust = new ColorAdjust();
-
-        neonShadow.setSpread(0.2);
-        colorAdjust.setBrightness(0.15);
-        colorAdjust.setSaturation(0.4);
-
-        glow.setInput(colorAdjust);
-        neonShadow.setInput(glow);
-        return neonShadow;
     }
 } 
