@@ -140,7 +140,11 @@ public class GameplayScreen extends GameScreen {
     @Override
     protected Region createContent() {
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: #FFF5E6;"); // สีครีม
+        root.setStyle("""
+                -fx-background-image: url("/images/rooms/room.png");
+                -fx-background-size: cover;
+                -fx-background-position: center;
+                """); // สีครีม
 
         // สร้างพื้นที่เกม
         gameArea = new StackPane();
