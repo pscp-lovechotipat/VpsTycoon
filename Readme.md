@@ -54,7 +54,27 @@
 3. ดูตัวอย่างการสร้าง GameObject ใน game/
 4. ทดลองเพิ่ม features ใหม่โดยดู pattern จากโค้ดที่มีอยู่
 
-# ลายละเอียดเกม
+# ลายละเอียดเกม Flow game เจาะลึกมากขึ้น
+=== 
+## Main menu : New game, Continue , Setting ,Exit
+    -New game สร้างเซฟเกมใหม่ ***หากมีเซฟแล้วต้องถาม For sure?***
+    -Continue เล่นเกมต่อ ***หากไม่มีเซฟแล้วต้องแจ้งไป New game***
+    -Setting Set Resolotion , Music , Credit , Tutorial คลิก
+    -Exit ออกเกม
+## Game play
+===
+### Tutorial สอนวิธีการเล่น (สอนรอบเดียวแค่ New game)
+***Two Options***
+    1.สไลด์ Show รูปภาพวิธีเล่นให้ผู้เล่นเลื่อนเอง
+    2.Event คลิกเพื่อไปต่อ
+### กดตัวคอมพิวเตอร์ขึ้น Interface Desktops
+***Chat***
+    -ดู Request ลูกค้า แสดง Rating ของบริษัทมุมบน
+    -Request Chat มีเพดาห์ Level ที่ต้องปลดโดยใช้แต้ม Marketing
+    -Level Chat ที่ต้องปลดเพื่อ รับลูกค้ามากขึ้น ประเภทลูกค้าดีขึ้น ความยากRequestที่ยาก อัพเกรด
+
+
+
 
 ## Intellij Install
 ---
