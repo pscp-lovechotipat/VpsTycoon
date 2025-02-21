@@ -48,7 +48,7 @@ public class PlayMenuScreen extends VBox {
         continueButton.setOnAction(e -> navigator.showLoadGame());
         backButton.setOnAction(e -> navigator.showMainMenu());
         
-        super.getChildren().addAll(newGameButton, continueButton, backButton);
+        super.getChildren().addAll(continueButton, newGameButton, backButton);
     }
 
     private void showNewGameConfirmation() {
