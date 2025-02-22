@@ -9,10 +9,12 @@ import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 
 import java.util.ArrayList;
@@ -22,7 +24,7 @@ public class GameplayScreen extends GameScreen {
     private final Navigator navigator;
     private final GameSaveManager saveManager;
     private List<GameObject> gameObjects;
-    private Pane gameArea;
+    private StackPane gameArea;
 
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
@@ -57,37 +59,37 @@ public class GameplayScreen extends GameScreen {
         // Create modal container with semi-transparent background
         VBox modalContainer = new VBox(10);
         modalContainer.setStyle("""
-            -fx-background-color: rgba(0, 0, 0, 0.7);
-            -fx-padding: 20;
-            """);
+                -fx-background-color: rgba(0, 0, 0, 0.7);
+                -fx-padding: 20;
+                """);
         modalContainer.setAlignment(Pos.CENTER);
         modalContainer.setPrefSize(gameArea.getWidth(), gameArea.getHeight());
-        
+
         // Create modal content
         VBox modalContent = new VBox(15);
         modalContent.setStyle("""
-            -fx-background-color: white;
-            -fx-padding: 20;
-            -fx-background-radius: 5;
-            -fx-min-width: 300;
-            -fx-max-width: 300;
-            """);
+                -fx-background-color: white;
+                -fx-padding: 20;
+                -fx-background-radius: 5;
+                -fx-min-width: 300;
+                -fx-max-width: 300;
+                """);
         modalContent.setAlignment(Pos.CENTER);
 
         // Title
         Label titleLabel = new Label(title);
         titleLabel.setStyle("""
-            -fx-font-size: 20px;
-            -fx-font-weight: bold;
-            """);
+                -fx-font-size: 20px;
+                -fx-font-weight: bold;
+                """);
 
         // Message
         Label messageLabel = new Label(message);
         messageLabel.setStyle("""
-            -fx-font-size: 14px;
-            -fx-wrap-text: true;
-            -fx-text-alignment: center;
-            """);
+                -fx-font-size: 14px;
+                -fx-wrap-text: true;
+                -fx-text-alignment: center;
+                """);
         messageLabel.setMaxWidth(250);
 
         // Buttons container
@@ -104,23 +106,23 @@ public class GameplayScreen extends GameScreen {
         // Cancel Button
         Button cancelButton = createModalButton("No");
         cancelButton.setStyle("""
-            -fx-background-color: #95A5A6;
-            -fx-text-fill: white;
-            -fx-font-size: 14px;
-            -fx-padding: 8 20;
-            -fx-background-radius: 5;
-            -fx-min-width: 120;
-            """);
+                -fx-background-color: #95A5A6;
+                -fx-text-fill: white;
+                -fx-font-size: 14px;
+                -fx-padding: 8 20;
+                -fx-background-radius: 5;
+                -fx-min-width: 120;
+                """);
         cancelButton.setOnAction(e -> gameArea.getChildren().remove(modalContainer));
 
         buttonBox.getChildren().addAll(confirmButton, cancelButton);
 
         // Add all elements to modal content
         modalContent.getChildren().addAll(
-            titleLabel,
-            new Separator(),
-            messageLabel,
-            buttonBox
+                titleLabel,
+                new Separator(),
+                messageLabel,
+                buttonBox
         );
 
         // Add modal content to container
@@ -140,52 +142,70 @@ public class GameplayScreen extends GameScreen {
     @Override
     protected Region createContent() {
         BorderPane root = new BorderPane();
-        root.setStyle("""
-                -fx-background-image: url("/images/rooms/room.png");
-                -fx-background-size: cover;
-                -fx-background-position: center;
-                """); // สีครีม
 
         // สร้างพื้นที่เกม
         gameArea = new StackPane();
         gameArea.setPrefSize(800, 600);
-        
+
+        Pane backgroundLayer = new Pane();
+        backgroundLayer.setStyle("""
+                -fx-background-image: url("/images/rooms/room.png");
+                -fx-background-color: transparent;
+                -fx-background-size: contain;
+                -fx-background-repeat: no-repeat;
+                -fx-background-position: center;
+                """);
+        backgroundLayer.prefWidthProperty().bind(gameArea.widthProperty());
+        backgroundLayer.prefHeightProperty().bind(gameArea.heightProperty());
+
         // Create game objects container
         Pane objectsContainer = new Pane();
-        
-        // เพิ่ม game objects
         for (GameObject obj : gameObjects) {
             GameObjectView view = new GameObjectView(obj);
             view.setOnMouseClicked(e -> showObjectDetails(obj));
             objectsContainer.getChildren().add(view);
         }
 
-        gameArea.getChildren().add(objectsContainer);
+        Group worldGroup = new Group(backgroundLayer, objectsContainer);
+
+        gameArea.getChildren().add(worldGroup);
+
+        gameArea.setOnScroll(e -> {
+            double zoomFactor = 1.05;
+            if (e.getDeltaY() < 0) {
+                zoomFactor = 1.0 / zoomFactor; // ถ้า scroll ลง -> ย่อ
+            }
+            // ปรับสเกลเฉพาะ worldGroup
+            worldGroup.setScaleX(worldGroup.getScaleX() * zoomFactor);
+            worldGroup.setScaleY(worldGroup.getScaleY() * zoomFactor);
+
+            e.consume();
+        });
 
         // Create top menu bar
         HBox menuBar = new HBox(10);
         menuBar.setPadding(new Insets(10));
         menuBar.setAlignment(Pos.CENTER_LEFT);
         menuBar.setStyle("-fx-background-color: #2C3E50;");
-        
+
         Button saveButton = createButton("Save Game");
         saveButton.setOnAction(e -> {
             showConfirmationDialog(
-                "Save Game",
-                "Do you want to save your current progress?",
-                this::saveGame
+                    "Save Game",
+                    "Do you want to save your current progress?",
+                    this::saveGame
             );
         });
-        
+
         Button menuButton = createButton("Main Menu");
         menuButton.setOnAction(e -> {
             showConfirmationDialog(
-                "Return to Main Menu",
-                "Do you want to save and return to the main menu?",
-                () -> {
-                    saveGame();
-                    navigator.showMainMenu();
-                }
+                    "Return to Main Menu",
+                    "Do you want to save and return to the main menu?",
+                    () -> {
+                        saveGame();
+                        navigator.showMainMenu();
+                    }
             );
         });
 
@@ -219,29 +239,29 @@ public class GameplayScreen extends GameScreen {
         // Create modal container
         VBox modalContainer = new VBox(10);
         modalContainer.setStyle("""
-            -fx-background-color: rgba(0, 0, 0, 0.7);
-            -fx-padding: 20;
-            """);
+                -fx-background-color: rgba(0, 0, 0, 0.7);
+                -fx-padding: 20;
+                """);
         modalContainer.setAlignment(Pos.CENTER);
         modalContainer.setPrefSize(gameArea.getWidth(), gameArea.getHeight());
-        
+
         // Create modal content
         VBox modalContent = new VBox(15);
         modalContent.setStyle("""
-            -fx-background-color: white;
-            -fx-padding: 20;
-            -fx-background-radius: 5;
-            -fx-min-width: 300;
-            -fx-max-width: 300;
-            """);
+                -fx-background-color: white;
+                -fx-padding: 20;
+                -fx-background-radius: 5;
+                -fx-min-width: 300;
+                -fx-max-width: 300;
+                """);
         modalContent.setAlignment(Pos.CENTER);
 
         // Title
         Label titleLabel = new Label(obj.getName());
         titleLabel.setStyle("""
-            -fx-font-size: 24px;
-            -fx-font-weight: bold;
-            """);
+                -fx-font-size: 24px;
+                -fx-font-weight: bold;
+                """);
 
         // Status
         Label statusLabel = new Label("Status: " + obj.getStatus());
@@ -266,12 +286,12 @@ public class GameplayScreen extends GameScreen {
 
         // Add all elements to modal content
         modalContent.getChildren().addAll(
-            titleLabel,
-            new Separator(),
-            statusLabel,
-            levelLabel,
-            upgradeButton,
-            closeButton
+                titleLabel,
+                new Separator(),
+                statusLabel,
+                levelLabel,
+                upgradeButton,
+                closeButton
         );
 
         // Add modal content to container
@@ -291,20 +311,20 @@ public class GameplayScreen extends GameScreen {
     private Button createModalButton(String text) {
         Button button = new Button(text);
         button.setStyle("""
-            -fx-background-color: #3498DB;
-            -fx-text-fill: white;
-            -fx-font-size: 14px;
-            -fx-padding: 8 20;
-            -fx-background-radius: 5;
-            -fx-min-width: 120;
-            """);
+                -fx-background-color: #3498DB;
+                -fx-text-fill: white;
+                -fx-font-size: 14px;
+                -fx-padding: 8 20;
+                -fx-background-radius: 5;
+                -fx-min-width: 120;
+                """);
 
-        button.setOnMouseEntered(e -> 
-            button.setStyle(button.getStyle().replace("#3498DB", "#2980B9"))
+        button.setOnMouseEntered(e ->
+                button.setStyle(button.getStyle().replace("#3498DB", "#2980B9"))
         );
-        
-        button.setOnMouseExited(e -> 
-            button.setStyle(button.getStyle().replace("#2980B9", "#3498DB"))
+
+        button.setOnMouseExited(e ->
+                button.setStyle(button.getStyle().replace("#2980B9", "#3498DB"))
         );
 
         return button;
@@ -313,12 +333,12 @@ public class GameplayScreen extends GameScreen {
     private Button createButton(String text) {
         Button button = new Button(text);
         button.setStyle("""
-            -fx-background-color: #3498DB;
-            -fx-text-fill: white;
-            -fx-font-size: 14px;
-            -fx-padding: 8px 15px;
-            -fx-background-radius: 5;
-            """);
+                -fx-background-color: #3498DB;
+                -fx-text-fill: white;
+                -fx-font-size: 14px;
+                -fx-padding: 8px 15px;
+                -fx-background-radius: 5;
+                """);
         return button;
     }
 
