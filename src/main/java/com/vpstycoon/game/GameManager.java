@@ -1,16 +1,24 @@
 package com.vpstycoon.game;
 
-import java.io.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class GameManager {
-    private GameState currentState;
     private static GameManager instance;
+
     private static final String SAVE_FILE = "savegame.dat";
+
+    private GameState currentState;
+    private final ObjectMapper objectMapper;
 
     private GameManager() {
         currentState = new GameState();
+        objectMapper = new ObjectMapper();
     }
 
     public static GameManager getInstance() {
@@ -30,23 +38,25 @@ public class GameManager {
 
     public void saveState() {
         try {
-            // ใช้ ObjectOutputStream เพื่อเขียนข้อมูลในรูปแบบที่ถูกต้อง
-            try (ObjectOutputStream oos = new ObjectOutputStream(
-                    new BufferedOutputStream(
-                            new FileOutputStream(SAVE_FILE)))) {
-                currentState.setLastSaveTime(System.currentTimeMillis());
-                oos.writeObject(currentState);
-                oos.flush();
-            }
+            File saveFile = new File(SAVE_FILE);
+            currentState.setLastSaveTime(System.currentTimeMillis());
+
+            objectMapper.writeValue(saveFile, currentState);
+            System.out.println("Game saved successfully (JSON) to: " + SAVE_FILE);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public GameState loadSavedState() throws IOException, ClassNotFoundException {
+    /**
+     * โหลด GameState จากไฟล์ JSON (savegame.dat)
+     *
+     * @throws IOException ถ้าไฟล์ไม่มี, ว่างเปล่า หรืออ่าน JSON ไม่ได้
+     */
+    public GameState loadSavedState() throws IOException {
         File saveFile = new File(SAVE_FILE);
 
-        // ตรวจสอบไฟล์อย่างละเอียด
         if (!saveFile.exists()) {
             throw new FileNotFoundException("No saved game found at " + SAVE_FILE);
         }
@@ -54,22 +64,14 @@ public class GameManager {
             throw new IOException("Save file is empty");
         }
 
-        try (ObjectInputStream ois = new ObjectInputStream(
-                new BufferedInputStream(
-                        new FileInputStream(SAVE_FILE)))) {
-            Object obj = ois.readObject();
-            if (!(obj instanceof GameState)) {
-                throw new ClassNotFoundException("Invalid save data: not a GameState object");
-            }
+        try {
+            GameState loadedState = objectMapper.readValue(saveFile, GameState.class);
+            this.currentState = loadedState;
+            System.out.println("Game loaded successfully (JSON) from: " + SAVE_FILE);
+            return loadedState;
 
-            GameState savedState = (GameState) obj;
-            this.currentState = savedState;
-            System.out.println("Game loaded successfully");
-            return savedState;
-        } catch (StreamCorruptedException e) {
-            throw new IOException("Save file is corrupted: " + e.getMessage());
-        } catch (InvalidClassException e) {
-            throw new ClassNotFoundException("Save file contains incompatible class version: " + e.getMessage());
+        } catch (IOException e) {
+            throw new IOException("Save file is corrupted or invalid JSON: " + e.getMessage(), e);
         }
     }
 
@@ -80,8 +82,9 @@ public class GameManager {
     public void deleteSavedGame() {
         try {
             Files.deleteIfExists(Paths.get(SAVE_FILE));
+            System.out.println("Deleted save file: " + SAVE_FILE);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-} 
+}

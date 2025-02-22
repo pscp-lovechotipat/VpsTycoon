@@ -26,13 +26,10 @@ public class MenuButton extends Button {
     private void render() {
         this.setPrefSize(WIDTH, HEIGHT);
 
-        // โหลด GIF สำหรับปุ่ม
         String gifPath = "/images/buttons/" + type.getValue() + ".gif";
         URL gifUrl = ResourceManager.getResource(gifPath);
 
-        // ถ้าพบ URL ของไฟล์รูป (ไม่เป็น null)
         if (gifUrl != null) {
-            // ลองโหลดรูปเพื่อตรวจสอบเพิ่มเติมเผื่อไฟล์เสีย หรือไม่สามารถอ่านได้
             try {
                 Image image = new Image(gifUrl.toExternalForm());
                 ImageView imageView = new ImageView(image);
@@ -41,10 +38,8 @@ public class MenuButton extends Button {
                 imageView.setFitHeight(HEIGHT);
                 imageView.setPreserveRatio(true);
 
-                // ตั้งค่า graphic
                 this.setGraphic(imageView);
 
-                // สไตล์พื้นฐานของปุ่ม
                 this.setStyle("""
                         -fx-background-color: transparent;
                         -fx-background-radius: 0;
@@ -67,11 +62,13 @@ public class MenuButton extends Button {
             }
         } else {
             this.setGraphic(null);
+            this.setText(type.getValue());
             this.setStyle("""
-                    -fx-background-color: #FF6666; /* ตัวอย่างสีแดงอ่อน */
-                    -fx-background-radius: 0;
+                    -fx-background-color: #800fd1;
+                    -fx-background-radius: 15;
                     -fx-border-color: transparent;
                     -fx-border-width: 2;
+                    -fx-color: #ffffff;
                     -fx-padding: 0;
                     """);
         }

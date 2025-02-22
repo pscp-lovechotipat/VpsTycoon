@@ -29,6 +29,15 @@ public class GameObject implements Serializable {
         this.status = "Active";
     }
 
+    public GameObject(String id, int level) {
+        this.id = id;
+        this.level = level;
+        this.active = true;
+        this.properties = new HashMap<>();
+        this.level = 1;
+        this.status = "Active"; // Default status
+    }
+
     public GameObject(String id, String type, double x, double y) {
         this.id = id;
         this.type = type;

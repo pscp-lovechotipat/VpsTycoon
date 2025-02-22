@@ -161,7 +161,7 @@ public class GameApplication extends Application implements Navigator {
             GameState savedState = gameManager.loadSavedState();
             startGame(savedState);
             
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             showAlert("Error", "Could not load saved game: " + e.getMessage());
             e.printStackTrace();
         }
