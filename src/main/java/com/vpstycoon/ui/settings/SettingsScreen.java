@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.settings;
 
+import com.vpstycoon.FontLoader;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
@@ -15,6 +16,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+
+import java.util.Objects;
 
 public class SettingsScreen extends GameScreen {
     private final Navigator navigator;
@@ -38,7 +42,7 @@ public class SettingsScreen extends GameScreen {
 
         // Title
         Label titleLabel = createTitleLabel("Settings");
-        
+
         // Settings container
         VBox settingsContainer = createSettingsContainer();
 
@@ -49,17 +53,15 @@ public class SettingsScreen extends GameScreen {
 
         root.getChildren().addAll(titleLabel, settingsContainer, buttonsRow);
         enforceResolution(root);
-        
+
         return root;
     }
 
     private Label createTitleLabel(String text) {
         Label label = new Label(text);
+        label.setFont(FontLoader.TITLE_FONT);
         label.setStyle("""
-            -fx-font-family: 'Cucumber_basic_font3';
-            -fx-font-size: 50px;
             -fx-text-fill: white;
-            -fx-font-weight: bold;
             """);
 
         return label;
@@ -90,13 +92,13 @@ public class SettingsScreen extends GameScreen {
             createSectionLabel("Audio Settings"),
             createSliderControl("Music Volume", config.getMusicVolume(), slider -> {
                 musicVolumeSlider = slider;
-                slider.valueProperty().addListener((obs, old, newVal) -> 
+                slider.valueProperty().addListener((obs, old, newVal) ->
                     config.setMusicVolume(newVal.doubleValue())
                 );
             }),
             createSliderControl("SFX Volume", config.getSfxVolume(), slider -> {
                 sfxVolumeSlider = slider;
-                slider.valueProperty().addListener((obs, old, newVal) -> 
+                slider.valueProperty().addListener((obs, old, newVal) ->
                     config.setSfxVolume(newVal.doubleValue())
                 );
             })
@@ -106,18 +108,18 @@ public class SettingsScreen extends GameScreen {
 
     private VBox createDisplayControls() {
         VBox controls = new VBox(10);
-        
+
         // Resolution ComboBox
         resolutionComboBox = new ComboBox<>();
         resolutionComboBox.getItems().addAll(ScreenResolution.values());
         resolutionComboBox.setValue(config.getResolution());
         resolutionComboBox.setOnAction(e -> config.setResolution(resolutionComboBox.getValue()));
-        
+
         // Checkboxes
         fullscreenCheckBox = new CheckBox("Fullscreen");
         fullscreenCheckBox.setSelected(config.isFullscreen());
         fullscreenCheckBox.setOnAction(e -> config.setFullscreen(fullscreenCheckBox.isSelected()));
-        
+
         vsyncCheckBox = new CheckBox("V-Sync");
         vsyncCheckBox.setSelected(config.isVsyncEnabled());
         vsyncCheckBox.setOnAction(e -> config.setVsyncEnabled(vsyncCheckBox.isSelected()));
@@ -128,17 +130,15 @@ public class SettingsScreen extends GameScreen {
             createStyledCheckBox(fullscreenCheckBox),
             createStyledCheckBox(vsyncCheckBox)
         );
-        
+
         return controls;
     }
 
     private Label createSectionLabel(String text) {
         Label label = new Label(text);
+        label.setFont(FontLoader.SECTION_FONT);
         label.setStyle("""
-            -fx-font-family: 'Cucumber_basic_font3';
-            -fx-font-size: 30px;
             -fx-text-fill: white;
-            -fx-font-weight: bold;
             """);
         return label;
     }
@@ -148,10 +148,9 @@ public class SettingsScreen extends GameScreen {
         container.setAlignment(Pos.CENTER_LEFT);
 
         Label label = new Label(labelText);
+        label.setFont(FontLoader.LABEL_FONT);
         label.setStyle("""
            -fx-text-fill: white;
-           -fx-font-family: 'Cucumber_basic_font3';
-           -fx-font-size: 22px;
         """);
         label.setPrefWidth(100);
 
