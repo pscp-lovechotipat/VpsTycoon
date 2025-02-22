@@ -124,7 +124,7 @@ public class GameObject implements Serializable {
         this.status = status;
     }
     
-    public void upgrade() {
+    public void upgrade(GameState gameState) {
         this.level++;
         this.status = "Upgraded (Level " + this.level + ")";
     }

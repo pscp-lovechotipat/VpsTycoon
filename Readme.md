@@ -275,60 +275,379 @@ class CustomerSimulator extends Thread {
 
 ```mermaid
 classDiagram
-    class Game {
-        +startGame()
-        +manageResources()
-    }
-    
-    class Server {
-        <<abstract>>
-        +name: String
-        +cpuCores: int
-        +ram: int
-        +storage: int
-        +monthlyCost: int
-        +deployVPS()
-        +upgrade()
-    }
-    
-    class DellPowerEdgeR210 {
-        +upgrade() override
-    }
-    
-    class VPS {
-        +vCPU: int
-        +ram: int
-        +storage: int
-        +price: int
-    }
-    
-    class Client {
-        +name: String
-        +vps: VPS
-        +requestVPS()
-    }
-    
-    class Market {
-        +purchaseServer(Server server)
-        +upgradeRoom()
-    }
-    
-    class EventHandler {
-        +triggerEvent()
-        +resolveIssue()
-    }
-    
-    class CustomerSimulator {
-        +run() override
-    }
-    
-    Game "1" -- "*" Server : manages
-    Server <|-- DellPowerEdgeR210
-    Server "1" -- "*" VPS : hosts
-    Client "1" -- "1" VPS : owns
-    Game "1" -- "1" Market : includes
-    Game "1" -- "1" EventHandler : handles
-    Game "1" -- "1" CustomerSimulator : runs
+direction BT
+class AudioManager {
+- double sfxVolume
+- double musicVolume
+- AudioManager instance
+- Map~String, Media~ soundCache
+- MediaPlayer musicPlayer
++ playMusic(String) void
++ setMusicVolume(double) void
++ playSoundEffect(String) void
++ setSfxVolume(double) void
++ dispose() void
++ getInstance() AudioManager
+- onSettingsChanged(SettingsChangedEvent) void
+  }
+  class ConfigSerializer {
+- ObjectMapper mapper
+- String CONFIG_FILE
++ saveToFile(GameConfig) void
++ loadFromFile() GameConfig
+  }
+  class DefaultGameConfig {
+- double sfxVolume
+- double musicVolume
+- boolean vsyncEnabled
+- boolean isFullscreen
+- DefaultGameConfig instance
+- ScreenResolution selectedResolution
++ getResolution() ScreenResolution
++ setFullscreen(boolean) void
++ getInstance() DefaultGameConfig
++ setVsyncEnabled(boolean) void
++ isFullscreen() boolean
++ setResolution(ScreenResolution) void
++ save() void
++ getMusicVolume() double
++ load() void
++ getSfxVolume() double
++ isVsyncEnabled() boolean
++ setMusicVolume(double) void
++ setSfxVolume(double) void
+  }
+  class EventListener~T~ {
+  <<Interface>>
++ onEvent(T) void
+  }
+  class GameApplication {
+- ScreenManager screenManager
+- Stage primaryStage
+- GameplayScreen gameplayScreen
+- GameManager gameManager
+- MainMenuScreen mainMenuScreen
+- PlayMenuScreen playMenuScreen
+- GameConfig gameConfig
+- GameSaveManager saveManager
+- SettingsScreen settingsScreen
+- loadGameState(GameState) void
+- createGameConfig() GameConfig
+- createScreens() void
++ showMainMenu() void
++ showSettings() void
++ main(String[]) void
++ startNewGame() void
++ continueGame() void
+- shutdown() void
+- initializeGame() void
+- startGame(GameState) void
++ showPlayMenu() void
++ showLoadGame() void
+- showAlert(String, String) void
++ start(Stage) void
+  }
+  class GameConfig {
+  <<Interface>>
++ setResolution(ScreenResolution) void
++ setFullscreen(boolean) void
++ load() void
++ isVsyncEnabled() boolean
++ setMusicVolume(double) void
++ save() void
++ getMusicVolume() double
++ getSfxVolume() double
++ getResolution() ScreenResolution
++ setSfxVolume(double) void
++ setVsyncEnabled(boolean) void
++ isFullscreen() boolean
+  }
+  class GameEventBus {
+- Map~Class~?~, List~EventListener~?~~~ listeners
+- GameEventBus instance
++ unsubscribe(Class~T~, EventListener~T~) void
++ subscribe(Class~T~, EventListener~T~) void
++ getInstance() GameEventBus
++ publish(T) void
+  }
+  class GameManager {
+- ObjectMapper objectMapper
+- GameManager instance
+- String SAVE_FILE
+- GameState currentState
++ getInstance() GameManager
++ loadState(GameState) void
++ getCurrentState() GameState
++ hasSavedGame() boolean
++ saveState() void
++ loadSavedState() GameState
++ deleteSavedGame() void
+  }
+  class GameObject {
+- String type
+- String id
+- boolean active
+- String status
+- double x
+- long serialVersionUID
+- Map~String, Object~ properties
+- int level
+- double y
+- String name
++ getId() String
++ getY() double
++ getProperty(String) Object
++ upgrade(GameState) void
++ getStatus() String
++ getProperties() Map~String, Object~
++ setActive(boolean) void
++ getName() String
++ getLevel() int
++ setY(double) void
++ getX() double
++ setProperty(String, Object) void
++ setX(double) void
++ setStatus(String) void
++ getType() String
++ isActive() boolean
++ setName(String) void
++ setLevel(int) void
+  }
+  class GameObjectView {
+- Rectangle background
+- GameObject gameObject
+  }
+  class GameSaveManager {
+- String BACKUP_DIR
+- ObjectMapper mapper
+- String SAVE_FILE
+- createCorruptedFileBackup(File) void
++ saveGame(GameState) void
+- createBackupDirectory() void
++ saveExists() boolean
+- createBackup() void
++ deleteGame() void
++ loadGame() GameState
+  }
+  class GameScreen {
+# ScreenManager screenManager
+# GameConfig config
++ show() void
+# enforceResolution(Region) void
+# createContent() Region
+}
+class GameScreen {
+- GameConfig gameConfig
+- GameState gameState
+- Navigator navigator
+- initializeUI() void
+  }
+  class GameState {
+- Map~String, Integer~ resources
+- long serialVersionUID
+- List~GameObject~ gameObjects
+- long lastSaveTime
+- long money
+- Map~String, Boolean~ upgrades
++ getGameObjects() List~GameObject~
++ setLastSaveTime(long) void
++ getUpgrades() Map~String, Boolean~
++ getMoney() long
++ getLastSaveTime() long
++ removeGameObject(GameObject) void
++ setMoney(long) void
++ addGameObject(GameObject) void
++ getResources() Map~String, Integer~
++ setGameObjects(List~GameObject~) void
+  }
+  class GameplayScreen {
+- List~GameObject~ gameObjects
+- StackPane gameArea
+- Navigator navigator
+- GameSaveManager saveManager
+- showConfirmationDialog(String, String, Runnable) void
+- loadGame() void
+# createContent() Region
+- showObjectDetails(GameObject) void
+- initializeGameObjects() void
+- createModalButton(String) Button
+- createButton(String) Button
+- saveGame() void
+  }
+  class JavaFXScreenManager {
+- Stage stage
+- GameConfig config
++ setResolution(ScreenResolution) void
++ setFullscreen(boolean) void
++ applySettings(Stage, Scene) void
++ switchScreen(Node) void
+  }
+  class MainMenuScreen {
+- double BUTTON_WIDTH
+- double BUTTON_HEIGHT
+- PlayMenuScreen playMenuScreen
+- SettingsScreen settingsScreen
+- Navigator navigator
++ setPlayMenuScreen(PlayMenuScreen) void
+# createContent() Region
++ setSettingsScreen(SettingsScreen) void
+  }
+  class MenuButton {
+- double WIDTH
+- double HEIGHT
+- MenuButtonType type
+- render() void
+- neon() Effect
+  }
+  class MenuButtonType {
+  <<enumeration>>
++  SETTINGS
++  NEW_GAME
++  QUIT
++  PLAY
++  APPLY
++  DELETEGAME
++  BACK
+- String value
++  CONTINUE
++ values() MenuButtonType[]
++ valueOf(String) MenuButtonType
++ getValue() String
+  }
+  class Navigator {
+  <<Interface>>
++ showMainMenu() void
++ showPlayMenu() void
++ startNewGame() void
++ showLoadGame() void
++ showSettings() void
++ continueGame() void
+  }
+  class PlayMenuScreen {
+- Button continueButton
+- StackPane root
+- String SAVE_FILE
+- GameSaveManager saveManager
+- double SPACING
+- Navigator navigator
+# createContent() Region
+- continueGame() void
+- saveGameExists() boolean
++ refreshContinueButton() void
+- showNewGameConfirmation() void
+- startNewGame() void
+  }
+  class ResourceManager {
+- Map~String, Image~ imageCache
+- ResourceManager instance
+- String TEXT_PATH
+- String MUSIC_PATH
+- Map~String, String~ textCache
+- String SOUNDS_PATH
+- String IMAGES_PATH
++ getImagePath(String) String
++ getSoundPath(String) String
++ loadImage(String) Image
++ getTextPath(String) String
++ getResourceAsStream(String) InputStream
++ getText(String) String
++ clearCache() void
++ getMusicPath(String) String
++ getResource(String) URL
++ getInstance() ResourceManager
+  }
+  class SceneController {
+- SceneController instance
+- Scene mainScene
+- ScreenManager screenManager
+- StackPane rootContainer
+- Stage stage
+- GameConfig config
++ getInstance() SceneController
+- initializeScene() void
++ setContent(Parent) void
++ initialize(Stage, GameConfig, ScreenManager) void
++ updateResolution() void
+  }
+  class ScreenManager {
+  <<Interface>>
++ setFullscreen(boolean) void
++ switchScreen(Node) void
++ setResolution(ScreenResolution) void
++ applySettings(Stage, Scene) void
+  }
+  class ScreenResolution {
+  <<enumeration>>
++  RES_3440x1440
+- String displayName
++  RES_1600x900
++  RES_2560x1440
++  RES_1920x1080
+- int height
++  RES_1280x720
++  RES_1366x768
++  RES_3840x2160
++  RES_2048x1152
+- int width
++ getHeight() int
++ getMaxSupportedResolution() ScreenResolution
++ values() ScreenResolution[]
++ getWidth() int
++ valueOf(String) ScreenResolution
++ toString() String
+  }
+  class SettingsChangedEvent {
+- GameConfig newConfig
++ getNewConfig() GameConfig
+  }
+  class SettingsScreen {
+- Slider sfxVolumeSlider
+- CheckBox vsyncCheckBox
+- Slider musicVolumeSlider
+- CheckBox fullscreenCheckBox
+- Navigator navigator
+- ComboBox~ScreenResolution~ resolutionComboBox
+- createTitleLabel(String) Label
+- createSliderControl(String, double, SliderInitializer) HBox
+- createStyledCheckBox(CheckBox) CheckBox
+- createSettingsContainer() VBox
+- createLabeledControl(String, Control) HBox
+# createContent() Region
+- createSectionLabel(String) Label
+- createBackButton() MenuButton
+- createVolumeControls() VBox
+- createApplyButton() MenuButton
+- createDisplayControls() VBox
+  }
+  class SettingsViewModel {
+- ObjectProperty~ScreenResolution~ resolution
+- DoubleProperty musicVolume
+- BooleanProperty fullscreen
+- DoubleProperty sfxVolume
+- GameConfig config
+- BooleanProperty vsync
+- setupBindings() void
++ musicVolumeProperty() DoubleProperty
++ resolutionProperty() ObjectProperty~ScreenResolution~
++ sfxVolumeProperty() DoubleProperty
++ vsyncProperty() BooleanProperty
++ saveSettings() void
++ fullscreenProperty() BooleanProperty
+- showErrorDialog(String) void
+  }
+  class VPSObject {
++ upgrade(GameState) void
+- calculateUpgradeCost() long
+  }
+
+DefaultGameConfig  ..>  GameConfig
+GameApplication  ..>  Navigator
+GameplayScreen  -->  GameScreen
+JavaFXScreenManager  ..>  ScreenManager
+MainMenuScreen  -->  GameScreen
+SettingsScreen  -->  GameScreen
+VPSObject  -->  GameObject
+
 ```
 
 ---

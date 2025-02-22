@@ -4,6 +4,7 @@ import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.VPSObject;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.navigation.Navigator;
@@ -14,7 +15,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 
 import java.util.ArrayList;
@@ -49,9 +49,9 @@ public class GameplayScreen extends GameScreen {
 
     private void initializeGameObjects() {
         gameObjects.clear();
-        gameObjects.add(new GameObject("Server", 100, 100));
-        gameObjects.add(new GameObject("Database", 300, 200));
-        gameObjects.add(new GameObject("Network", 500, 150));
+        gameObjects.add(new VPSObject("server", "Server", 500, 500));
+        gameObjects.add(new VPSObject("database", "Database", 600, 600));
+        gameObjects.add(new VPSObject("network", "Network", 700, 700));
         saveGame(); // Save initial state
     }
 
@@ -275,7 +275,7 @@ public class GameplayScreen extends GameScreen {
         // Upgrade Button
         Button upgradeButton = createModalButton("Upgrade");
         upgradeButton.setOnAction(e -> {
-            obj.upgrade();
+            obj.upgrade(saveManager.loadGame());
             levelLabel.setText("Level: " + obj.getLevel());
             statusLabel.setText("Status: " + obj.getStatus());
             saveGame();
