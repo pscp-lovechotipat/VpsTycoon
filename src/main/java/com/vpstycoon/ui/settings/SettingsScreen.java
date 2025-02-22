@@ -1,10 +1,13 @@
 package com.vpstycoon.ui.settings;
 
 import com.vpstycoon.config.GameConfig;
+import com.vpstycoon.event.GameEventBus;
+import com.vpstycoon.event.SettingsChangedEvent;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
-import com.vpstycoon.ui.SceneController;
 import com.vpstycoon.ui.base.GameScreen;
+import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
+import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,16 +17,15 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 public class SettingsScreen extends GameScreen {
-    private final SettingsViewModel viewModel;
     private final Navigator navigator;
-    private Label volumeMusicLabel;
-    private Label volumeSFXLabel;
-    private VBox resolutionBox;
-    private ToggleGroup resolutionGroup;
+    private Slider musicVolumeSlider;
+    private Slider sfxVolumeSlider;
+    private ComboBox<ScreenResolution> resolutionComboBox;
+    private CheckBox fullscreenCheckBox;
+    private CheckBox vsyncCheckBox;
 
     public SettingsScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
-        this.viewModel = new SettingsViewModel(config);
         this.navigator = navigator;
     }
 
@@ -31,214 +33,182 @@ public class SettingsScreen extends GameScreen {
     protected Region createContent() {
         VBox root = new VBox(20);
         root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(20));
+        root.setPadding(new Insets(40));
         root.setStyle("-fx-background-color: #2C3E50;");
 
-        // Enforce resolution
-        enforceResolution(root);
-
         // Title
-        Label titleLabel = new Label("Settings");
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;");
-
-        // Display Settings
-        VBox displaySettings = createDisplaySettings();
+        Label titleLabel = createTitleLabel("Settings");
         
-        // Audio Settings
-        VBox audioSettings = createAudioSettings();
+        // Settings container
+        VBox settingsContainer = createSettingsContainer();
+
+        HBox buttonsRow = new HBox(20);
+        buttonsRow.setAlignment(Pos.CENTER);
+
+        buttonsRow.getChildren().addAll(this.createBackButton(), this.createApplyButton());
+
+        root.getChildren().addAll(titleLabel, settingsContainer, buttonsRow);
+        enforceResolution(root);
         
-        // Graphics Settings
-        VBox graphicsSettings = createGraphicsSettings();
-
-        // Navigation Buttons
-        HBox buttonBox = createNavigationButtons();
-
-        // Add all components to root
-        root.getChildren().addAll(
-            titleLabel,
-            createSeparator(),
-            displaySettings,
-            createSeparator(),
-            audioSettings,
-            createSeparator(),
-            graphicsSettings,
-            createSeparator(),
-            buttonBox
-        );
-
         return root;
     }
 
-    private VBox createAudioSettings() {
-        VBox settings = createSettingsSection("Audio Settings");
-
-        // Music Volume
-        VBox musicBox = new VBox(5);
-        HBox musicControl = new HBox(10);
-        musicControl.setAlignment(Pos.CENTER);
-        
-        Label musicLabel = new Label("Music Volume:");
-        musicLabel.setStyle("-fx-text-fill: white;");
-        volumeMusicLabel = new Label("50%");
-        volumeMusicLabel.setStyle("-fx-text-fill: white;");
-        
-        Slider musicSlider = new Slider(0, 100, 50);
-        musicSlider.setShowTickLabels(true);
-        musicSlider.setShowTickMarks(true);
-        musicSlider.setMajorTickUnit(20);
-        musicSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            volumeMusicLabel.setText(String.format("%.0f%%", newVal.doubleValue()));
-            viewModel.musicVolumeProperty().set(newVal.doubleValue() / 100.0);
-        });
-        
-        musicControl.getChildren().addAll(musicLabel, musicSlider, volumeMusicLabel);
-        musicBox.getChildren().add(musicControl);
-
-        // SFX Volume
-        VBox sfxBox = new VBox(5);
-        HBox sfxControl = new HBox(10);
-        sfxControl.setAlignment(Pos.CENTER);
-        
-        Label sfxLabel = new Label("SFX Volume:");
-        sfxLabel.setStyle("-fx-text-fill: white;");
-        volumeSFXLabel = new Label("50%");
-        volumeSFXLabel.setStyle("-fx-text-fill: white;");
-        
-        Slider sfxSlider = new Slider(0, 100, 50);
-        sfxSlider.setShowTickLabels(true);
-        sfxSlider.setShowTickMarks(true);
-        sfxSlider.setMajorTickUnit(20);
-        sfxSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-            volumeSFXLabel.setText(String.format("%.0f%%", newVal.doubleValue()));
-            viewModel.sfxVolumeProperty().set(newVal.doubleValue() / 100.0);
-        });
-        
-        sfxControl.getChildren().addAll(sfxLabel, sfxSlider, volumeSFXLabel);
-        sfxBox.getChildren().add(sfxControl);
-
-        settings.getChildren().addAll(musicBox, sfxBox);
-        return settings;
-    }
-
-    private VBox createDisplaySettings() {
-        VBox settings = createSettingsSection("Display Settings");
-
-        // Fullscreen toggle
-        CheckBox fullscreenCheck = new CheckBox("Fullscreen");
-        fullscreenCheck.setStyle("-fx-text-fill: white;");
-        fullscreenCheck.selectedProperty().bindBidirectional(viewModel.fullscreenProperty());
-
-        // Resolution dropdown
-        HBox resolutionBox = new HBox(10);
-        resolutionBox.setAlignment(Pos.CENTER_LEFT);
-        Label resolutionLabel = new Label("Screen Resolution:");
-        resolutionLabel.setStyle("-fx-text-fill: white;");
-        
-        ComboBox<ScreenResolution> resolutionComboBox = new ComboBox<>();
-        resolutionComboBox.setStyle("""
-            -fx-background-color: #34495E;
+    private Label createTitleLabel(String text) {
+        Label label = new Label(text);
+        label.setStyle("""
+            -fx-font-family: 'Cucumber_basic_font3';
+            -fx-font-size: 50px;
             -fx-text-fill: white;
-            -fx-mark-color: white;
-            -fx-font-size: 14px;
-            """);
-        
-        // Add available resolutions to the combo box
-        ScreenResolution maxRes = ScreenResolution.getMaxSupportedResolution();
-        for (ScreenResolution res : ScreenResolution.values()) {
-            if (res.getWidth() <= maxRes.getWidth() && res.getHeight() <= maxRes.getHeight()) {
-                resolutionComboBox.getItems().add(res);
-            }
-        }
-        
-        // Set current resolution
-        resolutionComboBox.setValue(viewModel.resolutionProperty().get());
-        
-        // Bind resolution selection to viewModel
-        resolutionComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                viewModel.resolutionProperty().set(newVal);
-            }
-        });
-
-        // Bind fullscreen to disable resolution selection
-        fullscreenCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
-            resolutionComboBox.setDisable(newVal);
-            if (newVal) {
-                resolutionComboBox.setValue(maxRes);
-            }
-        });
-
-        resolutionBox.getChildren().addAll(resolutionLabel, resolutionComboBox);
-        settings.getChildren().addAll(fullscreenCheck, resolutionBox);
-        return settings;
-    }
-
-    private VBox createGraphicsSettings() {
-        VBox settings = createSettingsSection("Graphics Settings");
-
-        // VSync toggle
-        CheckBox vsyncCheck = new CheckBox("VSync");
-        vsyncCheck.setStyle("-fx-text-fill: white;");
-        vsyncCheck.selectedProperty().bindBidirectional(viewModel.vsyncProperty());
-
-        settings.getChildren().add(vsyncCheck);
-        return settings;
-    }
-
-    private HBox createNavigationButtons() {
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(Pos.CENTER);
-
-        Button applyButton = createButton("Apply");
-        Button backButton = createButton("Back");
-
-        applyButton.setOnAction(e -> {
-            viewModel.saveSettings();
-            SceneController.getInstance().updateResolution();
-        });
-
-        backButton.setOnAction(e -> navigator.showMainMenu());
-
-        buttonBox.getChildren().addAll(applyButton, backButton);
-        return buttonBox;
-    }
-
-    private Button createButton(String text) {
-        Button button = new Button(text);
-        button.setPrefWidth(120);
-        button.setPrefHeight(30);
-        button.setStyle("""
-            -fx-background-color: #3498DB;
-            -fx-text-fill: white;
-            -fx-font-size: 14px;
             -fx-font-weight: bold;
-            -fx-background-radius: 5;
             """);
 
-        button.setOnMouseEntered(e -> 
-            button.setStyle(button.getStyle().replace("#3498DB", "#2980B9"))
-        );
-        button.setOnMouseExited(e -> 
-            button.setStyle(button.getStyle().replace("#2980B9", "#3498DB"))
-        );
-
-        return button;
+        return label;
     }
 
-    private VBox createSettingsSection(String title) {
-        VBox section = new VBox(15);
-        section.setAlignment(Pos.CENTER);
-        
-        Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: white; -fx-font-weight: bold;");
-        
-        section.getChildren().add(titleLabel);
-        return section;
+    private VBox createSettingsContainer() {
+        VBox container = new VBox(15);
+        container.setStyle("""
+            -fx-background-color: rgba(255, 255, 255, 0.1);
+            -fx-padding: 20;
+            -fx-background-radius: 10;
+            """);
+        container.setMaxWidth(500);
+
+        // Volume controls
+        container.getChildren().addAll(
+            createVolumeControls(),
+            new Separator(),
+            createDisplayControls()
+        );
+
+        return container;
     }
 
-    private Separator createSeparator() {
-        Separator separator = new Separator();
-        separator.setStyle("-fx-background-color: #34495E;");
-        return separator;
+    private VBox createVolumeControls() {
+        VBox controls = new VBox(10);
+        controls.getChildren().addAll(
+            createSectionLabel("Audio Settings"),
+            createSliderControl("Music Volume", config.getMusicVolume(), slider -> {
+                musicVolumeSlider = slider;
+                slider.valueProperty().addListener((obs, old, newVal) -> 
+                    config.setMusicVolume(newVal.doubleValue())
+                );
+            }),
+            createSliderControl("SFX Volume", config.getSfxVolume(), slider -> {
+                sfxVolumeSlider = slider;
+                slider.valueProperty().addListener((obs, old, newVal) -> 
+                    config.setSfxVolume(newVal.doubleValue())
+                );
+            })
+        );
+        return controls;
+    }
+
+    private VBox createDisplayControls() {
+        VBox controls = new VBox(10);
+        
+        // Resolution ComboBox
+        resolutionComboBox = new ComboBox<>();
+        resolutionComboBox.getItems().addAll(ScreenResolution.values());
+        resolutionComboBox.setValue(config.getResolution());
+        resolutionComboBox.setOnAction(e -> config.setResolution(resolutionComboBox.getValue()));
+        
+        // Checkboxes
+        fullscreenCheckBox = new CheckBox("Fullscreen");
+        fullscreenCheckBox.setSelected(config.isFullscreen());
+        fullscreenCheckBox.setOnAction(e -> config.setFullscreen(fullscreenCheckBox.isSelected()));
+        
+        vsyncCheckBox = new CheckBox("V-Sync");
+        vsyncCheckBox.setSelected(config.isVsyncEnabled());
+        vsyncCheckBox.setOnAction(e -> config.setVsyncEnabled(vsyncCheckBox.isSelected()));
+
+        controls.getChildren().addAll(
+            createSectionLabel("Display Settings"),
+            createLabeledControl("Resolution", resolutionComboBox),
+            createStyledCheckBox(fullscreenCheckBox),
+            createStyledCheckBox(vsyncCheckBox)
+        );
+        
+        return controls;
+    }
+
+    private Label createSectionLabel(String text) {
+        Label label = new Label(text);
+        label.setStyle("""
+            -fx-font-family: 'Cucumber_basic_font3';
+            -fx-font-size: 30px;
+            -fx-text-fill: white;
+            -fx-font-weight: bold;
+            """);
+        return label;
+    }
+
+    private HBox createSliderControl(String labelText, double initialValue, SliderInitializer initializer) {
+        HBox container = new HBox(10);
+        container.setAlignment(Pos.CENTER_LEFT);
+
+        Label label = new Label(labelText);
+        label.setStyle("""
+           -fx-text-fill: white;
+           -fx-font-family: 'Cucumber_basic_font3';
+           -fx-font-size: 22px;
+        """);
+        label.setPrefWidth(100);
+
+        Slider slider = new Slider(0, 1, initialValue);
+        slider.setStyle("""
+            -fx-control-inner-background: #34495E;
+            -fx-accent: #3498DB;
+            """);
+        slider.setPrefWidth(200);
+
+        initializer.initialize(slider);
+
+        container.getChildren().addAll(label, slider);
+        return container;
+    }
+
+    private HBox createLabeledControl(String labelText, Control control) {
+        HBox container = new HBox(10);
+        container.setAlignment(Pos.CENTER_LEFT);
+
+        Label label = new Label(labelText);
+        label.setStyle("""
+           -fx-text-fill: white;
+           -fx-font-family: 'Cucumber_basic_font3';
+           -fx-font-size: 22px;
+        """);
+        label.setPrefWidth(100);
+
+        container.getChildren().addAll(label, control);
+        return container;
+    }
+
+    private CheckBox createStyledCheckBox(CheckBox checkBox) {
+        checkBox.setStyle("""
+           -fx-text-fill: white;
+           -fx-font-family: 'Cucumber_basic_font3';
+           -fx-font-size: 22px;
+        """);
+        return checkBox;
+    }
+
+    private MenuButton createBackButton() {
+        MenuButton backButton = new MenuButton(MenuButtonType.BACK);
+        backButton.setOnAction(e -> navigator.showMainMenu());
+        return backButton;
+    }
+    private MenuButton createApplyButton() {
+        MenuButton applyButton = new MenuButton(MenuButtonType.APPLY);
+        applyButton.setOnAction(e -> {
+            config.save();
+            GameEventBus.getInstance().publish(new SettingsChangedEvent(config));
+        });
+        return applyButton;
+    }
+
+    @FunctionalInterface
+    private interface SliderInitializer {
+        void initialize(Slider slider);
     }
 } 

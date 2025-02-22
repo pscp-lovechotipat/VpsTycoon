@@ -1,3 +1,20 @@
+# Table of Contents
+
+- [How Contribute by Nong Claude Kung](#how-contribute-by-nong-claude-kung)
+- [VPS Tycoon - Game Development Guide](#vps-tycoon---game-development-guide)
+    - [โครงสร้างโปรเจค](#โครงสร้างโปรเจค)
+    - [แนวทางการพัฒนา](#แนวทางการพัฒนา)
+    - [Tips สำหรับมือใหม่](#tips-สำหรับมือใหม่)
+- [ลายละเอียดเกม](#ลายละเอียดเกม)
+    - [1) ภาพรวม (Game Overview)](#1-ภาพรวม-game-overview)
+    - [2) การตั้งค่าเริ่มต้น (Starting Conditions)](#2-การตั้งค่าเริ่มต้น-starting-conditions)
+    - [3) โครงสร้างของเกม (Game Structure)](#3-โครงสร้างของเกม-game-structure)
+    - [4) ระบบเซิร์ฟเวอร์ (Server System)](#4-ระบบเซิร์ฟเวอร์-server-system)
+    - [5) ระบบมัลติเธรด (Multithreading System)](#5-ระบบมัลติเธรด-multithreading-system)
+    - [6) แผนผังคลาส (Class Diagram - Java)](#6-แผนผังคลาส-class-diagram---java)
+- [ToDo](#todo)
+- [Intellij Install](#intellij-install)
+
 # How Contribute by Nong Claude Kung :
 # VPS Tycoon - Game Development Guide
 
@@ -54,7 +71,55 @@
 3. ดูตัวอย่างการสร้าง GameObject ใน game/
 4. ทดลองเพิ่ม features ใหม่โดยดู pattern จากโค้ดที่มีอยู่
 
-# ลายละเอียดเกม
+# ลายละเอียดเกม Flow game เจาะลึกมากขึ้น
+---
+## Main menu : New game, Continue , Setting ,Exit
+    -New game สร้างเซฟเกมใหม่ ***หากมีเซฟแล้วต้องถาม For sure?***
+    -Continue เล่นเกมต่อ ***หากไม่มีเซฟแล้วต้องแจ้งไป New game***
+    -Setting Set Resolotion , Music , Credit , Tutorial คลิก
+    -Exit ออกเกม
+---
+## Game play
+
+### Tutorial สอนวิธีการเล่น (สอนรอบเดียวแค่ New game)
+#### Two Options
+    -สไลด์ Show รูปภาพวิธีเล่นให้ผู้เล่นเลื่อนเอง
+    -Event คลิกเพื่อไปต่อ
+
+### กดตัวคอมพิวเตอร์ขึ้น Interface Desktops
+
+#### Chat
+    -ดู Request ลูกค้า แสดง Rating ของบริษัทมุมบน
+    -Request Chat มีเพดาห์ Level ที่ต้องปลดโดยใช้แต้ม Marketing
+    -Level Chat ที่ต้องปลดเพื่อ รับลูกค้ามากขึ้น ประเภทลูกค้าดีขึ้น ความยากRequestที่ยากขึ้น อัพเกรด
+
+#### ประเภทลูกค้า ระดับลูกค้า
+    -ลูกค้าบุคคลทั่วไป , ลูกค้าบริษัทเล็ก กลาง ใหญ่
+    -งานที่ Request ยากขึ้นต้อง Optimize Vps ให้ดีเหมาะกับประเภทงาน
+    -ประเภทงานที่เน้นความเร็ว ปลอดภัย รองรับความเสถียร
+    -Maketing Point เพิ่ม หาก 1. Rating ที่ได้ลูกค้าเยอะหลังสรุป 2. เพิ่มจากการที่รับลูกค้าแต่ละประเภท ได้ Point ต่างกัน
+
+#### หลังรับงาน Request 
+##### เฟส 1 การเตรียมเครื่องให้ลูกค้า Optimize เตรียม 5 ด้าน
+    มีตัวเลือกให้ผู้เล่นเลือกเลย แล้วปลดล็อคจากค่า Point ด้าน Seculity Deploy หรือ การซื้อ
+    -OS เลือกระบบปฏิบัติการให้เหมาะสมกับประเภทงาน มีคำอธิบายสั้นแนะนำ
+    -Security เกี่ยวกับ Firewall การเข้ารหัสป้องกัน
+    -Performance Tuning ทำให้ Vps เร็วขึ้น เสถียร
+    -Back up & Restore การเก็บข้อมูล
+    -Monitoring & Alerts 
+    ทุกตัวเลือกมีแบบไม่เลือกก็ได้เพื่อประหยัดงบ ยกเว้น OS
+
+##### เฟส 2 รัน Event การใช้งานเครื่อง Vps ของลูกค้า
+    -ถ้า Opitimize มาเหมาะกับงานและดี จะป้องกันให้เกิด Event บัคน้อยลง
+    -ถ้า Optimize มาน้อยหรือไม่เหมาะกับงานอาจเกิดบัคบ่อย
+    -เมื่อเกิดบัค ระหว่างนั้นจะไม่ได้เงิน ต้องเข้าช่วงซ่อมระบบ
+    -หากระหว่างการใช้งานเกิดบัคบ่อยส่งผลต่อ Rating
+    -ระหว่างการใช้ลูกค้าค่า Point Security Network
+
+##### เฟส 3 สรุปผล
+    -ค่า Point ที่ได้ทั้งหมด Market Deploy Security Network
+    -ค่า Rating คำนวณจากบัค , ความเร็ว
+    -Market คำนวณจาก Rating
 
 ## Intellij Install
 ---
