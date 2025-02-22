@@ -26,8 +26,6 @@ import java.nio.file.Paths;
 
 public class PlayMenuScreen extends VBox {
     private static final String SAVE_FILE = "savegame.dat";
-    private static final double BUTTON_WIDTH = 160;
-    private static final double BUTTON_HEIGHT = 40;
     private static final double SPACING = 20;
 
     private final Navigator navigator;
@@ -50,8 +48,13 @@ public class PlayMenuScreen extends VBox {
         continueButton.setOnAction(e -> navigator.showLoadGame());
         newGameButton.setOnAction(e -> navigator.startNewGame());
         backButton.setOnAction(e -> navigator.showMainMenu());
-        
-        super.getChildren().addAll(continueButton, newGameButton, backButton);
+
+        if (saveManager.saveExists()) {
+            System.out.println(saveManager.saveExists());
+            super.getChildren().add(continueButton);
+        }
+
+        super.getChildren().addAll(newGameButton, backButton);
     }
 
     private void showNewGameConfirmation() {

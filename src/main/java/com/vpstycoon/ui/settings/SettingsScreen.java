@@ -40,11 +40,13 @@ public class SettingsScreen extends GameScreen {
         
         // Settings container
         VBox settingsContainer = createSettingsContainer();
-        
-        // Buttons
-        HBox buttonContainer = createButtonContainer();
 
-        root.getChildren().addAll(titleLabel, settingsContainer, buttonContainer);
+        HBox buttonsRow = new HBox(20);
+        buttonsRow.setAlignment(Pos.CENTER);
+
+        buttonsRow.getChildren().addAll(this.createBackButton(), this.createApplyButton());
+
+        root.getChildren().addAll(titleLabel, settingsContainer, buttonsRow);
         enforceResolution(root);
         
         return root;
@@ -175,19 +177,18 @@ public class SettingsScreen extends GameScreen {
         return checkBox;
     }
 
-    private HBox createButtonContainer() {
-        HBox container = new HBox(20);
-        container.setAlignment(Pos.CENTER);
-
-        MenuButton saveButton = new MenuButton(MenuButtonType.BACK);
-        saveButton.setOnAction(e -> {
+    private MenuButton createBackButton() {
+        MenuButton backButton = new MenuButton(MenuButtonType.BACK);
+        backButton.setOnAction(e -> navigator.showMainMenu());
+        return backButton;
+    }
+    private MenuButton createApplyButton() {
+        MenuButton applyButton = new MenuButton(MenuButtonType.APPLY);
+        applyButton.setOnAction(e -> {
             config.save();
             GameEventBus.getInstance().publish(new SettingsChangedEvent(config));
-            navigator.showMainMenu();
         });
-
-        container.getChildren().add(saveButton);
-        return container;
+        return applyButton;
     }
 
     @FunctionalInterface

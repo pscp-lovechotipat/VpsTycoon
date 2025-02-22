@@ -36,6 +36,29 @@ public class GameApplication extends Application implements Navigator {
 
     @Override
     public void start(Stage primaryStage) {
+        System.out.println("Debug: Starting GameApplication");
+        // Get basic stage properties
+        System.out.println("Stage Details:");
+        System.out.println("Width: " + primaryStage.getWidth());
+        System.out.println("Height: " + primaryStage.getHeight());
+        System.out.println("X Position: " + primaryStage.getX());
+        System.out.println("Y Position: " + primaryStage.getY());
+        System.out.println("Is Showing: " + primaryStage.isShowing());
+        System.out.println("Is Resizable: " + primaryStage.isResizable());
+
+        // Get scene information
+        if (primaryStage.getScene() != null) {
+            System.out.println("\nScene Details:");
+            System.out.println("Scene Width: " + primaryStage.getScene().getWidth());
+            System.out.println("Scene Height: " + primaryStage.getScene().getHeight());
+            System.out.println("Root Node: " + primaryStage.getScene().getRoot().getClass().getSimpleName());
+        }
+
+        // Get window properties
+        System.out.println("\nWindow Properties:");
+        System.out.println("Title: " + primaryStage.getTitle());
+        System.out.println("Style: " + primaryStage.getStyle());
+
         this.primaryStage = primaryStage;
         this.gameConfig = createGameConfig();
         this.screenManager = new JavaFXScreenManager(gameConfig, primaryStage);
@@ -43,6 +66,8 @@ public class GameApplication extends Application implements Navigator {
         
         initializeGame();
         showMainMenu();
+
+        // Starting Window
         primaryStage.show();
     }
 

@@ -30,9 +30,6 @@ public class MenuButton extends Button {
         String gifPath = "/images/buttons/" + type.getValue() + ".gif";
         URL gifUrl = ResourceManager.getResource(gifPath);
 
-        System.out.println(gifPath);
-        System.out.println(gifUrl);
-
         ImageView imageView = new ImageView(new Image(gifUrl.toExternalForm()));
 
         imageView.setFitWidth(WIDTH);
