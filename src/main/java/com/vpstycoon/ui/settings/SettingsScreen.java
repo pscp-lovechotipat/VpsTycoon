@@ -12,9 +12,7 @@ import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 
 public class SettingsScreen extends GameScreen {
     private final Navigator navigator;
@@ -56,10 +54,12 @@ public class SettingsScreen extends GameScreen {
     private Label createTitleLabel(String text) {
         Label label = new Label(text);
         label.setStyle("""
-            -fx-font-size: 32px;
+            -fx-font-family: 'Cucumber_basic_font3';
+            -fx-font-size: 50px;
             -fx-text-fill: white;
             -fx-font-weight: bold;
             """);
+
         return label;
     }
 
@@ -133,7 +133,8 @@ public class SettingsScreen extends GameScreen {
     private Label createSectionLabel(String text) {
         Label label = new Label(text);
         label.setStyle("""
-            -fx-font-size: 18px;
+            -fx-font-family: 'Cucumber_basic_font3';
+            -fx-font-size: 30px;
             -fx-text-fill: white;
             -fx-font-weight: bold;
             """);
@@ -145,7 +146,11 @@ public class SettingsScreen extends GameScreen {
         container.setAlignment(Pos.CENTER_LEFT);
 
         Label label = new Label(labelText);
-        label.setStyle("-fx-text-fill: white;");
+        label.setStyle("""
+           -fx-text-fill: white;
+           -fx-font-family: 'Cucumber_basic_font3';
+           -fx-font-size: 22px;
+        """);
         label.setPrefWidth(100);
 
         Slider slider = new Slider(0, 1, initialValue);
@@ -166,7 +171,11 @@ public class SettingsScreen extends GameScreen {
         container.setAlignment(Pos.CENTER_LEFT);
 
         Label label = new Label(labelText);
-        label.setStyle("-fx-text-fill: white;");
+        label.setStyle("""
+           -fx-text-fill: white;
+           -fx-font-family: 'Cucumber_basic_font3';
+           -fx-font-size: 22px;
+        """);
         label.setPrefWidth(100);
 
         container.getChildren().addAll(label, control);
@@ -174,7 +183,11 @@ public class SettingsScreen extends GameScreen {
     }
 
     private CheckBox createStyledCheckBox(CheckBox checkBox) {
-        checkBox.setStyle("-fx-text-fill: white;");
+        checkBox.setStyle("""
+           -fx-text-fill: white;
+           -fx-font-family: 'Cucumber_basic_font3';
+           -fx-font-size: 22px;
+        """);
         return checkBox;
     }
 
