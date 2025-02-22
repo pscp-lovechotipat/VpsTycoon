@@ -16,6 +16,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
+import javafx.animation.AnimationTimer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,15 @@ public class GameplayScreen extends GameScreen {
     private final GameSaveManager saveManager;
     private List<GameObject> gameObjects;
     private StackPane gameArea;
+    private VBox debugOverlay;
+    private boolean showDebug = false;
+    private Label fpsLabel;
+    private Label mouseLabel;
+    private Label moneyLabel;
+    private Label zoomLabel;
+    private long lastTime = System.nanoTime();
+    private int frameCount = 0;
+    private AnimationTimer debugTimer;
 
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
@@ -214,17 +224,40 @@ public class GameplayScreen extends GameScreen {
             e.consume();
         });
 
-        // Set layout
-        root.setCenter(gameArea);
-        root.setTop(menuBar);  // ย้าย menuBar มาไว้ท้ายสุด
+        // สร้าง Debug Overlay
+        createDebugOverlay();
+        
+        // แก้ไข AnimationTimer ให้เก็บไว้ในตัวแปร
+        debugTimer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                updateDebugInfo(now);
+            }
+        };
+        debugTimer.start();
 
-        // Add key event handler
+        // แก้ไข key event handler
         root.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
-                saveGame();
-                navigator.showPlayMenu();
+                exitGame();  // แยกโค้ดออกเป็นเมธอดใหม่
+            } else if (event.getCode() == KeyCode.F3) {
+                showDebug = !showDebug;
+                debugOverlay.setVisible(showDebug);
             }
         });
+
+        // เพิ่ม mouse move event สำหรับติดตามตำแหน่งเมาส์
+        root.setOnMouseMoved(event -> {
+            if (showDebug) {
+                updateMousePosition(event.getX(), event.getY());
+            }
+        });
+
+        // Set layout
+        StackPane gameContainer = new StackPane(gameArea, debugOverlay);
+        root.setCenter(gameContainer);
+
+        root.setTop(menuBar);  // ย้าย menuBar มาไว้ท้ายสุด
 
         root.setFocusTraversable(true);
         root.sceneProperty().addListener((obs, oldScene, newScene) -> {
@@ -346,5 +379,73 @@ public class GameplayScreen extends GameScreen {
     private void saveGame() {
         GameState state = new GameState(gameObjects);
         saveManager.saveGame(state);
+    }
+
+    private void createDebugOverlay() {
+        debugOverlay = new VBox(5);
+        debugOverlay.setAlignment(Pos.BOTTOM_LEFT);
+        debugOverlay.setPadding(new Insets(10));
+        debugOverlay.setMouseTransparent(true);
+        debugOverlay.setVisible(false);
+
+        fpsLabel = new Label("FPS: 0");
+        mouseLabel = new Label("Mouse: 0, 0");
+        moneyLabel = new Label("Money: 0");
+        zoomLabel = new Label("Zoom: 1.0x");
+
+        // สไตล์สำหรับ debug text
+        String labelStyle = """
+            -fx-font-family: monospace;
+            -fx-font-size: 14px;
+            -fx-text-fill: white;
+            -fx-effect: dropshadow(gaussian, black, 1, 1, 0, 0);
+            """;
+
+        fpsLabel.setStyle(labelStyle);
+        mouseLabel.setStyle(labelStyle);
+        moneyLabel.setStyle(labelStyle);
+        zoomLabel.setStyle(labelStyle);
+
+        debugOverlay.getChildren().addAll(fpsLabel, mouseLabel, moneyLabel, zoomLabel);
+    }
+
+    private void updateDebugInfo(long now) {
+        if (!showDebug) return;
+
+        // อัพเดท FPS
+        frameCount++;
+        if (now - lastTime >= 1_000_000_000) {
+            fpsLabel.setText(String.format("FPS: %d", frameCount));
+            frameCount = 0;
+            lastTime = now;
+        }
+
+        // อัพเดทข้อมูล money จาก GameState
+        GameState currentState = saveManager.loadGame();
+        moneyLabel.setText(String.format("Money: %d", currentState.getMoney()));
+
+        // อัพเดท zoom level
+        Group worldGroup = (Group) gameArea.getChildren().get(0);
+        zoomLabel.setText(String.format("Zoom: %.2fx", worldGroup.getScaleX()));
+    }
+
+    private void updateMousePosition(double x, double y) {
+        mouseLabel.setText(String.format("Mouse: %.0f, %.0f", x, y));
+    }
+
+    private void exitGame() {
+        saveGame();  // บันทึกเกม
+        debugTimer.stop();  // หยุด debug timer
+        stopAllGameObjects();  // หยุดการทำงานของ game objects ทั้งหมด
+        navigator.showPlayMenu();  // กลับไปหน้าเมนู
+    }
+
+    private void stopAllGameObjects() {
+        if (gameObjects != null) {
+            for (GameObject obj : gameObjects) {
+                obj.stop();  // ต้องมีเมธอด stop() ใน GameObject
+            }
+            gameObjects.clear();
+        }
     }
 } 

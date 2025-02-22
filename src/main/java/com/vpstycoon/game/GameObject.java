@@ -128,4 +128,12 @@ public class GameObject implements Serializable {
         this.level++;
         this.status = "Upgraded (Level " + this.level + ")";
     }
+
+    /**
+     * หยุดการทำงานทั้งหมดของ GameObject
+     * เช่น timers, animations, หรือการทำงานอื่นๆ
+     */
+    public void stop() {
+        // Override this method in subclasses if they need to stop any ongoing operations
+    }
 } 
