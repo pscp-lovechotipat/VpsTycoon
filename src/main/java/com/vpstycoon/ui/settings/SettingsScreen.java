@@ -55,7 +55,7 @@ public class SettingsScreen extends GameScreen {
         Label label = new Label(text);
         label.setStyle("""
             -fx-font-family: 'Cucumber_basic_font3';
-            -fx-font-size: 48px;
+            -fx-font-size: 50px;
             -fx-text-fill: white;
             -fx-font-weight: bold;
             """);
