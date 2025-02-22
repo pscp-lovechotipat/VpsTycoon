@@ -142,19 +142,23 @@ public class GameplayScreen extends GameScreen {
     @Override
     protected Region createContent() {
         BorderPane root = new BorderPane();
+        root.setStyle("""
+            -fx-background-color: #000000;
+            """);
 
         // สร้างพื้นที่เกม
         gameArea = new StackPane();
         gameArea.setPrefSize(800, 600);
 
+        // สร้าง background layer
         Pane backgroundLayer = new Pane();
         backgroundLayer.setStyle("""
-                -fx-background-image: url("/images/rooms/room.png");
-                -fx-background-color: transparent;
-                -fx-background-size: contain;
-                -fx-background-repeat: no-repeat;
-                -fx-background-position: center;
-                """);
+            -fx-background-image: url("/images/rooms/room.png");
+            -fx-background-color: transparent;
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat; 
+            -fx-background-position: center;
+            """);
         backgroundLayer.prefWidthProperty().bind(gameArea.widthProperty());
         backgroundLayer.prefHeightProperty().bind(gameArea.heightProperty());
 
@@ -166,25 +170,13 @@ public class GameplayScreen extends GameScreen {
             objectsContainer.getChildren().add(view);
         }
 
+        // WorldGroup
         Group worldGroup = new Group(backgroundLayer, objectsContainer);
-
         gameArea.getChildren().add(worldGroup);
 
-        gameArea.setOnScroll(e -> {
-            double zoomFactor = 1.05;
-            if (e.getDeltaY() < 0) {
-                zoomFactor = 1.0 / zoomFactor; // ถ้า scroll ลง -> ย่อ
-            }
-            // ปรับสเกลเฉพาะ worldGroup
-            worldGroup.setScaleX(worldGroup.getScaleX() * zoomFactor);
-            worldGroup.setScaleY(worldGroup.getScaleY() * zoomFactor);
-
-            e.consume();
-        });
-
         // Create top menu bar
-        HBox menuBar = new HBox(10);
-        menuBar.setPadding(new Insets(10));
+        HBox menuBar = new HBox(20);
+        menuBar.setPadding(new Insets(20));
         menuBar.setAlignment(Pos.CENTER_LEFT);
         menuBar.setStyle("-fx-background-color: #2C3E50;");
 
@@ -211,21 +203,30 @@ public class GameplayScreen extends GameScreen {
 
         menuBar.getChildren().addAll(saveButton, menuButton);
 
-        root.setTop(menuBar);
-        root.setCenter(gameArea);
+        // Add zoom functionality
+        gameArea.setOnScroll(e -> {
+            double zoomFactor = 1.05;
+            if (e.getDeltaY() < 0) {
+                zoomFactor = 1.0 / zoomFactor;
+            }
+            worldGroup.setScaleX(worldGroup.getScaleX() * zoomFactor);
+            worldGroup.setScaleY(worldGroup.getScaleY() * zoomFactor);
+            e.consume();
+        });
 
-        // Add key event handler for ESC
+        // Set layout
+        root.setCenter(gameArea);
+        root.setTop(menuBar);  // ย้าย menuBar มาไว้ท้ายสุด
+
+        // Add key event handler
         root.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
-                saveGame(); // Auto save
-                navigator.showPlayMenu(); // Return to Play Menu
+                saveGame();
+                navigator.showPlayMenu();
             }
         });
 
-        // Make sure the root can receive focus for key events
         root.setFocusTraversable(true);
-
-        // Request focus when the screen is shown
         root.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 root.requestFocus();
