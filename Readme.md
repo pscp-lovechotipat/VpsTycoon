@@ -1,3 +1,20 @@
+# Table of Contents
+
+- [How Contribute by Nong Claude Kung](#how-contribute-by-nong-claude-kung)
+- [VPS Tycoon - Game Development Guide](#vps-tycoon---game-development-guide)
+    - [โครงสร้างโปรเจค](#โครงสร้างโปรเจค)
+    - [แนวทางการพัฒนา](#แนวทางการพัฒนา)
+    - [Tips สำหรับมือใหม่](#tips-สำหรับมือใหม่)
+- [ลายละเอียดเกม](#ลายละเอียดเกม)
+    - [1) ภาพรวม (Game Overview)](#1-ภาพรวม-game-overview)
+    - [2) การตั้งค่าเริ่มต้น (Starting Conditions)](#2-การตั้งค่าเริ่มต้น-starting-conditions)
+    - [3) โครงสร้างของเกม (Game Structure)](#3-โครงสร้างของเกม-game-structure)
+    - [4) ระบบเซิร์ฟเวอร์ (Server System)](#4-ระบบเซิร์ฟเวอร์-server-system)
+    - [5) ระบบมัลติเธรด (Multithreading System)](#5-ระบบมัลติเธรด-multithreading-system)
+    - [6) แผนผังคลาส (Class Diagram - Java)](#6-แผนผังคลาส-class-diagram---java)
+- [ToDo](#todo)
+- [Intellij Install](#intellij-install)
+
 # How Contribute by Nong Claude Kung :
 # VPS Tycoon - Game Development Guide
 
