@@ -1,7 +1,6 @@
 package com.vpstycoon.ui.menu;
 
 import com.vpstycoon.game.GameSaveManager;
-import com.vpstycoon.resource.ResourceManager;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
 import com.vpstycoon.ui.navigation.Navigator;
@@ -9,17 +8,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.effect.ColorAdjust;
-import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Effect;
-import javafx.scene.effect.Glow;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -55,6 +45,17 @@ public class PlayMenuScreen extends VBox {
         }
 
         super.getChildren().addAll(newGameButton, backButton);
+    }
+
+    public void refreshContinueButton() {
+        saveManager.loadGame();
+        if (saveManager.saveExists()) {
+            if (this.continueButton != null && !super.getChildren().contains(this.continueButton)) {
+                getChildren().add(this.continueButton);
+            }
+        } else {
+            getChildren().remove(this.continueButton);
+        }
     }
 
     private void showNewGameConfirmation() {
@@ -203,4 +204,5 @@ public class PlayMenuScreen extends VBox {
     private void continueGame() {
         System.out.println("Continuing game...");
     }
-} 
+
+}

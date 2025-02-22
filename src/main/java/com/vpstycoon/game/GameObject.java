@@ -7,8 +7,8 @@ import java.util.Map;
 public class GameObject implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    private final String id;
-    private final String type;
+    private String id;
+    private String type;
     private double x;
     private double y;
     private boolean active;
@@ -16,7 +16,19 @@ public class GameObject implements Serializable {
     private String name;
     private int level;
     private String status;
-    
+
+    public GameObject() {
+        this.id = "";
+        this.type = "";
+        this.x = 0;
+        this.y = 0;
+        this.active = true;
+        this.properties = new HashMap<>();
+        this.level = 1;
+        this.name = "";
+        this.status = "Active";
+    }
+
     public GameObject(String id, String type, double x, double y) {
         this.id = id;
         this.type = type;

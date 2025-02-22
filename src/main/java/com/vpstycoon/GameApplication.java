@@ -123,6 +123,8 @@ public class GameApplication extends Application implements Navigator {
         if (playMenuScreen == null) {
             playMenuScreen = new PlayMenuScreen(this);
         }
+
+        playMenuScreen.refreshContinueButton();
         screenManager.switchScreen(playMenuScreen);
     }
 

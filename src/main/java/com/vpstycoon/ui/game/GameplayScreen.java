@@ -184,7 +184,7 @@ public class GameplayScreen extends GameScreen {
                 "Do you want to save and return to the main menu?",
                 () -> {
                     saveGame();
-                    navigator.showPlayMenu();
+                    navigator.showMainMenu();
                 }
             );
         });

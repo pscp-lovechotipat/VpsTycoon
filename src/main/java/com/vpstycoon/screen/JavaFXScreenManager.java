@@ -55,9 +55,11 @@ public class JavaFXScreenManager implements ScreenManager {
             scene = new Scene(new StackPane(screen));
             stage.setScene(scene);
         } else {
-            ((StackPane) scene.getRoot()).getChildren().setAll(screen);
+            StackPane root = (StackPane) scene.getRoot();
+            root.getChildren().setAll(screen);
+            root.requestLayout();
         }
     }
-    
+
     // ... implement other methods ...
 } 

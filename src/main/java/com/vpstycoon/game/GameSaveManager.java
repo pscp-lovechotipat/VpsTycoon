@@ -41,6 +41,17 @@ public class GameSaveManager {
         }
     }
 
+    public void deleteGame() {
+        try {
+            File saveFile = new File(SAVE_FILE);
+            if (saveExists()) {
+                saveFile.delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void createBackup() {
         try {
             File sourceFile = new File(SAVE_FILE);
@@ -53,14 +64,40 @@ public class GameSaveManager {
     }
 
     public GameState loadGame() {
+        File saveFile = new File(SAVE_FILE);
         try {
-            return mapper.readValue(new File(SAVE_FILE), GameState.class);
+            if (!saveFile.exists() || saveFile.length() == 0) {
+                System.out.println("No save file found or file is empty. Creating new game state.");
+                return new GameState();
+            }
+
+            GameState state = mapper.readValue(saveFile, GameState.class);
+            if (state == null) {
+                System.out.println("Loaded game state is null. Creating new game state.");
+                return new GameState();
+            }
+
+            return state;
         } catch (IOException e) {
+            System.err.println("Error loading game save: " + e.getMessage());
+            e.printStackTrace();
+
+            createCorruptedFileBackup(saveFile);
             return new GameState();
+        }
+    }
+
+    private void createCorruptedFileBackup(File originalFile) {
+        try {
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            File backupFile = new File(BACKUP_DIR + "/corrupted_save_" + timestamp + ".bak");
+            Files.copy(originalFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            System.err.println("Error backing up corrupted save: " + e.getMessage());
         }
     }
 
     public boolean saveExists() {
         return new File(SAVE_FILE).exists();
     }
-} 
+}

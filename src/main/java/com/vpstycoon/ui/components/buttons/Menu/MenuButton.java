@@ -30,23 +30,51 @@ public class MenuButton extends Button {
         String gifPath = "/images/buttons/" + type.getValue() + ".gif";
         URL gifUrl = ResourceManager.getResource(gifPath);
 
-        ImageView imageView = new ImageView(new Image(gifUrl.toExternalForm()));
+        // ถ้าพบ URL ของไฟล์รูป (ไม่เป็น null)
+        if (gifUrl != null) {
+            // ลองโหลดรูปเพื่อตรวจสอบเพิ่มเติมเผื่อไฟล์เสีย หรือไม่สามารถอ่านได้
+            try {
+                Image image = new Image(gifUrl.toExternalForm());
+                ImageView imageView = new ImageView(image);
 
-        imageView.setFitWidth(WIDTH);
-        imageView.setFitHeight(HEIGHT);
-        imageView.setPreserveRatio(true);
+                imageView.setFitWidth(WIDTH);
+                imageView.setFitHeight(HEIGHT);
+                imageView.setPreserveRatio(true);
 
-        // ตั้งค่า graphic
-        this.setGraphic(imageView);
+                // ตั้งค่า graphic
+                this.setGraphic(imageView);
 
-        // สไตล์พื้นฐานของปุ่ม
-        this.setStyle("""
-            -fx-background-color: transparent;
-            -fx-background-radius: 0;
-            -fx-border-color: transparent;
-            -fx-border-width: 2;
-            -fx-padding: 0;
-            """);
+                // สไตล์พื้นฐานของปุ่ม
+                this.setStyle("""
+                        -fx-background-color: transparent;
+                        -fx-background-radius: 0;
+                        -fx-border-color: transparent;
+                        -fx-border-width: 2;
+                        -fx-padding: 0;
+                        """);
+
+            } catch (Exception e) {
+                this.setGraphic(null);
+                this.setWidth(200);
+                this.setHeight(50);
+                this.setStyle("""
+                        -fx-background-color: #800fd1;
+                        -fx-background-radius: 15;
+                        -fx-border-color: transparent;
+                        -fx-border-width: 2;
+                        -fx-padding: 0;
+                        """);
+            }
+        } else {
+            this.setGraphic(null);
+            this.setStyle("""
+                    -fx-background-color: #FF6666; /* ตัวอย่างสีแดงอ่อน */
+                    -fx-background-radius: 0;
+                    -fx-border-color: transparent;
+                    -fx-border-width: 2;
+                    -fx-padding: 0;
+                    """);
+        }
 
         // เพิ่ม hover effect ด้วย stroke
         this.setOnMouseEntered(e ->

@@ -44,18 +44,32 @@ public class GameManager {
     }
 
     public GameState loadSavedState() throws IOException, ClassNotFoundException {
-        // ตรวจสอบว่าไฟล์มีอยู่หรือไม่
-        if (!Files.exists(Paths.get(SAVE_FILE))) {
-            throw new FileNotFoundException("No saved game found");
+        File saveFile = new File(SAVE_FILE);
+
+        // ตรวจสอบไฟล์อย่างละเอียด
+        if (!saveFile.exists()) {
+            throw new FileNotFoundException("No saved game found at " + SAVE_FILE);
+        }
+        if (saveFile.length() == 0) {
+            throw new IOException("Save file is empty");
         }
 
-        // ใช้ ObjectInputStream เพื่ออ่านข้อมูล
         try (ObjectInputStream ois = new ObjectInputStream(
                 new BufferedInputStream(
                         new FileInputStream(SAVE_FILE)))) {
-            GameState savedState = (GameState) ois.readObject();
+            Object obj = ois.readObject();
+            if (!(obj instanceof GameState)) {
+                throw new ClassNotFoundException("Invalid save data: not a GameState object");
+            }
+
+            GameState savedState = (GameState) obj;
             this.currentState = savedState;
+            System.out.println("Game loaded successfully");
             return savedState;
+        } catch (StreamCorruptedException e) {
+            throw new IOException("Save file is corrupted: " + e.getMessage());
+        } catch (InvalidClassException e) {
+            throw new ClassNotFoundException("Save file contains incompatible class version: " + e.getMessage());
         }
     }
 
