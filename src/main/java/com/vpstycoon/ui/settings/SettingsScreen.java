@@ -146,7 +146,11 @@ public class SettingsScreen extends GameScreen {
         container.setAlignment(Pos.CENTER_LEFT);
 
         Label label = new Label(labelText);
-        label.setStyle("-fx-text-fill: white;");
+        label.setStyle("""
+           -fx-text-fill: white;
+           -fx-font-family: 'Cucumber_basic_font3';
+           -fx-font-size: 22px;
+        """);
         label.setPrefWidth(100);
 
         Slider slider = new Slider(0, 1, initialValue);
@@ -170,7 +174,7 @@ public class SettingsScreen extends GameScreen {
         label.setStyle("""
            -fx-text-fill: white;
            -fx-font-family: 'Cucumber_basic_font3';
-           -fx-font-size: 25px;
+           -fx-font-size: 22px;
         """);
         label.setPrefWidth(100);
 
@@ -182,7 +186,7 @@ public class SettingsScreen extends GameScreen {
         checkBox.setStyle("""
            -fx-text-fill: white;
            -fx-font-family: 'Cucumber_basic_font3';
-           -fx-font-size: 25px;
+           -fx-font-size: 22px;
         """);
         return checkBox;
     }
