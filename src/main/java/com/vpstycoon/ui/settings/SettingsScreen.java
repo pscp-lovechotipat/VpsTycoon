@@ -172,10 +172,9 @@ public class SettingsScreen extends GameScreen {
         container.setAlignment(Pos.CENTER_LEFT);
 
         Label label = new Label(labelText);
+        label.setFont(FontLoader.LABEL_FONT);
         label.setStyle("""
            -fx-text-fill: white;
-           -fx-font-family: 'Cucumber_basic_font3';
-           -fx-font-size: 22px;
         """);
         label.setPrefWidth(100);
 
@@ -184,10 +183,9 @@ public class SettingsScreen extends GameScreen {
     }
 
     private CheckBox createStyledCheckBox(CheckBox checkBox) {
+        checkBox.setFont(FontLoader.LABEL_FONT);
         checkBox.setStyle("""
            -fx-text-fill: white;
-           -fx-font-family: 'Cucumber_basic_font3';
-           -fx-font-size: 22px;
         """);
         return checkBox;
     }
