@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.menu;
 
 import com.vpstycoon.config.GameConfig;
+import com.vpstycoon.resource.ResourceManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
@@ -10,9 +11,19 @@ import com.vpstycoon.ui.settings.SettingsScreen;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Effect;
+import javafx.scene.effect.Glow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+
+import java.net.URL;
 
 public class MainMenuScreen extends GameScreen {
     private static final double BUTTON_WIDTH = 160;
