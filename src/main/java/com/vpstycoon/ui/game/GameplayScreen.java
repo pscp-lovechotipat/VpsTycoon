@@ -17,6 +17,9 @@ import javafx.scene.control.Separator;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.animation.AnimationTimer;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -166,11 +169,12 @@ public class GameplayScreen extends GameScreen {
             -fx-background-image: url("/images/rooms/room.png");
             -fx-background-color: transparent;
             -fx-background-size: contain;
-            -fx-background-repeat: no-repeat; 
+            -fx-background-repeat: no-repeat;
             -fx-background-position: center;
             """);
         backgroundLayer.prefWidthProperty().bind(gameArea.widthProperty());
         backgroundLayer.prefHeightProperty().bind(gameArea.heightProperty());
+
 
         // Create game objects container
         Pane objectsContainer = new Pane();
@@ -180,9 +184,23 @@ public class GameplayScreen extends GameScreen {
             objectsContainer.getChildren().add(view);
         }
 
+        Pane monitorLayer = new Pane();
+        monitorLayer.setStyle("""
+            -fx-background-image: url('/images/Moniter/MoniterF2.png');
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat;
+            -fx-background-position: center;
+            -fx-pref-width: 500px;
+            -fx-pref-height: 500px;
+            -fx-translate-x: 350px;
+            -fx-translate-y: 250px;
+        """);
+        monitorLayer.setOnMouseClicked((MouseEvent e) -> openSimulationDesktop());
+
         // WorldGroup
-        Group worldGroup = new Group(backgroundLayer, objectsContainer);
+        Group worldGroup = new Group(backgroundLayer, objectsContainer, monitorLayer);
         gameArea.getChildren().add(worldGroup);
+        root.setCenter(gameArea);
 
         // Create top menu bar
         HBox menuBar = new HBox(20);
@@ -212,6 +230,7 @@ public class GameplayScreen extends GameScreen {
         });
 
         menuBar.getChildren().addAll(saveButton, menuButton);
+        root.setTop(menuBar);
 
         // Add zoom functionality
         gameArea.setOnScroll(e -> {
@@ -226,7 +245,8 @@ public class GameplayScreen extends GameScreen {
 
         // สร้าง Debug Overlay
         createDebugOverlay();
-        
+
+
         // แก้ไข AnimationTimer ให้เก็บไว้ในตัวแปร
         debugTimer = new AnimationTimer() {
             @Override
@@ -235,6 +255,7 @@ public class GameplayScreen extends GameScreen {
             }
         };
         debugTimer.start();
+
 
         // แก้ไข key event handler
         root.setOnKeyPressed(event -> {
@@ -267,6 +288,51 @@ public class GameplayScreen extends GameScreen {
         });
 
         return root;
+    }
+
+
+    private void openSimulationDesktop() {
+        ImageView desktopView = new ImageView(new Image("/images/others/Wallpaper.png"));
+        desktopView.setFitWidth(gameArea.getWidth());
+        desktopView.setFitHeight(gameArea.getHeight());
+
+        // ถ้าต้องการเพิ่มไอคอนหรือปุ่มในหน้า Desktop จำลอง
+        // เช่น ไอคอน VPS หรือปุ่มกลับห้อง
+        // สามารถสร้าง ImageView หรือ Button แล้ววางลงไปใน StackPane ได้
+        ImageView vpsIcon = new ImageView(new Image("/images/others/logo.png"));
+        vpsIcon.setFitWidth(50);
+        vpsIcon.setFitHeight(50);
+        vpsIcon.setLayoutX(100);
+        vpsIcon.setLayoutY(100);
+        vpsIcon.setOnMouseClicked(e -> openVPSDesktop());
+        // หรือเมธอดอื่นๆ ที่คุณต้องการให้เกิดเมื่อคลิก
+
+        // ใส่ background (desktopView) + ไอคอนต่างๆ ลงใน StackPane
+        StackPane desktopContainer = new StackPane();
+        desktopContainer.getChildren().addAll(desktopView, vpsIcon);
+
+        // เคลียร์ของเดิมใน gameArea แล้วเพิ่มหน้า Desktop จำลองเข้าไป
+        gameArea.getChildren().clear();
+        gameArea.getChildren().add(desktopContainer);
+    }
+
+    private void openVPSDesktop() {
+        ImageView vpsDesktopView = new ImageView(new Image("/images/others/logo.png"));
+        vpsDesktopView.setFitWidth(gameArea.getWidth());
+        vpsDesktopView.setFitHeight(gameArea.getHeight());
+        vpsDesktopView.setOnMouseClicked(e -> returnToRoom());
+
+        gameArea.getChildren().clear();
+        gameArea.getChildren().add(vpsDesktopView);
+    }
+
+    private void returnToRoom() {
+        // เคลียร์ Desktop จำลอง
+        gameArea.getChildren().clear();
+
+        // สร้าง content ของห้องใหม่ (หรือจะเก็บ state เดิมไว้ก็ได้)
+        Region newRoom = createContent();
+        gameArea.getChildren().add(newRoom);
     }
 
     private void showObjectDetails(GameObject obj) {
