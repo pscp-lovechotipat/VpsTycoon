@@ -187,13 +187,13 @@ public class GameplayScreen extends GameScreen {
         Pane monitorLayer = new Pane();
         monitorLayer.setStyle("""
             -fx-background-image: url('/images/Moniter/MoniterF2.png');
-            -fx-background-size: contain;
+            -fx-background-size: cover;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
-            -fx-pref-width: 500px;
-            -fx-pref-height: 500px;
-            -fx-translate-x: 350px;
-            -fx-translate-y: 250px;
+            -fx-pref-width: 5000px;
+            -fx-pref-height: 5000px;
+            -fx-translate-x: 250px; 
+            -fx-translate-y: 200px;
         """);
         monitorLayer.setOnMouseClicked((MouseEvent e) -> openSimulationDesktop());
 
@@ -293,8 +293,18 @@ public class GameplayScreen extends GameScreen {
 
     private void openSimulationDesktop() {
         ImageView desktopView = new ImageView(new Image("/images/others/Wallpaper.png"));
-        desktopView.setFitWidth(gameArea.getWidth());
-        desktopView.setFitHeight(gameArea.getHeight());
+
+        // ตั้งค่าขนาดที่เหมาะสม เช่น 80% ของขนาด gameArea
+        double scaleFactor = 0.175; // ลองปรับค่านี้เพื่อให้พอดีกับจอ
+        desktopView.setFitWidth(gameArea.getWidth() * scaleFactor);
+        desktopView.setFitHeight(gameArea.getHeight() * scaleFactor);
+
+        // ตั้งให้คงสัดส่วนภาพ
+        desktopView.setPreserveRatio(true);
+        desktopView.setSmooth(true);
+
+        // จัดตำแหน่งให้อยู่ตรงกลาง
+        StackPane.setAlignment(desktopView, Pos.CENTER);
 
         // ถ้าต้องการเพิ่มไอคอนหรือปุ่มในหน้า Desktop จำลอง
         // เช่น ไอคอน VPS หรือปุ่มกลับห้อง
@@ -302,8 +312,8 @@ public class GameplayScreen extends GameScreen {
         ImageView vpsIcon = new ImageView(new Image("/images/others/logo.png"));
         vpsIcon.setFitWidth(50);
         vpsIcon.setFitHeight(50);
-        vpsIcon.setLayoutX(100);
-        vpsIcon.setLayoutY(100);
+        vpsIcon.setLayoutX(50);
+        vpsIcon.setLayoutY(150);
         vpsIcon.setOnMouseClicked(e -> openVPSDesktop());
         // หรือเมธอดอื่นๆ ที่คุณต้องการให้เกิดเมื่อคลิก
 
@@ -318,8 +328,9 @@ public class GameplayScreen extends GameScreen {
 
     private void openVPSDesktop() {
         ImageView vpsDesktopView = new ImageView(new Image("/images/others/logo.png"));
-        vpsDesktopView.setFitWidth(gameArea.getWidth());
-        vpsDesktopView.setFitHeight(gameArea.getHeight());
+        double scaleFactor = 0.175; // ลองปรับค่านี้เพื่อให้พอดีกับจอ
+        vpsDesktopView.setFitWidth(gameArea.getWidth() * scaleFactor);
+        vpsDesktopView.setFitHeight(gameArea.getHeight() * scaleFactor);
         vpsDesktopView.setOnMouseClicked(e -> returnToRoom());
 
         gameArea.getChildren().clear();
