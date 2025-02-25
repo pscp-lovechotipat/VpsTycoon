@@ -20,6 +20,11 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import com.vpstycoon.ui.desktop.DesktopScreen;
+import com.vpstycoon.manager.RequestManager;
+import com.vpstycoon.manager.VPSManager;
+import com.vpstycoon.chat.ChatSystem;
+import com.vpstycoon.company.Company;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +43,21 @@ public class GameplayScreen extends GameScreen {
     private long lastTime = System.nanoTime();
     private int frameCount = 0;
     private AnimationTimer debugTimer;
+    private ChatSystem chatSystem;
+    private RequestManager requestManager;
+    private VPSManager vpsManager;
+    private final Company company;
 
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
         this.navigator = navigator;
         this.saveManager = new GameSaveManager();
         this.gameObjects = new ArrayList<>();
+        this.company = new Company();
         loadGame();
+        this.chatSystem = new ChatSystem();
+        this.requestManager = new RequestManager();
+        this.vpsManager = new VPSManager();
     }
 
     private void loadGame() {
@@ -292,38 +305,21 @@ public class GameplayScreen extends GameScreen {
 
 
     private void openSimulationDesktop() {
-        ImageView desktopView = new ImageView(new Image("/images/others/Wallpaper.png"));
-
-        // ตั้งค่าขนาดที่เหมาะสม เช่น 80% ของขนาด gameArea
-        double scaleFactor = 0.175; // ลองปรับค่านี้เพื่อให้พอดีกับจอ
-        desktopView.setFitWidth(gameArea.getWidth() * scaleFactor);
-        desktopView.setFitHeight(gameArea.getHeight() * scaleFactor);
-
-        // ตั้งให้คงสัดส่วนภาพ
-        desktopView.setPreserveRatio(true);
-        desktopView.setSmooth(true);
-
-        // จัดตำแหน่งให้อยู่ตรงกลาง
-        StackPane.setAlignment(desktopView, Pos.CENTER);
-
-        // ถ้าต้องการเพิ่มไอคอนหรือปุ่มในหน้า Desktop จำลอง
-        // เช่น ไอคอน VPS หรือปุ่มกลับห้อง
-        // สามารถสร้าง ImageView หรือ Button แล้ววางลงไปใน StackPane ได้
-        ImageView vpsIcon = new ImageView(new Image("/images/others/logo.png"));
-        vpsIcon.setFitWidth(50);
-        vpsIcon.setFitHeight(50);
-        vpsIcon.setLayoutX(50);
-        vpsIcon.setLayoutY(150);
-        vpsIcon.setOnMouseClicked(e -> openVPSDesktop());
-        // หรือเมธอดอื่นๆ ที่คุณต้องการให้เกิดเมื่อคลิก
-
-        // ใส่ background (desktopView) + ไอคอนต่างๆ ลงใน StackPane
-        StackPane desktopContainer = new StackPane();
-        desktopContainer.getChildren().addAll(desktopView, vpsIcon);
-
-        // เคลียร์ของเดิมใน gameArea แล้วเพิ่มหน้า Desktop จำลองเข้าไป
+        DesktopScreen desktop = new DesktopScreen(
+            company.getRating(),
+            company.getMarketingPoints(),
+            chatSystem,
+            requestManager,
+            vpsManager
+        );
+        
+        // จัดการ layout และขนาด
+        StackPane.setAlignment(desktop, Pos.CENTER);
+        desktop.setMaxSize(gameArea.getWidth() * 0.8, gameArea.getHeight() * 0.8);
+        
+        // เพิ่มเข้าไปใน gameArea
         gameArea.getChildren().clear();
-        gameArea.getChildren().add(desktopContainer);
+        gameArea.getChildren().add(desktop);
     }
 
     private void openVPSDesktop() {
