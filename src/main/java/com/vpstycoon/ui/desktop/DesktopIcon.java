@@ -1,10 +1,10 @@
 package com.vpstycoon.ui.desktop;
 
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import javafx.geometry.Pos;
-import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 public class DesktopIcon extends VBox {
     private final String name;

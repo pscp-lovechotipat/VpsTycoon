@@ -1,12 +1,13 @@
 package com.vpstycoon;
 
 import javafx.scene.text.Font;
+
 import java.util.Objects;
 
 public class FontLoader {
-    public static final Font TITLE_FONT;
-    public static final Font SECTION_FONT;
-    public static final Font LABEL_FONT;
+    public static Font TITLE_FONT;
+    public static Font SECTION_FONT;
+    public static Font LABEL_FONT;
 
     static {
         TITLE_FONT = loadFont(50);

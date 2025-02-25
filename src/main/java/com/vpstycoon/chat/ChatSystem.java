@@ -1,10 +1,11 @@
 package com.vpstycoon.chat;
 
-import java.util.List;
-import java.util.Map;
+import com.vpstycoon.customer.enums.CustomerType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import com.vpstycoon.customer.enums.CustomerType;
+import java.util.List;
+import java.util.Map;
 
 public class ChatSystem {
     private int chatLevel;

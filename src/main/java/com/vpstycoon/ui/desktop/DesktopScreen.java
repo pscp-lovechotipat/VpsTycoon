@@ -1,18 +1,13 @@
 package com.vpstycoon.ui.desktop;
 
-import javafx.scene.Node;
-import javafx.scene.layout.*;
-import javafx.scene.control.*;
-import javafx.scene.paint.Color;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.stage.Popup;
-
+import com.vpstycoon.chat.ChatSystem;
 import com.vpstycoon.manager.RequestManager;
 import com.vpstycoon.manager.VPSManager;
-import com.vpstycoon.chat.ChatSystem;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Popup;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 
 public class DesktopScreen extends StackPane {

@@ -2,7 +2,6 @@ package com.vpstycoon.manager;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.vpstycoon.vps.enums.RequestType;
 
 public class RequestManager {
     private List<CustomerRequest> activeRequests;

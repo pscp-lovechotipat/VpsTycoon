@@ -1,10 +1,12 @@
 package com.vpstycoon.ui.desktop;
 
-import javafx.scene.layout.*;
-import javafx.scene.control.*;
+import com.vpstycoon.chat.ChatSystem;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import com.vpstycoon.chat.ChatSystem;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
 
 public class MessengerWindow extends VBox {
     private final ChatSystem chatSystem;

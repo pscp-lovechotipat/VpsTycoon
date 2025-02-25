@@ -59,6 +59,9 @@ public class GameApplication extends Application implements Navigator {
         System.out.println("Title: " + primaryStage.getTitle());
         System.out.println("Style: " + primaryStage.getStyle());
 
+        // Load font test
+        System.out.println("Font Loader: " + FontLoader.TITLE_FONT);
+
         this.primaryStage = primaryStage;
         this.gameConfig = createGameConfig();
         this.screenManager = new JavaFXScreenManager(gameConfig, primaryStage);

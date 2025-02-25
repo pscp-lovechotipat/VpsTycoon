@@ -16,9 +16,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-
-import java.util.Objects;
 
 public class SettingsScreen extends GameScreen {
     private final Navigator navigator;

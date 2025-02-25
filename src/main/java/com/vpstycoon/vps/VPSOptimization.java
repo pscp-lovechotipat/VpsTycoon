@@ -1,11 +1,6 @@
 package com.vpstycoon.vps;
 
-import com.vpstycoon.vps.enums.OperatingSystem;
-import com.vpstycoon.vps.enums.SecurityLevel;
-import com.vpstycoon.vps.enums.PerformanceLevel;
-import com.vpstycoon.vps.enums.BackupSystem;
-import com.vpstycoon.vps.enums.MonitoringSystem;
-import com.vpstycoon.vps.enums.RequestType;
+import com.vpstycoon.vps.enums.*;
 
 public class VPSOptimization {
     private OperatingSystem os;

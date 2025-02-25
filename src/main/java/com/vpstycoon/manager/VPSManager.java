@@ -1,8 +1,9 @@
 package com.vpstycoon.manager;
 
+import com.vpstycoon.vps.VPSOptimization;
+
 import java.util.HashMap;
 import java.util.Map;
-import com.vpstycoon.vps.VPSOptimization;
 
 public class VPSManager {
     private Map<String, VPSOptimization> activeVPS;
