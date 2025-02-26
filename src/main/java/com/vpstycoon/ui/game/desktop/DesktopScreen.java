@@ -17,8 +17,8 @@ public class DesktopScreen extends StackPane {
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
     private Popup chatWindow;
-    
-    public DesktopScreen(double companyRating, int marketingPoints, 
+
+    public DesktopScreen(double companyRating, int marketingPoints,
                         ChatSystem chatSystem, RequestManager requestManager,
                         VPSManager vpsManager) {
         this.companyRating = companyRating;
@@ -26,36 +26,44 @@ public class DesktopScreen extends StackPane {
         this.chatSystem = chatSystem;
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
-        
+
         setupUI();
     }
-    
+
     private void setupUI() {
         // Set desktop background
         setStyle("-fx-background-color: #1e1e1e;");
-        
+
         // Create desktop icons container
         FlowPane iconsContainer = new FlowPane(10, 10);
         iconsContainer.setPadding(new Insets(20));
         iconsContainer.setAlignment(Pos.TOP_LEFT);
-        
+
         // Add Messenger icon using FontAwesome
         DesktopIcon messengerIcon = new DesktopIcon(
             FontAwesomeSolid.COMMENTS.toString(),
             "Messenger",
             this::openChatWindow
         );
-        
+
         iconsContainer.getChildren().add(messengerIcon);
+
+        DesktopIcon marketIcon = new DesktopIcon(
+                FontAwesomeSolid.SHOPPING_CART.toString(),
+                "Market",
+                this::openMarketWindow
+        );
+
+        iconsContainer.getChildren().add(marketIcon);
 
         getChildren().add(iconsContainer);
     }
-    
+
     private void openChatWindow() {
         if (chatWindow == null) {
             chatWindow = new Popup();
             chatWindow.setAutoHide(true);
-            
+
             MessengerWindow messengerContent = new MessengerWindow(
                 chatSystem,
                 () -> chatWindow.hide()
@@ -63,14 +71,37 @@ public class DesktopScreen extends StackPane {
 
             chatWindow.getContent().add(messengerContent);
         }
-        
+
         if (!chatWindow.isShowing()) {
             // Show popup centered on the screen
             chatWindow.show(getScene().getWindow());
-            chatWindow.setX(getScene().getWindow().getX() + 
+            chatWindow.setX(getScene().getWindow().getX() +
                 (getScene().getWindow().getWidth() - chatWindow.getWidth()) / 2);
-            chatWindow.setY(getScene().getWindow().getY() + 
+            chatWindow.setY(getScene().getWindow().getY() +
                 (getScene().getWindow().getHeight() - chatWindow.getHeight()) / 2);
         }
     }
-} 
+
+    private Popup marketWindow;
+
+    private void openMarketWindow() {
+        if (marketWindow == null) {
+            marketWindow = new Popup();
+            marketWindow.setAutoHide(true);
+
+            MarketWindow marketContent = new MarketWindow(() -> marketWindow.hide());
+
+            marketWindow.getContent().add(marketContent);
+        }
+
+        if (!marketWindow.isShowing()) {
+            // Show popup centered on the screen
+            marketWindow.show(getScene().getWindow());
+            marketWindow.setX(getScene().getWindow().getX() +
+                    (getScene().getWindow().getWidth() - marketWindow.getWidth()) / 2);
+            marketWindow.setY(getScene().getWindow().getY() +
+                    (getScene().getWindow().getHeight() - marketWindow.getHeight()) / 2);
+        }
+    }
+
+}
