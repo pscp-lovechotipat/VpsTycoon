@@ -30,6 +30,9 @@ public class PlayMenuScreen extends VBox {
         
         super.setAlignment(Pos.CENTER);
         super.setSpacing(SPACING);
+        super.setStyle("""
+                -fx-background-color: #12111c;
+                """);
 
         MenuButton continueButton = new MenuButton(MenuButtonType.CONTINUE);
         MenuButton newGameButton = new MenuButton(MenuButtonType.NEW_GAME);

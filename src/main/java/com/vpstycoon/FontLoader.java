@@ -16,8 +16,13 @@ public class FontLoader {
     }
 
     private static Font loadFont(double size) {
-        return Font.loadFont(
-                Objects.requireNonNull(FontLoader.class.getResource("/fonts/Px_basic_font3-Regular.otf")).toExternalForm(), size
-        );
+        String path = Objects.requireNonNull(
+                FontLoader.class.getResource("/fonts/Px_basic_font3-Regular.ttf"), "Font not found"
+        ).toExternalForm();
+        Font font = Font.loadFont(path, size);
+        if (font == null) {
+            System.out.println("Failed to load font at: " + path);
+        }
+        return font;
     }
 }

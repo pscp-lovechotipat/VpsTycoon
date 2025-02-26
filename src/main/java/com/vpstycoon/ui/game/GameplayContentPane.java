@@ -29,6 +29,8 @@ import java.util.List;
  */
 public class GameplayContentPane extends BorderPane {
 
+    private final StackPane rootStack;
+    private Group worldGroup = new Group();
     private final StackPane gameArea;
     private final List<GameObject> gameObjects;
     private final Navigator navigator;
@@ -58,22 +60,19 @@ public class GameplayContentPane extends BorderPane {
 
         // สร้าง StackPane หลัก (rootStack)
         // สำหรับซ้อน "ส่วนแสดงเกม" (mainPane / gameArea) และ "DebugOverlay"
-        StackPane rootStack = new StackPane();
+        this.rootStack = new StackPane();
+        rootStack.setPrefSize(800, 600);
+        rootStack.setMinSize(800, 600);
 
         // 1) สร้าง "mainPane" หรือ "gameArea" สำหรับเนื้อหาเกม
         //    (ในที่นี้ใช้ StackPane gameArea ตามโค้ดเดิม)
         this.gameArea = new StackPane();
         gameArea.setPrefSize(800, 600);
+        gameArea.setMinSize(800, 600);
 
         // เรียกเมธอด setupUI() เพื่อสร้าง background, objects, menu bar ฯลฯ
         setupUI();
-        // ตอนนี้เนื้อหาเกมอยู่ใน this.gameArea ด้านใน
 
-        // นำ gameArea วางเป็น child ล่างสุดใน rootStack
-        rootStack.getChildren().add(gameArea);
-
-        // 2) เพิ่ม debug overlay ลอยซ้อนด้านบน
-        rootStack.getChildren().add(debugOverlayManager.getDebugOverlay());
         // เริ่มจับ FPS (AnimationTimer)
         debugOverlayManager.startTimer();
 
@@ -87,43 +86,52 @@ public class GameplayContentPane extends BorderPane {
         setOnMouseMoved(e -> {
             if (showDebug) {
                 debugOverlayManager.updateMousePosition(e.getX(), e.getY());
-                debugOverlayManager.updateGameInfo(new GameSaveManager(),rootStack);
+                debugOverlayManager.updateGameInfo(new GameSaveManager(), rootStack);
             }
         });
+
+        System.out.println("Children in rootStack: " + rootStack.getChildren().size());
+        System.out.println("gameArea size: " + gameArea.getWidth() + " x " + gameArea.getHeight());
     }
 
     /**
      * สร้าง UI หลัก คล้ายๆ createContent เดิม
      */
     private void setupUI() {
-        // กำหนด style พื้นหลังของ root นี้
-        setStyle("-fx-background-color: #000000;");
-
         // สร้าง backgroundLayer
         Pane backgroundLayer = createBackgroundLayer();
 
         // สร้าง objectsContainer
         Pane objectsContainer = createObjectsContainer();
 
-        // สร้าง monitorLayer (ไว้คลิกเปิด Desktop Simulation)
+        // สร้าง monitorLayer
         Pane monitorLayer = createMonitorLayer();
 
+        // รวมทั้งหมดเป็น worldGroup
         Group worldGroup = new Group(backgroundLayer, objectsContainer, monitorLayer);
+
+        // ใส่ worldGroup ลงใน gameArea
         gameArea.getChildren().add(worldGroup);
 
-        // DebugOverlay จาก DebugOverlayManager
-        gameArea.getChildren().add(debugOverlayManager.getDebugOverlay());
-        debugOverlayManager.startTimer(); // เริ่มจับ FPS
-
-        // สร้างเมนูบาร์ และใส่ด้านบน (top) ของ BorderPane
+        // สร้างเมนูบาร์
         HBox menuBar = createMenuBar();
-        setTop(menuBar);
+        StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
+
+        // เพิ่ม debugOverlay
+        VBox debugOverlay = debugOverlayManager.getDebugOverlay();
+        StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
+
+        rootStack.getChildren().addAll(gameArea, menuBar, debugOverlay);
+
+
+        // เริ่มจับ FPS
+        debugOverlayManager.startTimer();
 
         // เพิ่มการซูมด้วย scroll
         setupZoom(worldGroup);
 
-        // focusable
-        setFocusTraversable(true);
+        // สไตล์พื้นหลัง
+        setStyle("-fx-background-color: #000000;");
     }
 
     /**
@@ -139,7 +147,7 @@ public class GameplayContentPane extends BorderPane {
             -fx-background-position: center;
         """);
         backgroundLayer.prefWidthProperty().bind(gameArea.widthProperty());
-        backgroundLayer.prefHeightProperty().bind(gameArea.heightProperty());
+        backgroundLayer.prefHeightProperty().bind(rootStack.heightProperty());
         return backgroundLayer;
     }
 
@@ -154,16 +162,24 @@ public class GameplayContentPane extends BorderPane {
     }
 
     private Pane createMonitorLayer() {
+        // โหลดภาพ
+        Image monitorImage = new Image("/images/Moniter/MoniterF2.png");
+
+        // ดึงขนาดของภาพ
+        double imageWidth = monitorImage.getWidth();
+        double imageHeight = monitorImage.getHeight();
+
+        // สร้าง Pane และตั้งค่าขนาดให้เท่ากับภาพ
         Pane monitorLayer = new Pane();
+        monitorLayer.setPrefWidth(imageWidth);
+        monitorLayer.setPrefHeight(imageHeight);
         monitorLayer.setStyle("""
             -fx-background-image: url('/images/Moniter/MoniterF2.png');
-            -fx-background-size: cover;
+            -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
-            -fx-pref-width: 5000px;
-            -fx-pref-height: 5000px;
-            -fx-translate-x: 250px;
-            -fx-translate-y: 200px;
+            -fx-translate-x: 550px;
+            -fx-translate-y: 320px;
         """);
         monitorLayer.setOnMouseClicked((MouseEvent e) -> openSimulationDesktop());
         return monitorLayer;
@@ -173,6 +189,9 @@ public class GameplayContentPane extends BorderPane {
         HBox menuBar = new HBox(20);
         menuBar.setPadding(new Insets(20));
         menuBar.setAlignment(Pos.CENTER_LEFT);
+        menuBar.setPrefHeight(50);
+        menuBar.setMaxHeight(50);
+
         menuBar.setStyle("-fx-background-color: #2C3E50;");
 
         // ใช้ UIUtils สร้างปุ่ม
@@ -206,8 +225,19 @@ public class GameplayContentPane extends BorderPane {
             if (e.getDeltaY() < 0) {
                 zoomFactor = 1.0 / zoomFactor;
             }
-            worldGroup.setScaleX(worldGroup.getScaleX() * zoomFactor);
-            worldGroup.setScaleY(worldGroup.getScaleY() * zoomFactor);
+            // คำนวณค่า scale ใหม่
+            double newScale = worldGroup.getScaleX() * zoomFactor;
+
+            // กำหนดค่า scale ต่ำสุดและสูงสุด
+            double minScale = 0.5;
+            double maxScale = 2.0;
+
+            // ตรวจสอบและปรับค่า newScale ให้อยู่ในช่วงที่กำหนด
+            newScale = Math.max(minScale, Math.min(newScale, maxScale));
+
+            worldGroup.setScaleX(newScale);
+            worldGroup.setScaleY(newScale);
+
             // ไม่ลืม consume
             e.consume();
         });
@@ -395,5 +425,13 @@ public class GameplayContentPane extends BorderPane {
         gameFlowManager.stopAllGameObjects();
         // กลับไปเมนู
         navigator.showPlayMenu();
+    }
+
+    public Group getWorldGroup() {
+        return worldGroup;
+    }
+
+    public void setWorldGroup(Group worldGroup) {
+        this.worldGroup = worldGroup;
     }
 }

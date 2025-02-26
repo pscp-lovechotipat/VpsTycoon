@@ -25,7 +25,7 @@ public class DebugOverlayManager {
     public DebugOverlayManager() {
         // สร้าง VBox สำหรับ overlay
         debugOverlay = new VBox(5);
-        debugOverlay.setAlignment(Pos.BOTTOM_LEFT);
+        debugOverlay.setAlignment(Pos.TOP_LEFT);
         debugOverlay.setPadding(new Insets(10));
         debugOverlay.setMouseTransparent(true);
         debugOverlay.setVisible(false);
@@ -34,7 +34,7 @@ public class DebugOverlayManager {
         fpsLabel = new Label("FPS: 0");
         mouseLabel = new Label("Mouse: 0, 0");
         moneyLabel = new Label("Money: 0");
-        zoomLabel = new Label("Zoom: 1.0x");
+        zoomLabel = new Label("Zoom: 1.05x");
 
         String labelStyle = """
             -fx-font-family: monospace;
