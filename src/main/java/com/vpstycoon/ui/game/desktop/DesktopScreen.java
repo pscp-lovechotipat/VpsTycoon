@@ -56,6 +56,16 @@ public class DesktopScreen extends StackPane {
 
         iconsContainer.getChildren().add(marketIcon);
 
+        // Add Dashboard icon using FontAwesome
+        DesktopIcon dashboardIcon = new DesktopIcon(
+                FontAwesomeSolid.CHART_LINE.toString(),
+                "Dashboard",
+                this::openDashboardWindow
+        );
+
+        iconsContainer.getChildren().add(dashboardIcon);
+
+
         getChildren().add(iconsContainer);
     }
 
@@ -104,4 +114,32 @@ public class DesktopScreen extends StackPane {
         }
     }
 
+    private Popup dashboardWindow;
+
+    private double calculateMonthlyRevenue() {
+        // return vpsManager.getTotalRevenue(); // ใช้ vpsManager คำนวณจริง ๆ
+        return 1000.0;
+    }
+
+    private void openDashboardWindow() {
+        if (dashboardWindow == null) {
+            dashboardWindow = new Popup();
+            dashboardWindow.setAutoHide(true);
+
+            DashboardWindow dashboardContent = new DashboardWindow(
+                    companyRating, marketingPoints, calculateMonthlyRevenue(),
+                    () -> dashboardWindow.hide()
+            );
+
+            dashboardWindow.getContent().add(dashboardContent);
+        }
+
+        if (!dashboardWindow.isShowing()) {
+            dashboardWindow.show(getScene().getWindow());
+            dashboardWindow.setX(getScene().getWindow().getX() +
+                    (getScene().getWindow().getWidth() - dashboardWindow.getWidth()) / 2);
+            dashboardWindow.setY(getScene().getWindow().getY() +
+                    (getScene().getWindow().getHeight() - dashboardWindow.getHeight()) / 2);
+        }
+    }
 }

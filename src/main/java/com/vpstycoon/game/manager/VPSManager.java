@@ -19,4 +19,5 @@ public class VPSManager {
     public VPSOptimization getVPS(String id) {
         return activeVPS.get(id);
     }
-} 
+
+}
