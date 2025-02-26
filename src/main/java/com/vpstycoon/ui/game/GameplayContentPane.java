@@ -300,6 +300,13 @@ public class GameplayContentPane extends BorderPane {
         // แทนที่ทุกอย่างใน gameArea
         gameArea.getChildren().clear();
         gameArea.getChildren().add(desktop);
+
+        // add exit button
+        Button exitButton = ButtonUtils.createModalButton("Exit Desktop");
+        exitButton.setOnAction(e -> returnToRoom());
+        StackPane.setAlignment(exitButton, Pos.BOTTOM_RIGHT);
+        gameArea.getChildren().add(exitButton);
+
     }
 
     /**

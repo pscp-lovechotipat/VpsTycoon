@@ -61,5 +61,4 @@ public class JavaFXScreenManager implements ScreenManager {
         }
     }
 
-    // ... implement other methods ...
-} 
+}

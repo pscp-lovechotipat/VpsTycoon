@@ -47,7 +47,7 @@ public class DesktopScreen extends StackPane {
         );
         
         iconsContainer.getChildren().add(messengerIcon);
-        
+
         getChildren().add(iconsContainer);
     }
     
@@ -60,7 +60,7 @@ public class DesktopScreen extends StackPane {
                 chatSystem,
                 () -> chatWindow.hide()
             );
-            
+            git
             chatWindow.getContent().add(messengerContent);
         }
         
