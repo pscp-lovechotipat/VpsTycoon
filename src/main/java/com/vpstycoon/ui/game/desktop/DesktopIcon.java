@@ -1,4 +1,4 @@
-package com.vpstycoon.ui.desktop;
+package com.vpstycoon.ui.game.desktop;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;

@@ -1,4 +1,4 @@
-package com.vpstycoon.company;
+package com.vpstycoon.game.company;
 
 public class Company {
     private String name;

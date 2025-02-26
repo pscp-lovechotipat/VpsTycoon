@@ -1,13 +1,14 @@
-package com.vpstycoon.vps.enums;
+package com.vpstycoon.game.vps.enums;
 
-public enum MonitoringSystem {
+public enum SecurityLevel {
     BASIC(1.0),
     STANDARD(1.5),
-    ADVANCED(2.0);
+    ADVANCED(2.0),
+    ENTERPRISE(2.5);
 
     private final double score;
 
-    MonitoringSystem(double score) {
+    SecurityLevel(double score) {
         this.score = score;
     }
 

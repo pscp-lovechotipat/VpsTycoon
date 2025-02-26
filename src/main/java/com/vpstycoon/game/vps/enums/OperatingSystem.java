@@ -1,4 +1,4 @@
-package com.vpstycoon.vps.enums;
+package com.vpstycoon.game.vps.enums;
 
 public enum OperatingSystem {
     UBUNTU("Ubuntu", 1.0),

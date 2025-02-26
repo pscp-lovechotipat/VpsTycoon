@@ -1,6 +1,6 @@
-package com.vpstycoon.ui.desktop;
+package com.vpstycoon.ui.game.desktop;
 
-import com.vpstycoon.chat.ChatSystem;
+import com.vpstycoon.game.chat.ChatSystem;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;

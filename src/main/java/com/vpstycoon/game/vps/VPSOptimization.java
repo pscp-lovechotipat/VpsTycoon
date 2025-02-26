@@ -1,6 +1,6 @@
-package com.vpstycoon.vps;
+package com.vpstycoon.game.vps;
 
-import com.vpstycoon.vps.enums.*;
+import com.vpstycoon.game.vps.enums.*;
 
 public class VPSOptimization {
     private OperatingSystem os;

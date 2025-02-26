@@ -1,6 +1,6 @@
-package com.vpstycoon.manager;
+package com.vpstycoon.game.manager;
 
-import com.vpstycoon.vps.VPSOptimization;
+import com.vpstycoon.game.vps.VPSOptimization;
 
 import java.util.HashMap;
 import java.util.Map;

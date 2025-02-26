@@ -1,8 +1,8 @@
-package com.vpstycoon.ui.desktop;
+package com.vpstycoon.ui.game.desktop;
 
-import com.vpstycoon.chat.ChatSystem;
-import com.vpstycoon.manager.RequestManager;
-import com.vpstycoon.manager.VPSManager;
+import com.vpstycoon.game.chat.ChatSystem;
+import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.game.manager.VPSManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.FlowPane;

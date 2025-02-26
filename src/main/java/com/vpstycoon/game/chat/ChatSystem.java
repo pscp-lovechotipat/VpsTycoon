@@ -1,6 +1,6 @@
-package com.vpstycoon.chat;
+package com.vpstycoon.game.chat;
 
-import com.vpstycoon.customer.enums.CustomerType;
+import com.vpstycoon.game.customer.enums.CustomerType;
 
 import java.util.ArrayList;
 import java.util.HashMap;

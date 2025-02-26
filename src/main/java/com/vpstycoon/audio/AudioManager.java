@@ -2,7 +2,7 @@ package com.vpstycoon.audio;
 
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
-import com.vpstycoon.resource.ResourceManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import javafx.application.Platform;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;

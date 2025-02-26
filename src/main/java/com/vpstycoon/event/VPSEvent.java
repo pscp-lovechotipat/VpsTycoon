@@ -1,7 +1,7 @@
 package com.vpstycoon.event;
 
 import com.vpstycoon.event.enums.EventType;
-import com.vpstycoon.vps.VPSOptimization;
+import com.vpstycoon.game.vps.VPSOptimization;
 
 public class VPSEvent {
     private EventType type;

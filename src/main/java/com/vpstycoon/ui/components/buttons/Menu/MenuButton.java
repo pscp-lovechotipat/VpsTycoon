@@ -1,6 +1,6 @@
 package com.vpstycoon.ui.components.buttons.Menu;
 
-import com.vpstycoon.resource.ResourceManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import javafx.scene.control.Button;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.effect.DropShadow;

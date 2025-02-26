@@ -1,7 +1,7 @@
-package com.vpstycoon.manager;
+package com.vpstycoon.game.manager;
 
-import com.vpstycoon.customer.enums.CustomerType;
-import com.vpstycoon.vps.enums.RequestType;
+import com.vpstycoon.game.customer.enums.CustomerType;
+import com.vpstycoon.game.vps.enums.RequestType;
 
 public class CustomerRequest {
     private final CustomerType customerType;

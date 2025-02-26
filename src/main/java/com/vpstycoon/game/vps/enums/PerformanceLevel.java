@@ -1,4 +1,4 @@
-package com.vpstycoon.vps.enums;
+package com.vpstycoon.game.vps.enums;
 
 public enum PerformanceLevel {
     STANDARD(1.0),

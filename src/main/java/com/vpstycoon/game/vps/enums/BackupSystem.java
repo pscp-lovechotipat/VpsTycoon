@@ -1,4 +1,4 @@
-package com.vpstycoon.vps.enums;
+package com.vpstycoon.game.vps.enums;
 
 public enum BackupSystem {
     NONE(0.0),

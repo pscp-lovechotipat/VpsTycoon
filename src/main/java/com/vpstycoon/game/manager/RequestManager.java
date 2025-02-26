@@ -1,4 +1,4 @@
-package com.vpstycoon.manager;
+package com.vpstycoon.game.manager;
 
 import java.util.ArrayList;
 import java.util.List;

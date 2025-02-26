@@ -1,4 +1,4 @@
-package com.vpstycoon.customer.enums;
+package com.vpstycoon.game.customer.enums;
 
 public enum CustomerType {
     INDIVIDUAL(0, "Individual Customer"),

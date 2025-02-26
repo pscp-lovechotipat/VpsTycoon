@@ -1,4 +1,4 @@
-package com.vpstycoon.resource;
+package com.vpstycoon.game.resource;
 
 import javafx.scene.image.Image;
 
