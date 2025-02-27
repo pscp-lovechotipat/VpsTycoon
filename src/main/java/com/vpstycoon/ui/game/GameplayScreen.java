@@ -67,15 +67,10 @@ public class GameplayScreen extends GameScreen {
                 this.gameObjects = (ArrayList<GameObject>) state.getGameObjects();
             } else {
                 initializeGameObjects();
-                return;
             }
         } else {
             initializeGameObjects();
-            return;
         }
-
-        this.gameLoop = new GameLoop(state, requestManager);
-        this.gameLoop.start();
     }
 
     private void initializeGameObjects() {
@@ -85,6 +80,12 @@ public class GameplayScreen extends GameScreen {
         gameObjects.add(new VPSObject("network", "Network", 700, 700));
         // เซฟ initial state
         saveManager.saveGame(state);
+        initializeGameLoop(state);
+    }
+
+    private void initializeGameLoop(GameState state) {
+        this.gameLoop = new GameLoop(state, this.requestManager);
+        this.gameLoop.start();
     }
 
     /**
