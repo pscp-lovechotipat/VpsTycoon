@@ -4,6 +4,7 @@ import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 public class GameState implements Serializable {
     private static final long serialVersionUID = 1L;
+    private LocalDateTime localDateTime;
 
     private Company company;
     private final Map<String, Integer> resources;
@@ -25,6 +27,7 @@ public class GameState implements Serializable {
         this.gameObjects = new ArrayList<>();
 
         this.company = ResourceManager.getInstance().getCompany();
+        this.localDateTime = LocalDateTime.now();
     }
     
     public GameState(List<GameObject> gameObjects) {
@@ -76,5 +79,13 @@ public class GameState implements Serializable {
 
     public void setCompany(Company company) {
         this.company = company;
+    }
+
+    public LocalDateTime getLocalDateTime() {
+        return localDateTime;
+    }
+
+    public void setLocalDateTime(LocalDateTime localDateTime) {
+        this.localDateTime = localDateTime;
     }
 }

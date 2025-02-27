@@ -177,8 +177,10 @@ public class GameplayContentPane extends BorderPane {
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
-            -fx-translate-x: 550px;
-            -fx-translate-y: 320px;
+            -fx-scale-x: 2;
+            -fx-scale-y: 2;
+            -fx-translate-x: 750px;
+            -fx-translate-y: 520px;
         """);
         monitorLayer.setOnMouseClicked((MouseEvent e) -> openSimulationDesktop());
         return monitorLayer;

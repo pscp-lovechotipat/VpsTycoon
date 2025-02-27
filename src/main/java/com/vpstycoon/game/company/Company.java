@@ -10,7 +10,7 @@ public class Company {
         this.name = "New Company";
         this.rating = 1.0;
         this.marketingPoints = 0;
-        this.money = 10000; // เริ่มต้นด้วยเงิน 10,000
+        this.money = 10_000; // เริ่มต้นด้วยเงิน 10,000
     }
 
     public String getName() {

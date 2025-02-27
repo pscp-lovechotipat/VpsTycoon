@@ -1,10 +1,7 @@
 package com.vpstycoon.ui.game;
 
 import com.vpstycoon.config.GameConfig;
-import com.vpstycoon.game.GameLoop;
-import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameSaveManager;
-import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.*;
 import com.vpstycoon.game.object.VPSObject;
 import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
@@ -89,12 +86,12 @@ public class GameplayScreen extends GameScreen {
         gameObjects.add(network);
         // เซฟ initial state
         saveManager.saveGame(state);
-        initializeGameLoop(state);
-    }
+        // สร้างและเริ่ม Thread ที่แยกกัน
+        RequestGenerator requestGenerator = new RequestGenerator(requestManager);
+        GameTimeUpdater gameTimeUpdater = new GameTimeUpdater(state);
 
-    private void initializeGameLoop(GameState state) {
-        this.gameLoop = new GameLoop(state, this.requestManager, this.company);
-        this.gameLoop.start();
+        requestGenerator.start();
+        gameTimeUpdater.start();
     }
 
     /**
