@@ -33,6 +33,7 @@ public class DesktopScreen extends StackPane {
     private void setupUI() {
         // Set desktop background
         setStyle("-fx-background-color: #1e1e1e;");
+        setPrefSize(800, 600);
 
         // Create desktop icons container
         FlowPane iconsContainer = new FlowPane(10, 10);

@@ -57,32 +57,23 @@ public class GameplayContentPane extends BorderPane {
         this.vpsManager = vpsManager;
         this.gameFlowManager = gameFlowManager;
         this.debugOverlayManager = debugOverlayManager;
-
-        // สร้าง StackPane หลัก (rootStack)
-        // สำหรับซ้อน "ส่วนแสดงเกม" (mainPane / gameArea) และ "DebugOverlay"
+        
         this.rootStack = new StackPane();
         rootStack.setPrefSize(800, 600);
         rootStack.setMinSize(800, 600);
 
-        // 1) สร้าง "mainPane" หรือ "gameArea" สำหรับเนื้อหาเกม
-        //    (ในที่นี้ใช้ StackPane gameArea ตามโค้ดเดิม)
         this.gameArea = new StackPane();
         gameArea.setPrefSize(800, 600);
         gameArea.setMinSize(800, 600);
 
-        // เรียกเมธอด setupUI() เพื่อสร้าง background, objects, menu bar ฯลฯ
         setupUI();
 
-        // เริ่มจับ FPS (AnimationTimer)
         debugOverlayManager.startTimer();
 
-        // 3) ตั้ง rootStack เป็น Center ของ BorderPane (this)
         setCenter(rootStack);
 
-        // 4) ตั้งค่า key events
         setupKeyEvents();
 
-        // 5) หากต้องการติดตาม mouse move เพื่อ debug
         setOnMouseMoved(e -> {
             if (showDebug) {
                 debugOverlayManager.updateMousePosition(e.getX(), e.getY());
@@ -98,39 +89,30 @@ public class GameplayContentPane extends BorderPane {
      * สร้าง UI หลัก คล้ายๆ createContent เดิม
      */
     private void setupUI() {
-        // สร้าง backgroundLayer
         Pane backgroundLayer = createBackgroundLayer();
-
-        // สร้าง objectsContainer
         Pane objectsContainer = createObjectsContainer();
-
-        // สร้าง monitorLayer
         Pane monitorLayer = createMonitorLayer();
 
-        // รวมทั้งหมดเป็น worldGroup
         Group worldGroup = new Group(backgroundLayer, objectsContainer, monitorLayer);
 
-        // ใส่ worldGroup ลงใน gameArea
         gameArea.getChildren().add(worldGroup);
 
-        // สร้างเมนูบาร์
         HBox menuBar = createMenuBar();
         StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
 
-        // เพิ่ม debugOverlay
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
 
+        // Overload
+        if (!rootStack.getChildren().isEmpty()) {
+            rootStack.getChildren().clear();
+        }
         rootStack.getChildren().addAll(gameArea, menuBar, debugOverlay);
 
-
-        // เริ่มจับ FPS
         debugOverlayManager.startTimer();
 
-        // เพิ่มการซูมด้วย scroll
         setupZoom(worldGroup);
 
-        // สไตล์พื้นหลัง
         setStyle("-fx-background-color: #000000;");
     }
 
