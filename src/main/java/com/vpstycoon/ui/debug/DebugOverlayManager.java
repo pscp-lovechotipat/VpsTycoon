@@ -100,7 +100,7 @@ public class DebugOverlayManager extends GameState {
 
         // Zoom (สมมติว่า worldGroup อยู่เป็น child 0)
         if (!gameArea.getChildren().isEmpty() && gameArea.getChildren().getFirst() instanceof Group worldGroup) {
-            zoomLabel.setText(String.format("Zoom: %.2fx", worldGroup.getScaleX()));
+            zoomLabel.setText(String.format("Zoom: %.2fx", worldGroup.getScaleY()));
         }
     }
 

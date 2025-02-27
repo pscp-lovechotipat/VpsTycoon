@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game;
 
+import com.vpstycoon.game.GameLoop;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.chat.ChatSystem;
@@ -33,9 +34,11 @@ public class GameplayContentPane extends BorderPane {
     private final StackPane rootStack;
     private Group worldGroup = new Group();
     private final StackPane gameArea;
+
     private final List<GameObject> gameObjects;
     private final Navigator navigator;
     private final ChatSystem chatSystem;
+
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
     private final GameFlowManager gameFlowManager;
@@ -84,6 +87,7 @@ public class GameplayContentPane extends BorderPane {
 
         System.out.println("Children in rootStack: " + rootStack.getChildren().size());
         System.out.println("gameArea size: " + gameArea.getWidth() + " x " + gameArea.getHeight());
+
     }
 
     /**

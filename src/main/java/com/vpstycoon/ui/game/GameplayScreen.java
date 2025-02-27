@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game;
 
 import com.vpstycoon.config.GameConfig;
+import com.vpstycoon.game.GameLoop;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
@@ -29,6 +30,8 @@ public class GameplayScreen extends GameScreen {
     private final ChatSystem chatSystem;
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
+
+    private GameLoop gameLoop;
 
     // Manager แยก
     private final GameFlowManager gameFlowManager;
@@ -74,6 +77,9 @@ public class GameplayScreen extends GameScreen {
         // เซฟ initial state
         GameState state = new GameState(gameObjects);
         saveManager.saveGame(state);
+
+        this.gameLoop = new GameLoop(state, requestManager);
+        this.gameLoop.start();
     }
 
     /**

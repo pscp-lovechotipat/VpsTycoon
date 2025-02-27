@@ -1,19 +1,18 @@
 package com.vpstycoon.game.manager;
 
+import com.sun.net.httpserver.Request;
+import com.vpstycoon.game.customer.Customer;
 import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.vps.enums.RequestType;
 
-public class CustomerRequest {
-    private final CustomerType customerType;
+public class CustomerRequest extends Customer {
     private final RequestType requestType;
-    private final double budget;
     private final int duration;
     
     public CustomerRequest(CustomerType customerType, RequestType requestType, 
                          double budget, int duration) {
-        this.customerType = customerType;
+        super(RandomGenerateName.generateRandomName(10), customerType, budget);
         this.requestType = requestType;
-        this.budget = budget;
         this.duration = duration;
     }
     
