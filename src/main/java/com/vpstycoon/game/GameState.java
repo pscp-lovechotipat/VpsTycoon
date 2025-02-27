@@ -20,6 +20,7 @@ public class GameState implements Serializable {
         this.upgrades = new HashMap<>();
         this.lastSaveTime = System.currentTimeMillis();
         this.gameObjects = new ArrayList<>();
+        this.money = 100_000;
     }
     
     public GameState(List<GameObject> gameObjects) {

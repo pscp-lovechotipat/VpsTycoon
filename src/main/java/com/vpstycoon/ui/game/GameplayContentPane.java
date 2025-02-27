@@ -7,6 +7,7 @@ import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.desktop.DesktopScreen;
+import com.vpstycoon.ui.game.flow.GameFlowManager;
 import com.vpstycoon.ui.navigation.Navigator;
 import com.vpstycoon.ui.utils.ButtonUtils;
 import javafx.geometry.Insets;
@@ -57,7 +58,7 @@ public class GameplayContentPane extends BorderPane {
         this.vpsManager = vpsManager;
         this.gameFlowManager = gameFlowManager;
         this.debugOverlayManager = debugOverlayManager;
-        
+
         this.rootStack = new StackPane();
         rootStack.setPrefSize(800, 600);
         rootStack.setMinSize(800, 600);
@@ -77,7 +78,7 @@ public class GameplayContentPane extends BorderPane {
         setOnMouseMoved(e -> {
             if (showDebug) {
                 debugOverlayManager.updateMousePosition(e.getX(), e.getY());
-                debugOverlayManager.updateGameInfo(new GameSaveManager(), rootStack);
+                debugOverlayManager.updateGameInfo(rootStack);
             }
         });
 

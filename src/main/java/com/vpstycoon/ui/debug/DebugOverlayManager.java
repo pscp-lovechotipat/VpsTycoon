@@ -10,7 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-public class DebugOverlayManager {
+public class DebugOverlayManager extends GameState {
     private final VBox debugOverlay;
     private final Label fpsLabel;
     private final Label mouseLabel;
@@ -93,12 +93,10 @@ public class DebugOverlayManager {
     /**
      * อัปเดตข้อมูล Money/Zoom ตาม GameState
      */
-    public void updateGameInfo(GameSaveManager saveManager, StackPane gameArea) {
+    public void updateGameInfo( StackPane gameArea) {
         if (!showDebug) return;
 
-        // Money
-        GameState currentState = saveManager.loadGame();
-        moneyLabel.setText(String.format("Money: %d", currentState.getMoney()));
+        moneyLabel.setText(String.format("Money: %d", super.getMoney()));
 
         // Zoom (สมมติว่า worldGroup อยู่เป็น child 0)
         if (!gameArea.getChildren().isEmpty() && gameArea.getChildren().getFirst() instanceof Group worldGroup) {

@@ -12,6 +12,7 @@ import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
+import com.vpstycoon.ui.game.flow.GameFlowManager;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.scene.layout.Region;
 
@@ -24,7 +25,7 @@ import java.util.List;
 public class GameplayScreen extends GameScreen {
     private final Navigator navigator;
     private final GameSaveManager saveManager;
-    private List<GameObject> gameObjects;
+    private ArrayList<GameObject> gameObjects;
     private final Company company;
     private final ChatSystem chatSystem;
     private final RequestManager requestManager;
@@ -57,7 +58,7 @@ public class GameplayScreen extends GameScreen {
         if (saveManager.saveExists()) {
             GameState state = saveManager.loadGame();
             if (state.getGameObjects() != null && !state.getGameObjects().isEmpty()) {
-                this.gameObjects = state.getGameObjects();
+                this.gameObjects = (ArrayList<GameObject>) state.getGameObjects();
             } else {
                 initializeGameObjects();
             }

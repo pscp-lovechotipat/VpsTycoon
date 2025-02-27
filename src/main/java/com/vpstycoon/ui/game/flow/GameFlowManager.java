@@ -1,4 +1,4 @@
-package com.vpstycoon.ui.game;
+package com.vpstycoon.ui.game.flow;
 
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameSaveManager;
