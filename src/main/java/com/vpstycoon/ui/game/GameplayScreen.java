@@ -76,18 +76,32 @@ public class GameplayScreen extends GameScreen {
     private void initializeGameObjects() {
         gameObjects.clear();
 
+        // สร้างปุ่มแบบวงกลมสำหรับ Server
         VPSObject server = new VPSObject("server", "Server", 0, 0);
-        server.setGridPosition(8, 8);  // (8,8) จะคูณด้วย CELL_SIZE (64) => (512,512)
+        server.setGridPosition(8, 8);
         gameObjects.add(server);
 
+        // สร้างปุ่มแบบวงกลมสำหรับ Database
         VPSObject database = new VPSObject("database", "Database", 0, 0);
-        database.setGridPosition(10, 8);  // ตัวอย่างตำแหน่ง (10,8) => (640,512)
+        database.setGridPosition(10, 8);
         gameObjects.add(database);
 
+        // สร้างปุ่มแบบวงกลมสำหรับ Network
         VPSObject network = new VPSObject("network", "Network", 0, 0);
-        network.setGridPosition(12, 8);  // ตัวอย่างตำแหน่ง (12,8) => (768,512)
+        network.setGridPosition(12, 8);
         gameObjects.add(network);
-        // เซฟ initial state
+
+        // ✅ เพิ่มปุ่มวงกลมสำหรับ Security
+        VPSObject security = new VPSObject("security", "Security", 0, 0);
+        security.setGridPosition(14, 8);
+        gameObjects.add(security);
+
+        // ✅ เพิ่มปุ่มวงกลมสำหรับ Marketing
+        VPSObject marketing = new VPSObject("marketing", "Marketing", 0, 0);
+        marketing.setGridPosition(16, 8);
+        gameObjects.add(marketing);
+
+        // บันทึกสถานะเกม
         saveManager.saveGame(state);
         initializeGameLoop(state);
     }
