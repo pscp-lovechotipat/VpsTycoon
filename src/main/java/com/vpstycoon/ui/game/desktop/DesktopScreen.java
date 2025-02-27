@@ -75,21 +75,21 @@ public class DesktopScreen extends StackPane {
             chatWindow = new Popup();
             chatWindow.setAutoHide(true);
 
+            // ✅ ลบ ChatSystem ออก และใช้แค่ RequestManager กับ Runnable
             MessengerWindow messengerContent = new MessengerWindow(
-                chatSystem,
-                () -> chatWindow.hide()
+                    requestManager,  // ✅ ใช้แค่ requestManager ตาม constructor ใหม่
+                    () -> chatWindow.hide()
             );
 
             chatWindow.getContent().add(messengerContent);
         }
 
         if (!chatWindow.isShowing()) {
-            // Show popup centered on the screen
             chatWindow.show(getScene().getWindow());
             chatWindow.setX(getScene().getWindow().getX() +
-                (getScene().getWindow().getWidth() - chatWindow.getWidth()) / 2);
+                    (getScene().getWindow().getWidth() - chatWindow.getWidth()) / 2);
             chatWindow.setY(getScene().getWindow().getY() +
-                (getScene().getWindow().getHeight() - chatWindow.getHeight()) / 2);
+                    (getScene().getWindow().getHeight() - chatWindow.getHeight()) / 2);
         }
     }
 

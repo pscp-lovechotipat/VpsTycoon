@@ -37,6 +37,7 @@ public class GameLoop extends Thread {
                 // 3) สร้างเวลาหน่วง (อาจอิงจาก requiredPoints ก็ได้ ถ้าต้องการ)
                 int randomTime = 10_000 + random.nextInt(60_000); // ตัวอย่างสุ่ม 1-3 วินาที
                 Thread.sleep(randomTime);
+//                Thread.sleep(2000);
 
                 // 4) สร้าง CustomerRequest ใหม่
                 String randomName = RandomGenerateName.generateRandomName(6);
@@ -51,7 +52,13 @@ public class GameLoop extends Thread {
                 );
 
                 // add to requestManager
-                requestManager.addRequest(newRequest);
+                requestManager.addRequest(new CustomerRequest(
+                        CustomerType.INDIVIDUAL,
+                        RequestType.SECURITY_FOCUSED,
+                        100.0,
+                        30
+                ));
+
 
 
                 System.out.println(
