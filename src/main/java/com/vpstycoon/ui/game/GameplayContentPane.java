@@ -97,8 +97,10 @@ public class GameplayContentPane extends BorderPane {
         Pane backgroundLayer = createBackgroundLayer();
         Pane objectsContainer = createObjectsContainer();
         Pane monitorLayer = createMonitorLayer();
+        Pane tableLayer = createTableLayer();
+        Pane serverLayer = createServerLayer();
 
-        Group worldGroup = new Group(backgroundLayer, objectsContainer, monitorLayer);
+        Group worldGroup = new Group(backgroundLayer, objectsContainer, monitorLayer, tableLayer, serverLayer);
 
         gameArea.getChildren().add(worldGroup);
 
@@ -170,8 +172,8 @@ public class GameplayContentPane extends BorderPane {
 
         // สร้าง Pane และตั้งค่าขนาดให้เท่ากับภาพ
         Pane monitorLayer = new Pane();
-        monitorLayer.setPrefWidth(imageWidth);
-        monitorLayer.setPrefHeight(imageHeight);
+        monitorLayer.setPrefWidth(100);
+        monitorLayer.setPrefHeight(100);
         monitorLayer.setStyle("""
             -fx-background-image: url('/images/Moniter/MoniterF2.png');
             -fx-background-size: contain;
@@ -185,6 +187,37 @@ public class GameplayContentPane extends BorderPane {
         monitorLayer.setOnMouseClicked((MouseEvent e) -> openSimulationDesktop());
         return monitorLayer;
     }
+    private Pane createTableLayer() {
+        Pane tableLayer = new Pane();
+        tableLayer.setPrefWidth(400);
+        tableLayer.setPrefHeight(400);
+        tableLayer.setPrefHeight(400);
+        tableLayer.setStyle("""
+        -fx-background-image: url('/images/Table/Table.png');
+        -fx-background-size: contain;
+        -fx-background-repeat: no-repeat;
+        -fx-background-position: center;
+        -fx-translate-x: 400px;
+        -fx-translate-y: 350px;
+    """);
+        return tableLayer;
+    }
+
+    private Pane createServerLayer() {
+        Pane serverLayer = new Pane();
+        serverLayer.setPrefWidth(400);
+        serverLayer.setPrefHeight(400);
+        serverLayer.setStyle("""
+        -fx-background-image: url('/images/servers/server.png');
+        -fx-background-size: contain;
+        -fx-background-repeat: no-repeat;
+        -fx-background-position: center;
+        -fx-translate-x: 550px;
+        -fx-translate-y: 350px;
+    """);
+        return serverLayer;
+    }
+
 
     private HBox createMenuBar() {
         HBox menuBar = new HBox(20);
