@@ -75,16 +75,25 @@ public class GameplayScreen extends GameScreen {
 
     private void initializeGameObjects() {
         gameObjects.clear();
-        gameObjects.add(new VPSObject("server", "Server", 500, 500));
-        gameObjects.add(new VPSObject("database", "Database", 600, 600));
-        gameObjects.add(new VPSObject("network", "Network", 700, 700));
+
+        VPSObject server = new VPSObject("server", "Server", 0, 0);
+        server.setGridPosition(8, 8);  // (8,8) จะคูณด้วย CELL_SIZE (64) => (512,512)
+        gameObjects.add(server);
+
+        VPSObject database = new VPSObject("database", "Database", 0, 0);
+        database.setGridPosition(10, 8);  // ตัวอย่างตำแหน่ง (10,8) => (640,512)
+        gameObjects.add(database);
+
+        VPSObject network = new VPSObject("network", "Network", 0, 0);
+        network.setGridPosition(12, 8);  // ตัวอย่างตำแหน่ง (12,8) => (768,512)
+        gameObjects.add(network);
         // เซฟ initial state
         saveManager.saveGame(state);
         initializeGameLoop(state);
     }
 
     private void initializeGameLoop(GameState state) {
-        this.gameLoop = new GameLoop(state, this.requestManager);
+        this.gameLoop = new GameLoop(state, this.requestManager, this.company);
         this.gameLoop.start();
     }
 

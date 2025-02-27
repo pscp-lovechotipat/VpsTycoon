@@ -1,5 +1,6 @@
 package com.vpstycoon.game;
 
+import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RandomGenerateName;
@@ -10,12 +11,14 @@ import java.util.Random;
 
 public class GameLoop extends Thread {
     private GameState gameState;
+    private Company company;
     private final RequestManager requestManager; // สมมติว่ามี RequestManager เพื่อเก็บ CustomerRequest
     private boolean running = true;
 
-    public GameLoop(GameState gameState, RequestManager requestManager) {
+    public GameLoop(GameState gameState, RequestManager requestManager, Company company) {
         this.gameState = gameState;
         this.requestManager = requestManager;
+        this.company = company;
     }
 
     @Override
@@ -32,7 +35,7 @@ public class GameLoop extends Thread {
                 RequestType selectedRequestType = RequestType.values()[random.nextInt(RequestType.values().length)];
 
                 // 3) สร้างเวลาหน่วง (อาจอิงจาก requiredPoints ก็ได้ ถ้าต้องการ)
-                int randomTime = 1000 + random.nextInt(2000); // ตัวอย่างสุ่ม 1-3 วินาที
+                int randomTime = 10_000 + random.nextInt(60_000); // ตัวอย่างสุ่ม 1-3 วินาที
                 Thread.sleep(randomTime);
 
                 // 4) สร้าง CustomerRequest ใหม่
@@ -49,6 +52,7 @@ public class GameLoop extends Thread {
 
                 // add to requestManager
                 requestManager.addRequest(newRequest);
+
 
                 System.out.println(
                         "สร้าง Customer ใหม่: " + newRequest.getName()

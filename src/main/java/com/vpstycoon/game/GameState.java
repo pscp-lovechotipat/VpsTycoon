@@ -1,5 +1,8 @@
 package com.vpstycoon.game;
 
+import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.resource.ResourceManager;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,8 +11,8 @@ import java.util.Map;
 
 public class GameState implements Serializable {
     private static final long serialVersionUID = 1L;
-    
-    private long money;
+
+    private Company company;
     private final Map<String, Integer> resources;
     private final Map<String, Boolean> upgrades;
     private long lastSaveTime;
@@ -20,7 +23,8 @@ public class GameState implements Serializable {
         this.upgrades = new HashMap<>();
         this.lastSaveTime = System.currentTimeMillis();
         this.gameObjects = new ArrayList<>();
-        this.money = 100_000;
+
+        this.company = ResourceManager.getInstance().getCompany();
     }
     
     public GameState(List<GameObject> gameObjects) {
@@ -50,14 +54,6 @@ public class GameState implements Serializable {
         }
     }
     
-    public long getMoney() {
-        return money;
-    }
-    
-    public void setMoney(long money) {
-        this.money = money;
-    }
-    
     public Map<String, Integer> getResources() {
         return resources;
     }
@@ -73,4 +69,12 @@ public class GameState implements Serializable {
     public void setLastSaveTime(long lastSaveTime) {
         this.lastSaveTime = lastSaveTime;
     }
-} 
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
+}

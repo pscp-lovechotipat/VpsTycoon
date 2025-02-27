@@ -1,5 +1,6 @@
 package com.vpstycoon.game.resource;
 
+import com.vpstycoon.game.company.Company;
 import javafx.scene.image.Image;
 
 import java.io.InputStream;
@@ -17,6 +18,8 @@ public class ResourceManager {
     
     private final Map<String, Image> imageCache = new ConcurrentHashMap<>();
     private final Map<String, String> textCache = new ConcurrentHashMap<>();
+
+    private Company company = new Company();
 
     private ResourceManager() {}
 
@@ -78,4 +81,12 @@ public class ResourceManager {
         imageCache.clear();
         textCache.clear();
     }
-} 
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
+}

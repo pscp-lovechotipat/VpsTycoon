@@ -1,6 +1,7 @@
 package com.vpstycoon.game;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vpstycoon.game.company.Company;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,10 +15,12 @@ public class GameManager {
     private static final String SAVE_FILE = "savegame.dat";
 
     private GameState currentState;
+    private Company currentCompany;
     private final ObjectMapper objectMapper;
 
     private GameManager() {
         currentState = new GameState();
+        currentCompany = new Company();
         objectMapper = new ObjectMapper();
     }
 

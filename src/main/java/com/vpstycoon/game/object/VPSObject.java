@@ -22,9 +22,9 @@ public class VPSObject extends GameObject {
 
     public void upgrade(GameState gameState) {
         long upgradeCost = calculateUpgradeCost();
-        if (gameState.getMoney() >= upgradeCost) {
+        if (super.getCompany().getMoney() >= upgradeCost) {
 
-            gameState.setMoney(gameState.getMoney() - upgradeCost);
+            super.getCompany().setMoney(super.getCompany().getMoney() - upgradeCost);
 
             super.upgrade(gameState);
         } else {

@@ -140,9 +140,21 @@ public class GameplayContentPane extends BorderPane {
 
     private Pane createObjectsContainer() {
         Pane objectsContainer = new Pane();
+
+        double cellSize = 100;
+
         for (GameObject obj : gameObjects) {
             GameObjectView view = new GameObjectView(obj);
+
+            // คำนวณตำแหน่งตามช่อง (gridX, gridY)
+            double snappedX = Math.round(obj.getX() / cellSize) * cellSize;
+            double snappedY = Math.round(obj.getY() / cellSize) * cellSize;
+
+            view.setTranslateX(snappedX);
+            view.setTranslateY(snappedY);
+
             view.setOnMouseClicked(e -> showObjectDetails(obj));
+
             objectsContainer.getChildren().add(view);
         }
         return objectsContainer;

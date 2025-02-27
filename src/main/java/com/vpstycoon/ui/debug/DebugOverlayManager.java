@@ -96,7 +96,7 @@ public class DebugOverlayManager extends GameState {
     public void updateGameInfo( StackPane gameArea) {
         if (!showDebug) return;
 
-        moneyLabel.setText(String.format("Money: %d", super.getMoney()));
+        moneyLabel.setText(String.format("Money: %d", super.getCompany().getMoney()));
 
         // Zoom (สมมติว่า worldGroup อยู่เป็น child 0)
         if (!gameArea.getChildren().isEmpty() && gameArea.getChildren().getFirst() instanceof Group worldGroup) {
