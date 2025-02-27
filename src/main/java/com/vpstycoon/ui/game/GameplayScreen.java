@@ -23,6 +23,8 @@ import java.util.ArrayList;
  * GameplayScreen หลังแยกโค้ด UI ออกไปเป็น GameplayContentPane
  */
 public class GameplayScreen extends GameScreen {
+    private GameState state;
+
     private final Navigator navigator;
     private final GameSaveManager saveManager;
     private ArrayList<GameObject> gameObjects;
@@ -40,12 +42,12 @@ public class GameplayScreen extends GameScreen {
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
         this.navigator = navigator;
+        this.state = new GameState();
 
         // เซ็ตอัพตัวแปรต่าง ๆ
         this.saveManager = new GameSaveManager();
         this.gameObjects = new ArrayList<>();
         this.company = new Company();
-        loadGame(); // โหลด / ถ้าไม่มี save ก็สร้างใหม่
 
         this.chatSystem = new ChatSystem();
         this.requestManager = new RequestManager();
@@ -54,19 +56,26 @@ public class GameplayScreen extends GameScreen {
         // สร้าง Manager สำหรับ flow และ debug
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
+
+        loadGame(); // โหลด / ถ้าไม่มี save ก็สร้างใหม่
     }
 
     private void loadGame() {
         if (saveManager.saveExists()) {
-            GameState state = saveManager.loadGame();
+            state = saveManager.loadGame();
             if (state.getGameObjects() != null && !state.getGameObjects().isEmpty()) {
                 this.gameObjects = (ArrayList<GameObject>) state.getGameObjects();
             } else {
                 initializeGameObjects();
+                return;
             }
         } else {
             initializeGameObjects();
+            return;
         }
+
+        this.gameLoop = new GameLoop(state, requestManager);
+        this.gameLoop.start();
     }
 
     private void initializeGameObjects() {
@@ -75,11 +84,7 @@ public class GameplayScreen extends GameScreen {
         gameObjects.add(new VPSObject("database", "Database", 600, 600));
         gameObjects.add(new VPSObject("network", "Network", 700, 700));
         // เซฟ initial state
-        GameState state = new GameState(gameObjects);
         saveManager.saveGame(state);
-
-        this.gameLoop = new GameLoop(state, requestManager);
-        this.gameLoop.start();
     }
 
     /**
