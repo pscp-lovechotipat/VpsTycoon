@@ -4,7 +4,7 @@ import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.VPSObject;
+import com.vpstycoon.game.object.VPSObject;
 import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
@@ -17,7 +17,6 @@ import com.vpstycoon.ui.navigation.Navigator;
 import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * GameplayScreen หลังแยกโค้ด UI ออกไปเป็น GameplayContentPane

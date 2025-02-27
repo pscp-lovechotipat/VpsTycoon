@@ -1,4 +1,7 @@
-package com.vpstycoon.game;
+package com.vpstycoon.game.object;
+
+import com.vpstycoon.game.GameObject;
+import com.vpstycoon.game.GameState;
 
 public class VPSObject extends GameObject {
     public VPSObject() {
