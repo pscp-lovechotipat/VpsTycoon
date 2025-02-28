@@ -100,7 +100,7 @@ public class GameplayContentPane extends BorderPane {
         Pane tableLayer = createTableLayer();
         Pane serverLayer = createServerLayer();
 
-        Group worldGroup = new Group(backgroundLayer, objectsContainer, monitorLayer, tableLayer, serverLayer);
+        Group worldGroup = new Group(backgroundLayer, objectsContainer , tableLayer, serverLayer , monitorLayer);
 
         gameArea.getChildren().add(worldGroup);
 
