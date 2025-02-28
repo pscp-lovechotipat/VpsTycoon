@@ -29,7 +29,6 @@ public class GameApplication extends Application implements Navigator {
     private ScreenManager screenManager;
     private MainMenuScreen mainMenuScreen;
     private SettingsScreen settingsScreen;
-    private PlayMenuScreen playMenuScreen;
     private GameplayScreen gameplayScreen;
     private GameSaveManager saveManager;
     private GameManager gameManager;
@@ -108,7 +107,6 @@ public class GameApplication extends Application implements Navigator {
     private void createScreens() {
         mainMenuScreen = new MainMenuScreen(gameConfig, screenManager, this);
         settingsScreen = new SettingsScreen(gameConfig, screenManager, this);
-        playMenuScreen = new PlayMenuScreen(this);
     }
 
     @Override
@@ -121,14 +119,8 @@ public class GameApplication extends Application implements Navigator {
         settingsScreen.show();
     }
 
-    @Override
     public void showPlayMenu() {
-        if (playMenuScreen == null) {
-            playMenuScreen = new PlayMenuScreen(this);
-        }
-
-        playMenuScreen.refreshContinueButton();
-        screenManager.switchScreen(playMenuScreen);
+        showMainMenu();
     }
 
     @Override

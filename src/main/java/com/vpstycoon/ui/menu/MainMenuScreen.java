@@ -19,20 +19,17 @@ public class MainMenuScreen extends GameScreen {
     private static final double BUTTON_WIDTH = 160;
     private static final double BUTTON_HEIGHT = 40;
     private SettingsScreen settingsScreen;
-    private PlayMenuScreen playMenuScreen;
     private final Navigator navigator;
+    private final GameSaveManager saveManager;
 
     public MainMenuScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
         this.navigator = navigator;
+        this.saveManager = new GameSaveManager();
     }
 
     public void setSettingsScreen(SettingsScreen settingsScreen) {
         this.settingsScreen = settingsScreen;
-    }
-
-    public void setPlayMenuScreen(PlayMenuScreen playMenuScreen) {
-        this.playMenuScreen = playMenuScreen;
     }
 
     @Override
@@ -49,9 +46,16 @@ public class MainMenuScreen extends GameScreen {
         Label titleLabel = new Label("VPS Tycoon");
         titleLabel.setStyle("-fx-font-size: 48px; -fx-text-fill: white; -fx-font-weight: bold;");
 
-        // Play Button
-        MenuButton playButton = new MenuButton(MenuButtonType.PLAY);
-        playButton.setOnAction(e -> navigator.showPlayMenu());
+        // Continue Button (แสดงเฉพาะเมื่อมีเซฟเกม)
+        if (saveManager.saveExists()) {
+            MenuButton continueButton = new MenuButton(MenuButtonType.CONTINUE);
+            continueButton.setOnAction(e -> navigator.showLoadGame());
+            root.getChildren().add(continueButton);
+        }
+
+        // New Game Button
+        MenuButton newGameButton = new MenuButton(MenuButtonType.NEW_GAME);
+        newGameButton.setOnAction(e -> navigator.startNewGame());
 
         // Settings Button
         MenuButton settingsButton = new MenuButton(MenuButtonType.SETTINGS);
@@ -66,9 +70,11 @@ public class MainMenuScreen extends GameScreen {
         deleteButton.setOnAction(e -> {
             GameSaveManager save = new GameSaveManager();
             save.deleteGame();
+            // รีเฟรชหน้าเพื่อลบปุ่ม Continue
+            screenManager.switchScreen(createContent());
         });
 
-        root.getChildren().addAll(titleLabel, playButton, settingsButton, quitButton, deleteButton);
+        root.getChildren().addAll(newGameButton, settingsButton, quitButton, deleteButton);
         
         return root;
     }

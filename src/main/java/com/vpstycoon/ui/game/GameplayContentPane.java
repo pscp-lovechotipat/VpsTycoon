@@ -283,7 +283,7 @@ public class GameplayContentPane extends BorderPane {
     private void setupKeyEvents() {
         setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
-                exitGame();
+                showResumeScreen();
             } else if (event.getCode() == KeyCode.F3) {
                 showDebug = !showDebug;
                 debugOverlayManager.toggleDebug();
@@ -374,7 +374,7 @@ public class GameplayContentPane extends BorderPane {
     }
 
     /**
-     * ตัวอย่าง “Desktop” อื่น (ถ้ายังต้องการ)
+     * ตัวอย่าง "Desktop" อื่น (ถ้ายังต้องการ)
      */
     private void openVPSDesktop() {
         ImageView vpsDesktopView = new ImageView(new Image("/images/others/logo.png"));
@@ -448,17 +448,24 @@ public class GameplayContentPane extends BorderPane {
     }
 
     /**
-     * ออกจากเกม (กด ESC)
+     * เปิดหน้า Resume
      */
-    private void exitGame() {
-        // เซฟเกมก่อน
-        gameFlowManager.saveGame();
-        // หยุด timer debug
-        debugOverlayManager.stopTimer();
-        // หยุด game objects
-        gameFlowManager.stopAllGameObjects();
-        // กลับไปเมนู
-        navigator.showPlayMenu();
+    private void showResumeScreen() {
+        ResumeScreen resumeScreen = new ResumeScreen(navigator, this::hideResumeScreen);
+        
+        // ตั้งค่าขนาดเท่ากับหน้าจอเกม
+        resumeScreen.setPrefSize(gameArea.getWidth(), gameArea.getHeight());
+        
+        // เพิ่มเข้าไปใน gameArea หรือ rootStack แล้วแต่โครงสร้าง
+        gameArea.getChildren().add(resumeScreen);
+    }
+
+    /**
+     * ซ่อนหน้า Resume และกลับไปเล่นเกม
+     */
+    private void hideResumeScreen() {
+        // ลบหน้า Resume ออกจาก gameArea
+        gameArea.getChildren().removeIf(node -> node instanceof ResumeScreen);
     }
 
     public Group getWorldGroup() {

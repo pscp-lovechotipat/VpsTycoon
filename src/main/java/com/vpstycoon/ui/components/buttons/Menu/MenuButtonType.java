@@ -8,7 +8,9 @@ public enum MenuButtonType {
     CONTINUE("continue"),
     NEW_GAME("new_game"),
     BACK("back"),
-    APPLY("apply");
+    APPLY("apply"),
+    RESUME("resume"),
+    MAIN_MENU("main_menu");
 
     private final String value;
 
