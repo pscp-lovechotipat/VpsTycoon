@@ -21,6 +21,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ZoomEvent;
 import javafx.scene.layout.*;
 
 import java.util.List;
@@ -44,6 +45,12 @@ public class GameplayContentPane extends BorderPane {
     private final GameFlowManager gameFlowManager;
     private final DebugOverlayManager debugOverlayManager;
     private boolean showDebug = false;
+
+    private double mouseAnchorX;
+    private double mouseAnchorY;
+    private double translateAnchorX;
+    private double translateAnchorY;
+    private boolean isPanning = false;
 
     public GameplayContentPane(
             List<GameObject> gameObjects,
@@ -118,7 +125,7 @@ public class GameplayContentPane extends BorderPane {
 
         debugOverlayManager.startTimer();
 
-        setupZoom(worldGroup);
+        setupZoomAndPan(worldGroup);
 
         setStyle("-fx-background-color: #000000;");
     }
@@ -253,7 +260,8 @@ public class GameplayContentPane extends BorderPane {
     /**
      * เพิ่มการซูมด้วย Scroll
      */
-    private void setupZoom(Group worldGroup) {
+    private void setupZoomAndPan(Group worldGroup) {
+        // 1. ซูมด้วย Scroll (คงเดิม)
         gameArea.setOnScroll(e -> {
             double zoomFactor = 1.05;
             if (e.getDeltaY() < 0) {
@@ -275,6 +283,105 @@ public class GameplayContentPane extends BorderPane {
             // ไม่ลืม consume
             e.consume();
         });
+
+        // 1.1 เพิ่มการซูมด้วยการถ่างนิ้วบน touchpad
+        gameArea.setOnZoom(e -> {
+            // ใช้ค่า ZoomFactor จาก event โดยตรง
+            double zoomFactor = e.getZoomFactor();
+            
+            // คำนวณค่า scale ใหม่ โดยใช้ค่า zoomFactor จาก gesture
+            double newScale = worldGroup.getScaleX() * zoomFactor;
+            
+            // กำหนดค่า scale ต่ำสุดและสูงสุด
+            double minScale = 0.5;
+            double maxScale = 2.0;
+            
+            // ตรวจสอบและปรับค่า newScale ให้อยู่ในช่วงที่กำหนด
+            newScale = Math.max(minScale, Math.min(newScale, maxScale));
+            
+            worldGroup.setScaleX(newScale);
+            worldGroup.setScaleY(newScale);
+            
+            // อัพเดท Debug info ถ้ามี
+            if (showDebug) {
+                debugOverlayManager.updateGameInfo(rootStack);
+            }
+            
+            // ไม่ลืม consume
+            e.consume();
+        });
+
+        // 2. เพิ่มการจับเมาส์ดาวน์เพื่อเริ่มการลาก (pan)
+        worldGroup.setOnMousePressed(e -> {
+            // บันทึกตำแหน่งเริ่มต้นของเมาส์และ group
+            mouseAnchorX = e.getSceneX();
+            mouseAnchorY = e.getSceneY();
+            translateAnchorX = worldGroup.getTranslateX();
+            translateAnchorY = worldGroup.getTranslateY();
+            isPanning = true;
+            
+            // เปลี่ยน cursor เป็นรูปมือกำ
+            gameArea.setCursor(javafx.scene.Cursor.CLOSED_HAND);
+            
+            e.consume();
+        });
+
+        // 3. เพิ่มการเลื่อน Group ตามการลากเมาส์
+        worldGroup.setOnMouseDragged(e -> {
+            if (isPanning) {
+                // คำนวณระยะที่ต้องเลื่อน
+                double deltaX = e.getSceneX() - mouseAnchorX;
+                double deltaY = e.getSceneY() - mouseAnchorY;
+                
+                // เลื่อน Group
+                worldGroup.setTranslateX(translateAnchorX + deltaX);
+                worldGroup.setTranslateY(translateAnchorY + deltaY);
+                
+                // อัพเดท Debug info ถ้ามี
+                if (showDebug) {
+                    debugOverlayManager.updateGameInfo(rootStack);
+                }
+                
+                e.consume();
+            }
+        });
+
+        // 4. หยุดการลากเมื่อปล่อยเมาส์
+        worldGroup.setOnMouseReleased(e -> {
+            if (isPanning) {
+                isPanning = false;
+                // เปลี่ยน cursor กลับเป็นปกติ
+                gameArea.setCursor(javafx.scene.Cursor.DEFAULT);
+                e.consume();
+            }
+        });
+
+        // 5. เมื่อเมาส์เข้าไปในพื้นที่ให้เปลี่ยน cursor เป็นรูปมือ
+        worldGroup.setOnMouseEntered(e -> {
+            gameArea.setCursor(javafx.scene.Cursor.HAND);
+        });
+
+        // 6. เมื่อเมาส์ออกจากพื้นที่ให้เปลี่ยน cursor กลับเป็นปกติ
+        worldGroup.setOnMouseExited(e -> {
+            if (!isPanning) {
+                gameArea.setCursor(javafx.scene.Cursor.DEFAULT);
+            }
+        });
+
+        // 7. ใช้ปุ่ม spacebar สำหรับรีเซ็ตการซูมและตำแหน่ง (optional)
+        gameArea.setOnKeyPressed(e -> {
+            if (e.getCode() == javafx.scene.input.KeyCode.SPACE) {
+                // รีเซ็ตการซูมและตำแหน่ง
+                worldGroup.setScaleX(1.0);
+                worldGroup.setScaleY(1.0);
+                worldGroup.setTranslateX(0);
+                worldGroup.setTranslateY(0);
+                e.consume();
+            }
+        });
+        
+        // ทำให้สามารถรับ key event
+        gameArea.setFocusTraversable(true);
     }
 
     /**
