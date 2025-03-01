@@ -1,4 +1,6 @@
-package com.vpstycoon.game;
+package com.vpstycoon.game.thread;
+
+import com.vpstycoon.game.GameState;
 
 public class GameTimeUpdater extends Thread{
     private GameState gameState;

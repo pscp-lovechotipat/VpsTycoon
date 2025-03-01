@@ -1,8 +1,6 @@
 package com.vpstycoon.ui.game;
 
-import com.vpstycoon.game.GameLoop;
 import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
@@ -21,7 +19,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ZoomEvent;
 import javafx.scene.layout.*;
 
 import java.util.List;

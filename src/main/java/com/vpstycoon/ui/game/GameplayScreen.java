@@ -7,6 +7,8 @@ import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.game.thread.GameTimeUpdater;
+import com.vpstycoon.game.thread.RequestGenerator;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
@@ -29,8 +31,6 @@ public class GameplayScreen extends GameScreen {
     private final ChatSystem chatSystem;
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
-
-    private GameLoop gameLoop;
 
     // Manager แยก
     private final GameFlowManager gameFlowManager;

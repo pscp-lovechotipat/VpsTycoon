@@ -1,4 +1,4 @@
-package com.vpstycoon.game;
+package com.vpstycoon.game.thread;
 
 import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.manager.CustomerRequest;
@@ -11,6 +11,8 @@ import java.util.Random;
 public class RequestGenerator extends Thread {
     private final RequestManager requestManager;
     private volatile boolean running = true;
+    private final int rateLimitSleepTime = 10_000;
+    private final int maxRequests = 10;
 
     public RequestGenerator(RequestManager requestManager) {
         this.requestManager = requestManager;
@@ -19,10 +21,17 @@ public class RequestGenerator extends Thread {
     @Override
     public void run() {
         Random random = new Random();
-        while (running) {
+
+        while (true) {
             try {
-                // รอเวลาสุ่มระหว่าง 10-60 วินาที
-                int delay = 10_000 + random.nextInt(50_000);
+                if (requestManager.getRequests().size() > maxRequests) {
+                    System.out.println("RequestGenerator: request limit reached");
+                    Thread.sleep(rateLimitSleepTime); // ให้หลับไป 10 วิ แล้วไปเช็คใหม่
+                    continue;
+                }
+
+                // รอเวลาสุ่มระหว่าง 30-90 วินาที
+                int delay = 30_000 + random.nextInt(60_000);
                 Thread.sleep(delay);
 
                 // สุ่มสร้าง CustomerRequest
