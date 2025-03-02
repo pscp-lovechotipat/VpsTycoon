@@ -7,6 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.control.Button;
 import javafx.stage.Popup;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 
@@ -142,5 +143,36 @@ public class DesktopScreen extends StackPane {
             dashboardWindow.setY(getScene().getWindow().getY() +
                     (getScene().getWindow().getHeight() - dashboardWindow.getHeight()) / 2);
         }
+    }
+
+    /**
+     * Adds an exit button to the desktop that triggers the provided action when clicked
+     * @param onExit Runnable to execute when exit button is clicked
+     */
+    public void addExitButton(Runnable onExit) {
+        // Create a button in the top-right corner
+        Button exitButton = new Button("Exit");
+        exitButton.setStyle("""
+            -fx-background-color: #e74c3c;
+            -fx-text-fill: white;
+            -fx-font-weight: bold;
+            -fx-padding: 8 15;
+            -fx-background-radius: 5;
+            -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 1);
+        """);
+        
+        // Set button action
+        exitButton.setOnAction(e -> {
+            if (onExit != null) {
+                onExit.run();
+            }
+        });
+        
+        // Position in top-right corner
+        StackPane.setAlignment(exitButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(exitButton, new Insets(20));
+        
+        // Add to the display
+        getChildren().add(exitButton);
     }
 }
