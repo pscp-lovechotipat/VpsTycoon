@@ -10,7 +10,7 @@ public enum MenuButtonType {
     BACK("back"),
     APPLY("apply"),
     RESUME("resume"),
-    MAIN_MENU("main_menu");
+    MAIN_MENU("Mainmenu");
 
     private final String value;
 
