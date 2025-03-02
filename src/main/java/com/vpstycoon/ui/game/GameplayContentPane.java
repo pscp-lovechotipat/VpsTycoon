@@ -15,11 +15,19 @@ import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 import java.util.List;
 
@@ -108,7 +116,7 @@ public class GameplayContentPane extends BorderPane {
 
         gameArea.getChildren().add(worldGroup);
 
-        HBox menuBar = createMenuBar();
+        HBox menuBar = this.createMenuBar();
         StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
@@ -222,36 +230,132 @@ public class GameplayContentPane extends BorderPane {
         return serverLayer;
     }
 
-
     private HBox createMenuBar() {
         HBox menuBar = new HBox(20);
-        menuBar.setPadding(new Insets(20));
-        menuBar.setAlignment(Pos.CENTER_LEFT);
+        menuBar.setPadding(new Insets(40));
+        menuBar.setAlignment(Pos.CENTER);
         menuBar.setPrefHeight(50);
         menuBar.setMaxHeight(50);
 
-        menuBar.setStyle("-fx-background-color: #2C3E50;");
+        // 1. Deploy (แสดงสถานะ deploy VPS)
+        VBox deployStatus = createCircleButtonStack(
+                "Deploy", 
+                12, 
+                Color.rgb(240, 50, 50),   // สีแดงอ่อนด้านบน
+                Color.rgb(180, 20, 20)   // สีแดงเข้มด้านล่าง
+        );
 
-        // ใช้ UIUtils สร้างปุ่ม
-        Button saveButton = ButtonUtils.createButton("Save Game");
-        saveButton.setOnAction(e -> showConfirmationDialog(
-                "Save Game",
-                "Do you want to save your current progress?",
-                gameFlowManager::saveGame
-        ));
+        // 2. Network (แสดงสถานะเครือข่าย)
+        VBox networkStatus = createCircleButtonStack(
+                "Network", 
+                8, 
+                Color.rgb(50, 150, 240),   // สีฟ้าอ่อนด้านบน
+                Color.rgb(20, 100, 200)   // สีน้ำเงินเข้มด้านล่าง
+        );
 
-        Button menuButton = ButtonUtils.createButton("Main Menu");
-        menuButton.setOnAction(e -> showConfirmationDialog(
-                "Return to Main Menu",
-                "Do you want to save and return to the main menu?",
-                () -> {
-                    gameFlowManager.saveGame();
-                    navigator.showMainMenu();
-                }
-        ));
+        // 3. Security (แสดงสถานะความปลอดภัย)
+        VBox securityStatus = createCircleButtonStack(
+                "Security", 
+                5, 
+                Color.rgb(150, 50, 220),   // สีม่วงอ่อนด้านบน
+                Color.rgb(100, 20, 180)   // สีม่วงเข้มด้านล่าง
+        );
 
-        menuBar.getChildren().addAll(saveButton, menuButton);
+        // 4. Marketing (แสดงสถานะการตลาด)
+        VBox marketingStatus = createCircleButtonStack(
+                "Marketing", 
+                10, 
+                Color.rgb(50, 200, 100),   // สีเขียวอ่อนด้านบน
+                Color.rgb(20, 150, 50)    // สีเขียวเข้มด้านล่าง
+        );
+
+        // เพิ่มทุกตัวแสดงสถานะลงใน menuBar โดยเรียงจากซ้ายไปขวา
+        menuBar.getChildren().addAll(deployStatus, networkStatus, securityStatus, marketingStatus);
+
         return menuBar;
+    }
+
+    /**
+     * สร้างตัวแสดงสถานะวงกลมพร้อมป้ายกำกับใต้วงกลม
+     * @param labelText ข้อความบนป้ายกำกับ
+     * @param number ตัวเลขที่จะแสดงในวงกลม
+     * @param topColor สีด้านบนของ gradient
+     * @param bottomColor สีด้านล่างของ gradient
+     * @return VBox ที่ประกอบด้วยวงกลมและป้ายกำกับ
+     */
+    private VBox createCircleButtonStack(String labelText, int number, Color topColor, Color bottomColor) {
+        VBox container = new VBox(12);
+        container.setAlignment(Pos.CENTER);
+
+        // สร้างวงกลมขาวด้านนอก (เงา)
+        Circle outerCircle = new Circle(38);
+        outerCircle.setEffect(new DropShadow(10, Color.BLACK));
+        Stop[] outerCircleStops = new Stop[] {
+                new Stop(0, Color.rgb(255, 255, 255)),
+                new Stop(1, Color.rgb(220, 220, 220))
+        };
+        LinearGradient outerCircleGradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, outerCircleStops);
+        outerCircle.setFill(outerCircleGradient);
+
+        // สร้างวงกลมสีด้านใน (gradient)
+        Circle innerCircle = new Circle(30);
+        DropShadow innerShadow = new DropShadow();
+        innerShadow.setRadius(2);
+        innerShadow.setColor(Color.rgb(0, 0, 0, 0.4));
+        innerShadow.setOffsetY(2);
+        innerCircle.setEffect(innerShadow);
+        
+        // สร้าง gradient จากสีที่กำหนด
+        Stop[] stops = new Stop[] {
+                new Stop(0, topColor),
+                new Stop(1, bottomColor)
+        };
+        LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, stops);
+        innerCircle.setFill(gradient);
+
+        // เพิ่มตัวเลข
+        Label numberLabel = new Label(String.valueOf(number));
+        numberLabel.setTextFill(Color.WHITE);
+        numberLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
+
+        // ซ้อนวงกลมและตัวเลข
+        StackPane circleStack = new StackPane();
+        circleStack.getChildren().addAll(outerCircle, innerCircle, numberLabel);
+
+        // สร้างป้ายกำกับด้านล่าง
+        Label textLabel = new Label(labelText);
+        textLabel.setPrefWidth(80);
+        
+        // สร้าง gradient สำหรับป้ายกำกับ
+        Stop[] labelStops = new Stop[] {
+                new Stop(0, Color.rgb(255, 255, 255)),
+                new Stop(1, Color.rgb(220, 220, 220))
+        };
+        LinearGradient labelGradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, labelStops);
+        
+        // ตั้งค่าพื้นหลังและขอบ
+        textLabel.setBackground(new Background(new BackgroundFill(
+                labelGradient, new CornerRadii(4), Insets.EMPTY)));
+        
+        // เพิ่ม padding ให้กับป้ายกำกับ
+        textLabel.setPadding(new Insets(6));
+        
+        // ตั้งค่าเงา
+        DropShadow shadow = new DropShadow();
+        shadow.setColor(Color.rgb(0, 0, 0, 0.3));
+        shadow.setRadius(10);
+        shadow.setOffsetY(1);
+        textLabel.setEffect(shadow);
+        
+        // ตั้งค่าข้อความ
+        textLabel.setTextFill(Color.rgb(100, 100, 100));
+        textLabel.setFont(Font.font("System", FontWeight.NORMAL, 12));
+        textLabel.setAlignment(Pos.CENTER);
+
+        // เพิ่มทั้งหมดลงใน VBox
+        container.getChildren().addAll(circleStack, textLabel);
+        
+        return container;
     }
 
     /**
