@@ -38,6 +38,10 @@ public class ResumeScreen extends StackPane {
         MenuButton resumeButton = new MenuButton(MenuButtonType.RESUME);
         resumeButton.setOnAction(e -> onResumeGame.run());
 
+        // Settings Button
+        MenuButton settingsButton = new MenuButton(MenuButtonType.SETTINGS);
+        settingsButton.setOnAction(e -> navigator.showSettings());
+
         // ปุ่ม Main Menu (กลับไปหน้าหลัก)
         MenuButton mainMenuButton = new MenuButton(MenuButtonType.MAIN_MENU);
         mainMenuButton.setOnAction(e -> navigator.showMainMenu());
@@ -46,7 +50,7 @@ public class ResumeScreen extends StackPane {
         MenuButton quitButton = new MenuButton(MenuButtonType.QUIT);
         quitButton.setOnAction(e -> System.exit(0));
 
-        menuBox.getChildren().addAll(resumeButton, mainMenuButton, quitButton);
+        menuBox.getChildren().addAll(resumeButton,settingsButton , mainMenuButton, quitButton);
 
         getChildren().addAll(background, menuBox);
 
@@ -57,4 +61,4 @@ public class ResumeScreen extends StackPane {
             }
         });
     }
-} 
+}
