@@ -1,3 +1,5 @@
+package com.vpstycoon.event;
+
 public enum EventType {
     DATA_BREACH("Data Breach", "Install Firewall and upgrade security"),
     POWER_OUTAGE("Power Outage", "Install UPS or move to co-location"),
@@ -25,4 +27,4 @@ public enum EventType {
     public String getSolution() {
         return solution;
     }
-} 
+}

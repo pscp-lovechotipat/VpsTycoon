@@ -97,6 +97,10 @@ public class GameplayContentPane extends BorderPane {
         // Create world layers
         Pane backgroundLayer = createBackgroundLayer();
         Pane objectsContainer = createObjectsContainer();
+
+        // Create menu bar
+        GameMenuBar menuBar = new GameMenuBar();
+        StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
         
         // Create room objects (monitor, server, table)
         roomObjects = new RoomObjectsLayer(this::openSimulationDesktop);
@@ -113,18 +117,12 @@ public class GameplayContentPane extends BorderPane {
         // Add world to game area
         gameArea.getChildren().add(worldGroup);
 
-        // Create menu bar
-        GameMenuBar menuBar = new GameMenuBar();
-        StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
-
         // Setup debug overlay
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
 
         // Add all elements to root
-        if (!rootStack.getChildren().isEmpty()) {
-            rootStack.getChildren().clear();
-        }
+        rootStack.getChildren().clear();
         rootStack.getChildren().addAll(gameArea, menuBar, debugOverlay);
 
         // Start debug timer
@@ -200,6 +198,8 @@ public class GameplayContentPane extends BorderPane {
         // Replace game area content
         gameArea.getChildren().clear();
         gameArea.getChildren().add(desktop);
+
+        rootStack.getChildren().remove(1);
 
         // Add exit button
         desktop.addExitButton(this::returnToRoom);
