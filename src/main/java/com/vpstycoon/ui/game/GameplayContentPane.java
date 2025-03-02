@@ -19,6 +19,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Button;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import java.util.List;
+import java.util.ArrayList;
 
 import java.util.List;
 
@@ -39,14 +45,19 @@ public class GameplayContentPane extends BorderPane {
     private final VPSManager vpsManager;
     private final GameFlowManager gameFlowManager;
     private final DebugOverlayManager debugOverlayManager;
-    
+
     // UI components
     private RoomObjectsLayer roomObjects;
-    
+
+    // Rack State
+    private static final int MAX_SLOTS = 10;
+    private int occupiedSlots = 1; // Example: Starting with 1 occupied slot
+    private final List<Pane> slotPanes = new ArrayList<>();
+
     // Handlers
     private ZoomPanHandler zoomPanHandler;
     private KeyEventHandler keyEventHandler;
-    
+
     // State
     private boolean showDebug = false;
 
@@ -75,17 +86,17 @@ public class GameplayContentPane extends BorderPane {
         this.gameArea = new StackPane();
         gameArea.setPrefSize(800, 600);
         gameArea.setMinSize(800, 600);
-        
+
         // Setup UI components
         setupUI();
-        
+
         // Initialize handlers
         this.keyEventHandler = new KeyEventHandler(this, debugOverlayManager);
         keyEventHandler.setup();
-        
+
         // Set center content
         setCenter(rootStack);
-        
+
         // Debug setup
         setupDebugFeatures();
     }
@@ -101,19 +112,19 @@ public class GameplayContentPane extends BorderPane {
         // Create menu bar
         GameMenuBar menuBar = new GameMenuBar();
         StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
-        
+
         // Create room objects (monitor, server, table)
-        roomObjects = new RoomObjectsLayer(this::openSimulationDesktop);
-        
+        roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo );
+
         // Create world group with all elements
         worldGroup = new Group(
-            backgroundLayer, 
-            objectsContainer, 
-            roomObjects.getTableLayer(), 
-            roomObjects.getServerLayer(), 
+            backgroundLayer,
+            objectsContainer,
+            roomObjects.getTableLayer(),
+            roomObjects.getServerLayer(),
             roomObjects.getMonitorLayer()
         );
-        
+
         // Add world to game area
         gameArea.getChildren().add(worldGroup);
 
@@ -180,6 +191,91 @@ public class GameplayContentPane extends BorderPane {
             }
         });
     }
+    private void openRackInfo() {
+        StackPane rackPane = new StackPane();
+        rackPane.setPrefSize(300, 450); // Adjusted size
+        rackPane.setStyle("-fx-background-color: rgba(254,240,210,1); -fx-padding: 20px; -fx-border-color: black;");
+
+        // Rack Panel (Colored Box Instead of Image)
+        VBox rackBox = new VBox(5);
+        rackBox.setPrefSize(150, 400); // Matching server dimensions
+        rackBox.setStyle("-fx-background-color: #2E3B4E; -fx-border-color: black; -fx-border-width: 2px;");
+        rackBox.setAlignment(Pos.TOP_CENTER);
+
+        // VBox to hold rack slots
+        VBox rackSlots = new VBox(5);
+        rackSlots.setAlignment(Pos.TOP_CENTER);
+        rackSlots.setTranslateY(5);
+
+        // Create slot indicators
+        slotPanes.clear();
+        for (int i = 0; i < MAX_SLOTS; i++) {
+            Pane slot = createRackSlot(i);
+            slotPanes.add(slot);
+            rackSlots.getChildren().add(slot);
+        }
+
+        // Server Information Panel
+        VBox infoPane = new VBox(10);
+        infoPane.setAlignment(Pos.TOP_LEFT);
+        Label titleLabel = new Label("Rack Info");
+        Label serverCount = new Label("Server: " + occupiedSlots + "/" + MAX_SLOTS + " Units");
+        Label networkUsage = new Label("Networks: 10Gbps");
+        Label userCount = new Label("User Active: 10");
+
+        Button upgradeButton = new Button("Upgrade");
+        upgradeButton.setOnAction(e -> upgradeRackSlot(serverCount));
+
+        Button closeButton = new Button("Close");
+        closeButton.setOnAction(e -> {
+            gameArea.getChildren().remove(rackPane);
+        });
+
+        infoPane.getChildren().addAll(titleLabel, serverCount, networkUsage, userCount, upgradeButton, closeButton);
+        infoPane.setTranslateX(180); // Adjust positioning
+
+        // Add slots inside rackBox
+        rackBox.getChildren().add(rackSlots);
+
+        // Stack layers together
+        rackPane.getChildren().addAll(rackBox, infoPane);
+
+        // Ensure that rackPane is added to gameArea only if it's not already present
+        if (!gameArea.getChildren().contains(rackPane)) {
+            gameArea.getChildren().add(rackPane);
+        }
+    }
+
+
+    /**
+     * Creates a Rack Slot UI Pane
+     */
+    private Pane createRackSlot(int index) {
+        Pane slot = new Pane();
+        slot.setPrefSize(100, 25);
+
+        Rectangle rect = new Rectangle(100, 25);
+        rect.setFill(index < occupiedSlots ? Color.DARKBLUE : Color.LIGHTGRAY);
+        rect.setStroke(Color.BLACK);
+
+        slot.getChildren().add(rect);
+        slot.setOnMouseClicked(e -> System.out.println("Slot " + (index + 1) + " clicked"));
+
+        return slot;
+    }
+
+    /**
+     * Upgrades the Rack by adding a new server slot
+     */
+    private void upgradeRackSlot(Label serverCount) {
+        if (occupiedSlots < MAX_SLOTS) {
+            occupiedSlots++;
+            slotPanes.get(occupiedSlots - 1).getChildren().get(0).setStyle("-fx-fill: darkblue;");
+            serverCount.setText("Server: " + occupiedSlots + "/" + MAX_SLOTS + " Units");
+        } else {
+            System.out.println("No available slots");
+        }
+    }
 
     /**
      * Opens the desktop simulation screen
@@ -187,7 +283,7 @@ public class GameplayContentPane extends BorderPane {
     private void openSimulationDesktop() {
         DesktopScreen desktop = new DesktopScreen(
                 0.0,               // Example companyRating
-                0,                 // Example marketingPoints  
+                0,                 // Example marketingPoints
                 chatSystem,
                 requestManager,
                 vpsManager
@@ -204,7 +300,7 @@ public class GameplayContentPane extends BorderPane {
         // Add exit button
         desktop.addExitButton(this::returnToRoom);
     }
-    
+
     /**
      * Return to the room view
      */
@@ -244,7 +340,7 @@ public class GameplayContentPane extends BorderPane {
     public void setWorldGroup(Group worldGroup) {
         this.worldGroup = worldGroup;
     }
-    
+
     public StackPane getGameArea() {
         return gameArea;
     }
