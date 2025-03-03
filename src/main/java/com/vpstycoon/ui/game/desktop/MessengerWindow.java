@@ -2,6 +2,9 @@ package com.vpstycoon.ui.game.desktop;
 
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.ui.game.GameplayContentPane;
+import com.vpstycoon.ui.game.GameplayContentPane.VM;
+import com.vpstycoon.ui.game.GameplayContentPane.VPS;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
@@ -10,16 +13,18 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import java.util.List;
 
 public class MessengerWindow extends VBox {
     private final RequestManager requestManager;
     private final Runnable onClose;
     private final ListView<String> requestView;
+    private final GameplayContentPane gameplayContentPane = null; // เพิ่มเพื่อเข้าถึง VM list
+    private VBox messagesBox;
 
     public MessengerWindow(RequestManager requestManager, Runnable onClose) {
         this.requestManager = requestManager;
         this.onClose = onClose;
-
         this.requestView = new ListView<>();
 
         setupUI();
@@ -42,7 +47,7 @@ public class MessengerWindow extends VBox {
         content.getChildren().addAll(requestList, chatArea);
         getChildren().addAll(titleBar, content);
 
-        updateRequestList(); // ✅ โหลดข้อมูลเริ่มต้น
+        updateRequestList();
     }
 
     private HBox createTitleBar() {
@@ -84,22 +89,20 @@ public class MessengerWindow extends VBox {
         requestManager.getRequests().addListener((ListChangeListener<CustomerRequest>) change -> {
             while (change.next()) {
                 if (change.wasAdded() || change.wasRemoved()) {
-                    Platform.runLater(this::updateRequestList); // ✅ อัปเดต UI เมื่อมีการเปลี่ยนแปลง
+                    Platform.runLater(this::updateRequestList);
                 }
             }
         });
     }
 
-
     private void updateRequestList() {
         requestView.getItems().clear();
         requestView.getItems().addAll(
                 requestManager.getRequests().stream()
-                        .map(req -> req.getTitle()) // ✅ แปลง CustomerRequest เป็น String
+                        .map(CustomerRequest::getTitle)
                         .toList()
         );
     }
-
 
     private VBox createChatArea() {
         VBox chatArea = new VBox(10);
@@ -110,7 +113,7 @@ public class MessengerWindow extends VBox {
         messagesScroll.setFitToWidth(true);
         VBox.setVgrow(messagesScroll, Priority.ALWAYS);
 
-        VBox messagesBox = new VBox(10);
+        messagesBox = new VBox(10);
         messagesBox.setPadding(new Insets(10));
 
         messagesScroll.setContent(messagesBox);
@@ -123,11 +126,89 @@ public class MessengerWindow extends VBox {
         HBox.setHgrow(messageInput, Priority.ALWAYS);
 
         Button sendButton = new Button("Send");
+        sendButton.setOnAction(e -> {
+            String message = messageInput.getText();
+            if (!message.isEmpty()) {
+                Label messageLabel = new Label("You: " + message);
+                messagesBox.getChildren().add(messageLabel);
+                messageInput.clear();
+            }
+        });
 
-        inputArea.getChildren().addAll(messageInput, sendButton);
+        // เพิ่มปุ่ม Send Work
+        Button sendWorkButton = new Button("Send Work");
+        sendWorkButton.setDisable(true); // ปิดใช้งานจนกว่าจะเลือก request
+        sendWorkButton.setOnAction(e -> sendWorkToCustomer());
+
+        // ตรวจสอบเมื่อเลือก request
+        requestView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            sendWorkButton.setDisable(newVal == null);
+            if (newVal != null) {
+                updateChatWithRequestDetails(newVal);
+            }
+        });
+
+        inputArea.getChildren().addAll(messageInput, sendButton, sendWorkButton);
 
         chatArea.getChildren().addAll(messagesScroll, inputArea);
         return chatArea;
+    }
+
+    private void updateChatWithRequestDetails(String requestTitle) {
+        messagesBox.getChildren().clear();
+        CustomerRequest selectedRequest = requestManager.getRequests().stream()
+                .filter(req -> req.getTitle().equals(requestTitle))
+                .findFirst()
+                .orElse(null);
+
+        if (selectedRequest != null) {
+            Label requestDetails = new Label("Request: " + selectedRequest.getTitle() +
+                    "\nRequired Specs: " +
+                    "\nvCPUs: " + selectedRequest.getRequiredVCPUs() +
+                    "\nRAM: " + selectedRequest.getRequiredRam() +
+                    "\nDisk: " + selectedRequest.getRequiredDisk());
+            messagesBox.getChildren().add(requestDetails);
+        }
+    }
+
+    private void sendWorkToCustomer() {
+        String selectedRequestTitle = requestView.getSelectionModel().getSelectedItem();
+        if (selectedRequestTitle == null) return;
+
+        CustomerRequest selectedRequest = requestManager.getRequests().stream()
+                .filter(req -> req.getTitle().equals(selectedRequestTitle))
+                .findFirst()
+                .orElse(null);
+
+        if (selectedRequest == null) return;
+
+        // ตรวจสอบ VM ที่มีสเปคตรงกับ request
+        List<VPS> vpsList = gameplayContentPane.getVpsList();
+        VM matchingVM = null;
+
+        for (VPS vps : vpsList) {
+            for (VM vm : vps.getVms()) {
+                if (vm.getvCPUs() >= selectedRequest.getRequiredVCPUs() &&
+                        vm.getRam().equals(selectedRequest.getRequiredRam()) &&
+                        vm.getDisk().equals(selectedRequest.getRequiredDisk()) &&
+                        "Running".equals(vm.getStatus())) {
+                    matchingVM = vm;
+                    break;
+                }
+            }
+            if (matchingVM != null) break;
+        }
+
+        if (matchingVM != null) {
+            // ส่งงานสำเร็จ
+            Label successMessage = new Label("Work sent to customer using VM: " + matchingVM.getIp());
+            messagesBox.getChildren().add(successMessage);
+            requestManager.completeRequest(selectedRequest); // สมมติว่ามี method นี้ใน RequestManager
+        } else {
+            // ไม่พบ VM ที่ตรงสเปค
+            Label errorMessage = new Label("No VM found matching the required specs!");
+            messagesBox.getChildren().add(errorMessage);
+        }
     }
 
     private void styleWindow() {
