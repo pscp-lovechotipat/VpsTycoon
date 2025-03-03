@@ -22,7 +22,7 @@ public class RequestGenerator extends Thread {
     public void run() {
         Random random = new Random();
 
-        while (true) {
+        while (!interrupted()) {
             try {
                 if (requestManager.getRequests().size() > maxRequests) {
                     System.out.println("RequestGenerator: request limit reached");

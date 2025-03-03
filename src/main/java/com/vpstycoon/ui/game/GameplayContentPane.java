@@ -104,7 +104,7 @@ public class GameplayContentPane extends BorderPane {
     /**
      * Main UI setup method
      */
-    private void setupUI() {
+    private synchronized void setupUI() {
         // Create world layers
         Pane backgroundLayer = createBackgroundLayer();
         Pane objectsContainer = createObjectsContainer();
@@ -244,6 +244,9 @@ public class GameplayContentPane extends BorderPane {
         if (!gameArea.getChildren().contains(rackPane)) {
             gameArea.getChildren().add(rackPane);
         }
+
+        // remove menubar on desktop screen
+        rootStack.getChildren().remove(1);
     }
 
 

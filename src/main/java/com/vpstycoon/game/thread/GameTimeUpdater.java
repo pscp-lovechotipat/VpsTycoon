@@ -12,7 +12,7 @@ public class GameTimeUpdater extends Thread{
 
     @Override
     public void run() {
-        while (running) {
+        while (!interrupted()) {
             try {
                 // รอ 15 นาทีจริง (15 * 60 * 1000 มิลลิวินาที)
                 System.out.println("⏳ รอ 15 นาทีก่อนเปลี่ยนเดือน...");
