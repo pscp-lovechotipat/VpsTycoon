@@ -150,7 +150,7 @@ public class GameplayContentPane extends BorderPane {
     private Pane createBackgroundLayer() {
         Pane backgroundLayer = new Pane();
         backgroundLayer.setStyle("""
-            -fx-background-image: url("/images/rooms/room.png");
+            -fx-background-image: url("/images/rooms/room2(70).png");
             -fx-background-color: transparent;
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
