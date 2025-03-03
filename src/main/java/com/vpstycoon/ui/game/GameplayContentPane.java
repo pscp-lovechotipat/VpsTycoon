@@ -295,6 +295,7 @@ public class GameplayContentPane extends BorderPane {
         gameArea.getChildren().clear();
         gameArea.getChildren().add(desktop);
 
+        // remove menubar on desktop screen
         rootStack.getChildren().remove(1);
 
         // Add exit button
