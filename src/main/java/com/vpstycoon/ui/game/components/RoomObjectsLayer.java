@@ -59,15 +59,19 @@ public class RoomObjectsLayer {
 
     private Pane createServerLayer() {
         Pane serverLayer = new Pane();
-        serverLayer.setPrefWidth(400);
-        serverLayer.setPrefHeight(500);
+        Image img = new Image("/images/servers/server.png");
+        serverLayer.setPrefWidth(img.getWidth());
+        serverLayer.setPrefHeight(img.getHeight());
+
         serverLayer.setStyle("""
         -fx-background-image: url('/images/servers/server.png');
         -fx-background-size: contain;
         -fx-background-repeat: no-repeat;
         -fx-background-position: center;
-        -fx-translate-x: 550px;
-        -fx-translate-y: 350px;
+        -fx-scale-x: 0.2;
+        -fx-scale-y: 0.2;
+        -fx-translate-x: 500px;
+        -fx-translate-y: 250px;
     """);
 
         serverLayer.setOnMouseClicked(e -> {

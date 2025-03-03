@@ -283,7 +283,7 @@ public class GameplayContentPane extends BorderPane {
     /**
      * Opens the desktop simulation screen
      */
-    private void openSimulationDesktop() {
+    private synchronized void openSimulationDesktop() {
         DesktopScreen desktop = new DesktopScreen(
                 0.0,               // Example companyRating
                 0,                 // Example marketingPoints
