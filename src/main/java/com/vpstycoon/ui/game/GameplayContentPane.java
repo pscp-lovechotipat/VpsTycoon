@@ -92,7 +92,7 @@ public class GameplayContentPane extends BorderPane {
 
         // Initialize handlers
         this.keyEventHandler = new KeyEventHandler(this, debugOverlayManager);
-        keyEventHandler.setup();
+        this.keyEventHandler.setup();
 
         // Set center content
         setCenter(rootStack);
@@ -229,6 +229,17 @@ public class GameplayContentPane extends BorderPane {
         Button closeButton = new Button("Close");
         closeButton.setOnAction(e -> {
             gameArea.getChildren().remove(rackPane);
+            
+            // เพิ่ม menuBar กลับเข้าไปใน rootStack
+            GameMenuBar menuBar = new GameMenuBar();
+            StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
+            
+            // เพิ่มกลับเข้าไปตำแหน่งที่ 1 (เหมือนตอนเริ่มต้น)
+            if (rootStack.getChildren().size() >= 1) {
+                rootStack.getChildren().add(1, menuBar);
+            } else {
+                rootStack.getChildren().add(menuBar);
+            }
         });
 
         infoPane.getChildren().addAll(titleLabel, serverCount, networkUsage, userCount, upgradeButton, closeButton);
@@ -327,6 +338,11 @@ public class GameplayContentPane extends BorderPane {
      */
     public void hideResumeScreen() {
         gameArea.getChildren().removeIf(node -> node instanceof ResumeScreen);
+        
+        // Reset the state in KeyEventHandler
+        if (keyEventHandler != null) {
+            keyEventHandler.setResumeScreenShowing(false);
+        }
     }
 
     public void setShowDebug(boolean showDebug) {

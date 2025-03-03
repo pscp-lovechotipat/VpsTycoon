@@ -197,6 +197,18 @@ public class SettingsScreen extends GameScreen {
         applyButton.setOnAction(e -> {
             config.save();
             GameEventBus.getInstance().publish(new SettingsChangedEvent(config));
+            
+            // Force UI refresh after resolution change to prevent white borders
+            if (config.getResolution() != null) {
+                // Let's use a simple approach - navigate back to main menu and then to settings again
+                // This ensures the screen is completely rebuilt with the new resolution
+                navigator.showMainMenu();
+                
+                // Use runLater to ensure navigation completes before returning to settings
+                javafx.application.Platform.runLater(() -> {
+                    navigator.showSettings();
+                });
+            }
         });
         return applyButton;
     }

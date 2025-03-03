@@ -10,6 +10,7 @@ import javafx.scene.input.KeyCode;
 public class KeyEventHandler {
     private final GameplayContentPane contentPane;
     private final DebugOverlayManager debugOverlayManager;
+    private boolean resumeScreenShowing = false;
 
     public KeyEventHandler(GameplayContentPane contentPane, DebugOverlayManager debugOverlayManager) {
         this.contentPane = contentPane;
@@ -19,7 +20,11 @@ public class KeyEventHandler {
     public void setup() {
         contentPane.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
-                contentPane.showResumeScreen();
+                // Only show resume screen if it's not already showing
+                if (!resumeScreenShowing) {
+                    resumeScreenShowing = true;
+                    contentPane.showResumeScreen();
+                }
             } else if (event.getCode() == KeyCode.F3) {
                 toggleDebug();
             }
@@ -30,5 +35,10 @@ public class KeyEventHandler {
         boolean newShowDebug = !contentPane.isShowDebug();
         contentPane.setShowDebug(newShowDebug);
         debugOverlayManager.toggleDebug();
+    }
+    
+    // Method to reset the state when resume screen is hidden
+    public void setResumeScreenShowing(boolean showing) {
+        this.resumeScreenShowing = showing;
     }
 } 
