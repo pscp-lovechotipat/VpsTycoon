@@ -245,7 +245,7 @@ public class GameplayContentPane extends BorderPane {
             gameArea.getChildren().add(rackPane);
         }
 
-        // remove menubar on desktop screen
+        // remove menubar on rack info screen
         rootStack.getChildren().remove(1);
     }
 
