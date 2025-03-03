@@ -101,9 +101,9 @@ public class DesktopScreen extends StackPane {
             marketWindow = new Popup();
             marketWindow.setAutoHide(true);
 
-            MarketWindow marketContent = new MarketWindow(() -> marketWindow.hide());
+//            MarketWindow marketContent = new MarketWindow(() -> marketWindow.hide());
 
-            marketWindow.getContent().add(marketContent);
+//            marketWindow.getContent().add(marketContent);
         }
 
         if (!marketWindow.isShowing()) {

@@ -1,5 +1,7 @@
 package com.vpstycoon.ui.game.desktop;
 
+import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -8,12 +10,17 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import java.util.ArrayList;
 
 public class MarketWindow extends VBox {
     private final Runnable onClose;
+    private final VPSManager vpsManager; // เพิ่ม VPSManager
+    private final GameplayContentPane gameplayContentPane; // เพิ่ม GameplayContentPane
 
-    public MarketWindow(Runnable onClose) {
+    public MarketWindow(Runnable onClose, VPSManager vpsManager, GameplayContentPane gameplayContentPane) {
         this.onClose = onClose;
+        this.vpsManager = vpsManager;
+        this.gameplayContentPane = gameplayContentPane;
 
         setupUI();
         styleWindow();
@@ -56,7 +63,18 @@ public class MarketWindow extends VBox {
         details.getChildren().addAll(nameLabel, descLabel, priceLabel);
 
         Button buyButton = new Button("Buy");
-        buyButton.setOnAction(e -> System.out.println("Purchased: " + name));
+        buyButton.setOnAction(e -> {
+            // สร้าง VPS ใหม่เมื่อกดซื้อ
+            GameplayContentPane.VPS newVPS = new GameplayContentPane.VPS(
+                    "103.216.158." + (gameplayContentPane.getVpsList().size() + 235), // IP ตัวอย่าง
+                    name,
+                    new ArrayList<>() // เริ่มต้นด้วย VM ว่าง
+            );
+            gameplayContentPane.getVpsList().add(newVPS); // เพิ่ม VPS เข้าไปใน vpsList
+            System.out.println("Purchased and added to rack: " + name);
+            gameplayContentPane.openRackInfo(); // รีเฟรชหน้า Rack
+            onClose.run(); // ปิด MarketWindow
+        });
 
         card.getChildren().addAll(details, buyButton);
         HBox.setHgrow(details, Priority.ALWAYS);
@@ -64,11 +82,9 @@ public class MarketWindow extends VBox {
         return card;
     }
 
-
     private void setupUI() {
         setPrefSize(600, 400);
 
-        // Title bar
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_RIGHT);
         titleBar.setPadding(new Insets(5, 10, 5, 10));
@@ -80,11 +96,9 @@ public class MarketWindow extends VBox {
 
         titleBar.getChildren().add(closeButton);
 
-        // Market Title
         Label titleLabel = new Label("Market");
         titleLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: black;");
 
-        // Create Product List
         VBox productList = createProductList();
 
         ScrollPane scrollPane = new ScrollPane(productList);
@@ -97,7 +111,6 @@ public class MarketWindow extends VBox {
 
         getChildren().addAll(titleBar, content);
     }
-
 
     private void styleWindow() {
         setStyle("-fx-background-color: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0);");
