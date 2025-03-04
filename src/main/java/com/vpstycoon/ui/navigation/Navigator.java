@@ -6,4 +6,5 @@ public interface Navigator {
     void startNewGame();
     void continueGame();
     void showLoadGame();
-} 
+    void showInGameSettings();
+}

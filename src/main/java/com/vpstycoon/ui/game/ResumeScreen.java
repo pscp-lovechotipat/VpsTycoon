@@ -40,7 +40,7 @@ public class ResumeScreen extends StackPane {
 
         // Settings Button
         MenuButton settingsButton = new MenuButton(MenuButtonType.SETTINGS);
-        settingsButton.setOnAction(e -> navigator.showSettings());
+        settingsButton.setOnAction(e -> navigator.showInGameSettings());
 
         // ปุ่ม Main Menu (กลับไปหน้าหลัก)
         MenuButton mainMenuButton = new MenuButton(MenuButtonType.MAIN_MENU);

@@ -16,6 +16,7 @@ import com.vpstycoon.ui.menu.MainMenuScreen;
 import com.vpstycoon.ui.menu.PlayMenuScreen;
 import com.vpstycoon.ui.navigation.Navigator;
 import com.vpstycoon.ui.screen.GameScreen;
+import com.vpstycoon.ui.settings.SettingScreenInGame;
 import com.vpstycoon.ui.settings.SettingsScreen;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -30,6 +31,7 @@ public class GameApplication extends Application implements Navigator {
     private ScreenManager screenManager;
     private MainMenuScreen mainMenuScreen;
     private SettingsScreen settingsScreen;
+    private SettingScreenInGame inGameSettingScreen;
     private GameplayScreen gameplayScreen;
     private GameSaveManager saveManager;
     private GameManager gameManager;
@@ -108,6 +110,7 @@ public class GameApplication extends Application implements Navigator {
     private void createScreens() {
         mainMenuScreen = new MainMenuScreen(gameConfig, screenManager, this);
         settingsScreen = new SettingsScreen(gameConfig, screenManager, this);
+        inGameSettingScreen = new SettingScreenInGame(gameConfig, screenManager, this);
     }
 
     @Override
@@ -162,6 +165,11 @@ public class GameApplication extends Application implements Navigator {
             showAlert("Error", "Could not load saved game: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void showInGameSettings() {
+        inGameSettingScreen.show();
     }
 
     private void showAlert(String title, String content) {

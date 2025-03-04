@@ -18,7 +18,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 public class SettingsScreen extends GameScreen {
-    private final Navigator navigator;
+    public final Navigator navigator;
     private Slider musicVolumeSlider;
     private Slider sfxVolumeSlider;
     private ComboBox<ScreenResolution> resolutionComboBox;
@@ -187,11 +187,12 @@ public class SettingsScreen extends GameScreen {
         return checkBox;
     }
 
-    private MenuButton createBackButton() {
+    protected MenuButton createBackButton() {
         MenuButton backButton = new MenuButton(MenuButtonType.BACK);
         backButton.setOnAction(e -> navigator.showMainMenu());
         return backButton;
     }
+
     private MenuButton createApplyButton() {
         MenuButton applyButton = new MenuButton(MenuButtonType.APPLY);
         applyButton.setOnAction(e -> {
