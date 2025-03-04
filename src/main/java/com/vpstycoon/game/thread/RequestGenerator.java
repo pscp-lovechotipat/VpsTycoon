@@ -16,6 +16,7 @@ public class RequestGenerator extends Thread {
 
     public RequestGenerator(RequestManager requestManager) {
         this.requestManager = requestManager;
+        this.setDaemon(true);
     }
 
     @Override

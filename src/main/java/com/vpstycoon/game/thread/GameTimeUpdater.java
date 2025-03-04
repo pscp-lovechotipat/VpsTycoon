@@ -8,6 +8,7 @@ public class GameTimeUpdater extends Thread{
 
     public GameTimeUpdater(GameState gameState) {
         this.gameState = gameState;
+        this.setDaemon(true);
     }
 
     @Override
