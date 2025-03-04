@@ -11,46 +11,65 @@ import java.util.List;
 import java.util.Map;
 
 public class GameState implements Serializable {
+    private transient int temporaryValue;
+
     private static final long serialVersionUID = 1L;
     private LocalDateTime localDateTime;
 
     private Company company;
+
     private final Map<String, Integer> resources;
     private final Map<String, Boolean> upgrades;
+
     private long lastSaveTime;
     private List<GameObject> gameObjects;
     
     public GameState() {
+        this.company = ResourceManager.getInstance().getCompany();
+
         this.resources = new HashMap<>();
         this.upgrades = new HashMap<>();
         this.lastSaveTime = System.currentTimeMillis();
         this.gameObjects = new ArrayList<>();
 
-        this.company = ResourceManager.getInstance().getCompany();
         this.localDateTime = LocalDateTime.now();
     }
     
-    public GameState(List<GameObject> gameObjects) {
+    public GameState(ArrayList<GameObject> gameObjects) {
         this();
         this.gameObjects = new ArrayList<>(gameObjects);
     }
-    
-    // Getters and setters
-    public List<GameObject> getGameObjects() {
-        return gameObjects;
+
+    public GameState(Company company, List<GameObject> gameObjects) {
+        this.company = company;
+        this.resources = new HashMap<>();
+        this.upgrades = new HashMap<>();
+        this.gameObjects = new ArrayList<>(gameObjects);
     }
-    
-    public void setGameObjects(List<GameObject> gameObjects) {
-        this.gameObjects = gameObjects;
+
+    public GameState(Company company) {
+        this.company = company;
+        this.resources = new HashMap<>();
+        this.upgrades = new HashMap<>();
     }
-    
+
     public void addGameObject(GameObject obj) {
         if (gameObjects == null) {
             gameObjects = new ArrayList<>();
         }
         gameObjects.add(obj);
     }
-    
+
+    // Getters and setters
+    public List<GameObject> getGameObjects() {
+        return gameObjects;
+    }
+
+    public void setGameObjects(List<GameObject> gameObjects) {
+        this.gameObjects = gameObjects;
+    }
+
+
     public void removeGameObject(GameObject obj) {
         if (gameObjects != null) {
             gameObjects.remove(obj);

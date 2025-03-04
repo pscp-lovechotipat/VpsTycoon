@@ -7,6 +7,7 @@ import com.vpstycoon.event.SettingsChangedEvent;
 import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.screen.JavaFXScreenManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.SceneController;
@@ -125,14 +126,12 @@ public class GameApplication extends Application implements Navigator {
 
     @Override
     public void startNewGame() {
-        // Create gameplay screen with new game state
         gameplayScreen = new GameplayScreen(gameConfig, screenManager, this);
-        
-        // Create new save file
+
+        // สร้าง GameState ใหม่ (ปรับตาม constructor ของ GameState)
         GameState newState = new GameState();
-        saveManager.saveGame(newState);
-        
-        // Show gameplay screen
+        ResourceManager.getInstance().saveGameState(newState);
+
         gameplayScreen.show();
     }
 
@@ -148,15 +147,15 @@ public class GameApplication extends Application implements Navigator {
     @Override
     public void showLoadGame() {
         try {
-            if (!gameManager.hasSavedGame()) {
+            if (!ResourceManager.getInstance().hasSaveFile()) {
                 showAlert("No saved game found", "There is no saved game to continue.");
                 return;
             }
 
-            GameState savedState = gameManager.loadSavedState();
+            GameState savedState = ResourceManager.getInstance().loadGameState();
             startGame(savedState);
-            
-        } catch (IOException e) {
+
+        } catch (Exception e) {
             showAlert("Error", "Could not load saved game: " + e.getMessage());
             e.printStackTrace();
         }
@@ -171,7 +170,7 @@ public class GameApplication extends Application implements Navigator {
     }
 
     private void loadGameState(GameState state) {
-        gameManager.loadState(state);
+        gameManager.loadState();
     }
 
     private void startGame(GameState state) {

@@ -1,6 +1,8 @@
 package com.vpstycoon.game.company;
 
-public class Company {
+import java.io.Serializable;
+
+public class Company implements Serializable {
     private String name;
     private double rating;
     private int marketingPoints;

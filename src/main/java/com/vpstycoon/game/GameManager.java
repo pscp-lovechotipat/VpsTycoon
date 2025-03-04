@@ -1,27 +1,12 @@
 package com.vpstycoon.game;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vpstycoon.game.company.Company;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import com.vpstycoon.game.resource.ResourceManager;
 
 public class GameManager {
     private static GameManager instance;
 
-    private static final String SAVE_FILE = "savegame.dat";
-
-    private GameState currentState;
-    private Company currentCompany;
-    private final ObjectMapper objectMapper;
-
     private GameManager() {
-        currentState = new GameState();
-        currentCompany = new Company();
-        objectMapper = new ObjectMapper();
+        // ไม่ต้องสร้าง GameState หรือ Company เอง เพราะใช้จาก ResourceManager
     }
 
     public static GameManager getInstance() {
@@ -31,63 +16,24 @@ public class GameManager {
         return instance;
     }
 
-    public void loadState(GameState state) {
-        this.currentState = state;
+    public void saveState() {
+        ResourceManager.getInstance().saveGameState(ResourceManager.getInstance().getCurrentState());
+    }
+
+    public void loadState() {
+        ResourceManager.getInstance().loadGameState();
+        // ไม่ต้องตั้ง currentState อีก เพราะ ResourceManager จัดการแล้ว
     }
 
     public GameState getCurrentState() {
-        return currentState;
-    }
-
-    public void saveState() {
-        try {
-            File saveFile = new File(SAVE_FILE);
-            currentState.setLastSaveTime(System.currentTimeMillis());
-
-            objectMapper.writeValue(saveFile, currentState);
-            System.out.println("Game saved successfully (JSON) to: " + SAVE_FILE);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * โหลด GameState จากไฟล์ JSON (savegame.dat)
-     *
-     * @throws IOException ถ้าไฟล์ไม่มี, ว่างเปล่า หรืออ่าน JSON ไม่ได้
-     */
-    public GameState loadSavedState() throws IOException {
-        File saveFile = new File(SAVE_FILE);
-
-        if (!saveFile.exists()) {
-            throw new FileNotFoundException("No saved game found at " + SAVE_FILE);
-        }
-        if (saveFile.length() == 0) {
-            throw new IOException("Save file is empty");
-        }
-
-        try {
-            GameState loadedState = objectMapper.readValue(saveFile, GameState.class);
-            this.currentState = loadedState;
-            System.out.println("Game loaded successfully (JSON) from: " + SAVE_FILE);
-            return loadedState;
-
-        } catch (IOException e) {
-            throw new IOException("Save file is corrupted or invalid JSON: " + e.getMessage(), e);
-        }
-    }
-
-    public boolean hasSavedGame() {
-        return Files.exists(Paths.get(SAVE_FILE));
+        return ResourceManager.getInstance().getCurrentState();
     }
 
     public void deleteSavedGame() {
-        try {
-            Files.deleteIfExists(Paths.get(SAVE_FILE));
-            System.out.println("Deleted save file: " + SAVE_FILE);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ResourceManager.getInstance().deleteSaveFile();
+    }
+
+    public boolean hasSavedGame() {
+        return ResourceManager.getInstance().hasSaveFile();
     }
 }

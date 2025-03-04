@@ -2,7 +2,9 @@ package com.vpstycoon.game.customer;
 
 import com.vpstycoon.game.customer.enums.CustomerType;
 
-public class Customer {
+import java.io.Serializable;
+
+public class Customer implements Serializable {
     private static int nextId = 1; // ใช้ static เพื่อนับ ID ถัดไป
     private final int id;          // ทำให้ id เป็น final เพราะไม่ควรเปลี่ยนหลังจากกำหนด
     private String name;
