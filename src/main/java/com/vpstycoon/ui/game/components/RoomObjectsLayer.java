@@ -59,6 +59,8 @@ public class RoomObjectsLayer {
 
     private Pane createServerLayer() {
         Pane serverLayer = new Pane();
+
+        // get image size to set perf size
         Image img = new Image("/images/servers/server.png");
         serverLayer.setPrefWidth(img.getWidth());
         serverLayer.setPrefHeight(img.getHeight());
