@@ -70,7 +70,7 @@ public class GameplayScreen extends GameScreen {
         }
     }
 
-    private void initializeGameObjects() {
+    private synchronized void initializeGameObjects() {
         gameObjects.clear();
 
         // สร้างปุ่มแบบวงกลมสำหรับ Server
