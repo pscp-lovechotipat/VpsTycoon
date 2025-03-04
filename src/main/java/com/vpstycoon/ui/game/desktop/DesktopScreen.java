@@ -36,9 +36,9 @@ public class DesktopScreen extends StackPane {
         setStyle("""
                 -fx-background-color: #1e1e1e;
                 -fx-background-image: url(/images/wallpaper/cyber-cat-yuumi-skin-splash-art-lol-hd-wallpaper-uhdpaper.com-236@3@b.jpg);
+                -fx-background-size: contain;
                 -fx-background-position: center;
                 -fx-background-repeat: no-repeat;
-                -fx-background-size: contain;
                 """);
         setPrefSize(800, 600);
 
