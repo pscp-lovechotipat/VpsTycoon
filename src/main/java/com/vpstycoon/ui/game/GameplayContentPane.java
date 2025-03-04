@@ -18,11 +18,15 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -204,21 +208,39 @@ public class GameplayContentPane extends BorderPane {
         contentBox.setAlignment(Pos.CENTER);
         contentBox.setPadding(new Insets(15));
 
-        VBox rackBox = new VBox(5);
+        GridPane rackBox = new GridPane();
         rackBox.setPrefSize(150, 400);
+        rackBox.setPadding(new Insets(5));
         rackBox.setStyle("-fx-background-color: #37474F; -fx-border-color: white; -fx-border-width: 2px; -fx-background-radius: 8px;");
         rackBox.setAlignment(Pos.TOP_CENTER);
 
-        VBox rackSlots = new VBox(5);
-        rackSlots.setAlignment(Pos.TOP_CENTER);
-        rackSlots.setTranslateY(5);
+        // แทนที่ VBox ด้วย GridPane
+        GridPane rackSlots = new GridPane();
+        rackSlots.setAlignment(Pos.CENTER);
+        rackSlots.setPadding(new Insets(5));
+        rackSlots.setHgap(5); // ระยะห่างแนวนอนระหว่างช่อง
+        rackSlots.setVgap(5); // ระยะห่างแนวตั้งระหว่างช่อง
+
+        // กำหนดจำนวนคอลัมน์ (เช่น 1 คอลัมน์)
+        ColumnConstraints column = new ColumnConstraints();
+        column.setPercentWidth(100); // ใช้ความกว้างเต็ม
+        rackSlots.getColumnConstraints().add(column);
+
+        // เพิ่ม RowConstraints เพื่อให้แต่ละแถวมีขนาดเท่ากัน
+        for (int i = 0; i < MAX_SLOTS; i++) {
+            RowConstraints row = new RowConstraints();
+            row.setPrefHeight(400.0 / MAX_SLOTS); // แบ่งความสูงเท่าๆ กันตามจำนวน slot
+            row.setVgrow(Priority.ALWAYS);
+            rackSlots.getRowConstraints().add(row);
+        }
 
         slotPanes.clear();
         for (int i = 0; i < MAX_SLOTS; i++) {
             VPS vps = (i < vpsList.size()) ? vpsList.get(i) : null;
             Pane slot = createRackSlot(i, vps, i < occupiedSlots);
             slotPanes.add(slot);
-            rackSlots.getChildren().add(slot);
+            // เพิ่ม slot ลงใน GridPane โดยระบุตำแหน่ง (คอลัมน์, แถว)
+            rackSlots.add(slot, 0, i);
         }
         rackBox.getChildren().add(rackSlots);
 
