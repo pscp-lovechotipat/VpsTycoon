@@ -23,7 +23,6 @@ import java.util.ArrayList;
  */
 public class GameplayScreen extends GameScreen {
     private GameState state;
-
     private final Navigator navigator;
     private final GameSaveManager saveManager;
     private ArrayList<GameObject> gameObjects;
@@ -31,41 +30,64 @@ public class GameplayScreen extends GameScreen {
     private final ChatSystem chatSystem;
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
-
-    // Manager แยก
     private final GameFlowManager gameFlowManager;
     private final DebugOverlayManager debugOverlayManager;
 
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
         this.navigator = navigator;
-        this.state = new GameState();
-
-        // เซ็ตอัพตัวแปรต่าง ๆ
         this.saveManager = new GameSaveManager();
         this.gameObjects = new ArrayList<>();
         this.company = new Company();
-
         this.chatSystem = new ChatSystem();
         this.requestManager = new RequestManager();
         this.vpsManager = new VPSManager();
-
-        // สร้าง Manager สำหรับ flow และ debug
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
 
-        loadGame(); // โหลด / ถ้าไม่มี save ก็สร้างใหม่
+        loadGame(); // Load existing game or initialize a new one
+    }
+
+    public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator, GameState gameState) {
+        super(config, screenManager);
+        this.navigator = navigator;
+        this.saveManager = new GameSaveManager();
+        this.state = gameState;
+        this.gameObjects = new ArrayList<>(gameState.getGameObjects());
+        this.company = new Company(); // Adjust if GameState provides company data
+        this.chatSystem = new ChatSystem();
+        this.requestManager = new RequestManager();
+        this.vpsManager = new VPSManager();
+        this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
+        this.debugOverlayManager = new DebugOverlayManager();
+
+        loadGame(gameState); // Set up game state from provided GameState
     }
 
     private void loadGame() {
         if (saveManager.saveExists()) {
             state = saveManager.loadGame();
-            if (state.getGameObjects() != null && !state.getGameObjects().isEmpty()) {
-                this.gameObjects = (ArrayList<GameObject>) state.getGameObjects();
+            if (state != null && state.getGameObjects() != null && !state.getGameObjects().isEmpty()) {
+                this.gameObjects = new ArrayList<>(state.getGameObjects());
             } else {
+                System.out.println("Load failed or no objects found, initializing new game.");
                 initializeGameObjects();
             }
         } else {
+            System.out.println("No save file found, initializing new game.");
+            state = new GameState();
+            initializeGameObjects();
+        }
+    }
+
+    private void loadGame(GameState gameState) {
+        if (gameState != null && gameState.getGameObjects() != null && !gameState.getGameObjects().isEmpty()) {
+            this.state = gameState;
+            this.gameObjects = new ArrayList<>(gameState.getGameObjects());
+            System.out.println("Loaded game state: " + gameState.toString());
+        } else {
+            System.out.println("Provided game state is invalid, initializing new game.");
+            this.state = new GameState();
             initializeGameObjects();
         }
     }
@@ -73,34 +95,35 @@ public class GameplayScreen extends GameScreen {
     private synchronized void initializeGameObjects() {
         gameObjects.clear();
 
-        // สร้างปุ่มแบบวงกลมสำหรับ Server
+        // Create circular button for Server
         VPSObject server = new VPSObject("server", "Server", 0, 0);
         server.setGridPosition(4, 8);
         gameObjects.add(server);
 
-        // สร้างปุ่มแบบวงกลมสำหรับ Database
+        // Create circular button for Database
         VPSObject database = new VPSObject("database", "Database", 0, 0);
         database.setGridPosition(8, 8);
         gameObjects.add(database);
 
-        // สร้างปุ่มแบบวงกลมสำหรับ Network
+        // Create circular button for Network
         VPSObject network = new VPSObject("network", "Network", 0, 0);
         network.setGridPosition(-4, 8);
         gameObjects.add(network);
 
-        // ✅ เพิ่มปุ่มวงกลมสำหรับ Security
+        // Create circular button for Security
         VPSObject security = new VPSObject("security", "Security", 0, 0);
         security.setGridPosition(-8, 8);
         gameObjects.add(security);
 
-        // ✅ เพิ่มปุ่มวงกลมสำหรับ Marketing
+        // Create circular button for Marketing
         VPSObject marketing = new VPSObject("marketing", "Marketing", 0, 0);
         marketing.setGridPosition(2, 8);
         gameObjects.add(marketing);
 
-        // บันทึกสถานะเกม
-        saveManager.saveGame(state);
-        // สร้างและเริ่ม Thread ที่แยกกัน
+        // Update state with initialized game objects
+        state.setGameObjects(gameObjects);
+
+        // Start separate threads
         RequestGenerator requestGenerator = new RequestGenerator(requestManager);
         GameTimeUpdater gameTimeUpdater = new GameTimeUpdater(state);
 
@@ -108,10 +131,6 @@ public class GameplayScreen extends GameScreen {
         gameTimeUpdater.start();
     }
 
-    /**
-     * สร้างเนื้อหาเกม โดย return เป็น Region
-     * ในที่นี้ เราใช้ GameplayContentPane ที่แยกเป็นคลาส
-     */
     @Override
     protected Region createContent() {
         return new GameplayContentPane(

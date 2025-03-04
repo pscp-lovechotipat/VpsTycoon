@@ -126,21 +126,25 @@ public class GameApplication extends Application implements Navigator {
 
     @Override
     public void startNewGame() {
-        gameplayScreen = new GameplayScreen(gameConfig, screenManager, this);
-
-        // สร้าง GameState ใหม่ (ปรับตาม constructor ของ GameState)
         GameState newState = new GameState();
         ResourceManager.getInstance().saveGameState(newState);
-
+        gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, newState);
         gameplayScreen.show();
     }
 
     @Override
     public void continueGame() {
-        if (saveManager.saveExists()) {
-            // Create gameplay screen and load existing state
-            gameplayScreen = new GameplayScreen(gameConfig, screenManager, this);
-            gameplayScreen.show();
+        if (ResourceManager.getInstance().hasSaveFile()) {
+            try {
+                GameState savedState = ResourceManager.getInstance().loadGameState();
+                gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, savedState);
+                gameplayScreen.show();
+            } catch (Exception e) {
+                showAlert("Error", "Could not load saved game: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            showAlert("No saved game", "There is no saved game to continue.");
         }
     }
 
@@ -151,10 +155,9 @@ public class GameApplication extends Application implements Navigator {
                 showAlert("No saved game found", "There is no saved game to continue.");
                 return;
             }
-
             GameState savedState = ResourceManager.getInstance().loadGameState();
-            startGame(savedState);
-
+            gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, savedState);
+            gameplayScreen.show();
         } catch (Exception e) {
             showAlert("Error", "Could not load saved game: " + e.getMessage());
             e.printStackTrace();
