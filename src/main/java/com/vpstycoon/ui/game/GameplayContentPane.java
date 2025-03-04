@@ -87,6 +87,7 @@ public class GameplayContentPane extends BorderPane {
         gameArea.setPrefSize(800, 600);
         gameArea.setMinSize(800, 600);
 
+        // Default
         // Initialize with sample VPSs, each containing VMs
         List<VM> vms1 = new ArrayList<>();
         vms1.add(new VM("192.168.1.10", "VM1-1", 2, "4 GB", "50 GB", "Running"));
@@ -687,7 +688,18 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public void showResumeScreen() {
-        System.out.println("Resume screen shown");
+        ResumeScreen resumeScreen = new ResumeScreen(navigator, this::hideResumeScreen);
+        resumeScreen.setPrefSize(gameArea.getWidth(), gameArea.getHeight());
+        gameArea.getChildren().add(resumeScreen);
+    }
+
+    public void hideResumeScreen() {
+        gameArea.getChildren().removeIf(node -> node instanceof ResumeScreen);
+
+        // Reset the state in KeyEventHandler
+        if (keyEventHandler != null) {
+            keyEventHandler.setResumeScreenShowing(false);
+        }
     }
 
     public boolean isShowDebug() {

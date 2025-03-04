@@ -22,8 +22,8 @@ public class KeyEventHandler {
             if (event.getCode() == KeyCode.ESCAPE) {
                 // Only show resume screen if it's not already showing
                 if (!resumeScreenShowing) {
-                    resumeScreenShowing = true;
                     contentPane.showResumeScreen();
+                    resumeScreenShowing = true;
                 }
             } else if (event.getCode() == KeyCode.F3) {
                 toggleDebug();
