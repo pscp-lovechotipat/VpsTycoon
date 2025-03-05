@@ -1,7 +1,11 @@
 package com.vpstycoon.ui.game.components;
 
+import javafx.scene.effect.Bloom;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
@@ -25,25 +29,38 @@ public class RoomObjectsLayer {
         this.serverLayer = createServerLayer();
     }
 
-    private Pane createMonitorLayer() {
+    private synchronized Pane createMonitorLayer() {
         Pane monitorLayer = new Pane();
         monitorLayer.setPrefWidth(50);
         monitorLayer.setPrefHeight(75);
-        monitorLayer.setStyle("""
+        monitorLayer.setScaleX(2.5);
+        monitorLayer.setScaleY(2.5);
+        monitorLayer.setTranslateX(475);
+        monitorLayer.setTranslateY(300);
+
+        String normalStyle = ("""
             -fx-background-image: url('/images/Moniter/MoniterF2.png');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
-            -fx-scale-x: 2.5;
-            -fx-scale-y: 2.5;
-            -fx-translate-x: 475px;
-            -fx-translate-y: 300px;
         """);
+
+        String hoverStyle = ("""
+            -fx-background-image: url('/images/Moniter/MoniterF2.png');
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat;
+            -fx-background-position: center;
+            -fx-effect: dropshadow(gaussian, #07edf5, 20, 0.01, 0, 0);
+        """);
+
+        monitorLayer.setOnMouseEntered(event -> {monitorLayer.setStyle(hoverStyle);});
+        monitorLayer.setOnMouseExited(event -> {monitorLayer.setStyle(normalStyle);});
+
         monitorLayer.setOnMouseClicked((MouseEvent e) -> onMonitorClick.run());
         return monitorLayer;
     }
 
-    private Pane createTableLayer() {
+    private synchronized Pane createTableLayer() {
         Pane tableLayer = new Pane();
         tableLayer.setPrefWidth(1000);
         tableLayer.setPrefHeight(1000);
@@ -64,17 +81,32 @@ public class RoomObjectsLayer {
         Image img = new Image("/images/servers/server.png");
         serverLayer.setPrefWidth(img.getWidth());
         serverLayer.setPrefHeight(img.getHeight());
+        serverLayer.setScaleX(0.2);
+        serverLayer.setScaleY(0.2);
+        serverLayer.setTranslateX(350);
+        serverLayer.setTranslateY(65);
 
-        serverLayer.setStyle("""
-        -fx-background-image: url('/images/servers/server.png');
-        -fx-background-size: contain;
-        -fx-background-repeat: no-repeat;
-        -fx-background-position: center;
-        -fx-scale-x: 0.2;
-        -fx-scale-y: 0.2;
-        -fx-translate-x: 500px;
-        -fx-translate-y: 250px;
-    """);
+        // Style ปกติ (ตามที่มึงให้มา)
+        String normalStyle = """
+            -fx-background-image: url('/images/servers/server.png');
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat;
+            -fx-background-position: center;
+        """;
+        serverLayer.setStyle(normalStyle);
+
+        // Style ตอน hover (ใส่ขนาดด้วย)
+        String hoverStyle = """
+            -fx-background-image: url('/images/servers/server.png');
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat;
+            -fx-background-position: center;
+            -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
+        """;
+
+        // ตั้งค่า hover effect
+        serverLayer.setOnMouseEntered(e -> serverLayer.setStyle(hoverStyle)); // เปลี่ยนเป็น hoverStyle ตอนเมาส์เข้า
+        serverLayer.setOnMouseExited(e -> serverLayer.setStyle(normalStyle));
 
         serverLayer.setOnMouseClicked(e -> {
             e.consume();
