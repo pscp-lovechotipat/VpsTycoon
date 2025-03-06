@@ -53,6 +53,7 @@ public class RoomObjectsLayer {
             -fx-effect: dropshadow(gaussian, #07edf5, 20, 0.01, 0, 0);
         """);
 
+        monitorLayer.setStyle(normalStyle);
         monitorLayer.setOnMouseEntered(event -> {monitorLayer.setStyle(hoverStyle);});
         monitorLayer.setOnMouseExited(event -> {monitorLayer.setStyle(normalStyle);});
 
