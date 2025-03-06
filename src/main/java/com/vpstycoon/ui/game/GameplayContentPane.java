@@ -112,7 +112,7 @@ public class GameplayContentPane extends BorderPane {
     private synchronized void setupUI() {
         // Create world layers
         Pane backgroundLayer = createBackgroundLayer();
-        Pane objectsContainer = createObjectsContainer();
+        Pane objectsContainer = createObjectsContainer(); // ไม่ใช้แล้ว
 
         // Create menu bar
         GameMenuBar menuBar = new GameMenuBar();
@@ -124,7 +124,7 @@ public class GameplayContentPane extends BorderPane {
         // Create world group with all elements
         worldGroup = new Group(
                 backgroundLayer,
-                objectsContainer,
+//                objectsContainer, ไม่ใช้แล้ว
                 roomObjects.getTableLayer(),
                 roomObjects.getServerLayer(),
                 roomObjects.getMonitorLayer()

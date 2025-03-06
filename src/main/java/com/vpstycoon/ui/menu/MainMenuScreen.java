@@ -15,6 +15,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import javax.swing.*;
+import java.util.Objects;
+
 public class MainMenuScreen extends GameScreen {
     private static final double BUTTON_WIDTH = 160;
     private static final double BUTTON_HEIGHT = 40;
@@ -48,15 +51,16 @@ public class MainMenuScreen extends GameScreen {
         enforceResolution(root);
 
         // Logo or Title
-        Label titleLabel = new Label("VPS Tycoon");
-        titleLabel.setStyle("-fx-font-size: 48px; -fx-text-fill: white; -fx-font-weight: bold;");
-
-        // Continue Button (แสดงเฉพาะเมื่อมีเซฟเกม)
-        if (saveManager.saveExists()) {
-            MenuButton continueButton = new MenuButton(MenuButtonType.CONTINUE);
-            continueButton.setOnAction(e -> navigator.showLoadGame());
-            root.getChildren().add(continueButton);
-        }
+        Label titleLabel = new Label();
+        titleLabel.setStyle("""
+                            -fx-background-image: url("/images/logo/vps_tycoon_logo.png");
+                            -fx-background-position: center;
+                            -fx-background-size: contain;
+                            -fx-background-repeat: no-repeat;
+                            -fx-alignment: center;
+                            -fx-pref-width: 300px;
+                            -fx-pref-height: 200px;
+                            """);
 
         // New Game Button
         MenuButton newGameButton = new MenuButton(MenuButtonType.NEW_GAME);
@@ -78,6 +82,15 @@ public class MainMenuScreen extends GameScreen {
             // รีเฟรชหน้าเพื่อลบปุ่ม Continue
             screenManager.switchScreen(createContent());
         });
+
+        root.getChildren().add(titleLabel);
+
+        // Continue Button (แสดงเฉพาะเมื่อมีเซฟเกม)
+        if (saveManager.saveExists()) {
+            MenuButton continueButton = new MenuButton(MenuButtonType.CONTINUE);
+            continueButton.setOnAction(e -> navigator.showLoadGame());
+            root.getChildren().add(continueButton);
+        }
 
         root.getChildren().addAll(newGameButton, settingsButton, quitButton, deleteButton);
         
