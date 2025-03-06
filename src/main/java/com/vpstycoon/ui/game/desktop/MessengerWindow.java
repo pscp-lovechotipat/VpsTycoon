@@ -26,6 +26,10 @@ public class MessengerWindow extends VBox {
     private VBox messagesBox;
     private final Map<VPSOptimization.VM, CustomerRequest> vmAssignments;
     private final Map<CustomerRequest, Boolean> requestStatus;
+    private Label ratingLabel; // For dashboard
+    private Label activeRequestsLabel; // For dashboard
+    private Label availableVMsLabel; // For dashboard
+    private Label totalVPSLabel; // For dashboard
 
     public MessengerWindow(RequestManager requestManager, VPSManager vpsManager,
                            Company company, Runnable onClose) {
@@ -52,12 +56,20 @@ public class MessengerWindow extends VBox {
         VBox.setVgrow(content, Priority.ALWAYS);
 
         VBox requestList = createRequestList();
+        VBox rightPane = new VBox(10);
+        rightPane.setPadding(new Insets(10));
+        HBox.setHgrow(rightPane, Priority.ALWAYS);
+
+        VBox dashboard = createDashboard();
         VBox chatArea = createChatArea();
 
-        content.getChildren().addAll(requestList, chatArea);
+        rightPane.getChildren().addAll(dashboard, chatArea);
+        content.getChildren().addAll(requestList, rightPane);
+
         getChildren().addAll(titleBar, content);
 
         updateRequestList();
+        updateDashboard(); // Initial dashboard update
     }
 
     private HBox createTitleBar() {
@@ -88,6 +100,7 @@ public class MessengerWindow extends VBox {
             String selected = requestView.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 requestManager.acceptRequest(selected.replace(" (Completed)", ""));
+                updateDashboard(); // Update dashboard after accepting request
             }
         });
 
@@ -95,11 +108,46 @@ public class MessengerWindow extends VBox {
         return requestList;
     }
 
+    private VBox createDashboard() {
+        VBox dashboard = new VBox(10);
+        dashboard.setPadding(new Insets(10));
+        dashboard.setStyle("-fx-background-color: #e0e0e0; -fx-border-color: #ccc; -fx-border-radius: 5;");
+
+        Label title = new Label("Dashboard");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        ratingLabel = new Label("Company Rating: " + String.format("%.1f", company.getRating()));
+        activeRequestsLabel = new Label("Active Requests: " + requestManager.getRequests().size());
+        availableVMsLabel = new Label("Available VMs: 0"); // Placeholder, updated later
+        totalVPSLabel = new Label("Total VPS: " + vpsManager.getVPSMap().size());
+
+        dashboard.getChildren().addAll(title, ratingLabel, activeRequestsLabel, availableVMsLabel, totalVPSLabel);
+        return dashboard;
+    }
+
+    private void updateDashboard() {
+        ratingLabel.setText("Company Rating: " + String.format("%.1f", company.getRating()));
+        activeRequestsLabel.setText("Active Requests: " + requestManager.getRequests().size());
+
+        int availableVMs = 0;
+        for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+            availableVMs += vps.getVms().stream()
+                    .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
+                    .count();
+        }
+        availableVMsLabel.setText("Available VMs: " + availableVMs);
+
+        totalVPSLabel.setText("Total VPS: " + vpsManager.getVPSMap().size());
+    }
+
     private void setupListeners() {
         requestManager.getRequests().addListener((ListChangeListener<CustomerRequest>) change -> {
             while (change.next()) {
                 if (change.wasAdded() || change.wasRemoved()) {
-                    Platform.runLater(this::updateRequestList);
+                    Platform.runLater(() -> {
+                        updateRequestList();
+                        updateDashboard();
+                    });
                 }
             }
         });
@@ -116,7 +164,7 @@ public class MessengerWindow extends VBox {
     private VBox createChatArea() {
         VBox chatArea = new VBox(10);
         chatArea.setPadding(new Insets(10));
-        HBox.setHgrow(chatArea, Priority.ALWAYS);
+        VBox.setVgrow(chatArea, Priority.ALWAYS);
 
         ScrollPane messagesScroll = new ScrollPane();
         messagesScroll.setFitToWidth(true);
@@ -167,6 +215,7 @@ public class MessengerWindow extends VBox {
                         vmAssignments.remove(assignedVM);
                     }
                     updateRequestList();
+                    updateDashboard(); // Update dashboard after removal
                     messagesBox.getChildren().clear();
                     messagesBox.getChildren().add(new Label("Customer " + request.getTitle() + " removed."));
                 }
@@ -233,7 +282,6 @@ public class MessengerWindow extends VBox {
 
         if (selectedRequest == null || requestStatus.getOrDefault(selectedRequest, false)) return;
 
-        // Create popup
         StackPane popupPane = new StackPane();
         popupPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
         popupPane.setPrefSize(400, 300);
@@ -248,7 +296,6 @@ public class MessengerWindow extends VBox {
         ListView<VPSOptimization.VM> vmListView = new ListView<>();
         vmListView.setPrefHeight(150);
 
-        // Populate with available VMs
         for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
             vmListView.getItems().addAll(vps.getVms().stream()
                     .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
@@ -272,6 +319,7 @@ public class MessengerWindow extends VBox {
             if (selectedVM != null) {
                 handleWorkSubmission(selectedRequest, selectedVM);
                 getChildren().remove(popupPane);
+                updateDashboard(); // Update dashboard after assignment
             }
         });
 
@@ -288,7 +336,6 @@ public class MessengerWindow extends VBox {
         StackPane.setAlignment(popupPane, Pos.CENTER);
         getChildren().add(popupPane);
 
-        // Enable/disable Send button based on selection
         vmListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) ->
                 sendButton.setDisable(newVal == null));
     }
