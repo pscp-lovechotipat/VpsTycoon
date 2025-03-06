@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game.desktop;
 
 import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.game.vps.VPSOptimization; // Import VPSOptimization
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,8 +15,8 @@ import java.util.ArrayList;
 
 public class MarketWindow extends VBox {
     private final Runnable onClose;
-    private final VPSManager vpsManager; // เพิ่ม VPSManager
-    private final GameplayContentPane gameplayContentPane; // เพิ่ม GameplayContentPane
+    private final VPSManager vpsManager;
+    private final GameplayContentPane gameplayContentPane;
 
     public MarketWindow(Runnable onClose, VPSManager vpsManager, GameplayContentPane gameplayContentPane) {
         this.onClose = onClose;
@@ -64,16 +65,29 @@ public class MarketWindow extends VBox {
 
         Button buyButton = new Button("Buy");
         buyButton.setOnAction(e -> {
-            // สร้าง VPS ใหม่เมื่อกดซื้อ
-            GameplayContentPane.VPS newVPS = new GameplayContentPane.VPS(
-                    "103.216.158." + (gameplayContentPane.getVpsList().size() + 235), // IP ตัวอย่าง
-                    name,
-                    new ArrayList<>() // เริ่มต้นด้วย VM ว่าง
-            );
-            gameplayContentPane.getVpsList().add(newVPS); // เพิ่ม VPS เข้าไปใน vpsList
-            System.out.println("Purchased and added to rack: " + name);
-            gameplayContentPane.openRackInfo(); // รีเฟรชหน้า Rack
-            onClose.run(); // ปิด MarketWindow
+            // Parse specs from description
+            String[] specs = description.split(", ");
+            int vCPUs = Integer.parseInt(specs[0].split(" ")[0]);
+            int ramInGB = Integer.parseInt(specs[1].split("GB")[0]);
+            int diskInGB = Integer.parseInt(specs[2].split("GB")[0]);
+
+            // Create new VPSOptimization instance
+            VPSOptimization newVPS = new VPSOptimization();
+            newVPS.setVCPUs(vCPUs);
+            newVPS.setRamInGB(ramInGB);
+            newVPS.setDiskInGB(diskInGB);
+
+            // Generate a unique ID (similar to your IP logic)
+            String vpsId = "103.216.158." + (gameplayContentPane.getVpsList().size() + 235) + "-" + name.replace(" ", "");
+
+            // Add to VPSManager and vpsList
+            vpsManager.createVPS(vpsId);
+            vpsManager.getVPSMap().put(vpsId, newVPS);
+            gameplayContentPane.getVpsList().add(newVPS);
+
+            System.out.println("Purchased and added to rack: " + name + " (ID: " + vpsId + ")");
+            gameplayContentPane.openRackInfo(); // Refresh Rack view
+            onClose.run(); // Close MarketWindow
         });
 
         card.getChildren().addAll(details, buyButton);

@@ -1,16 +1,15 @@
 package com.vpstycoon.ui.game.desktop;
 
 import com.vpstycoon.game.chat.ChatSystem;
+import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
-import com.vpstycoon.ui.game.GameplayContentPane; // Added import
-import com.vpstycoon.game.company.Company; // Added import
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label; // Added missing import
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.control.Button;
-import javafx.stage.Popup;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 
 public class DesktopScreen extends StackPane {
@@ -19,27 +18,23 @@ public class DesktopScreen extends StackPane {
     private final ChatSystem chatSystem;
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
-    private final GameplayContentPane gameplayContentPane; // Added field
-    private final Company company; // Added field
-    private Popup chatWindow;
+    private final Company company;
+    private MessengerWindow chatWindow; // Store as a field to reuse
 
     public DesktopScreen(double companyRating, int marketingPoints,
                          ChatSystem chatSystem, RequestManager requestManager,
-                         VPSManager vpsManager, GameplayContentPane gameplayContentPane,
-                         Company company) {
+                         VPSManager vpsManager, Company company) {
         this.companyRating = companyRating;
         this.marketingPoints = marketingPoints;
         this.chatSystem = chatSystem;
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
-        this.gameplayContentPane = gameplayContentPane; // Initialize
-        this.company = company; // Initialize
+        this.company = company;
 
         setupUI();
     }
 
     private synchronized void setupUI() {
-        // Set desktop background
         setStyle("""
                 -fx-background-color: #1e1e1e;
                 -fx-background-image: url(/images/wallpaper/cyber-cat-yuumi-skin-splash-art-lol-hd-wallpaper-uhdpaper.com-236@3@b.jpg);
@@ -49,18 +44,15 @@ public class DesktopScreen extends StackPane {
                 """);
         setPrefSize(800, 600);
 
-        // Create desktop icons container
         FlowPane iconsContainer = new FlowPane(10, 10);
         iconsContainer.setPadding(new Insets(20));
         iconsContainer.setAlignment(Pos.TOP_LEFT);
 
-        // Add Messenger icon using FontAwesome
         DesktopIcon messengerIcon = new DesktopIcon(
                 FontAwesomeSolid.COMMENTS.toString(),
                 "Messenger",
                 this::openChatWindow
         );
-
         iconsContainer.getChildren().add(messengerIcon);
 
         DesktopIcon marketIcon = new DesktopIcon(
@@ -68,16 +60,13 @@ public class DesktopScreen extends StackPane {
                 "Market",
                 this::openMarketWindow
         );
-
         iconsContainer.getChildren().add(marketIcon);
 
-        // Add Dashboard icon using FontAwesome
         DesktopIcon dashboardIcon = new DesktopIcon(
                 FontAwesomeSolid.CHART_LINE.toString(),
                 "Dashboard",
                 this::openDashboardWindow
         );
-
         iconsContainer.getChildren().add(dashboardIcon);
 
         getChildren().add(iconsContainer);
@@ -85,77 +74,48 @@ public class DesktopScreen extends StackPane {
 
     private void openChatWindow() {
         if (chatWindow == null) {
-            chatWindow = new Popup();
-            chatWindow.setAutoHide(true);
-
-            // Updated to match new MessengerWindow constructor
-            MessengerWindow messengerContent = new MessengerWindow(
+            chatWindow = new MessengerWindow(
                     requestManager,
-                    gameplayContentPane,
+                    vpsManager, // Pass VPSManager instead of GameplayContentPane
                     company,
-                    () -> chatWindow.hide()
+                    this::closeChatWindow // Callback to close the window
             );
-
-            chatWindow.getContent().add(messengerContent);
         }
-
-        if (!chatWindow.isShowing()) {
-            chatWindow.show(getScene().getWindow());
-            chatWindow.setX(getScene().getWindow().getX() +
-                    (getScene().getWindow().getWidth() - chatWindow.getWidth()) / 2);
-            chatWindow.setY(getScene().getWindow().getY() +
-                    (getScene().getWindow().getHeight() - chatWindow.getHeight()) / 2);
+        if (!getChildren().contains(chatWindow)) {
+            StackPane.setAlignment(chatWindow, Pos.CENTER);
+            getChildren().add(chatWindow);
         }
     }
 
-    private Popup marketWindow;
+    private void closeChatWindow() {
+        if (chatWindow != null && getChildren().contains(chatWindow)) {
+            getChildren().remove(chatWindow);
+        }
+    }
 
     private void openMarketWindow() {
-        if (marketWindow == null) {
-            marketWindow = new Popup();
-            marketWindow.setAutoHide(true);
-
-            // Uncomment and fix if you have a MarketWindow class
-            // MarketWindow marketContent = new MarketWindow(() -> marketWindow.hide());
-            // marketWindow.getContent().add(marketContent);
-        }
-
-        if (!marketWindow.isShowing()) {
-            marketWindow.show(getScene().getWindow());
-            marketWindow.setX(getScene().getWindow().getX() +
-                    (getScene().getWindow().getWidth() - marketWindow.getWidth()) / 2);
-            marketWindow.setY(getScene().getWindow().getY() +
-                    (getScene().getWindow().getHeight() - marketWindow.getHeight()) / 2);
-        }
-    }
-
-    private Popup dashboardWindow;
-
-    private double calculateMonthlyRevenue() {
-        // return vpsManager.getTotalRevenue(); // Use vpsManager to calculate real revenue
-        return 1000.0;
+        MarketWindow marketWindow = new MarketWindow(
+                () -> getChildren().removeIf(node -> node instanceof MarketWindow),
+                vpsManager,
+                null // Assuming MarketWindow doesn't need GameplayContentPane anymore
+        );
+        StackPane.setAlignment(marketWindow, Pos.CENTER);
+        getChildren().add(marketWindow);
     }
 
     private void openDashboardWindow() {
-        if (dashboardWindow == null) {
-            dashboardWindow = new Popup();
-            dashboardWindow.setAutoHide(true);
+        // Placeholder for dashboard functionality
+        Label dashboardLabel = new Label("Dashboard: Rating = " + companyRating + ", Marketing Points = " + marketingPoints);
+        dashboardLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        StackPane.setAlignment(dashboardLabel, Pos.CENTER);
+        getChildren().add(dashboardLabel);
 
-            DashboardWindow dashboardContent = new DashboardWindow(
-                    companyRating, marketingPoints, calculateMonthlyRevenue(),
-                    () -> dashboardWindow.hide()
-            );
-
-            dashboardWindow.getContent().add(dashboardContent);
-        }
-
-        if (!dashboardWindow.isShowing()) {
-            dashboardWindow.show(getScene().getWindow());
-            dashboardWindow.setX(getScene().getWindow().getX() +
-                    (getScene().getWindow().getWidth() - dashboardWindow.getWidth()) / 2);
-            dashboardWindow.setY(getScene().getWindow().getY() +
-                    (getScene().getWindow().getHeight() - dashboardWindow.getHeight()) / 2);
-        }
+        Button closeDashboard = new Button("Close Dashboard");
+        closeDashboard.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+        closeDashboard.setOnAction(e -> getChildren().remove(dashboardLabel));
+        StackPane.setAlignment(closeDashboard, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(closeDashboard, new Insets(0, 20, 20, 0));
+        getChildren().add(closeDashboard);
     }
 
     public void addExitButton(Runnable onExit) {
@@ -170,14 +130,11 @@ public class DesktopScreen extends StackPane {
         """);
 
         exitButton.setOnAction(e -> {
-            if (onExit != null) {
-                onExit.run();
-            }
+            if (onExit != null) onExit.run();
         });
 
         StackPane.setAlignment(exitButton, Pos.TOP_RIGHT);
         StackPane.setMargin(exitButton, new Insets(20));
-
         getChildren().add(exitButton);
     }
 }

@@ -2,9 +2,8 @@ package com.vpstycoon.ui.game.desktop;
 
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
-import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.ui.game.GameplayContentPane.VM;
-import com.vpstycoon.ui.game.GameplayContentPane.VPS;
+import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.company.Company;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
@@ -13,31 +12,30 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class MessengerWindow extends VBox {
     private final RequestManager requestManager;
     private final Runnable onClose;
     private final ListView<String> requestView;
-    private final GameplayContentPane gameplayContentPane;
+    private final VPSManager vpsManager;
     private final Company company;
     private VBox messagesBox;
-    private final Map<VM, CustomerRequest> vmAssignments; // Track VM-to-customer assignments
-    private final Map<CustomerRequest, Boolean> requestStatus; // Track completion status
+    private final Map<VPSOptimization.VM, CustomerRequest> vmAssignments;
+    private final Map<CustomerRequest, Boolean> requestStatus;
 
-    public MessengerWindow(RequestManager requestManager, GameplayContentPane gameplayContentPane,
+    public MessengerWindow(RequestManager requestManager, VPSManager vpsManager,
                            Company company, Runnable onClose) {
         this.requestManager = requestManager;
-        this.gameplayContentPane = gameplayContentPane;
+        this.vpsManager = vpsManager;
         this.company = company;
         this.onClose = onClose;
         this.requestView = new ListView<>();
         this.vmAssignments = new HashMap<>();
-        this.requestStatus = new HashMap<>(); // true = completed, false = active
+        this.requestStatus = new HashMap<>();
 
         setupUI();
         styleWindow();
@@ -89,7 +87,7 @@ public class MessengerWindow extends VBox {
         acceptButton.setOnAction(e -> {
             String selected = requestView.getSelectionModel().getSelectedItem();
             if (selected != null) {
-                requestManager.acceptRequest(selected);
+                requestManager.acceptRequest(selected.replace(" (Completed)", ""));
             }
         });
 
@@ -160,7 +158,7 @@ public class MessengerWindow extends VBox {
                 if (request != null && requestStatus.getOrDefault(request, false)) {
                     requestManager.getRequests().remove(request);
                     requestStatus.remove(request);
-                    VM assignedVM = vmAssignments.entrySet().stream()
+                    VPSOptimization.VM assignedVM = vmAssignments.entrySet().stream()
                             .filter(entry -> entry.getValue() == request)
                             .map(Map.Entry::getKey)
                             .findFirst()
@@ -175,7 +173,7 @@ public class MessengerWindow extends VBox {
             }
         });
 
-        sendWorkButton.setOnAction(e -> showVPSSelectionPopup());
+        sendWorkButton.setOnAction(e -> showVMSelectionPopup());
 
         requestView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             sendWorkButton.setDisable(newVal == null || isRequestCompleted(newVal));
@@ -213,7 +211,7 @@ public class MessengerWindow extends VBox {
                     "\nDisk: " + selectedRequest.getRequiredDisk());
             messagesBox.getChildren().add(requestDetails);
             if (requestStatus.getOrDefault(selectedRequest, false)) {
-                VM assignedVM = vmAssignments.entrySet().stream()
+                VPSOptimization.VM assignedVM = vmAssignments.entrySet().stream()
                         .filter(entry -> entry.getValue() == selectedRequest)
                         .map(Map.Entry::getKey)
                         .findFirst()
@@ -224,7 +222,7 @@ public class MessengerWindow extends VBox {
         }
     }
 
-    private void showVPSSelectionPopup() {
+    private void showVMSelectionPopup() {
         String selectedRequestTitle = requestView.getSelectionModel().getSelectedItem();
         if (selectedRequestTitle == null) return;
 
@@ -235,54 +233,75 @@ public class MessengerWindow extends VBox {
 
         if (selectedRequest == null || requestStatus.getOrDefault(selectedRequest, false)) return;
 
-        Dialog<VM> dialog = new Dialog<>();
-        dialog.setTitle("Select VPS for Customer");
-        dialog.setHeaderText("Choose an available VM for " + selectedRequest.getTitle());
+        // Create popup
+        StackPane popupPane = new StackPane();
+        popupPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+        popupPane.setPrefSize(400, 300);
 
-        VBox dialogContent = new VBox(10);
-        ListView<VM> vmListView = new ListView<>();
+        VBox popupContent = new VBox(10);
+        popupContent.setStyle("-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 10;");
+        popupContent.setAlignment(Pos.CENTER);
 
-        for (VPS vps : gameplayContentPane.getVpsList()) {
+        Label titleLabel = new Label("Select VM for " + selectedRequest.getTitle());
+        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        ListView<VPSOptimization.VM> vmListView = new ListView<>();
+        vmListView.setPrefHeight(150);
+
+        // Populate with available VMs
+        for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
             vmListView.getItems().addAll(vps.getVms().stream()
                     .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
                     .toList());
         }
 
         if (vmListView.getItems().isEmpty()) {
-            dialogContent.getChildren().add(new Label("No available VMs. All running VMs are assigned."));
+            popupContent.getChildren().addAll(titleLabel, new Label("No available VMs."));
         } else {
-            dialogContent.getChildren().addAll(new Label("Available VMs:"), vmListView);
+            popupContent.getChildren().addAll(titleLabel, vmListView);
         }
 
-        dialog.getDialogPane().setContent(dialogContent);
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER);
 
-        ButtonType sendButtonType = new ButtonType("Send Work", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(sendButtonType, ButtonType.CANCEL);
-
-        dialog.getDialogPane().lookupButton(sendButtonType).setDisable(vmListView.getItems().isEmpty());
-        vmListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) ->
-                dialog.getDialogPane().lookupButton(sendButtonType).setDisable(newVal == null));
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == sendButtonType) {
-                return vmListView.getSelectionModel().getSelectedItem();
+        Button sendButton = new Button("Send Work");
+        sendButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
+        sendButton.setDisable(vmListView.getItems().isEmpty());
+        sendButton.setOnAction(e -> {
+            VPSOptimization.VM selectedVM = vmListView.getSelectionModel().getSelectedItem();
+            if (selectedVM != null) {
+                handleWorkSubmission(selectedRequest, selectedVM);
+                getChildren().remove(popupPane);
             }
-            return null;
         });
 
-        Optional<VM> result = dialog.showAndWait();
-        result.ifPresent(vm -> handleWorkSubmission(selectedRequest, vm));
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setStyle("-fx-background-color: #F44336; -fx-text-fill: white;");
+        cancelButton.setOnAction(e -> getChildren().remove(popupPane));
+
+        buttonBox.getChildren().addAll(sendButton, cancelButton);
+        popupContent.getChildren().add(buttonBox);
+
+        popupPane.getChildren().add(popupContent);
+        StackPane.setAlignment(popupContent, Pos.CENTER);
+
+        StackPane.setAlignment(popupPane, Pos.CENTER);
+        getChildren().add(popupPane);
+
+        // Enable/disable Send button based on selection
+        vmListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) ->
+                sendButton.setDisable(newVal == null));
     }
 
-    private void handleWorkSubmission(CustomerRequest request, VM vm) {
+    private void handleWorkSubmission(CustomerRequest request, VPSOptimization.VM vm) {
         vmAssignments.put(vm, request);
-        requestStatus.put(request, true); // Mark as completed
+        requestStatus.put(request, true);
 
-        boolean meetsSpecs = vm.getvCPUs() >= request.getRequiredVCPUs() &&
+        boolean meetsSpecs = vm.getVCPUs() >= request.getRequiredVCPUs() &&
                 vm.getRam().equals(request.getRequiredRam()) &&
                 vm.getDisk().equals(request.getRequiredDisk());
 
-        boolean exceedsSpecs = vm.getvCPUs() > request.getRequiredVCPUs() ||
+        boolean exceedsSpecs = vm.getVCPUs() > request.getRequiredVCPUs() ||
                 Integer.parseInt(vm.getRam().split(" ")[0]) > Integer.parseInt(request.getRequiredRam().split(" ")[0]) ||
                 Integer.parseInt(vm.getDisk().split(" ")[0]) > Integer.parseInt(request.getRequiredDisk().split(" ")[0]);
 
@@ -298,18 +317,18 @@ public class MessengerWindow extends VBox {
         }
 
         messagesBox.getChildren().add(resultMessage);
-        updateRequestList(); // Refresh list to show "(Completed)"
+        updateRequestList();
     }
 
     private void styleWindow() {
         setStyle("-fx-background-color: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0);");
     }
 
-    public boolean isVMAvailable(VM vm) {
+    public boolean isVMAvailable(VPSOptimization.VM vm) {
         return !vmAssignments.containsKey(vm);
     }
 
-    public void releaseVM(VM vm) {
+    public void releaseVM(VPSOptimization.VM vm) {
         vmAssignments.remove(vm);
     }
 }
