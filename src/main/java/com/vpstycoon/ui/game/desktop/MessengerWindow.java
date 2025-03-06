@@ -5,6 +5,7 @@ import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.GameplayContentPane.VM;
 import com.vpstycoon.ui.game.GameplayContentPane.VPS;
+import com.vpstycoon.game.company.Company;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
@@ -13,19 +14,30 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class MessengerWindow extends VBox {
     private final RequestManager requestManager;
     private final Runnable onClose;
     private final ListView<String> requestView;
-    private final GameplayContentPane gameplayContentPane = null; // เพิ่มเพื่อเข้าถึง VM list
+    private final GameplayContentPane gameplayContentPane;
+    private final Company company;
     private VBox messagesBox;
+    private final Map<VM, CustomerRequest> vmAssignments; // Track VM-to-customer assignments
+    private final Map<CustomerRequest, Boolean> requestStatus; // Track completion status
 
-    public MessengerWindow(RequestManager requestManager, Runnable onClose) {
+    public MessengerWindow(RequestManager requestManager, GameplayContentPane gameplayContentPane,
+                           Company company, Runnable onClose) {
         this.requestManager = requestManager;
+        this.gameplayContentPane = gameplayContentPane;
+        this.company = company;
         this.onClose = onClose;
         this.requestView = new ListView<>();
+        this.vmAssignments = new HashMap<>();
+        this.requestStatus = new HashMap<>(); // true = completed, false = active
 
         setupUI();
         styleWindow();
@@ -97,11 +109,10 @@ public class MessengerWindow extends VBox {
 
     private void updateRequestList() {
         requestView.getItems().clear();
-        requestView.getItems().addAll(
-                requestManager.getRequests().stream()
-                        .map(CustomerRequest::getTitle)
-                        .toList()
-        );
+        for (CustomerRequest request : requestManager.getRequests()) {
+            String displayText = request.getTitle() + (requestStatus.getOrDefault(request, false) ? " (Completed)" : "");
+            requestView.getItems().add(displayText);
+        }
     }
 
     private VBox createChatArea() {
@@ -115,7 +126,6 @@ public class MessengerWindow extends VBox {
 
         messagesBox = new VBox(10);
         messagesBox.setPadding(new Insets(10));
-
         messagesScroll.setContent(messagesBox);
 
         HBox inputArea = new HBox(10);
@@ -129,29 +139,63 @@ public class MessengerWindow extends VBox {
         sendButton.setOnAction(e -> {
             String message = messageInput.getText();
             if (!message.isEmpty()) {
-                Label messageLabel = new Label("You: " + message);
-                messagesBox.getChildren().add(messageLabel);
+                messagesBox.getChildren().add(new Label("You: " + message));
                 messageInput.clear();
             }
         });
 
-        // เพิ่มปุ่ม Send Work
         Button sendWorkButton = new Button("Send Work");
-        sendWorkButton.setDisable(true); // ปิดใช้งานจนกว่าจะเลือก request
-        sendWorkButton.setOnAction(e -> sendWorkToCustomer());
+        sendWorkButton.setDisable(true);
 
-        // ตรวจสอบเมื่อเลือก request
-        requestView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            sendWorkButton.setDisable(newVal == null);
-            if (newVal != null) {
-                updateChatWithRequestDetails(newVal);
+        Button removeCustomerButton = new Button("Remove Customer");
+        removeCustomerButton.setDisable(true);
+        removeCustomerButton.setStyle("-fx-background-color: #F44336; -fx-text-fill: white;");
+        removeCustomerButton.setOnAction(e -> {
+            String selected = requestView.getSelectionModel().getSelectedItem();
+            if (selected != null) {
+                CustomerRequest request = requestManager.getRequests().stream()
+                        .filter(req -> req.getTitle().equals(selected.replace(" (Completed)", "")))
+                        .findFirst()
+                        .orElse(null);
+                if (request != null && requestStatus.getOrDefault(request, false)) {
+                    requestManager.getRequests().remove(request);
+                    requestStatus.remove(request);
+                    VM assignedVM = vmAssignments.entrySet().stream()
+                            .filter(entry -> entry.getValue() == request)
+                            .map(Map.Entry::getKey)
+                            .findFirst()
+                            .orElse(null);
+                    if (assignedVM != null) {
+                        vmAssignments.remove(assignedVM);
+                    }
+                    updateRequestList();
+                    messagesBox.getChildren().clear();
+                    messagesBox.getChildren().add(new Label("Customer " + request.getTitle() + " removed."));
+                }
             }
         });
 
-        inputArea.getChildren().addAll(messageInput, sendButton, sendWorkButton);
+        sendWorkButton.setOnAction(e -> showVPSSelectionPopup());
 
+        requestView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            sendWorkButton.setDisable(newVal == null || isRequestCompleted(newVal));
+            removeCustomerButton.setDisable(newVal == null || !isRequestCompleted(newVal));
+            if (newVal != null) {
+                updateChatWithRequestDetails(newVal.replace(" (Completed)", ""));
+            }
+        });
+
+        inputArea.getChildren().addAll(messageInput, sendButton, sendWorkButton, removeCustomerButton);
         chatArea.getChildren().addAll(messagesScroll, inputArea);
         return chatArea;
+    }
+
+    private boolean isRequestCompleted(String requestTitle) {
+        CustomerRequest request = requestManager.getRequests().stream()
+                .filter(req -> req.getTitle().equals(requestTitle.replace(" (Completed)", "")))
+                .findFirst()
+                .orElse(null);
+        return request != null && requestStatus.getOrDefault(request, false);
     }
 
     private void updateChatWithRequestDetails(String requestTitle) {
@@ -168,50 +212,104 @@ public class MessengerWindow extends VBox {
                     "\nRAM: " + selectedRequest.getRequiredRam() +
                     "\nDisk: " + selectedRequest.getRequiredDisk());
             messagesBox.getChildren().add(requestDetails);
+            if (requestStatus.getOrDefault(selectedRequest, false)) {
+                VM assignedVM = vmAssignments.entrySet().stream()
+                        .filter(entry -> entry.getValue() == selectedRequest)
+                        .map(Map.Entry::getKey)
+                        .findFirst()
+                        .orElse(null);
+                messagesBox.getChildren().add(new Label("Status: Completed" +
+                        (assignedVM != null ? " (Assigned VM: " + assignedVM.getIp() + ")" : "")));
+            }
         }
     }
 
-    private void sendWorkToCustomer() {
+    private void showVPSSelectionPopup() {
         String selectedRequestTitle = requestView.getSelectionModel().getSelectedItem();
         if (selectedRequestTitle == null) return;
 
         CustomerRequest selectedRequest = requestManager.getRequests().stream()
-                .filter(req -> req.getTitle().equals(selectedRequestTitle))
+                .filter(req -> req.getTitle().equals(selectedRequestTitle.replace(" (Completed)", "")))
                 .findFirst()
                 .orElse(null);
 
-        if (selectedRequest == null) return;
+        if (selectedRequest == null || requestStatus.getOrDefault(selectedRequest, false)) return;
 
-        // ตรวจสอบ VM ที่มีสเปคตรงกับ request
-        List<VPS> vpsList = gameplayContentPane.getVpsList();
-        VM matchingVM = null;
+        Dialog<VM> dialog = new Dialog<>();
+        dialog.setTitle("Select VPS for Customer");
+        dialog.setHeaderText("Choose an available VM for " + selectedRequest.getTitle());
 
-        for (VPS vps : vpsList) {
-            for (VM vm : vps.getVms()) {
-                if (vm.getvCPUs() >= selectedRequest.getRequiredVCPUs() &&
-                        vm.getRam().equals(selectedRequest.getRequiredRam()) &&
-                        vm.getDisk().equals(selectedRequest.getRequiredDisk()) &&
-                        "Running".equals(vm.getStatus())) {
-                    matchingVM = vm;
-                    break;
-                }
-            }
-            if (matchingVM != null) break;
+        VBox dialogContent = new VBox(10);
+        ListView<VM> vmListView = new ListView<>();
+
+        for (VPS vps : gameplayContentPane.getVpsList()) {
+            vmListView.getItems().addAll(vps.getVms().stream()
+                    .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
+                    .toList());
         }
 
-        if (matchingVM != null) {
-            // ส่งงานสำเร็จ
-            Label successMessage = new Label("Work sent to customer using VM: " + matchingVM.getIp());
-            messagesBox.getChildren().add(successMessage);
-            requestManager.completeRequest(selectedRequest); // สมมติว่ามี method นี้ใน RequestManager
+        if (vmListView.getItems().isEmpty()) {
+            dialogContent.getChildren().add(new Label("No available VMs. All running VMs are assigned."));
         } else {
-            // ไม่พบ VM ที่ตรงสเปค
-            Label errorMessage = new Label("No VM found matching the required specs!");
-            messagesBox.getChildren().add(errorMessage);
+            dialogContent.getChildren().addAll(new Label("Available VMs:"), vmListView);
         }
+
+        dialog.getDialogPane().setContent(dialogContent);
+
+        ButtonType sendButtonType = new ButtonType("Send Work", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(sendButtonType, ButtonType.CANCEL);
+
+        dialog.getDialogPane().lookupButton(sendButtonType).setDisable(vmListView.getItems().isEmpty());
+        vmListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) ->
+                dialog.getDialogPane().lookupButton(sendButtonType).setDisable(newVal == null));
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == sendButtonType) {
+                return vmListView.getSelectionModel().getSelectedItem();
+            }
+            return null;
+        });
+
+        Optional<VM> result = dialog.showAndWait();
+        result.ifPresent(vm -> handleWorkSubmission(selectedRequest, vm));
+    }
+
+    private void handleWorkSubmission(CustomerRequest request, VM vm) {
+        vmAssignments.put(vm, request);
+        requestStatus.put(request, true); // Mark as completed
+
+        boolean meetsSpecs = vm.getvCPUs() >= request.getRequiredVCPUs() &&
+                vm.getRam().equals(request.getRequiredRam()) &&
+                vm.getDisk().equals(request.getRequiredDisk());
+
+        boolean exceedsSpecs = vm.getvCPUs() > request.getRequiredVCPUs() ||
+                Integer.parseInt(vm.getRam().split(" ")[0]) > Integer.parseInt(request.getRequiredRam().split(" ")[0]) ||
+                Integer.parseInt(vm.getDisk().split(" ")[0]) > Integer.parseInt(request.getRequiredDisk().split(" ")[0]);
+
+        Label resultMessage;
+        if (meetsSpecs && !exceedsSpecs) {
+            company.setRating(company.getRating() + 0.1);
+            resultMessage = new Label("Work sent successfully! VM " + vm.getIp() + " assigned. Rating increased to " + String.format("%.1f", company.getRating()));
+        } else if (!meetsSpecs) {
+            company.setRating(Math.max(1.0, company.getRating() - 0.2));
+            resultMessage = new Label("VM specs too low! VM " + vm.getIp() + " assigned. Rating decreased to " + String.format("%.1f", company.getRating()));
+        } else {
+            resultMessage = new Label("Work sent with over-spec VM " + vm.getIp() + ". Rating unchanged at " + String.format("%.1f", company.getRating()));
+        }
+
+        messagesBox.getChildren().add(resultMessage);
+        updateRequestList(); // Refresh list to show "(Completed)"
     }
 
     private void styleWindow() {
         setStyle("-fx-background-color: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0);");
+    }
+
+    public boolean isVMAvailable(VM vm) {
+        return !vmAssignments.containsKey(vm);
+    }
+
+    public void releaseVM(VM vm) {
+        vmAssignments.remove(vm);
     }
 }

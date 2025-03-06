@@ -3,6 +3,8 @@ package com.vpstycoon.ui.game.desktop;
 import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.ui.game.GameplayContentPane; // Added import
+import com.vpstycoon.game.company.Company; // Added import
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.FlowPane;
@@ -17,16 +19,21 @@ public class DesktopScreen extends StackPane {
     private final ChatSystem chatSystem;
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
+    private final GameplayContentPane gameplayContentPane; // Added field
+    private final Company company; // Added field
     private Popup chatWindow;
 
     public DesktopScreen(double companyRating, int marketingPoints,
-                        ChatSystem chatSystem, RequestManager requestManager,
-                        VPSManager vpsManager) {
+                         ChatSystem chatSystem, RequestManager requestManager,
+                         VPSManager vpsManager, GameplayContentPane gameplayContentPane,
+                         Company company) {
         this.companyRating = companyRating;
         this.marketingPoints = marketingPoints;
         this.chatSystem = chatSystem;
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
+        this.gameplayContentPane = gameplayContentPane; // Initialize
+        this.company = company; // Initialize
 
         setupUI();
     }
@@ -49,9 +56,9 @@ public class DesktopScreen extends StackPane {
 
         // Add Messenger icon using FontAwesome
         DesktopIcon messengerIcon = new DesktopIcon(
-            FontAwesomeSolid.COMMENTS.toString(),
-            "Messenger",
-            this::openChatWindow
+                FontAwesomeSolid.COMMENTS.toString(),
+                "Messenger",
+                this::openChatWindow
         );
 
         iconsContainer.getChildren().add(messengerIcon);
@@ -73,7 +80,6 @@ public class DesktopScreen extends StackPane {
 
         iconsContainer.getChildren().add(dashboardIcon);
 
-
         getChildren().add(iconsContainer);
     }
 
@@ -82,9 +88,11 @@ public class DesktopScreen extends StackPane {
             chatWindow = new Popup();
             chatWindow.setAutoHide(true);
 
-            // ✅ ลบ ChatSystem ออก และใช้แค่ RequestManager กับ Runnable
+            // Updated to match new MessengerWindow constructor
             MessengerWindow messengerContent = new MessengerWindow(
-                    requestManager,  // ✅ ใช้แค่ requestManager ตาม constructor ใหม่
+                    requestManager,
+                    gameplayContentPane,
+                    company,
                     () -> chatWindow.hide()
             );
 
@@ -107,13 +115,12 @@ public class DesktopScreen extends StackPane {
             marketWindow = new Popup();
             marketWindow.setAutoHide(true);
 
-//            MarketWindow marketContent = new MarketWindow(() -> marketWindow.hide());
-
-//            marketWindow.getContent().add(marketContent);
+            // Uncomment and fix if you have a MarketWindow class
+            // MarketWindow marketContent = new MarketWindow(() -> marketWindow.hide());
+            // marketWindow.getContent().add(marketContent);
         }
 
         if (!marketWindow.isShowing()) {
-            // Show popup centered on the screen
             marketWindow.show(getScene().getWindow());
             marketWindow.setX(getScene().getWindow().getX() +
                     (getScene().getWindow().getWidth() - marketWindow.getWidth()) / 2);
@@ -125,7 +132,7 @@ public class DesktopScreen extends StackPane {
     private Popup dashboardWindow;
 
     private double calculateMonthlyRevenue() {
-        // return vpsManager.getTotalRevenue(); // ใช้ vpsManager คำนวณจริง ๆ
+        // return vpsManager.getTotalRevenue(); // Use vpsManager to calculate real revenue
         return 1000.0;
     }
 
@@ -151,12 +158,7 @@ public class DesktopScreen extends StackPane {
         }
     }
 
-    /**
-     * Adds an exit button to the desktop that triggers the provided action when clicked
-     * @param onExit Runnable to execute when exit button is clicked
-     */
     public void addExitButton(Runnable onExit) {
-        // Create a button in the top-right corner
         Button exitButton = new Button("Exit");
         exitButton.setStyle("""
             -fx-background-color: #e74c3c;
@@ -166,19 +168,16 @@ public class DesktopScreen extends StackPane {
             -fx-background-radius: 5;
             -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 1);
         """);
-        
-        // Set button action
+
         exitButton.setOnAction(e -> {
             if (onExit != null) {
                 onExit.run();
             }
         });
-        
-        // Position in top-right corner
+
         StackPane.setAlignment(exitButton, Pos.TOP_RIGHT);
         StackPane.setMargin(exitButton, new Insets(20));
-        
-        // Add to the display
+
         getChildren().add(exitButton);
     }
 }

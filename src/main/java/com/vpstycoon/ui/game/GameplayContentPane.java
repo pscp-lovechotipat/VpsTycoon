@@ -2,8 +2,10 @@ package com.vpstycoon.ui.game;
 
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.chat.ChatSystem;
+import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.game.company.Company; // Added import
 import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.components.GameMenuBar;
 import com.vpstycoon.ui.game.components.GameObjectDetailsModal;
@@ -26,9 +28,10 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Main gameplay area container, coordinates all UI elements and interactions.
@@ -47,6 +50,7 @@ public class GameplayContentPane extends BorderPane {
     private final VPSManager vpsManager;
     private final GameFlowManager gameFlowManager;
     private final DebugOverlayManager debugOverlayManager;
+    private final Company company; // Added field
 
     // UI components
     private RoomObjectsLayer roomObjects;
@@ -66,6 +70,8 @@ public class GameplayContentPane extends BorderPane {
     // State
     private boolean showDebug = false;
 
+    private final Map<VM, CustomerRequest> vmAssignments = new HashMap<>();
+
     public GameplayContentPane(
             List<GameObject> gameObjects,
             Navigator navigator,
@@ -73,7 +79,8 @@ public class GameplayContentPane extends BorderPane {
             RequestManager requestManager,
             VPSManager vpsManager,
             GameFlowManager gameFlowManager,
-            DebugOverlayManager debugOverlayManager
+            DebugOverlayManager debugOverlayManager,
+            Company company // Added parameter
     ) {
         this.gameObjects = gameObjects;
         this.navigator = navigator;
@@ -82,6 +89,7 @@ public class GameplayContentPane extends BorderPane {
         this.vpsManager = vpsManager;
         this.gameFlowManager = gameFlowManager;
         this.debugOverlayManager = debugOverlayManager;
+        this.company = company; // Initialize field
 
         this.rootStack = new StackPane();
         rootStack.setPrefSize(800, 600);
@@ -637,25 +645,27 @@ public class GameplayContentPane extends BorderPane {
 
     private synchronized void openSimulationDesktop() {
         DesktopScreen desktop = new DesktopScreen(
-                0.0, // Example companyRating
-                0,   // Example marketingPoints
+                company.getRating(),
+                company.getMarketingPoints(),
                 chatSystem,
                 requestManager,
-                vpsManager
+                vpsManager,
+                this,
+                company
         );
         StackPane.setAlignment(desktop, Pos.CENTER);
         desktop.setMaxSize(gameArea.getWidth() * 0.8, gameArea.getHeight() * 0.8);
 
         gameArea.getChildren().clear();
         gameArea.getChildren().add(desktop);
-        rootStack.getChildren().remove(1); // Remove menubar
+        rootStack.getChildren().remove(1);
 
-        desktop.addExitButton(this::returnToRoom); // เพิ่มปุ่ม Exit เพื่อกลับไปที่ห้อง
+        desktop.addExitButton(this::returnToRoom);
     }
 
     public void returnToRoom() {
         gameArea.getChildren().clear();
-        setupUI(); // เรียก setupUI เพื่อกลับไปที่มุมมองห้องเริ่มต้น
+        setupUI(); // Call setupUI to return to the initial room view
     }
 
     private HBox createCard() {
@@ -783,5 +793,11 @@ public class GameplayContentPane extends BorderPane {
         public void setRam(String ram) { this.ram = ram; }
         public void setDisk(String disk) { this.disk = disk; }
         public void setStatus(String status) { this.status = status; }
+    }
+
+
+
+    public Map<VM, CustomerRequest> getVMAssignments() {
+        return vmAssignments;
     }
 }

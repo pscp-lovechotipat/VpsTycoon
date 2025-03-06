@@ -140,7 +140,8 @@ public class GameplayScreen extends GameScreen {
                 this.requestManager,
                 this.vpsManager,
                 this.gameFlowManager,
-                this.debugOverlayManager
+                this.debugOverlayManager,
+                this.company  // Added Company argument
         );
     }
 }
