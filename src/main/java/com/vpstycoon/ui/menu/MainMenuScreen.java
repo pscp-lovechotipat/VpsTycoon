@@ -8,12 +8,14 @@ import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
 import com.vpstycoon.ui.navigation.Navigator;
 import com.vpstycoon.ui.settings.SettingsScreen;
+import javafx.animation.ScaleTransition;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 import javax.swing.*;
 import java.util.Objects;
@@ -61,6 +63,15 @@ public class MainMenuScreen extends GameScreen {
                             -fx-pref-width: 300px;
                             -fx-pref-height: 200px;
                             """);
+        // เพิ่ม ScaleTransition เพื่อทำให้เด้งเข้าออก
+        ScaleTransition scaleTransition = new ScaleTransition(Duration.seconds(1), titleLabel);
+        scaleTransition.setFromX(1.0); // ขนาดเริ่มต้น (ปกติ)
+        scaleTransition.setFromY(1.0);
+        scaleTransition.setToX(1.1);   // ขยาย 10%
+        scaleTransition.setToY(1.1);
+        scaleTransition.setCycleCount(ScaleTransition.INDEFINITE); // วนซ้ำไม่หยุด
+        scaleTransition.setAutoReverse(true); // ขยายแล้วย่อกลับ
+        scaleTransition.play(); // เริ่ม animation
 
         // New Game Button
         MenuButton newGameButton = new MenuButton(MenuButtonType.NEW_GAME);
