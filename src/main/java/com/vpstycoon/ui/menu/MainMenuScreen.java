@@ -39,7 +39,7 @@ public class MainMenuScreen extends GameScreen {
         root.setPadding(new Insets(20));
         root.setStyle("""
                          -fx-background-color: #2C3E50;
-                         -fx-background-image: url("/images/wallpaper/IMG_2034.png");
+                         -fx-background-image: url("/images/wallpaper/Wallpaper.png");
                          -fx-background-size: contain;
                          -fx-background-position: center;
                          """); // ดาร์คบลู
