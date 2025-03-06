@@ -104,18 +104,14 @@ public class DesktopScreen extends StackPane {
     }
 
     private void openDashboardWindow() {
-        // Placeholder for dashboard functionality
-        Label dashboardLabel = new Label("Dashboard: Rating = " + companyRating + ", Marketing Points = " + marketingPoints);
-        dashboardLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-        StackPane.setAlignment(dashboardLabel, Pos.CENTER);
-        getChildren().add(dashboardLabel);
-
-        Button closeDashboard = new Button("Close Dashboard");
-        closeDashboard.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
-        closeDashboard.setOnAction(e -> getChildren().remove(dashboardLabel));
-        StackPane.setAlignment(closeDashboard, Pos.BOTTOM_RIGHT);
-        StackPane.setMargin(closeDashboard, new Insets(0, 20, 20, 0));
-        getChildren().add(closeDashboard);
+        DashboardWindow dashboardWindow = new DashboardWindow(
+                companyRating,
+                marketingPoints,
+                5000.0, // Example monthly revenue; replace with real data
+                () -> getChildren().removeIf(node -> node instanceof DashboardWindow)
+        );
+        StackPane.setAlignment(dashboardWindow, Pos.CENTER);
+        getChildren().add(dashboardWindow);
     }
 
     public void addExitButton(Runnable onExit) {
