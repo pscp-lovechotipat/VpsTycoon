@@ -38,7 +38,7 @@ public class RequestGenerator extends Thread {
                 // สุ่มสร้าง CustomerRequest
                 CustomerType selectedType = CustomerType.values()[random.nextInt(CustomerType.values().length)];
                 RequestType selectedRequestType = RequestType.values()[random.nextInt(RequestType.values().length)];
-                String randomName = RandomGenerateName.generateRandomName(6);
+                String randomName = RandomGenerateName.generateRandomName();
                 double budget = 1000.0;
                 int requestDuration = 30;
 

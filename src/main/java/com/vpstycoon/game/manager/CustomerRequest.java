@@ -16,7 +16,7 @@ public class CustomerRequest extends Customer {
     public CustomerRequest(CustomerType customerType, RequestType requestType,
                            double budget, int duration, int requiredVCPUs,
                            String requiredRam, String requiredDisk) {
-        super(RandomGenerateName.generateRandomName(10), customerType, budget);
+        super(RandomGenerateName.generateRandomName(), customerType, budget);
         this.requestType = requestType;
         this.duration = duration;
         this.requiredVCPUs = requiredVCPUs;
@@ -27,7 +27,7 @@ public class CustomerRequest extends Customer {
     // Constructor ใหม่ที่สุ่ม requirement
     public CustomerRequest(CustomerType customerType, RequestType requestType,
                            double budget, int duration) {
-        super(RandomGenerateName.generateRandomName(10), customerType, budget);
+        super(RandomGenerateName.generateRandomName(), customerType, budget);
         this.requestType = requestType;
         this.duration = duration;
 
