@@ -10,30 +10,33 @@ import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.components.GameMenuBar;
 import com.vpstycoon.ui.game.components.GameObjectDetailsModal;
 import com.vpstycoon.ui.game.components.RoomObjectsLayer;
-import com.vpstycoon.ui.game.desktop.DesktopScreen;
-import com.vpstycoon.ui.game.desktop.MarketWindow;
+import com.vpstycoon.ui.game.desktop.SimulationDesktopUI;
 import com.vpstycoon.ui.game.flow.GameFlowManager;
 import com.vpstycoon.ui.game.handlers.KeyEventHandler;
 import com.vpstycoon.ui.game.handlers.ZoomPanHandler;
+import com.vpstycoon.ui.game.market.MarketUI;
+import com.vpstycoon.ui.game.rack.RackManagementUI;
+import com.vpstycoon.ui.game.vps.VPSCreationUI;
+import com.vpstycoon.ui.game.vps.VPSInfoUI;
+import com.vpstycoon.ui.game.vps.VMCreationUI;
+import com.vpstycoon.ui.game.vps.VMEditUI;
+import com.vpstycoon.ui.game.vps.VMInfoUI;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.control.*;
-import javafx.scene.effect.DropShadow;
+import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameplayContentPane extends BorderPane {
-
     private final StackPane rootStack;
     private Group worldGroup;
     private final StackPane gameArea;
-
+    private final GameMenuBar menuBar;
     private final List<GameObject> gameObjects;
     private final Navigator navigator;
     private final ChatSystem chatSystem;
@@ -42,30 +45,25 @@ public class GameplayContentPane extends BorderPane {
     private final GameFlowManager gameFlowManager;
     private final DebugOverlayManager debugOverlayManager;
     private final Company company;
-
     private RoomObjectsLayer roomObjects;
-
-    private static final int MAX_SLOTS = 10;
     private int occupiedSlots = 2;
-    private final List<Pane> slotPanes = new ArrayList<>();
-
     private final List<VPSOptimization> vpsList = new ArrayList<>();
-
     private ZoomPanHandler zoomPanHandler;
     private KeyEventHandler keyEventHandler;
-
     private boolean showDebug = false;
+    private final RackManagementUI rackManagementUI;
+    private final VPSCreationUI vpsCreationUI;
+    private final VPSInfoUI vpsInfoUI;
+    private final VMCreationUI vmCreationUI;
+    private final VMInfoUI vmInfoUI;
+    private final VMEditUI vmEditUI;
+    private final MarketUI marketUI;
+    private final SimulationDesktopUI simulationDesktopUI;
 
     public GameplayContentPane(
-            List<GameObject> gameObjects,
-            Navigator navigator,
-            ChatSystem chatSystem,
-            RequestManager requestManager,
-            VPSManager vpsManager,
-            GameFlowManager gameFlowManager,
-            DebugOverlayManager debugOverlayManager,
-            Company company
-    ) {
+            List<GameObject> gameObjects, Navigator navigator, ChatSystem chatSystem,
+            RequestManager requestManager, VPSManager vpsManager, GameFlowManager gameFlowManager,
+            DebugOverlayManager debugOverlayManager, Company company) {
         this.gameObjects = gameObjects;
         this.navigator = navigator;
         this.chatSystem = chatSystem;
@@ -74,16 +72,34 @@ public class GameplayContentPane extends BorderPane {
         this.gameFlowManager = gameFlowManager;
         this.debugOverlayManager = debugOverlayManager;
         this.company = company;
+        this.rackManagementUI = new RackManagementUI(this);
+        this.vpsCreationUI = new VPSCreationUI(this);
+        this.vpsInfoUI = new VPSInfoUI(this);
+        this.vmCreationUI = new VMCreationUI(this);
+        this.vmInfoUI = new VMInfoUI(this);
+        this.vmEditUI = new VMEditUI(this);
+        this.marketUI = new MarketUI(this);
+        this.simulationDesktopUI = new SimulationDesktopUI(this);
 
         this.rootStack = new StackPane();
         rootStack.setPrefSize(800, 600);
         rootStack.setMinSize(800, 600);
-
         this.gameArea = new StackPane();
         gameArea.setPrefSize(800, 600);
         gameArea.setMinSize(800, 600);
+        this.menuBar = new GameMenuBar();
 
-        // Initialize with sample VPSs and VMs
+        // เพิ่มข้อมูล VPS ตัวอย่าง
+        initializeSampleVPS();
+
+        setupUI();
+        this.keyEventHandler = new KeyEventHandler(this, debugOverlayManager);
+        keyEventHandler.setup();
+        setCenter(rootStack);
+        setupDebugFeatures();
+    }
+
+    private void initializeSampleVPS() {
         VPSOptimization vps1 = new VPSOptimization();
         vps1.setVCPUs(2);
         vps1.setRamInGB(4);
@@ -102,43 +118,25 @@ public class GameplayContentPane extends BorderPane {
         vpsManager.createVPS("VPS2");
         vpsManager.getVPSMap().put("VPS2", vps2);
         vpsList.add(vps2);
-
-        setupUI();
-        this.keyEventHandler = new KeyEventHandler(this, debugOverlayManager);
-        keyEventHandler.setup();
-        setCenter(rootStack);
-        setupDebugFeatures();
     }
 
     private synchronized void setupUI() {
         Pane backgroundLayer = createBackgroundLayer();
-        Pane objectsContainer = createObjectsContainer();
-
-        GameMenuBar menuBar = new GameMenuBar();
-        StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
+        this.rootStack.getChildren().clear();
 
         roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo);
-
-        worldGroup = new Group(
-                backgroundLayer,
-                roomObjects.getTableLayer(),
-                roomObjects.getServerLayer(),
-                roomObjects.getMonitorLayer()
-        );
-
+        worldGroup = new Group(backgroundLayer, roomObjects.getServerLayer(), roomObjects.getMonitorLayer());
         gameArea.getChildren().add(worldGroup);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
-        StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
-
-        rootStack.getChildren().clear();
         rootStack.getChildren().addAll(gameArea, menuBar, debugOverlay);
 
-        debugOverlayManager.startTimer();
+        StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
+        StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
 
+        debugOverlayManager.startTimer();
         zoomPanHandler = new ZoomPanHandler(worldGroup, gameArea, debugOverlayManager, showDebug);
         zoomPanHandler.setup();
-
         setStyle("-fx-background-color: #000000;");
     }
 
@@ -156,21 +154,6 @@ public class GameplayContentPane extends BorderPane {
         return backgroundLayer;
     }
 
-    private Pane createObjectsContainer() {
-        Pane objectsContainer = new Pane();
-        double cellSize = 100;
-        for (GameObject obj : gameObjects) {
-            GameObjectView view = new GameObjectView(obj);
-            double snappedX = Math.round(obj.getX() / cellSize) * cellSize;
-            double snappedY = Math.round(obj.getY() / cellSize) * cellSize;
-            view.setTranslateX(snappedX);
-            view.setTranslateY(snappedY);
-            view.setOnMouseClicked(e -> GameObjectDetailsModal.show(gameArea, obj, gameFlowManager));
-            objectsContainer.getChildren().add(view);
-        }
-        return objectsContainer;
-    }
-
     private void setupDebugFeatures() {
         setOnMouseMoved(e -> {
             if (showDebug) {
@@ -181,505 +164,35 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public void openRackInfo() {
-        BorderPane rackPane = new BorderPane();
-        rackPane.setPrefSize(800, 600);
-        rackPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
-
-        HBox topBar = new HBox(20);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
-        Label titleLabel = new Label("Rack Management");
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        Button closeButton = createModernButton("Close", "#F44336");
-        closeButton.setOnAction(e -> returnToRoom());
-        topBar.getChildren().addAll(titleLabel, closeButton);
-
-        HBox contentBox = createCard();
-        contentBox.setAlignment(Pos.CENTER);
-        contentBox.setPadding(new Insets(15));
-
-        GridPane rackBox = new GridPane();
-        rackBox.setPrefSize(150, 400);
-        rackBox.setPadding(new Insets(5));
-        rackBox.setStyle("-fx-background-color: #37474F; -fx-border-color: white; -fx-border-width: 2px; -fx-background-radius: 8px;");
-        rackBox.setAlignment(Pos.TOP_CENTER);
-
-        GridPane rackSlots = new GridPane();
-        rackSlots.setAlignment(Pos.CENTER);
-        rackSlots.setPadding(new Insets(5));
-        rackSlots.setHgap(5);
-        rackSlots.setVgap(5);
-
-        ColumnConstraints column = new ColumnConstraints();
-        column.setPercentWidth(100);
-        rackSlots.getColumnConstraints().add(column);
-
-        for (int i = 0; i < MAX_SLOTS; i++) {
-            RowConstraints row = new RowConstraints();
-            row.setPrefHeight(400.0 / MAX_SLOTS);
-            row.setVgrow(Priority.ALWAYS);
-            rackSlots.getRowConstraints().add(row);
-        }
-
-        slotPanes.clear();
-        for (int i = 0; i < MAX_SLOTS; i++) {
-            VPSOptimization vps = (i < vpsList.size()) ? vpsList.get(i) : null;
-            Pane slot = createRackSlot(i, vps, i < occupiedSlots);
-            slotPanes.add(slot);
-            rackSlots.add(slot, 0, i);
-        }
-        rackBox.getChildren().add(rackSlots);
-
-        VBox infoPane = new VBox(10);
-        infoPane.setAlignment(Pos.CENTER);
-        Label infoTitle = new Label("Rack Status");
-        infoTitle.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
-        Label serverCount = new Label("VPS: " + vpsList.size() + "/" + occupiedSlots);
-        serverCount.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 16px;");
-        Label networkUsage = new Label("Network: 10 Gbps");
-        networkUsage.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 16px;");
-        Label userCount = new Label("Active Users: 10");
-        userCount.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 16px;");
-        Button upgradeButton = createModernButton("Upgrade Rack", "#4CAF50");
-        upgradeButton.setOnAction(e -> {
-            if (occupiedSlots < MAX_SLOTS) {
-                occupiedSlots++;
-                System.out.println("Rack upgraded to " + occupiedSlots + " slots");
-                openRackInfo();
-            } else {
-                System.out.println("Max slots reached, cannot upgrade.");
-            }
-        });
-        infoPane.getChildren().addAll(infoTitle, serverCount, networkUsage, userCount, upgradeButton);
-
-        contentBox.getChildren().addAll(rackBox, infoPane);
-        rackPane.setCenter(contentBox);
-
-        HBox buttonBox = new HBox(15);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        buttonBox.setPadding(new Insets(10));
-        Button openMarketButton = createModernButton("Open Market", "#FF9800");
-        openMarketButton.setOnAction(e -> openMarket());
-        buttonBox.getChildren().addAll(openMarketButton);
-        rackPane.setBottom(buttonBox);
-
-        rackPane.setTop(topBar);
-
-        gameArea.getChildren().clear();
-        gameArea.getChildren().add(rackPane);
-        rootStack.getChildren().remove(1);
+        rackManagementUI.openRackInfo();
     }
 
-    private void openCreateVPSPage() {
-        if (vpsList.size() >= occupiedSlots) {
-            System.out.println("Cannot create VPS: All slots are occupied.");
-            return;
-        }
-
-        BorderPane createVPSPane = new BorderPane();
-        createVPSPane.setPrefSize(800, 600);
-        createVPSPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
-
-        HBox topBar = new HBox(20);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
-        Label titleLabel = new Label("Create Virtual Private Server");
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        Button backButton = createModernButton("Back", "#F44336");
-        backButton.setOnAction(e -> openRackInfo());
-        topBar.getChildren().addAll(backButton, titleLabel);
-
-        HBox formBox = createCard();
-        formBox.setAlignment(Pos.CENTER);
-        formBox.setPadding(new Insets(15));
-
-        VBox infoSection = createSection("Basic Information");
-        HBox nameBox = new HBox(10);
-        TextField nameField = new TextField();
-        nameField.setPromptText("Enter VPS Name");
-        nameBox.getChildren().addAll(new Label("Name:"), nameField);
-        HBox ipBox = new HBox(10);
-        TextField ipField = new TextField();
-        ipField.setPromptText("Enter IP (e.g., 103.216.158.233)");
-        ipBox.getChildren().addAll(new Label("IP:"), ipField);
-        infoSection.getChildren().addAll(nameBox, ipBox);
-
-        VBox perfSection = createSection("Performance Settings");
-        HBox perfBox = new HBox(10);
-        TextField vcpuField = new TextField();
-        vcpuField.setPromptText("e.g., 2");
-        TextField ramField = new TextField();
-        ramField.setPromptText("e.g., 4 GB");
-        TextField diskField = new TextField();
-        diskField.setPromptText("e.g., 50 GB");
-        perfBox.getChildren().addAll(
-                new Label("vCPUs:"), vcpuField,
-                new Label("RAM:"), ramField,
-                new Label("Disk:"), diskField
-        );
-        perfSection.getChildren().add(perfBox);
-
-        formBox.getChildren().addAll(infoSection, perfSection);
-
-        HBox buttonBox = new HBox(15);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        buttonBox.setPadding(new Insets(10));
-        Button resetButton = createModernButton("Reset", "#F44336");
-        resetButton.setOnAction(e -> {
-            nameField.clear();
-            ipField.clear();
-            vcpuField.clear();
-            ramField.clear();
-            diskField.clear();
-        });
-        Button createButton = createModernButton("Create", "#2196F3");
-        createButton.setOnAction(e -> {
-            if (nameField.getText().isEmpty() || ipField.getText().isEmpty() || vcpuField.getText().isEmpty() ||
-                    ramField.getText().isEmpty() || diskField.getText().isEmpty()) {
-                System.out.println("Validation Error: All fields are required.");
-            } else {
-                try {
-                    VPSOptimization newVPS = new VPSOptimization();
-                    newVPS.setVCPUs(Integer.parseInt(vcpuField.getText()));
-                    newVPS.setRamInGB(Integer.parseInt(ramField.getText().replace(" GB", "")));
-                    newVPS.setDiskInGB(Integer.parseInt(diskField.getText().replace(" GB", "")));
-                    String vpsId = ipField.getText() + "-" + nameField.getText();
-                    vpsManager.createVPS(vpsId);
-                    vpsManager.getVPSMap().put(vpsId, newVPS);
-                    vpsList.add(newVPS);
-                    System.out.println("Success: VPS created: " + vpsId);
-                    openRackInfo();
-                } catch (NumberFormatException ex) {
-                    System.out.println("Error: Invalid numeric input for vCPUs, RAM, or Disk.");
-                }
-            }
-        });
-        buttonBox.getChildren().addAll(resetButton, createButton);
-
-        createVPSPane.setTop(topBar);
-        createVPSPane.setCenter(formBox);
-        createVPSPane.setBottom(buttonBox);
-
-        gameArea.getChildren().clear();
-        gameArea.getChildren().add(createVPSPane);
+    public void openCreateVPSPage() {
+        vpsCreationUI.openCreateVPSPage();
     }
 
-    private void openVPSInfoPage(VPSOptimization vps) {
-        BorderPane vpsInfoPane = new BorderPane();
-        vpsInfoPane.setPrefSize(800, 600);
-        vpsInfoPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
-
-        HBox topBar = new HBox(20);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
-        String vpsId = vpsManager.getVPSMap().keySet().stream()
-                .filter(id -> vpsManager.getVPS(id) == vps).findFirst().orElse("Unknown");
-        Label titleLabel = new Label("VPS Details: " + vpsId);
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        Button backButton = createModernButton("Back", "#F44336");
-        backButton.setOnAction(e -> openRackInfo());
-        topBar.getChildren().addAll(backButton, titleLabel);
-
-        VBox centerBox = new VBox(20);
-        centerBox.setAlignment(Pos.CENTER);
-
-        HBox infoBox = createCard();
-        infoBox.setPadding(new Insets(15));
-        VBox vpsSection = createSection("VPS Information");
-        Label vpsDetail = new Label("vCPUs: " + vps.getVCPUs() + "\nRAM: " + vps.getRamInGB() + " GB\nDisk: " + vps.getDiskInGB() + " GB");
-        vpsDetail.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 14px;");
-        vpsSection.getChildren().add(vpsDetail);
-        infoBox.getChildren().add(vpsSection);
-
-        HBox vmListBox = createCard();
-        vmListBox.setPadding(new Insets(15));
-        Label vmLabel = new Label("Virtual Machines");
-        vmLabel.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 20px; -fx-font-weight: bold;");
-        List<HBox> vmRows = new ArrayList<>();
-        for (VPSOptimization.VM vm : vps.getVms()) {
-            HBox row = new HBox(10);
-            Button vmButton = new Button(vm.getIp());
-            vmButton.setPrefWidth(200);
-            vmButton.setStyle("-fx-background-color: #455A64; -fx-text-fill: white; -fx-padding: 10px; -fx-background-radius: 8px;");
-            vmButton.setOnMouseEntered(e -> vmButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);"));
-            vmButton.setOnMouseExited(e -> vmButton.setStyle("-fx-background-color: #455A64; -fx-text-fill: white; -fx-padding: 10px; -fx-background-radius: 8px;"));
-            vmButton.setOnAction(e -> openVMInfoPage(vm, vps));
-            vmButton.setFocusTraversable(true);
-            row.getChildren().add(vmButton);
-            vmRows.add(row);
-        }
-        vmListBox.getChildren().addAll(vmLabel, new Separator());
-        vmListBox.getChildren().addAll(vmRows);
-
-        centerBox.getChildren().addAll(infoBox, vmListBox);
-
-        HBox buttonBox = new HBox(15);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        buttonBox.setPadding(new Insets(10));
-        Button createVMButton = createModernButton("Create VM", "#2196F3");
-        createVMButton.setOnAction(e -> openCreateVMPage(vps));
-        Button deleteVPSButton = createModernButton("Delete VPS", "#F44336");
-        deleteVPSButton.setOnAction(e -> {
-            vpsManager.getVPSMap().remove(vpsId);
-            vpsList.remove(vps);
-            System.out.println("VPS deleted: " + vpsId);
-            openRackInfo();
-        });
-        buttonBox.getChildren().addAll(createVMButton, deleteVPSButton);
-
-        vpsInfoPane.setTop(topBar);
-        vpsInfoPane.setCenter(centerBox);
-        vpsInfoPane.setBottom(buttonBox);
-
-        gameArea.getChildren().clear();
-        gameArea.getChildren().add(vpsInfoPane);
+    public void openVPSInfoPage(VPSOptimization vps) {
+        vpsInfoUI.openVPSInfoPage(vps);
     }
 
-    private void openCreateVMPage(VPSOptimization vps) {
-        BorderPane createVMPane = new BorderPane();
-        createVMPane.setPrefSize(800, 600);
-        createVMPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
-
-        HBox topBar = new HBox(20);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
-        String vpsId = vpsManager.getVPSMap().keySet().stream()
-                .filter(id -> vpsManager.getVPS(id) == vps).findFirst().orElse("Unknown");
-        Label titleLabel = new Label("Create VM for VPS: " + vpsId);
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        Button backButton = createModernButton("Back", "#F44336");
-        backButton.setOnAction(e -> openVPSInfoPage(vps));
-        topBar.getChildren().addAll(backButton, titleLabel);
-
-        HBox formBox = createCard();
-        formBox.setAlignment(Pos.CENTER);
-        formBox.setPadding(new Insets(15));
-
-        VBox infoSection = createSection("Basic Information");
-        HBox nameBox = new HBox(10);
-        TextField nameField = new TextField();
-        nameField.setPromptText("Enter VM Name");
-        nameBox.getChildren().addAll(new Label("Name:"), nameField);
-        HBox ipBox = new HBox(10);
-        TextField ipField = new TextField();
-        ipField.setPromptText("Enter IP (e.g., 192.168.1.10)");
-        ipBox.getChildren().addAll(new Label("IP:"), ipField);
-        infoSection.getChildren().addAll(nameBox, ipBox);
-
-        VBox perfSection = createSection("Performance Settings");
-        HBox perfBox = new HBox(10);
-        TextField vcpuField = new TextField();
-        vcpuField.setPromptText("e.g., 1");
-        TextField ramField = new TextField();
-        ramField.setPromptText("e.g., 2 GB");
-        TextField diskField = new TextField();
-        diskField.setPromptText("e.g., 20 GB");
-        perfBox.getChildren().addAll(
-                new Label("vCPUs:"), vcpuField,
-                new Label("RAM:"), ramField,
-                new Label("Disk:"), diskField
-        );
-        perfSection.getChildren().add(perfBox);
-
-        formBox.getChildren().addAll(infoSection, perfSection);
-
-        HBox buttonBox = new HBox(15);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        buttonBox.setPadding(new Insets(10));
-        Button resetButton = createModernButton("Reset", "#F44336");
-        resetButton.setOnAction(e -> {
-            nameField.clear();
-            ipField.clear();
-            vcpuField.clear();
-            ramField.clear();
-            diskField.clear();
-        });
-        Button createButton = createModernButton("Create", "#2196F3");
-        createButton.setOnAction(e -> {
-            if (nameField.getText().isEmpty() || ipField.getText().isEmpty() || vcpuField.getText().isEmpty() ||
-                    ramField.getText().isEmpty() || diskField.getText().isEmpty()) {
-                System.out.println("Validation Error: All fields are required.");
-            } else {
-                try {
-                    VPSOptimization.VM newVM = new VPSOptimization.VM(
-                            ipField.getText(), nameField.getText(),
-                            Integer.parseInt(vcpuField.getText()), ramField.getText(), diskField.getText(), "Running"
-                    );
-                    vps.addVM(newVM);
-                    System.out.println("Success: VM created: " + ipField.getText() + " in VPS: " + vpsId);
-                    openVPSInfoPage(vps);
-                } catch (NumberFormatException ex) {
-                    System.out.println("Error: Invalid numeric input for vCPUs.");
-                }
-            }
-        });
-        buttonBox.getChildren().addAll(resetButton, createButton);
-
-        createVMPane.setTop(topBar);
-        createVMPane.setCenter(formBox);
-        createVMPane.setBottom(buttonBox);
-
-        gameArea.getChildren().clear();
-        gameArea.getChildren().add(createVMPane);
+    public void openCreateVMPage(VPSOptimization vps) {
+        vmCreationUI.openCreateVMPage(vps);
     }
 
-    private void openVMInfoPage(VPSOptimization.VM vm, VPSOptimization vps) {
-        BorderPane vmInfoPane = new BorderPane();
-        vmInfoPane.setPrefSize(800, 600);
-        vmInfoPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
-
-        HBox topBar = new HBox(20);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
-        Label titleLabel = new Label("VM Details: " + vm.getIp());
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        Button backButton = createModernButton("Back", "#F44336");
-        backButton.setOnAction(e -> openVPSInfoPage(vps));
-        topBar.getChildren().addAll(backButton, titleLabel);
-
-        HBox infoBox = createCard();
-        infoBox.setAlignment(Pos.CENTER);
-        infoBox.setPadding(new Insets(15));
-        VBox vmSection = createSection("VM Information");
-        Label vmDetail = new Label("IP: " + vm.getIp() + "\nName: " + vm.getName() +
-                "\nStatus: " + vm.getStatus() + "\nvCPUs: " + vm.getVCPUs() +
-                " | RAM: " + vm.getRam() + " | Disk: " + vm.getDisk());
-        vmDetail.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 14px;");
-        vmSection.getChildren().add(vmDetail);
-        infoBox.getChildren().add(vmSection);
-
-        HBox buttonBox = new HBox(15);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        buttonBox.setPadding(new Insets(10));
-        Button editButton = createModernButton("Edit", "#2196F3");
-        editButton.setOnAction(e -> openEditVMPage(vm, vps));
-        Button deleteButton = createModernButton("Delete", "#F44336");
-        deleteButton.setOnAction(e -> {
-            vps.getVms().remove(vm);
-            System.out.println("VM deleted: " + vm.getIp());
-            openVPSInfoPage(vps);
-        });
-        buttonBox.getChildren().addAll(editButton, deleteButton);
-
-        vmInfoPane.setTop(topBar);
-        vmInfoPane.setCenter(infoBox);
-        vmInfoPane.setBottom(buttonBox);
-
-        gameArea.getChildren().clear();
-        gameArea.getChildren().add(vmInfoPane);
+    public void openVMInfoPage(VPSOptimization.VM vm, VPSOptimization vps) {
+        vmInfoUI.openVMInfoPage(vm, vps);
     }
 
-    private void openEditVMPage(VPSOptimization.VM vm, VPSOptimization vps) {
-        BorderPane editVMPane = new BorderPane();
-        editVMPane.setPrefSize(800, 600);
-        editVMPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
-
-        HBox topBar = new HBox(20);
-        topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
-        Label titleLabel = new Label("Edit VM: " + vm.getIp());
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        Button backButton = createModernButton("Back", "#F44336");
-        backButton.setOnAction(e -> openVMInfoPage(vm, vps));
-        topBar.getChildren().addAll(backButton, titleLabel);
-
-        HBox formBox = createCard();
-        formBox.setAlignment(Pos.CENTER);
-        formBox.setPadding(new Insets(15));
-
-        VBox infoSection = createSection("Basic Information");
-        HBox nameBox = new HBox(10);
-        TextField nameField = new TextField(vm.getName());
-        nameField.setPromptText("Enter VM Name");
-        nameBox.getChildren().addAll(new Label("Name:"), nameField);
-        HBox ipBox = new HBox(10);
-        TextField ipField = new TextField(vm.getIp());
-        ipField.setPromptText("Enter IP (e.g., 192.168.1.10)");
-        ipField.setDisable(true);
-        ipBox.getChildren().addAll(new Label("IP:"), ipField);
-        infoSection.getChildren().addAll(nameBox, ipBox);
-
-        VBox perfSection = createSection("Performance Settings");
-        HBox perfBox = new HBox(10);
-        TextField vcpuField = new TextField(String.valueOf(vm.getVCPUs()));
-        vcpuField.setPromptText("e.g., 1");
-        TextField ramField = new TextField(vm.getRam());
-        ramField.setPromptText("e.g., 2 GB");
-        TextField diskField = new TextField(vm.getDisk());
-        diskField.setPromptText("e.g., 20 GB");
-        perfBox.getChildren().addAll(
-                new Label("vCPUs:"), vcpuField,
-                new Label("RAM:"), ramField,
-                new Label("Disk:"), diskField
-        );
-        perfSection.getChildren().add(perfBox);
-
-        VBox statusSection = createSection("Status");
-        ChoiceBox<String> statusChoice = new ChoiceBox<>();
-        statusChoice.getItems().addAll("Running", "Stopped", "Paused");
-        statusChoice.setValue(vm.getStatus());
-        statusSection.getChildren().addAll(new Label("Status:"), statusChoice);
-
-        formBox.getChildren().addAll(infoSection, perfSection, statusSection);
-
-        HBox buttonBox = new HBox(15);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        buttonBox.setPadding(new Insets(10));
-        Button saveButton = createModernButton("Save", "#2196F3");
-        saveButton.setOnAction(e -> {
-            try {
-                vm.setName(nameField.getText());
-                vm.setVCPUs(Integer.parseInt(vcpuField.getText()));
-                vm.setRam(ramField.getText());
-                vm.setDisk(diskField.getText());
-                vm.setStatus(statusChoice.getValue());
-                System.out.println("VM updated: " + vm.getIp());
-                openVMInfoPage(vm, vps);
-            } catch (NumberFormatException ex) {
-                System.out.println("Error: Invalid vCPUs value.");
-            }
-        });
-        Button cancelButton = createModernButton("Cancel", "#F44336");
-        cancelButton.setOnAction(e -> openVMInfoPage(vm, vps));
-        buttonBox.getChildren().addAll(saveButton, cancelButton);
-
-        editVMPane.setTop(topBar);
-        editVMPane.setCenter(formBox);
-        editVMPane.setBottom(buttonBox);
-
-        gameArea.getChildren().clear();
-        gameArea.getChildren().add(editVMPane);
+    public void openEditVMPage(VPSOptimization.VM vm, VPSOptimization vps) {
+        vmEditUI.openEditVMPage(vm, vps);
     }
 
     public void openMarket() {
-        MarketWindow marketWindow = new MarketWindow(
-                () -> {
-                    gameArea.getChildren().removeIf(node -> node instanceof MarketWindow);
-                    openRackInfo();
-                },
-                vpsManager,
-                this
-        );
-        gameArea.getChildren().add(marketWindow);
+        marketUI.openMarket();
     }
 
-    private synchronized void openSimulationDesktop() {
-        DesktopScreen desktop = new DesktopScreen(
-                company.getRating(),
-                company.getMarketingPoints(),
-                chatSystem,
-                requestManager,
-                vpsManager,
-                company
-        );
-        StackPane.setAlignment(desktop, Pos.CENTER);
-        desktop.setMaxSize(gameArea.getWidth() * 0.8, gameArea.getHeight() * 0.8);
-
-        gameArea.getChildren().clear();
-        gameArea.getChildren().add(desktop);
-        rootStack.getChildren().remove(1);
-
-        desktop.addExitButton(this::returnToRoom);
+    public void openSimulationDesktop() {
+        simulationDesktopUI.openSimulationDesktop();
     }
 
     public void returnToRoom() {
@@ -687,68 +200,43 @@ public class GameplayContentPane extends BorderPane {
         setupUI();
     }
 
-    private HBox createCard() {
-        HBox card = new HBox(20);
-        card.setStyle("-fx-background-color: #37474F; -fx-padding: 15px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
-        card.setAlignment(Pos.CENTER);
-        return card;
+    // Getters and setters
+    public StackPane getRootStack() {
+        return rootStack;
     }
 
-    private VBox createSection(String title) {
-        VBox section = new VBox(10);
-        Label label = new Label(title);
-        label.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
-        section.getChildren().add(label);
-        return section;
+    public StackPane getGameArea() {
+        return gameArea;
     }
 
-    private Button createModernButton(String text, String color) {
-        Button button = new Button(text);
-        button.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);");
-        button.setOnMouseEntered(e -> button.setStyle("-fx-background-color: derive(" + color + ", -10%); -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);"));
-        button.setOnMouseExited(e -> button.setStyle("-fx-background-color: " + color + "; -fx-text-fill: white; -fx-padding: 10px 20px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);"));
-        return button;
+    public GameMenuBar getMenuBar() { return this.menuBar; }
+
+    public List<VPSOptimization> getVpsList() {
+        return vpsList;
     }
 
-    private Pane createRackSlot(int index, VPSOptimization vps, boolean isSlotAvailable) {
-        Pane slot = new Pane();
-        slot.setPrefSize(100, 25);
-        Rectangle rect = new Rectangle(100, 25);
-        rect.setFill(vps != null ? Color.web("#42A5F5") : (isSlotAvailable ? Color.LIGHTGRAY : Color.DARKGRAY));
-        rect.setStroke(Color.WHITE);
-        rect.setArcHeight(5);
-        rect.setArcWidth(5);
-        rect.setEffect(new DropShadow(5, Color.BLACK));
-        rect.setOnMouseEntered(e -> {
-            if (vps != null) rect.setFill(Color.web("#90CAF9"));
-        });
-        rect.setOnMouseExited(e -> {
-            if (vps != null) rect.setFill(Color.web("#42A5F5"));
-        });
-
-        if (vps != null) {
-            slot.setOnMouseClicked(e -> openVPSInfoPage(vps));
-        } else if (isSlotAvailable) {
-            slot.setOnMouseClicked(e -> openCreateVPSPage());
-        } else {
-            slot.setOnMouseClicked(e -> System.out.println("Slot " + (index + 1) + " clicked - Not available yet"));
-        }
-
-        slot.getChildren().add(rect);
-        return slot;
+    public int getOccupiedSlots() {
+        return occupiedSlots;
     }
 
-    public void showResumeScreen() {
-        ResumeScreen resumeScreen = new ResumeScreen(navigator, this::hideResumeScreen);
-        resumeScreen.setPrefSize(gameArea.getWidth(), gameArea.getHeight());
-        gameArea.getChildren().add(resumeScreen);
+    public void setOccupiedSlots(int occupiedSlots) {
+        this.occupiedSlots = occupiedSlots;
     }
 
-    public void hideResumeScreen() {
-        gameArea.getChildren().removeIf(node -> node instanceof ResumeScreen);
-        if (keyEventHandler != null) {
-            keyEventHandler.setResumeScreenShowing(false);
-        }
+    public VPSManager getVpsManager() {
+        return vpsManager;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public ChatSystem getChatSystem() {
+        return chatSystem;
+    }
+
+    public RequestManager getRequestManager() {
+        return requestManager;
     }
 
     public boolean isShowDebug() {
@@ -759,7 +247,7 @@ public class GameplayContentPane extends BorderPane {
         this.showDebug = showDebug;
     }
 
-    public List<VPSOptimization> getVpsList() {
-        return vpsList;
+    public Navigator getNavigator() {
+        return  this.navigator;
     }
 }

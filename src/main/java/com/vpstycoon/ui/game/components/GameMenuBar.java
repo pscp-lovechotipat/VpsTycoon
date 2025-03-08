@@ -14,7 +14,7 @@ public class GameMenuBar extends HBox {
     public GameMenuBar() {
         super(20);
         setPadding(new Insets(40));
-        setAlignment(Pos.CENTER);
+        setAlignment(Pos.TOP_CENTER);
         setPrefHeight(50);
         setMaxHeight(50);
         

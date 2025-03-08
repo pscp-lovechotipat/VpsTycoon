@@ -66,7 +66,7 @@ public class RoomObjectsLayer {
         tableLayer.setPrefWidth(1000);
         tableLayer.setPrefHeight(1000);
         tableLayer.setStyle("""
-            -fx-background-image: url('/images/Table/Table.png');
+            -fx-background-image: url('/images/Object/Table.png');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-translate-x: 100px;
