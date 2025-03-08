@@ -2,7 +2,6 @@ package com.vpstycoon.ui.game.rack;
 
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.ui.game.components.GameMenuBar;
 import com.vpstycoon.ui.game.utils.UIUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -83,14 +82,19 @@ public class RackManagementUI {
         VBox infoPane = new VBox(10);
         infoPane.setAlignment(Pos.CENTER);
         Label infoTitle = new Label("Rack Status");
+
         infoTitle.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
         Label serverCount = new Label("VPS: " + parent.getVpsList().size() + "/" + parent.getOccupiedSlots());
+
         serverCount.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 16px;");
         Label networkUsage = new Label("Network: 10 Gbps");
+
         networkUsage.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 16px;");
         Label userCount = new Label("Active Users: 10");
+
         userCount.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 16px;");
         Button upgradeButton = UIUtils.createModernButton("Upgrade Rack", "#4CAF50");
+
         upgradeButton.setOnAction(e -> {
             if (parent.getOccupiedSlots() < MAX_SLOTS) {
                 parent.setOccupiedSlots(parent.getOccupiedSlots() + 1);

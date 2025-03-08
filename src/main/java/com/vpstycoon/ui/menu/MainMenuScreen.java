@@ -17,9 +17,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
-import javax.swing.*;
-import java.util.Objects;
-
 public class MainMenuScreen extends GameScreen {
     private static final double BUTTON_WIDTH = 160;
     private static final double BUTTON_HEIGHT = 40;

@@ -8,7 +8,6 @@ import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.components.GameMenuBar;
-import com.vpstycoon.ui.game.components.GameObjectDetailsModal;
 import com.vpstycoon.ui.game.components.RoomObjectsLayer;
 import com.vpstycoon.ui.game.desktop.SimulationDesktopUI;
 import com.vpstycoon.ui.game.flow.GameFlowManager;
@@ -16,18 +15,14 @@ import com.vpstycoon.ui.game.handlers.KeyEventHandler;
 import com.vpstycoon.ui.game.handlers.ZoomPanHandler;
 import com.vpstycoon.ui.game.market.MarketUI;
 import com.vpstycoon.ui.game.rack.RackManagementUI;
-import com.vpstycoon.ui.game.vps.VPSCreationUI;
-import com.vpstycoon.ui.game.vps.VPSInfoUI;
-import com.vpstycoon.ui.game.vps.VMCreationUI;
-import com.vpstycoon.ui.game.vps.VMEditUI;
-import com.vpstycoon.ui.game.vps.VMInfoUI;
+import com.vpstycoon.ui.game.vps.*;
 import com.vpstycoon.ui.navigation.Navigator;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.control.Button;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -130,6 +125,7 @@ public class GameplayContentPane extends BorderPane {
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
         rootStack.getChildren().addAll(gameArea, menuBar, debugOverlay);
+        menuBar.setVisible(true);
 
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
         StackPane.setAlignment(menuBar, Pos.TOP_CENTER);

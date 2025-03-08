@@ -2,7 +2,7 @@ package com.vpstycoon.ui.game.handlers;
 
 import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.ui.game.ResumeScreen; // สมมติว่ามีคลาสนี้
+import com.vpstycoon.ui.game.ResumeScreen;
 import javafx.scene.input.KeyCode;
 
 public class KeyEventHandler {

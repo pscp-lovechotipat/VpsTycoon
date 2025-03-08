@@ -8,7 +8,9 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 public class VPSInfoUI {
     private final GameplayContentPane parent;
@@ -26,11 +28,23 @@ public class VPSInfoUI {
         // ส่วนหัว
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
+        topBar.setStyle("""
+                        -fx-background-color: #37474F;
+                        -fx-padding: 10px;
+                        -fx-background-radius: 10px;
+                        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);
+                        """);
+
         String vpsId = parent.getVpsManager().getVPSMap().keySet().stream()
                 .filter(id -> parent.getVpsManager().getVPS(id) == vps).findFirst().orElse("Unknown");
+
         Label titleLabel = new Label("VPS Details: " + vpsId);
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
+        titleLabel.setStyle("""
+                            -fx-text-fill: white;
+                            -fx-font-size: 24px;
+                            -fx-font-weight: bold;
+                            """);
+
         Button backButton = UIUtils.createModernButton("Back", "#F44336");
         backButton.setOnAction(e -> parent.openRackInfo());
         topBar.getChildren().addAll(backButton, titleLabel);
@@ -44,7 +58,9 @@ public class VPSInfoUI {
         infoBox.setPadding(new Insets(15));
         VBox vpsSection = UIUtils.createSection("VPS Information");
         Label vpsDetail = new Label("vCPUs: " + vps.getVCPUs() + "\nRAM: " + vps.getRamInGB() + " GB\nDisk: " + vps.getDiskInGB() + " GB");
-        vpsDetail.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 14px;");
+        vpsDetail.setStyle("""
+                            -fx-text-fill: #B0BEC5; -fx-font-size: 14px;
+                            """);
         vpsSection.getChildren().add(vpsDetail);
         infoBox.getChildren().add(vpsSection);
 
@@ -52,15 +68,39 @@ public class VPSInfoUI {
         HBox vmListBox = UIUtils.createCard();
         vmListBox.setPadding(new Insets(15));
         Label vmLabel = new Label("Virtual Machines");
-        vmLabel.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 20px; -fx-font-weight: bold;");
+        vmLabel.setStyle("""
+                        -fx-text-fill: #B0BEC5;
+                        -fx-font-size: 20px;
+                        -fx-font-weight: bold;
+                        """);
+
         VBox vmRows = new VBox(10);
         for (VPSOptimization.VM vm : vps.getVms()) {
             HBox row = new HBox(10);
             Button vmButton = new Button(vm.getIp());
             vmButton.setPrefWidth(200);
-            vmButton.setStyle("-fx-background-color: #455A64; -fx-text-fill: white; -fx-padding: 10px; -fx-background-radius: 8px;");
-            vmButton.setOnMouseEntered(e -> vmButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-padding: 10px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);"));
-            vmButton.setOnMouseExited(e -> vmButton.setStyle("-fx-background-color: #455A64; -fx-text-fill: white; -fx-padding: 10px; -fx-background-radius: 8px;"));
+            vmButton.setStyle("""
+                            -fx-background-color: #455A64;
+                            -fx-text-fill: white;
+                            -fx-padding: 10px;
+                            -fx-background-radius: 8px;
+                            """);
+
+            vmButton.setOnMouseEntered(e -> vmButton.setStyle("""
+                            -fx-background-color: #4CAF50;
+                            -fx-text-fill: white;
+                            -fx-padding: 10px;
+                            -fx-background-radius: 8px;
+                            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);
+                            """));
+
+            vmButton.setOnMouseExited(e -> vmButton.setStyle("""
+                            -fx-background-color: #455A64;
+                            -fx-text-fill: white;
+                            -fx-padding: 10px;
+                            -fx-background-radius: 8px;
+                            """));
+
             vmButton.setOnAction(e -> parent.openVMInfoPage(vm, vps));
             row.getChildren().add(vmButton);
             vmRows.getChildren().add(row);

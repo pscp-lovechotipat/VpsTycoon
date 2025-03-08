@@ -5,8 +5,12 @@ import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.utils.UIUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 public class VPSCreationUI {
     private final GameplayContentPane parent;
@@ -30,9 +34,18 @@ public class VPSCreationUI {
         // ส่วนหัว
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
+        topBar.setStyle("""
+                        -fx-background-color: #37474F;
+                        -fx-padding: 10px;
+                        -fx-background-radius: 5px;
+                        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);
+                        """);
         Label titleLabel = new Label("Create Virtual Private Server");
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
+        titleLabel.setStyle("""
+                            -fx-text-fill: white;
+                            -fx-font-size: 24px;
+                            -fx-font-weight: bold;
+                            """);
         Button backButton = UIUtils.createModernButton("Back", "#F44336");
         backButton.setOnAction(e -> parent.openRackInfo());
         topBar.getChildren().addAll(backButton, titleLabel);
@@ -44,25 +57,34 @@ public class VPSCreationUI {
 
         // ส่วนข้อมูลพื้นฐาน
         VBox infoSection = UIUtils.createSection("Basic Information");
+
         HBox nameBox = new HBox(10);
         TextField nameField = new TextField();
         nameField.setPromptText("Enter VPS Name");
+
         nameBox.getChildren().addAll(new Label("Name:"), nameField);
+
         HBox ipBox = new HBox(10);
         TextField ipField = new TextField();
+
         ipField.setPromptText("Enter IP (e.g., 103.216.158.233)");
+
         ipBox.getChildren().addAll(new Label("IP:"), ipField);
         infoSection.getChildren().addAll(nameBox, ipBox);
 
         // ส่วนการตั้งค่าประสิทธิภาพ
         VBox perfSection = UIUtils.createSection("Performance Settings");
         HBox perfBox = new HBox(10);
+
         TextField vcpuField = new TextField();
         vcpuField.setPromptText("e.g., 2");
+
         TextField ramField = new TextField();
         ramField.setPromptText("e.g., 4 GB");
+
         TextField diskField = new TextField();
         diskField.setPromptText("e.g., 50 GB");
+
         perfBox.getChildren().addAll(
                 new Label("vCPUs:"), vcpuField,
                 new Label("RAM:"), ramField,

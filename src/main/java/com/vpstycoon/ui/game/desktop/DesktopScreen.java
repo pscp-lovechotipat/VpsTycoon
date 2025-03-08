@@ -7,7 +7,6 @@ import com.vpstycoon.game.manager.VPSManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label; // Added missing import
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;

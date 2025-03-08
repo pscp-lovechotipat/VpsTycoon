@@ -1,10 +1,10 @@
 package com.vpstycoon.ui.game.desktop;
 
+import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.vps.VPSOptimization;
-import com.vpstycoon.game.company.Company;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
@@ -14,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+
 import java.util.HashMap;
 import java.util.Map;
 

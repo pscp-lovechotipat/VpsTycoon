@@ -1,7 +1,7 @@
 package com.vpstycoon.game.resource;
 
-import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.GameObject;
+import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import javafx.scene.image.Image;
 

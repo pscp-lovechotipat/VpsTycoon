@@ -1,15 +1,8 @@
 package com.vpstycoon.ui.game.components;
 
-import javafx.scene.effect.Bloom;
-import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-
-import java.awt.*;
 
 /**
  * Contains all the room objects (monitor, table, server).

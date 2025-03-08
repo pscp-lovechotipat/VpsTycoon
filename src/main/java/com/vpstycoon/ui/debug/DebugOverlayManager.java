@@ -1,6 +1,5 @@
 package com.vpstycoon.ui.debug;
 
-import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
@@ -26,7 +25,7 @@ public class DebugOverlayManager extends GameState {
         // สร้าง VBox สำหรับ overlay
         debugOverlay = new VBox(5);
         debugOverlay.setAlignment(Pos.TOP_LEFT);
-        debugOverlay.setPadding(new Insets(10));
+        debugOverlay.setPadding(new Insets(30));
         debugOverlay.setMouseTransparent(true);
         debugOverlay.setVisible(false);
 

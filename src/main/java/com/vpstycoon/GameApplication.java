@@ -13,7 +13,6 @@ import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.SceneController;
 import com.vpstycoon.ui.game.GameplayScreen;
 import com.vpstycoon.ui.menu.MainMenuScreen;
-import com.vpstycoon.ui.menu.PlayMenuScreen;
 import com.vpstycoon.ui.navigation.Navigator;
 import com.vpstycoon.ui.screen.GameScreen;
 import com.vpstycoon.ui.settings.SettingScreenInGame;
@@ -22,8 +21,6 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
-
-import java.io.IOException;
 
 public class GameApplication extends Application implements Navigator {
     private Stage primaryStage;

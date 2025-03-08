@@ -1,7 +1,7 @@
 package com.vpstycoon.ui.game.desktop;
 
 import com.vpstycoon.game.manager.VPSManager;
-import com.vpstycoon.game.vps.VPSOptimization; // Import VPSOptimization
+import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,7 +11,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import java.util.ArrayList;
 
 public class MarketWindow extends VBox {
     private final Runnable onClose;
