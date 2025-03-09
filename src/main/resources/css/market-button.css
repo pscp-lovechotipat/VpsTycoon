@@ -1,0 +1,14 @@
+.market-button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0.5, 0, 0);
+}
+
+.market-button:hover {
+    -fx-background-color: #45a049;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}

@@ -37,7 +37,9 @@ public class RackManagementUI {
         Label titleLabel = new Label("Rack Management");
         titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
         Button closeButton = UIUtils.createModernButton("Close", "#F44336");
+
         closeButton.setOnAction(e -> parent.returnToRoom());
+
         topBar.getChildren().addAll(titleLabel, closeButton);
 
         // ส่วนเนื้อหาหลัก
@@ -114,7 +116,9 @@ public class RackManagementUI {
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         buttonBox.setPadding(new Insets(10));
         Button openMarketButton = UIUtils.createModernButton("Open Market", "#FF9800");
+
         openMarketButton.setOnAction(e -> parent.openMarket());
+
         buttonBox.getChildren().addAll(openMarketButton);
         rackPane.setBottom(buttonBox);
 

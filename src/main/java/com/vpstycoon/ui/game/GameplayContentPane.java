@@ -8,6 +8,7 @@ import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.components.GameMenuBar;
+import com.vpstycoon.ui.game.components.InGameMarketMenuBar;
 import com.vpstycoon.ui.game.components.RoomObjectsLayer;
 import com.vpstycoon.ui.game.desktop.SimulationDesktopUI;
 import com.vpstycoon.ui.game.flow.GameFlowManager;
@@ -33,20 +34,30 @@ public class GameplayContentPane extends BorderPane {
     private Group worldGroup;
     private final StackPane gameArea;
     private final GameMenuBar menuBar;
+    private final InGameMarketMenuBar inGameMarketMenuBar;
     private final List<GameObject> gameObjects;
+
     private final Navigator navigator;
     private final ChatSystem chatSystem;
+
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
+
     private final GameFlowManager gameFlowManager;
+
     private final DebugOverlayManager debugOverlayManager;
     private final Company company;
     private RoomObjectsLayer roomObjects;
+
     private int occupiedSlots = 2;
+
     private final List<VPSOptimization> vpsList = new ArrayList<>();
+
     private ZoomPanHandler zoomPanHandler;
     private KeyEventHandler keyEventHandler;
+
     private boolean showDebug = false;
+
     private final RackManagementUI rackManagementUI;
     private final VPSCreationUI vpsCreationUI;
     private final VPSInfoUI vpsInfoUI;
@@ -80,10 +91,14 @@ public class GameplayContentPane extends BorderPane {
         this.rootStack = new StackPane();
         rootStack.setPrefSize(800, 600);
         rootStack.setMinSize(800, 600);
+
         this.gameArea = new StackPane();
         gameArea.setPrefSize(800, 600);
         gameArea.setMinSize(800, 600);
+
         this.menuBar = new GameMenuBar();
+
+        this.inGameMarketMenuBar = new InGameMarketMenuBar(this);
 
         // เพิ่มข้อมูล VPS ตัวอย่าง
         initializeSampleVPS();
@@ -125,8 +140,10 @@ public class GameplayContentPane extends BorderPane {
         gameArea.getChildren().add(worldGroup);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
-        rootStack.getChildren().addAll(gameArea, menuBar, debugOverlay);
-        menuBar.setVisible(true);
+        rootStack.getChildren().addAll(gameArea, menuBar, inGameMarketMenuBar, debugOverlay);
+        menuBar.setVisible(true); // จำเป็นต้องใส่ เพราะมีการปิดการมองเห็ฯใน หน้าต่างๆ
+        inGameMarketMenuBar.setVisible(true);
+        inGameMarketMenuBar.setPickOnBounds(false);
 
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
         StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
@@ -139,15 +156,15 @@ public class GameplayContentPane extends BorderPane {
 
     private Pane createBackgroundLayer() {
         Pane backgroundLayer = new Pane();
-        Image backgroundImage = new Image("/images/rooms/room2(70).png"); // เปลี่ยน path รูปตามที่คุณใช้
+        Image backgroundImage = new Image("/images/rooms/room2_NoKeroro(70)2.png"); // เปลี่ยน path รูปตามที่คุณใช้
 
-        double scaleFactor = 0.25;
+        double scaleFactor = 0.26;
         backgroundLayer.setPrefWidth(backgroundImage.getWidth() * scaleFactor);
         backgroundLayer.setPrefHeight(backgroundImage.getHeight() * scaleFactor);
 
         // ใช้ CSS ตั้ง background
         backgroundLayer.setStyle("""
-        -fx-background-image: url("/images/rooms/room2(70).png");
+        -fx-background-image: url("/images/rooms/room2_NoKeroro(70)2.png");
         -fx-background-size: cover;
         -fx-background-repeat: no-repeat;
         -fx-background-position: center;

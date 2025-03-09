@@ -20,5 +20,7 @@ public class MarketUI {
                 parent
         );
         parent.getGameArea().getChildren().add(marketWindow);
+        parent.getRootStack().getChildren().remove(parent.getGameArea());
+        parent.getRootStack().getChildren().add(parent.getGameArea()); // นำ gameArea ไปไว้ด้านบนสุด
     }
 }
