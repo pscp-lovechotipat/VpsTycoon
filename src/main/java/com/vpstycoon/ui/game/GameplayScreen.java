@@ -95,34 +95,35 @@ public class GameplayScreen extends GameScreen {
     }
 
     private synchronized void initializeGameObjects() {
+        int screenWidth = config.getResolution().getWidth();
+        int screenHeight = config.getResolution().getHeight();
+        int centerX = screenWidth / 2;
+        int topMargin = screenHeight / 12; // ระยะห่างจากขอบบน
+        int spacing = screenWidth / 10; // ระยะห่างระหว่างปุ่ม
+
         gameObjects.clear();
 
-        // Create circular button for Server
-        VPSObject server = new VPSObject("server", "Server", 0, 0);
-        server.setGridPosition(4, 8);
-        gameObjects.add(server);
+        // ปุ่ม Deploy
+        VPSObject deploy = new VPSObject("deploy", "Deploy", 0, 0);
+        deploy.setGridPosition(centerX - spacing * 2, topMargin);
+        gameObjects.add(deploy);
 
-        // Create circular button for Database
-        VPSObject database = new VPSObject("database", "Database", 0, 0);
-        database.setGridPosition(8, 8);
-        gameObjects.add(database);
-
-        // Create circular button for Network
+        // ปุ่ม Network
         VPSObject network = new VPSObject("network", "Network", 0, 0);
-        network.setGridPosition(-4, 8);
+        network.setGridPosition(centerX - spacing, topMargin);
         gameObjects.add(network);
 
-        // Create circular button for Security
+        // ปุ่ม Security
         VPSObject security = new VPSObject("security", "Security", 0, 0);
-        security.setGridPosition(-8, 8);
+        security.setGridPosition(centerX, topMargin);
         gameObjects.add(security);
 
-        // Create circular button for Marketing
+        // ปุ่ม Marketing
         VPSObject marketing = new VPSObject("marketing", "Marketing", 0, 0);
-        marketing.setGridPosition(2, 8);
+        marketing.setGridPosition(centerX + spacing, topMargin);
         gameObjects.add(marketing);
 
-        // Update state with initialized game objects
+        // อัปเดตสถานะเกม
         state.setGameObjects(gameObjects);
 
         // Start separate threads

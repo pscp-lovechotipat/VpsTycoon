@@ -110,7 +110,10 @@ public class SettingsScreen extends GameScreen {
         resolutionComboBox = new ComboBox<>();
         resolutionComboBox.getItems().addAll(ScreenResolution.values());
         resolutionComboBox.setValue(config.getResolution());
-        resolutionComboBox.setOnAction(e -> config.setResolution(resolutionComboBox.getValue()));
+        resolutionComboBox.setOnAction(e -> {
+            config.setResolution(resolutionComboBox.getValue());
+            GameEventBus.getInstance().publish(new SettingsChangedEvent(config));
+        });
 
         // Checkboxes
         fullscreenCheckBox = new CheckBox("Fullscreen");
