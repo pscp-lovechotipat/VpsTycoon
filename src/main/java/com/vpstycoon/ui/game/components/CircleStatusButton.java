@@ -37,10 +37,10 @@ public class CircleStatusButton {
         skillLevels.put("Security", 1);
         skillLevels.put("Marketing", 1);
 
-        skillPointsMap.put("Deploy", 200);
-        skillPointsMap.put("Network", 8);
-        skillPointsMap.put("Security", 5);
-        skillPointsMap.put("Marketing", 10);
+        skillPointsMap.put("Deploy", 1000);
+        skillPointsMap.put("Network", 1000);
+        skillPointsMap.put("Security", 1000);
+        skillPointsMap.put("Marketing", 1000);
     }
 
     public CircleStatusButton(String labelText, int number, Color topColor, Color bottomColor) {
