@@ -29,7 +29,7 @@ public class RoomObjectsLayer {
         monitorLayer.setScaleX(3);
         monitorLayer.setScaleY(3);
         monitorLayer.setTranslateX(400);
-        monitorLayer.setTranslateY(260);
+        monitorLayer.setTranslateY(270);
 
         String normalStyle = ("""
             -fx-background-image: url('/images/Moniter/MoniterF2.png');
@@ -78,7 +78,7 @@ public class RoomObjectsLayer {
         serverLayer.setScaleX(0.2);
         serverLayer.setScaleY(0.2);
         serverLayer.setTranslateX(320);
-        serverLayer.setTranslateY(40);
+        serverLayer.setTranslateY(50);
 
         // Style ปกติ (ตามที่มึงให้มา)
         String normalStyle = """

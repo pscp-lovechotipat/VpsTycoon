@@ -100,7 +100,7 @@ public class MarketWindow extends VBox {
 
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_RIGHT);
-        titleBar.setPadding(new Insets(5, 10, 5, 10));
+        titleBar.setPadding(new Insets(20, 10, 5, 10));
         titleBar.setStyle("-fx-background-color: #ff8c00;");
 
         Button closeButton = new Button("X");
@@ -116,7 +116,7 @@ public class MarketWindow extends VBox {
 
         ScrollPane scrollPane = new ScrollPane(productList);
         scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(300);
+        scrollPane.setPrefHeight(getPrefHeight());
 
         VBox content = new VBox(10.0, titleLabel, scrollPane);
         content.setPadding(new Insets(20));
