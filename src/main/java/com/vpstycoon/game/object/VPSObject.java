@@ -4,6 +4,8 @@ import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
 
 public class VPSObject extends GameObject {
+    private Runnable onClickAction;
+
     public VPSObject() {
         super();
     }
@@ -35,5 +37,15 @@ public class VPSObject extends GameObject {
     private long calculateUpgradeCost() {
         // กำหนดสูตรคำนวณค่าใช้จ่ายอัพเกรดตามความต้องการ
         return (long) (1000 * (super.getLevel() * 1.085));
+    }
+
+    public void setOnClick(Runnable action) {
+        this.onClickAction = action;
+    }
+
+    public void click() {
+        if (onClickAction != null) {
+            onClickAction.run();
+        }
     }
 }
