@@ -11,17 +11,53 @@ public class RoomObjectsLayer {
     private final Pane monitorLayer;
     private final Pane tableLayer;
     private final Pane serverLayer;
+    private final Pane keroroLayer;
     private final Runnable onMonitorClick;
     private final Runnable onServerClick;
+    private final Runnable onKeroroClick;
 
-    public RoomObjectsLayer(Runnable onMonitorClick ,Runnable onServerClick) {
+    public RoomObjectsLayer(Runnable onMonitorClick ,Runnable onServerClick, Runnable onKeroroClick) {
         this.onMonitorClick = onMonitorClick;
         this.onServerClick = onServerClick;
         this.monitorLayer = createMonitorLayer();
         this.tableLayer = createTableLayer();
         this.serverLayer = createServerLayer();
+        this.keroroLayer = createKeroroLayer();
+        this.onKeroroClick = onKeroroClick;
     }
 
+    private synchronized Pane createKeroroLayer() {
+        Pane keroroLayer = new Pane();
+        keroroLayer.setPrefWidth(19);
+        keroroLayer.setPrefHeight(19);
+        keroroLayer.setScaleX(3);
+        keroroLayer.setScaleY(3);
+        keroroLayer.setTranslateX(130);
+        keroroLayer.setTranslateY(430);
+
+        String normalStyle = ("""
+            -fx-background-image: url('/images/Object/Keroro.png');
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat;
+            -fx-background-position: center;
+        """);
+
+        String hoverStyle = ("""
+            -fx-background-image: url('/images/Object/Keroro.png');
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat;
+            -fx-background-position: center;
+            -fx-effect: dropshadow(gaussian, #07edf5, 10, 0.1, 0, 0);
+        """);
+
+        keroroLayer.setStyle(normalStyle);
+        keroroLayer.setOnMouseEntered(event -> {keroroLayer.setStyle(hoverStyle);});
+        keroroLayer.setOnMouseExited(event -> {keroroLayer.setStyle(normalStyle);});
+
+        keroroLayer.setOnMouseClicked((MouseEvent e) -> onKeroroClick.run());
+        return keroroLayer;
+
+    }
     private synchronized Pane createMonitorLayer() {
         Pane monitorLayer = new Pane();
         monitorLayer.setPrefWidth(50);
@@ -123,4 +159,6 @@ public class RoomObjectsLayer {
     public Pane getServerLayer() {
         return serverLayer;
     }
+
+    public Pane getKeroroLayer() {return keroroLayer;}
 }

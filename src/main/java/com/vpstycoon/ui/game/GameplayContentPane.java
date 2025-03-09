@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game;
 
+import com.vpstycoon.FontLoader;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
@@ -20,11 +21,11 @@ import com.vpstycoon.ui.game.vps.*;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -135,8 +136,8 @@ public class GameplayContentPane extends BorderPane {
         Pane backgroundLayer = createBackgroundLayer();
         this.rootStack.getChildren().clear();
 
-        roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo);
-        worldGroup = new Group(backgroundLayer, roomObjects.getServerLayer(), roomObjects.getMonitorLayer());
+        roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo, this::openKeroro);
+        worldGroup = new Group(backgroundLayer, roomObjects.getServerLayer(), roomObjects.getMonitorLayer(), roomObjects.getKeroroLayer());
         gameArea.getChildren().add(worldGroup);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
@@ -267,5 +268,10 @@ public class GameplayContentPane extends BorderPane {
 
     public Navigator getNavigator() {
         return  this.navigator;
+    }
+
+    public void openKeroro() {
+        System.out.println("Open Keroro");
+        //รอตัวเองกลับมาทำ-บบ-
     }
 }
