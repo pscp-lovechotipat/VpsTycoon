@@ -16,6 +16,16 @@ import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.stage.Modality;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.geometry.Insets;
+
+
 import java.util.HashMap;
 
 /**
@@ -134,22 +144,45 @@ public class CircleStatusButton {
     }
     private void openUpgradePanel() {
         Stage upgradeStage = new Stage();
-        VBox upgradeLayout = new VBox(10);
-        upgradeLayout.setStyle("-fx-background-color: #16213e; -fx-padding: 20px;");
+        upgradeStage.initModality(Modality.APPLICATION_MODAL); // Set as modal
+        upgradeStage.initStyle(StageStyle.TRANSPARENT); // Make the window transparent
+        upgradeStage.setResizable(false); // Disable resizing
 
-        Label upgradeText = new Label("Upgrade " + skillName + " (Current Lv: " + skillLevel + ")");
-        upgradeText.setTextFill(Color.WHITE);
-        upgradeText.setFont(Font.font("System", FontWeight.BOLD, 16));
-        upgradeLayout.getChildren().add(upgradeText);
+        VBox upgradeLayout = new VBox(10);
+        upgradeLayout.setAlignment(Pos.CENTER);
+        upgradeLayout.setPadding(new Insets(15));
+        upgradeLayout.setBackground(new Background(new BackgroundFill(Color.web("#1E2A38"), new CornerRadii(15), Insets.EMPTY)));
+        upgradeLayout.setEffect(new DropShadow(15, Color.BLACK)); // Stronger shadow to blend with background
+
+        // Exit Button in top right corner
+        HBox titleBar = new HBox();
+        Label titleLabel = new Label("Upgrade " + skillName + " (Lv: " + skillLevel + ")");
+        titleLabel.setTextFill(Color.WHITE);
+        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
+
+        Button exitButton = new Button("X");
+        exitButton.setStyle("-fx-background-color: #e94560; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
+        exitButton.setOnAction(e -> upgradeStage.close());
+
+        titleBar.getChildren().addAll(titleLabel, exitButton);
+        titleBar.setSpacing(50);
+        titleBar.setAlignment(Pos.CENTER);
+
+        // Show available points
+        Label pointsLabel = new Label("Available Points: " + skillPoints);
+        pointsLabel.setTextFill(Color.LIGHTGRAY);
+        pointsLabel.setFont(Font.font("System", FontWeight.NORMAL, 14));
 
         Button upgradeButton = new Button("Upgrade");
-        upgradeButton.setStyle("-fx-background-color: #e94560; -fx-text-fill: white;");
+        upgradeButton.setStyle("-fx-background-color: #e94560; -fx-text-fill: white; -fx-background-radius: 8;");
         upgradeButton.setOnAction(e -> upgradeSkill(upgradeStage));
-        upgradeLayout.getChildren().add(upgradeButton);
 
-        Scene scene = new Scene(upgradeLayout, 250, 150);
+        upgradeLayout.getChildren().addAll(titleBar, pointsLabel, upgradeButton);
+
+        Scene scene = new Scene(upgradeLayout, 320, 180);
+        scene.setFill(Color.TRANSPARENT); // Make scene background transparent
         upgradeStage.setScene(scene);
-        upgradeStage.show();
+        upgradeStage.showAndWait(); // Use showAndWait to enforce modal behavior
     }
 
     private void upgradeSkill(Stage upgradeStage) {
