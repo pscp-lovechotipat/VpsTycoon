@@ -193,7 +193,7 @@ public class SettingsScreen extends GameScreen {
         return backButton;
     }
 
-    private MenuButton createApplyButton() {
+    protected MenuButton createApplyButton() {
         MenuButton applyButton = new MenuButton(MenuButtonType.APPLY);
         applyButton.setOnAction(e -> {
             config.save();
