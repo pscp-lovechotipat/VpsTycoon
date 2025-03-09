@@ -19,6 +19,7 @@ import com.vpstycoon.ui.game.vps.*;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
@@ -138,15 +139,19 @@ public class GameplayContentPane extends BorderPane {
 
     private Pane createBackgroundLayer() {
         Pane backgroundLayer = new Pane();
+        Image backgroundImage = new Image("/images/rooms/room2(70).png"); // เปลี่ยน path รูปตามที่คุณใช้
+
+        double scaleFactor = 0.25;
+        backgroundLayer.setPrefWidth(backgroundImage.getWidth() * scaleFactor);
+        backgroundLayer.setPrefHeight(backgroundImage.getHeight() * scaleFactor);
+
+        // ใช้ CSS ตั้ง background
         backgroundLayer.setStyle("""
-            -fx-background-image: url("/images/rooms/room2(70).png");
-            -fx-background-color: transparent;
-            -fx-background-size: contain;
-            -fx-background-repeat: no-repeat;
-            -fx-background-position: center;
-        """);
-        backgroundLayer.prefWidthProperty().bind(gameArea.widthProperty());
-        backgroundLayer.prefHeightProperty().bind(rootStack.heightProperty());
+        -fx-background-image: url("/images/rooms/room2(70).png");
+        -fx-background-size: cover;
+        -fx-background-repeat: no-repeat;
+        -fx-background-position: center;
+    """);
         return backgroundLayer;
     }
 
