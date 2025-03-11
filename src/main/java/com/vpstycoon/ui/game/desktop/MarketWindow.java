@@ -10,14 +10,41 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Glow;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.BorderStroke;
+import javafx.scene.layout.BorderStrokeStyle;
+import javafx.scene.layout.BorderWidths;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.util.Duration;
 
 public class MarketWindow extends VBox {
     private final Runnable onClose, onCloseAfterPurchase;
     private final VPSManager vpsManager;
     private final GameplayContentPane parent;
+    
+    // Cyberpunk theme colors
+    private static final Color CYBER_PURPLE = Color.rgb(200, 50, 255);
+    private static final Color CYBER_DARK = Color.rgb(20, 10, 30);
+    private static final Color CYBER_GLOW = Color.rgb(255, 0, 255, 0.7);
+    private static final Color CYBER_BLUE = Color.rgb(0, 200, 255);
+    private static final Color CYBER_PINK = Color.rgb(255, 0, 128);
 
     public MarketWindow(Runnable onClose, Runnable onCloseAfterPurchase, VPSManager vpsManager, GameplayContentPane gameplayContentPane) {
         this.onClose = onClose;
@@ -30,8 +57,9 @@ public class MarketWindow extends VBox {
     }
 
     private VBox createProductList() {
-        VBox productList = new VBox(10);
-        productList.setPadding(new Insets(10));
+        VBox productList = new VBox(20);
+        productList.setPadding(new Insets(20));
+        productList.setStyle("-fx-background-color: rgba(30, 15, 40, 0.8);");
 
         String[][] products = {
                 {"Basic VPS", "1 CPU, 1GB RAM, 20GB SSD", "$5/month"},
@@ -48,24 +76,103 @@ public class MarketWindow extends VBox {
     }
 
     private HBox createProductCard(String name, String description, String price) {
-        HBox card = new HBox(10);
-        card.setPadding(new Insets(10));
-        card.setStyle("-fx-background-color: #f8f8f8; -fx-border-color: #ddd; -fx-border-radius: 5;");
+        // Main card container with pixel art style
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
         card.setAlignment(Pos.CENTER_LEFT);
+        
+        // Create pixel-art style background with gradient
+        LinearGradient gradient = new LinearGradient(
+            0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
+            new Stop(0, Color.rgb(40, 10, 60, 0.9)),
+            new Stop(1, Color.rgb(80, 20, 120, 0.9))
+        );
+        
+        // Create pixel border effect
+        BorderStroke borderStroke = new BorderStroke(
+            CYBER_PURPLE,
+            BorderStrokeStyle.SOLID,
+            new CornerRadii(0),
+            new BorderWidths(2)
+        );
+        Border pixelBorder = new Border(borderStroke);
+        card.setBorder(pixelBorder);
+        
+        // Add glow effect
+        DropShadow glow = new DropShadow();
+        glow.setColor(CYBER_GLOW);
+        glow.setRadius(10);
+        card.setEffect(glow);
+        
+        card.setStyle("-fx-background-color: rgba(40, 10, 60, 0.9);");
 
-        VBox details = new VBox();
+        // VPS Package details with cyberpunk styling
+        VBox details = new VBox(8);
+        
+        // Package name with glow effect
         Label nameLabel = new Label(name);
-        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
-
+        nameLabel.setFont(Font.font("Courier New", FontWeight.BOLD, 18));
+        nameLabel.setTextFill(CYBER_BLUE);
+        Glow nameGlow = new Glow(0.8);
+        nameLabel.setEffect(nameGlow);
+        
+        // Specs with pixel font
         Label descLabel = new Label(description);
-        descLabel.setStyle("-fx-text-fill: gray;");
-
+        descLabel.setFont(Font.font("Courier New", 14));
+        descLabel.setTextFill(Color.LIGHTGRAY);
+        
+        // Price with cyberpunk styling
         Label priceLabel = new Label(price);
-        priceLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+        priceLabel.setFont(Font.font("Courier New", FontWeight.BOLD, 16));
+        priceLabel.setTextFill(CYBER_PINK);
+        
+        // Add a "specs" label to make it look more like a product
+        Label specsTitle = new Label("SPECIFICATIONS:");
+        specsTitle.setFont(Font.font("Courier New", FontWeight.BOLD, 12));
+        specsTitle.setTextFill(Color.LIGHTGRAY);
+        
+        details.getChildren().addAll(nameLabel, specsTitle, descLabel, priceLabel);
 
-        details.getChildren().addAll(nameLabel, descLabel, priceLabel);
-
-        Button buyButton = new Button("Buy");
+        // Create a cyberpunk-style buy button
+        Button buyButton = new Button("PURCHASE");
+        buyButton.setFont(Font.font("Courier New", FontWeight.BOLD, 14));
+        buyButton.setTextFill(Color.WHITE);
+        buyButton.setStyle(
+            "-fx-background-color: linear-gradient(to bottom, #8a2be2, #4b0082);" +
+            "-fx-border-color: #ff00ff;" +
+            "-fx-border-width: 2px;" +
+            "-fx-border-radius: 0;" + // Sharp corners for pixel look
+            "-fx-background-radius: 0;" // Sharp corners for pixel look
+        );
+        
+        // Add hover effect
+        buyButton.setOnMouseEntered(e -> {
+            buyButton.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #9b3ff3, #5c1193);" +
+                "-fx-border-color: #ff50ff;" +
+                "-fx-border-width: 2px;" +
+                "-fx-border-radius: 0;" +
+                "-fx-background-radius: 0;"
+            );
+            
+            // Create pulsing glow effect
+            DropShadow buttonGlow = new DropShadow();
+            buttonGlow.setColor(CYBER_GLOW);
+            buttonGlow.setRadius(15);
+            buyButton.setEffect(buttonGlow);
+        });
+        
+        buyButton.setOnMouseExited(e -> {
+            buyButton.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #8a2be2, #4b0082);" +
+                "-fx-border-color: #ff00ff;" +
+                "-fx-border-width: 2px;" +
+                "-fx-border-radius: 0;" +
+                "-fx-background-radius: 0;"
+            );
+            buyButton.setEffect(null);
+        });
+        
         buyButton.setOnAction(e -> {
             // Parse specs from description
             String[] specs = description.split(", ");
@@ -108,43 +215,147 @@ public class MarketWindow extends VBox {
             onCloseAfterPurchase.run();
         });
 
-        card.getChildren().addAll(details, buyButton);
+        // Create a VBox for the button to align it vertically
+        VBox buttonContainer = new VBox();
+        buttonContainer.setAlignment(Pos.CENTER);
+        buttonContainer.getChildren().add(buyButton);
+
+        card.getChildren().addAll(details, buttonContainer);
         HBox.setHgrow(details, Priority.ALWAYS);
 
         return card;
     }
 
     private void setupUI() {
-        setPrefSize(600, 400);
+        setPrefSize(700, 500);
 
+        // Create a cyberpunk-style title bar
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_RIGHT);
-        titleBar.setPadding(new Insets(20, 10, 5, 10));
-        titleBar.setStyle("-fx-background-color: #ff8c00;");
+        titleBar.setPadding(new Insets(30, 15, 15, 15));
+        
+        // Gradient background for title bar
+        LinearGradient titleGradient = new LinearGradient(
+            0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
+            new Stop(0, Color.rgb(80, 20, 120)),
+            new Stop(1, Color.rgb(40, 10, 60))
+        );
+        
+        titleBar.setStyle(
+            "-fx-background-color: rgb(40, 10, 60);" +
+            "-fx-border-color: #ff00ff;" +
+            "-fx-border-width: 0 0 2 0;"
+        );
 
+        // Create a prominent close button with X
         Button closeButton = new Button("X");
-        closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
+        closeButton.setFont(Font.font("Courier New", FontWeight.BOLD, 16));
+        closeButton.setTextFill(Color.WHITE);
+        closeButton.setStyle(
+            "-fx-background-color: transparent;" +
+            "-fx-border-color: #ff00ff;" +
+            "-fx-border-width: 2;" +
+            "-fx-border-radius: 0;" +
+            "-fx-background-radius: 0;" +
+            "-fx-min-width: 30px;" +
+            "-fx-min-height: 30px;"
+        );
+        
+        // Add hover effect to close button
+        closeButton.setOnMouseEntered(e -> {
+            closeButton.setStyle(
+                "-fx-background-color: #ff00ff;" +
+                "-fx-border-color: #ff50ff;" +
+                "-fx-border-width: 2;" +
+                "-fx-border-radius: 0;" +
+                "-fx-background-radius: 0;" +
+                "-fx-min-width: 30px;" +
+                "-fx-min-height: 30px;"
+            );
+        });
+        
+        closeButton.setOnMouseExited(e -> {
+            closeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                "-fx-border-color: #ff00ff;" +
+                "-fx-border-width: 2;" +
+                "-fx-border-radius: 0;" +
+                "-fx-background-radius: 0;" +
+                "-fx-min-width: 30px;" +
+                "-fx-min-height: 30px;"
+            );
+        });
+        
         closeButton.setOnAction(e -> onClose.run());
 
-        titleBar.getChildren().add(closeButton);
+        // Create a large, prominent MARKET title
+        Label titleLabel = new Label("VPS MARKET");
+        titleLabel.setFont(Font.font("Courier New", FontWeight.BOLD, 32));
+        titleLabel.setTextFill(Color.WHITE);
+        titleLabel.setTextAlignment(TextAlignment.CENTER);
+        
+        // Add glow effect to title
+        Glow titleGlow = new Glow(0.8);
+        DropShadow titleShadow = new DropShadow();
+        titleShadow.setColor(CYBER_GLOW);
+        titleShadow.setRadius(15);
+        titleShadow.setInput(titleGlow);
+        titleLabel.setEffect(titleShadow);
+        
+        // Create pulsing animation for the title
+        Timeline pulse = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(titleGlow.levelProperty(), 0.5)),
+            new KeyFrame(Duration.seconds(1.5), new KeyValue(titleGlow.levelProperty(), 0.8)),
+            new KeyFrame(Duration.seconds(3), new KeyValue(titleGlow.levelProperty(), 0.5))
+        );
+        pulse.setCycleCount(Timeline.INDEFINITE);
+        pulse.play();
 
-        Label titleLabel = new Label("Market");
-        titleLabel.setStyle("-fx-font-size: 20px; -fx-text-fill: black;");
+        // Add title to left side and close button to right side
+        HBox titleContent = new HBox();
+        titleContent.setAlignment(Pos.CENTER_LEFT);
+        titleContent.getChildren().add(titleLabel);
+        titleContent.setPadding(new Insets(0, 0, 0, 15));
+        HBox.setHgrow(titleContent, Priority.ALWAYS);
+        
+        titleBar.getChildren().addAll(titleContent, closeButton);
 
+        // Create product list with cyberpunk styling
         VBox productList = createProductList();
 
+        // Create a styled scroll pane
         ScrollPane scrollPane = new ScrollPane(productList);
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefHeight(getPrefHeight());
+        scrollPane.setStyle(
+            "-fx-background: rgb(20, 10, 30);" +
+            "-fx-background-color: rgb(20, 10, 30);" +
+            "-fx-control-inner-background: rgb(20, 10, 30);"
+        );
+        
+        // Add a subtitle explaining the market
+        Label subtitleLabel = new Label("SELECT A VPS PACKAGE TO DEPLOY");
+        subtitleLabel.setFont(Font.font("Courier New", FontWeight.BOLD, 14));
+        subtitleLabel.setTextFill(Color.LIGHTGRAY);
+        subtitleLabel.setPadding(new Insets(10, 0, 10, 0));
 
-        VBox content = new VBox(10.0, titleLabel, scrollPane);
+        // Main content container
+        VBox content = new VBox(10.0, subtitleLabel, scrollPane);
         content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: rgb(20, 10, 30);");
         VBox.setVgrow(content, Priority.ALWAYS);
 
         getChildren().addAll(titleBar, content);
     }
 
     private void styleWindow() {
-        setStyle("-fx-background-color: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0);");
+        // Apply cyberpunk styling to the entire window
+        setStyle(
+            "-fx-background-color: rgb(20, 10, 30);" +
+            "-fx-border-color: #ff00ff;" +
+            "-fx-border-width: 2px;" +
+            "-fx-border-radius: 0;" +
+            "-fx-effect: dropshadow(three-pass-box, rgba(255, 0, 255, 0.7), 15, 0, 0, 0);"
+        );
     }
 }
