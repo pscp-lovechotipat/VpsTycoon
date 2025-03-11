@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.components;
 
+import com.vpstycoon.FontLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -80,7 +81,8 @@ public class CircleStatusButton {
         // Add number with pixel-like font and make it BOLDER
         numberLabel = new Label(String.valueOf(skillPoints));
         numberLabel.setTextFill(Color.WHITE);
-        numberLabel.setFont(Font.font("Monospace", FontWeight.EXTRA_BOLD, 24)); // Increased size and weight
+        // numberLabel.setFont(Font.font("Monospace", FontWeight.EXTRA_BOLD, 24)); // Increased size and weight
+        numberLabel.setFont(FontLoader.loadFont(42));
         
         // Add glow effect to number
         Glow textGlow = new Glow(0.8);

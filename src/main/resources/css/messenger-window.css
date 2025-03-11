@@ -1,0 +1,360 @@
+/* Messenger Window Cyberpunk Theme */
+
+/* Main window styling */
+.messenger-window {
+    -fx-background-color: #1a1a2e;
+    -fx-effect: dropshadow(three-pass-box, rgba(128, 0, 255, 0.4), 15, 0, 0, 0);
+    -fx-background-radius: 10;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+}
+
+/* Title bar styling */
+.title-bar {
+    -fx-background-color: linear-gradient(to right, #6a00ff, #9900ff);
+    -fx-background-radius: 10 10 0 0;
+    -fx-padding: 10 15 10 15;
+}
+
+.title-text {
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 18px;
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.7), 2, 0, 0, 0);
+}
+
+.close-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.close-button:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255, 0, 128, 0.8), 10, 0, 0, 0);
+    -fx-text-fill: #ff00ff;
+}
+
+/* Request list styling */
+.request-list {
+    -fx-background-color: #16213e;
+    -fx-background-radius: 5;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 10;
+}
+
+.request-list-title {
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00ffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.5), 2, 0, 0, 0);
+}
+
+.request-list-view {
+    -fx-background-color: #16213e;
+    -fx-background-radius: 5;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 5;
+}
+
+.request-list-view .list-cell {
+    -fx-background-color: #16213e;
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 14px;
+    -fx-padding: 8 5 8 5;
+    -fx-border-color: transparent transparent rgba(106, 0, 255, 0.3) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.request-list-view .list-cell:selected {
+    -fx-background-color: #6a00ff;
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.5), 5, 0, 0, 0);
+}
+
+.request-list-view .list-cell:hover {
+    -fx-background-color: #3a1f5d;
+}
+
+/* Dashboard styling */
+.dashboard {
+    -fx-background-color: #16213e;
+    -fx-background-radius: 5;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+}
+
+.dashboard-title {
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00ffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.5), 2, 0, 0, 0);
+    -fx-padding: 0 0 5 0;
+}
+
+.dashboard-grid {
+    -fx-hgap: 10;
+    -fx-vgap: 10;
+}
+
+.dashboard-card {
+    -fx-background-color: rgba(26, 26, 46, 0.8);
+    -fx-background-radius: 5;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 5;
+    -fx-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(106, 0, 255, 0.3), 5, 0, 0, 0);
+}
+
+.dashboard-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.5), 10, 0, 0, 0);
+    -fx-border-color: #00ffff;
+}
+
+.dashboard-value {
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00ffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.5), 2, 0, 0, 0);
+}
+
+.dashboard-label {
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 10px;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 2 0 0 0;
+}
+
+.rating-high {
+    -fx-text-fill: #00ff88;
+}
+
+.rating-medium {
+    -fx-text-fill: #ffff00;
+}
+
+.rating-low {
+    -fx-text-fill: #ff5555;
+}
+
+/* Chat area styling */
+.chat-area {
+    -fx-background-color: #16213e;
+    -fx-background-radius: 5;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 10;
+}
+
+.messages-scroll {
+    -fx-background: #16213e;
+    -fx-background-color: transparent;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+}
+
+.messages-box {
+    -fx-background-color: #16213e;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+}
+
+.message-container {
+    -fx-min-width: 100;
+    -fx-min-height: 40;
+}
+
+.customer-message {
+    -fx-background-color: #3a1f5d;
+    -fx-background-radius: 15 15 15 0;
+    -fx-padding: 10;
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 14px;
+    -fx-min-width: 100;
+    -fx-max-width: 300;
+    -fx-wrap-text: true;
+    -fx-effect: dropshadow(gaussian, rgba(106, 0, 255, 0.3), 5, 0, 0, 0);
+}
+
+.user-message {
+    -fx-background-color: #6a00ff;
+    -fx-background-radius: 15 15 0 15;
+    -fx-padding: 10;
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 14px;
+    -fx-min-width: 100;
+    -fx-max-width: 300;
+    -fx-wrap-text: true;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.3), 5, 0, 0, 0);
+}
+
+.system-message {
+    -fx-background-color: #1a1a2e;
+    -fx-background-radius: 5;
+    -fx-padding: 10;
+    -fx-text-fill: #00ffff;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 14px;
+    -fx-min-width: 200;
+    -fx-max-width: 400;
+    -fx-wrap-text: true;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+}
+
+/* Input area styling */
+.input-area {
+    -fx-background-color: #16213e;
+    -fx-padding: 10;
+    -fx-spacing: 10;
+    -fx-alignment: center;
+}
+
+.message-input {
+    -fx-background-color: #1a1a2e;
+    -fx-background-radius: 20;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 14px;
+    -fx-padding: 8 15 8 15;
+    -fx-prompt-text-fill: rgba(255, 255, 255, 0.6);
+}
+
+/* Button styling */
+.cyber-button {
+    -fx-background-color: #6a00ff;
+    -fx-background-radius: 5;
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 8 15 8 15;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(106, 0, 255, 0.5), 5, 0, 0, 0);
+}
+
+.cyber-button:hover {
+    -fx-background-color: #9900ff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.7), 10, 0, 0, 0);
+}
+
+.cyber-button:pressed {
+    -fx-background-color: #4a0099;
+}
+
+.danger-button {
+    -fx-background-color: #ff0055;
+    -fx-effect: dropshadow(gaussian, rgba(255, 0, 85, 0.5), 5, 0, 0, 0);
+}
+
+.danger-button:hover {
+    -fx-background-color: #ff3377;
+    -fx-effect: dropshadow(gaussian, rgba(255, 0, 85, 0.7), 10, 0, 0, 0);
+}
+
+.danger-button:pressed {
+    -fx-background-color: #cc0044;
+}
+
+/* Popup styling */
+.popup-overlay {
+    -fx-background-color: rgba(0, 0, 0, 0.7);
+}
+
+.popup-content {
+    -fx-background-color: #1a1a2e;
+    -fx-background-radius: 10;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-padding: 20;
+    -fx-spacing: 15;
+    -fx-alignment: center;
+    -fx-effect: dropshadow(gaussian, rgba(106, 0, 255, 0.5), 15, 0, 0, 0);
+}
+
+.popup-title {
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00ffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.5), 2, 0, 0, 0);
+}
+
+/* Scrollbar styling */
+.scroll-bar:vertical {
+    -fx-background-color: #1a1a2e;
+    -fx-background-radius: 0;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #6a00ff;
+    -fx-background-radius: 5;
+}
+
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #9900ff;
+}
+
+.scroll-bar:vertical .increment-button,
+.scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 10 0 10;
+}
+
+.scroll-bar:vertical .increment-arrow,
+.scroll-bar:vertical .decrement-arrow {
+    -fx-background-color: #6a00ff;
+}
+
+/* VM list styling */
+.vm-list-view {
+    -fx-background-color: #16213e;
+    -fx-background-radius: 5;
+    -fx-border-color: #6a00ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+}
+
+.vm-list-view .list-cell {
+    -fx-background-color: #16213e;
+    -fx-text-fill: #ffffff;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 14px;
+    -fx-padding: 8 5 8 5;
+    -fx-border-color: transparent transparent rgba(106, 0, 255, 0.3) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.vm-list-view .list-cell:selected {
+    -fx-background-color: #6a00ff;
+    -fx-text-fill: #ffffff;
+}
+
+.vm-list-view .list-cell:hover {
+    -fx-background-color: #3a1f5d;
+}
