@@ -1,6 +1,8 @@
 package com.vpstycoon.ui.game.desktop;
 
+import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;
@@ -66,9 +68,19 @@ public class MarketWindow extends VBox {
         buyButton.setOnAction(e -> {
             // Parse specs from description
             String[] specs = description.split(", ");
+
             int vCPUs = Integer.parseInt(specs[0].split(" ")[0]);
             int ramInGB = Integer.parseInt(specs[1].split("GB")[0]);
             int diskInGB = Integer.parseInt(specs[2].split("GB")[0]);
+
+            int keepUp = Integer.parseInt(price.split("\\$")[1].split("/")[0]);
+
+            Company company = ResourceManager.getInstance().getCompany();
+            if (company.getMoney() < keepUp) {
+                System.out.println("no money to pay this vps");
+                return;
+            }
+            company.setMoney(company.getMoney() - keepUp);
 
             // Create new VPSOptimization instance
             VPSOptimization newVPS = new VPSOptimization();
