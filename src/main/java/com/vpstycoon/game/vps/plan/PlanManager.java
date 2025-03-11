@@ -7,6 +7,6 @@ public class PlanManager {
     private ArrayList<Plan> planList;
 
     public PlanManager() {
-        this.planList = new ArrayList<Plan>(length);
+        this.planList = new ArrayList<Plan>();
     }
 }

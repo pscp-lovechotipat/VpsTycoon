@@ -1,5 +1,6 @@
 package com.vpstycoon.game.vps.plan;
 
+// extends มาเท่านั้นนะ นี้เป็น class หลัก
 public class Plan {
     private String planName;
 
@@ -61,6 +62,22 @@ public class Plan {
 
     public void setNetwork(int network) {
         this.network = network;
+    }
+
+    public String getOs() {
+        return os;
+    }
+
+    public void setOs(String os) {
+        this.os = os;
+    }
+
+    public Boolean getDdosProtection() {
+        return ddosProtection;
+    }
+
+    public void setDdosProtection(Boolean ddosProtection) {
+        this.ddosProtection = ddosProtection;
     }
 
     public int getKeepUp() {
