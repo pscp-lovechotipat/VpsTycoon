@@ -128,6 +128,7 @@ public class RackManagementUI {
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(rackPane);
         parent.getMenuBar().setVisible(false);
+        parent.getInGameMarketMenuBar().setVisible(false);
     }
 
     private Pane createRackSlot(int index, VPSOptimization vps, boolean isSlotAvailable) {
