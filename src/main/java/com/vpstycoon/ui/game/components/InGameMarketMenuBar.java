@@ -43,8 +43,11 @@ public class InGameMarketMenuBar extends StackPane {
                     parent.getMenuBar().setVisible(true);
                     setVisible(true);
                 },
+                () -> {
+                    parent.getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
+                },
                 vpsManager,
-                null // Assuming MarketWindow doesn't need GameplayContentPane anymore
+                parent
         );
         StackPane.setAlignment(marketWindow, Pos.CENTER);
         parent.getGameArea().getChildren().add(marketWindow);

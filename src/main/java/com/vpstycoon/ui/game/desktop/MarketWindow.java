@@ -15,12 +15,13 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 public class MarketWindow extends VBox {
-    private final Runnable onClose;
+    private final Runnable onClose, onCloseAfterPurchase;
     private final VPSManager vpsManager;
     private final GameplayContentPane gameplayContentPane;
 
-    public MarketWindow(Runnable onClose, VPSManager vpsManager, GameplayContentPane gameplayContentPane) {
+    public MarketWindow(Runnable onClose, Runnable onCloseAfterPurchase, VPSManager vpsManager, GameplayContentPane gameplayContentPane) {
         this.onClose = onClose;
+        this.onCloseAfterPurchase = onCloseAfterPurchase;
         this.vpsManager = vpsManager;
         this.gameplayContentPane = gameplayContentPane;
 
@@ -98,7 +99,7 @@ public class MarketWindow extends VBox {
 
             System.out.println("Purchased and added to rack: " + name + " (ID: " + vpsId + ")");
             gameplayContentPane.openRackInfo(); // Refresh Rack view
-            onClose.run(); // Close MarketWindow
+            onCloseAfterPurchase.run();
         });
 
         card.getChildren().addAll(details, buyButton);

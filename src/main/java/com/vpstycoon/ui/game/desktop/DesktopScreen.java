@@ -19,17 +19,19 @@ public class DesktopScreen extends StackPane {
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
     private final Company company;
+    private final GameplayContentPane parent;
     private MessengerWindow chatWindow; // Store as a field to reuse
 
     public DesktopScreen(double companyRating, int marketingPoints,
                          ChatSystem chatSystem, RequestManager requestManager,
-                         VPSManager vpsManager, Company company) {
+                         VPSManager vpsManager, Company company, GameplayContentPane parent) {
         this.companyRating = companyRating;
         this.marketingPoints = marketingPoints;
         this.chatSystem = chatSystem;
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
         this.company = company;
+        this.parent = parent;
 
         setupUI();
     }
@@ -96,8 +98,9 @@ public class DesktopScreen extends StackPane {
     private void openMarketWindow() {
         MarketWindow marketWindow = new MarketWindow(
                 () -> getChildren().removeIf(node -> node instanceof MarketWindow),
+                () -> getChildren().removeIf(node -> node instanceof MarketWindow),
                 vpsManager,
-                null // Assuming MarketWindow doesn't need GameplayContentPane anymore
+                parent
         );
         StackPane.setAlignment(marketWindow, Pos.CENTER);
         getChildren().add(marketWindow);
