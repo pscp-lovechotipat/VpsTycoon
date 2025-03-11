@@ -16,6 +16,7 @@ public class MarketUI {
                     parent.getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
                     parent.openRackInfo();
                 },
+                () -> parent.getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow),
                 parent.getVpsManager(),
                 parent
         );

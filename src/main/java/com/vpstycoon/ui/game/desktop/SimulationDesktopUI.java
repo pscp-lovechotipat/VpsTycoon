@@ -18,7 +18,8 @@ public class SimulationDesktopUI {
                 parent.getChatSystem(),
                 parent.getRequestManager(),
                 parent.getVpsManager(),
-                parent.getCompany()
+                parent.getCompany(),
+                parent
         );
         StackPane.setAlignment(desktop, Pos.CENTER);
         desktop.setMaxSize(parent.getGameArea().getWidth() * 0.8, parent.getGameArea().getHeight() * 0.8);

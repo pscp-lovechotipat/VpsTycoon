@@ -16,6 +16,9 @@ import com.vpstycoon.ui.game.flow.GameFlowManager;
 import com.vpstycoon.ui.game.handlers.KeyEventHandler;
 import com.vpstycoon.ui.game.handlers.ZoomPanHandler;
 import com.vpstycoon.ui.game.market.MarketUI;
+import com.vpstycoon.ui.game.notification.NotificationController;
+import com.vpstycoon.ui.game.notification.NotificationModel;
+import com.vpstycoon.ui.game.notification.NotificationView;
 import com.vpstycoon.ui.game.rack.RackManagementUI;
 import com.vpstycoon.ui.game.vps.*;
 import com.vpstycoon.ui.navigation.Navigator;
@@ -32,6 +35,11 @@ import java.util.List;
 
 public class GameplayContentPane extends BorderPane {
     private final StackPane rootStack;
+
+    private final NotificationModel notificationModel;
+    private final NotificationView notificationView;
+    private final NotificationController notificationController;
+
     private Group worldGroup;
     private final StackPane gameArea;
     private final GameMenuBar menuBar;
@@ -90,6 +98,10 @@ public class GameplayContentPane extends BorderPane {
         this.marketUI = new MarketUI(this);
         this.simulationDesktopUI = new SimulationDesktopUI(this);
 
+        this.notificationModel = new NotificationModel();
+        this.notificationView = new NotificationView();
+        this.notificationController = new NotificationController(notificationModel, notificationView);
+
         this.rootStack = new StackPane();
         rootStack.setPrefSize(800, 600);
         rootStack.setMinSize(800, 600);
@@ -131,10 +143,15 @@ public class GameplayContentPane extends BorderPane {
         vpsManager.createVPS("VPS2");
         vpsManager.getVPSMap().put("VPS2", vps2);
         vpsList.add(vps2);
+
+        // ทดสอบการแจ้งเตือน
+        pushNotification("System", "VPS1 has been created successfully!");
+        pushNotification("Alert", "VPS2 is now online.");
     }
 
     private synchronized void setupUI() {
         Pane backgroundLayer = createBackgroundLayer();
+
         this.rootStack.getChildren().clear();
 
         roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo, this::openKeroro);
@@ -142,13 +159,17 @@ public class GameplayContentPane extends BorderPane {
         gameArea.getChildren().add(worldGroup);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
-        rootStack.getChildren().addAll(gameArea, menuBar, inGameMarketMenuBar, debugOverlay);
+        rootStack.getChildren().addAll(gameArea, menuBar, inGameMarketMenuBar, notificationView, debugOverlay);
 
         menuBar.setVisible(true); // จำเป็นต้องใส่ เพราะมีการปิดการมองเห็ฯใน หน้าต่างๆ
         menuBar.setPickOnBounds(false);
 
         inGameMarketMenuBar.setVisible(true);
         inGameMarketMenuBar.setPickOnBounds(false);
+
+        StackPane.setAlignment(notificationView, Pos.TOP_RIGHT);
+        notificationView.setMaxWidth(400); // จำกัดความกว้างของการแจ้งเตือน
+        notificationView.setPickOnBounds(false);
 
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
         StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
@@ -184,6 +205,10 @@ public class GameplayContentPane extends BorderPane {
                 debugOverlayManager.updateGameInfo(rootStack);
             }
         });
+    }
+
+    public void pushNotification(String title, String content) {
+        notificationController.push(title, content);
     }
 
     public void openRackInfo() {

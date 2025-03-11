@@ -15,14 +15,15 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 public class MarketWindow extends VBox {
-    private final Runnable onClose;
+    private final Runnable onClose, onCloseAfterPurchase;
     private final VPSManager vpsManager;
-    private final GameplayContentPane gameplayContentPane;
+    private final GameplayContentPane parent;
 
-    public MarketWindow(Runnable onClose, VPSManager vpsManager, GameplayContentPane gameplayContentPane) {
+    public MarketWindow(Runnable onClose, Runnable onCloseAfterPurchase, VPSManager vpsManager, GameplayContentPane gameplayContentPane) {
         this.onClose = onClose;
+        this.onCloseAfterPurchase = onCloseAfterPurchase;
         this.vpsManager = vpsManager;
-        this.gameplayContentPane = gameplayContentPane;
+        this.parent = gameplayContentPane;
 
         setupUI();
         styleWindow();
@@ -76,6 +77,12 @@ public class MarketWindow extends VBox {
             int keepUp = Integer.parseInt(price.split("\\$")[1].split("/")[0]);
 
             Company company = ResourceManager.getInstance().getCompany();
+
+            if (parent.getVpsList().size() >= parent.getOccupiedSlots()) {
+                System.out.println("Please Upgrade your rack slot.");
+                return;
+            }
+
             if (company.getMoney() < keepUp) {
                 System.out.println("no money to pay this vps");
                 return;
@@ -89,16 +96,16 @@ public class MarketWindow extends VBox {
             newVPS.setDiskInGB(diskInGB);
 
             // Generate a unique ID (similar to your IP logic)
-            String vpsId = "103.216.158." + (gameplayContentPane.getVpsList().size() + 235) + "-" + name.replace(" ", "");
+            String vpsId = "103.216.158." + (parent.getVpsList().size() + 235) + "-" + name.replace(" ", "");
 
             // Add to VPSManager and vpsList
             vpsManager.createVPS(vpsId);
             vpsManager.getVPSMap().put(vpsId, newVPS);
-            gameplayContentPane.getVpsList().add(newVPS);
+            parent.getVpsList().add(newVPS);
 
             System.out.println("Purchased and added to rack: " + name + " (ID: " + vpsId + ")");
-            gameplayContentPane.openRackInfo(); // Refresh Rack view
-            onClose.run(); // Close MarketWindow
+            parent.openRackInfo(); // Refresh Rack view
+            onCloseAfterPurchase.run();
         });
 
         card.getChildren().addAll(details, buyButton);
