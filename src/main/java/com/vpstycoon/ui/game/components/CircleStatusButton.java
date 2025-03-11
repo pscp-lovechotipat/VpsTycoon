@@ -4,12 +4,15 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Bloom;
+import javafx.scene.effect.Glow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.control.Button;
@@ -24,12 +27,14 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.geometry.Insets;
-
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.util.Duration;
 
 import java.util.HashMap;
 
 /**
- * Creates a circular status button with number and label.
+ * Creates a circular status button with number and label in cyberpunk style.
  */
 public class CircleStatusButton {
     private final VBox container;
@@ -40,6 +45,11 @@ public class CircleStatusButton {
     private String skillName;
     private static HashMap<String, Integer> skillLevels = new HashMap<>();
     private static HashMap<String, Integer> skillPointsMap = new HashMap<>();
+
+    // Cyberpunk theme colors
+    private static final Color CYBER_PURPLE = Color.rgb(200, 50, 255);
+    private static final Color CYBER_DARK = Color.rgb(20, 10, 30);
+    private static final Color CYBER_GLOW = Color.rgb(255, 0, 255, 0.7);
 
     static {
         skillLevels.put("Deploy", 1);
@@ -54,9 +64,9 @@ public class CircleStatusButton {
     }
 
     public CircleStatusButton(String labelText, int number, Color topColor, Color bottomColor) {
-        this.skillName = labelText; // กำหนดค่า skillName ก่อนดึงค่าจาก HashMap
+        this.skillName = labelText;
         this.skillLevel = skillLevels.getOrDefault(skillName, 1);
-        this.skillPoints = skillPointsMap.getOrDefault(skillName, number); // ใช้ number เป็นค่าเริ่มต้นถ้าไม่มีค่าใน HashMap
+        this.skillPoints = skillPointsMap.getOrDefault(skillName, number);
         this.container = createContainer(skillName, topColor, bottomColor);
     }
 
@@ -64,125 +74,340 @@ public class CircleStatusButton {
         VBox container = new VBox(12);
         container.setAlignment(Pos.CENTER);
 
-        // Create outer white circle (shadow)
-        Circle outerCircle = new Circle(38);
-        outerCircle.setEffect(new DropShadow(10, Color.BLACK));
-        Stop[] outerCircleStops = new Stop[] {
-                new Stop(0, Color.rgb(255, 255, 255)),
-                new Stop(1, Color.rgb(220, 220, 220))
-        };
-        LinearGradient outerCircleGradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, outerCircleStops);
-        outerCircle.setFill(outerCircleGradient);
-
-        // Create inner colored circle (gradient)
-        Circle innerCircle = new Circle(30);
-        DropShadow innerShadow = new DropShadow();
-        innerShadow.setRadius(2);
-        innerShadow.setColor(Color.rgb(0, 0, 0, 0.4));
-        innerShadow.setOffsetY(2);
-        innerCircle.setEffect(innerShadow);
+        // Create pixel-art style button
+        StackPane buttonFrame = createCyberButton(topColor, bottomColor);
         
-        // Create gradient from specified colors
-        Stop[] stops = new Stop[] {
-                new Stop(0, topColor),
-                new Stop(1, bottomColor)
-        };
-        LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, stops);
-        innerCircle.setFill(gradient);
-
-        // Add number
+        // Add number with pixel-like font and make it BOLDER
         numberLabel = new Label(String.valueOf(skillPoints));
         numberLabel.setTextFill(Color.WHITE);
-        numberLabel.setFont(Font.font("System", FontWeight.BOLD, 20));
+        numberLabel.setFont(Font.font("Monospace", FontWeight.EXTRA_BOLD, 24)); // Increased size and weight
+        
+        // Add glow effect to number
+        Glow textGlow = new Glow(0.8);
+        numberLabel.setEffect(textGlow);
 
-        // Stack circles and number
-        StackPane circleStack = new StackPane();
-        circleStack.getChildren().addAll(outerCircle, innerCircle, numberLabel);
+        // Stack elements
+        StackPane buttonStack = new StackPane();
+        buttonStack.getChildren().addAll(buttonFrame, numberLabel);
 
-        circleStack.setOnMouseClicked((MouseEvent e) -> openUpgradePanel());
+        // Simplified hover effect - just a slight scale without glow changes
+        buttonStack.setOnMouseEntered(e -> {
+            // Only scale effect, no glow change
+            buttonStack.setScaleX(1.05);
+            buttonStack.setScaleY(1.05);
+        });
+        
+        buttonStack.setOnMouseExited(e -> {
+            // Reset scale
+            buttonStack.setScaleX(1.0);
+            buttonStack.setScaleY(1.0);
+        });
 
-        // Create label below
-        Label textLabel = new Label(skillName);
-        textLabel.setPrefWidth(80);
-        textLabel.setAlignment(Pos.CENTER);
-        textLabel.setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY, new CornerRadii(4), Insets.EMPTY)));
-        textLabel.setPadding(new Insets(6));
-        
-        // Create gradient for label
-        Stop[] labelStops = new Stop[] {
-                new Stop(0, Color.rgb(255, 255, 255)),
-                new Stop(1, Color.rgb(220, 220, 220))
-        };
-        LinearGradient labelGradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, labelStops);
-        
-        // Set background and border
-        textLabel.setBackground(new Background(new BackgroundFill(
-                labelGradient, new CornerRadii(4), Insets.EMPTY)));
-        
-        // Add padding to label
-        textLabel.setPadding(new Insets(6));
-        
-        // Set shadow
-        DropShadow shadow = new DropShadow();
-        shadow.setColor(Color.rgb(0, 0, 0, 0.3));
-        shadow.setRadius(10);
-        shadow.setOffsetY(1);
-        textLabel.setEffect(shadow);
-        
-        // Set text
-        textLabel.setTextFill(Color.rgb(100, 100, 100));
-        textLabel.setFont(Font.font("System", FontWeight.NORMAL, 12));
-        textLabel.setAlignment(Pos.CENTER);
+        buttonStack.setOnMouseClicked((MouseEvent e) -> openUpgradePanel());
 
-        // Add all to VBox
-        container.getChildren().addAll(circleStack, textLabel);
+        // Create cyber-style label with pixel art aesthetic
+        Label textLabel = createCyberLabel(skillName, topColor);
+        
+        // Add all to VBox with proper spacing for pixel art look
+        container.getChildren().addAll(buttonStack, textLabel);
         return container;
+    }
+    
+    private StackPane createCyberButton(Color topColor, Color bottomColor) {
+        // Create a pixel-art style button instead of a circle
+        StackPane buttonStack = new StackPane();
+        
+        // Create main square button with pixelated corners
+        Rectangle mainSquare = new Rectangle(70, 70);
+        mainSquare.setArcWidth(0);  // Sharp corners for pixel look
+        mainSquare.setArcHeight(0);
+        
+        // Create pixel-art style gradient
+        Stop[] stops = new Stop[] {
+                new Stop(0, topColor),
+                new Stop(0.7, bottomColor),
+                new Stop(1, CYBER_DARK)
+        };
+        LinearGradient gradient = new LinearGradient(0, 0, 0, 1, true, CycleMethod.NO_CYCLE, stops);
+        mainSquare.setFill(gradient);
+        
+        // Add pixel border
+        mainSquare.setStroke(topColor);
+        mainSquare.setStrokeWidth(2);
+        
+        // Add glow effect with the button's own color, but reduced intensity
+        DropShadow glow = new DropShadow();
+        glow.setRadius(8);  // Reduced from 15
+        glow.setColor(topColor);
+        glow.setSpread(0.15);  // Reduced from 0.3
+        mainSquare.setEffect(glow);
+        
+        // Create pixel corners to give it a more pixelated look - ADJUSTED POSITIONING
+        Pane pixelCorners = new Pane();
+        // Move the entire pixelCorners pane to the right
+        
+        // Top-left pixel - adjusted positioning
+        Rectangle topLeft = new Rectangle(5, 5);
+        topLeft.setFill(topColor);
+        topLeft.setTranslateX(9);
+        topLeft.setTranslateY(-4);
+        
+        // Top-right pixel - adjusted positioning
+        Rectangle topRight = new Rectangle(5, 5);
+        topRight.setFill(topColor);
+        topRight.setTranslateX(86);
+        topRight.setTranslateY(-4);
+        
+        // Bottom-left pixel - adjusted positioning
+        Rectangle bottomLeft = new Rectangle(5, 5);
+        bottomLeft.setFill(topColor);
+        bottomLeft.setTranslateX(9);
+        bottomLeft.setTranslateY(70);
+        
+        // Bottom-right pixel - adjusted positioning
+        Rectangle bottomRight = new Rectangle(5, 5);
+        bottomRight.setFill(topColor);
+        bottomRight.setTranslateX(86);
+        bottomRight.setTranslateY(70);
+        
+        // Add pixel details inside
+        Pane pixelDetails = new Pane();
+        // Move the entire pixelDetails pane to the right
+        pixelDetails.setTranslateX(5);  // Added offset to move everything right
+        
+        // Add horizontal scan lines for CRT effect
+        for (int i = 10; i < 65; i += 10) {
+            Rectangle scanLine = new Rectangle(60, 1);
+            scanLine.setFill(Color.rgb(255, 255, 255, 0.1));
+            scanLine.setTranslateX(15);
+            scanLine.setTranslateY(i);
+            pixelDetails.getChildren().add(scanLine);
+        }
+
+        
+        pixelCorners.getChildren().addAll(topLeft, topRight, bottomLeft, bottomRight);
+        
+        // Add all elements to the button stack
+        buttonStack.getChildren().addAll(mainSquare, pixelCorners, pixelDetails);
+        
+        return buttonStack;
+    }
+    
+    private Label createCyberLabel(String text, Color color) {
+        Label label = new Label(text);
+        label.setPrefWidth(100); // Increased width to prevent truncation
+        label.setAlignment(Pos.CENTER);
+        
+        // Create pixel-art style background
+        BackgroundFill bgFill = new BackgroundFill(
+            CYBER_DARK, 
+            new CornerRadii(0), 
+            Insets.EMPTY
+        );
+        
+        // Add pixel-style border
+        BorderStroke borderStroke = new BorderStroke(
+            color, 
+            BorderStrokeStyle.SOLID, 
+            new CornerRadii(0), 
+            new BorderWidths(2)
+        );
+        
+        // Add pixel corners to the border
+        Border pixelBorder = new Border(borderStroke);
+        
+        label.setBackground(new Background(bgFill));
+        label.setBorder(pixelBorder);
+        label.setPadding(new Insets(6));
+        
+        // Add reduced glow effect with the label's own color
+        DropShadow glow = new DropShadow();
+        glow.setColor(color);
+        glow.setRadius(5);  // Reduced from 10
+        glow.setSpread(0.1);  // Reduced from 0.2
+        label.setEffect(glow);
+        
+        // Set text style with pixel-like font
+        label.setTextFill(Color.WHITE);
+        label.setFont(Font.font("Monospace", FontWeight.BOLD, 12));
+        
+        return label;
     }
     
     public VBox getContainer() {
         return container;
     }
+    
     private void openUpgradePanel() {
         Stage upgradeStage = new Stage();
-        upgradeStage.initModality(Modality.APPLICATION_MODAL); // Set as modal
-        upgradeStage.initStyle(StageStyle.TRANSPARENT); // Make the window transparent
-        upgradeStage.setResizable(false); // Disable resizing
+        upgradeStage.initModality(Modality.APPLICATION_MODAL);
+        upgradeStage.initStyle(StageStyle.TRANSPARENT);
+        upgradeStage.setResizable(false);
 
-        VBox upgradeLayout = new VBox(10);
+        VBox upgradeLayout = new VBox(15);
         upgradeLayout.setAlignment(Pos.CENTER);
-        upgradeLayout.setPadding(new Insets(15));
-        upgradeLayout.setBackground(new Background(new BackgroundFill(Color.web("#1E2A38"), new CornerRadii(15), Insets.EMPTY)));
-        upgradeLayout.setEffect(new DropShadow(15, Color.BLACK)); // Stronger shadow to blend with background
+        upgradeLayout.setPadding(new Insets(20));
+        
+        // Get the appropriate color for this skill
+        Color skillColor = getColorForSkill(skillName);
+        
+        // Pixel-art style background - fully black for contrast
+        upgradeLayout.setBackground(new Background(new BackgroundFill(
+            Color.rgb(0, 0, 0, 0.95), 
+            new CornerRadii(0), 
+            Insets.EMPTY
+        )));
+        
+        // Add pixel-art border with the skill's color
+        upgradeLayout.setBorder(new Border(new BorderStroke(
+            skillColor, 
+            BorderStrokeStyle.SOLID, 
+            new CornerRadii(0), 
+            new BorderWidths(2)
+        )));
+        
+        // Add scanlines for CRT effect
+        for (int i = 0; i < 320; i += 4) {
+            Rectangle scanLine = new Rectangle(320, 1);
+            scanLine.setFill(Color.rgb(255, 255, 255, 0.03));
+            scanLine.setTranslateY(i);
+            upgradeLayout.getChildren().add(scanLine);
+        }
+        
+        // Add reduced glow effect with the skill's color
+        DropShadow panelGlow = new DropShadow();
+        panelGlow.setColor(skillColor);
+        panelGlow.setRadius(10);  // Reduced from 20
+        panelGlow.setSpread(0.2);  // Reduced from 0.4
+        upgradeLayout.setEffect(panelGlow);
 
-        // Exit Button in top right corner
+        // Create pixel-art style title bar
         HBox titleBar = new HBox();
-        Label titleLabel = new Label("Upgrade " + skillName + " (Lv: " + skillLevel + ")");
-        titleLabel.setTextFill(Color.WHITE);
-        titleLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
+        titleBar.setAlignment(Pos.CENTER);
+        titleBar.setSpacing(50);
+        
+        // Pixel-art style title with the skill's color
+        Label titleLabel = new Label("UPGRADE " + skillName.toUpperCase() + " [LV:" + skillLevel + "]");
+        titleLabel.setTextFill(skillColor);
+        titleLabel.setFont(Font.font("Monospace", FontWeight.BOLD, 16));
+        
+        // Add glitch effect to title (occasional color change)
+        Timeline glitchTimeline = new Timeline(
+            new KeyFrame(Duration.seconds(0.8), evt -> titleLabel.setTextFill(skillColor)),
+            new KeyFrame(Duration.seconds(0.9), evt -> titleLabel.setTextFill(Color.WHITE)),
+            new KeyFrame(Duration.seconds(1.0), evt -> titleLabel.setTextFill(skillColor))
+        );
+        glitchTimeline.setCycleCount(Timeline.INDEFINITE);
+        glitchTimeline.play();
 
+        // Pixel-art style exit button with the skill's color
         Button exitButton = new Button("X");
-        exitButton.setStyle("-fx-background-color: #e94560; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 5;");
+        exitButton.setStyle(
+            "-fx-background-color: transparent;" +
+            "-fx-text-fill: " + toRgbString(skillColor) + ";" +
+            "-fx-font-family: 'Monospace';" +
+            "-fx-font-weight: bold;" +
+            "-fx-border-color: " + toRgbString(skillColor) + ";" +
+            "-fx-border-width: 2px;"
+        );
+        
+        // Add hover effect to exit button
+        exitButton.setOnMouseEntered(e -> {
+            exitButton.setStyle(
+                "-fx-background-color: " + toRgbString(skillColor) + ";" +
+                "-fx-text-fill: #000000;" +
+                "-fx-font-family: 'Monospace';" +
+                "-fx-font-weight: bold;" +
+                "-fx-border-color: " + toRgbString(skillColor) + ";" +
+                "-fx-border-width: 2px;"
+            );
+        });
+        
+        exitButton.setOnMouseExited(e -> {
+            exitButton.setStyle(
+                "-fx-background-color: transparent;" +
+                "-fx-text-fill: " + toRgbString(skillColor) + ";" +
+                "-fx-font-family: 'Monospace';" +
+                "-fx-font-weight: bold;" +
+                "-fx-border-color: " + toRgbString(skillColor) + ";" +
+                "-fx-border-width: 2px;"
+            );
+        });
+        
         exitButton.setOnAction(e -> upgradeStage.close());
 
         titleBar.getChildren().addAll(titleLabel, exitButton);
-        titleBar.setSpacing(50);
-        titleBar.setAlignment(Pos.CENTER);
 
-        // Show available points
-        Label pointsLabel = new Label("Available Points: " + skillPoints);
+        // Pixel-art style points display
+        Label pointsLabel = new Label("AVAILABLE POINTS: " + skillPoints);
         pointsLabel.setTextFill(Color.LIGHTGRAY);
-        pointsLabel.setFont(Font.font("System", FontWeight.NORMAL, 14));
+        pointsLabel.setFont(Font.font("Monospace", FontWeight.NORMAL, 14));
+        
+        // Add pixel-art border to points display
+        pointsLabel.setPadding(new Insets(5, 10, 5, 10));
+        pointsLabel.setBorder(new Border(new BorderStroke(
+            Color.LIGHTGRAY, 
+            BorderStrokeStyle.SOLID, 
+            new CornerRadii(0), 
+            new BorderWidths(1)
+        )));
 
-        Button upgradeButton = new Button("Upgrade");
-        upgradeButton.setStyle("-fx-background-color: #e94560; -fx-text-fill: white; -fx-background-radius: 8;");
+        // Pixel-art style upgrade button with the skill's color
+        Button upgradeButton = new Button("[ UPGRADE ]");
+        upgradeButton.setStyle(
+            "-fx-background-color: transparent;" +
+            "-fx-text-fill: " + toRgbString(skillColor) + ";" +
+            "-fx-font-family: 'Monospace';" +
+            "-fx-font-weight: bold;" +
+            "-fx-border-color: " + toRgbString(skillColor) + ";" +
+            "-fx-border-width: 2px;" +
+            "-fx-padding: 8px 16px;"
+        );
+        
+        // Add hover effect with pixel-art animation
+        upgradeButton.setOnMouseEntered(e -> {
+            upgradeButton.setStyle(
+                "-fx-background-color: " + toRgbString(skillColor) + ";" +
+                "-fx-text-fill: #000000;" +
+                "-fx-font-family: 'Monospace';" +
+                "-fx-font-weight: bold;" +
+                "-fx-border-color: " + toRgbString(skillColor) + ";" +
+                "-fx-border-width: 2px;" +
+                "-fx-padding: 8px 16px;"
+            );
+        });
+        
+        upgradeButton.setOnMouseExited(e -> {
+            upgradeButton.setStyle(
+                "-fx-background-color: transparent;" +
+                "-fx-text-fill: " + toRgbString(skillColor) + ";" +
+                "-fx-font-family: 'Monospace';" +
+                "-fx-font-weight: bold;" +
+                "-fx-border-color: " + toRgbString(skillColor) + ";" +
+                "-fx-border-width: 2px;" +
+                "-fx-padding: 8px 16px;"
+            );
+        });
+        
         upgradeButton.setOnAction(e -> upgradeSkill(upgradeStage));
 
-        upgradeLayout.getChildren().addAll(titleBar, pointsLabel, upgradeButton);
+        // Create a container for the main content (excluding scanlines)
+        VBox contentBox = new VBox(15);
+        contentBox.setAlignment(Pos.CENTER);
+        contentBox.getChildren().addAll(titleBar, pointsLabel, upgradeButton);
+        
+        // Add the content on top of the scanlines
+        StackPane mainContent = new StackPane();
+        mainContent.getChildren().addAll(contentBox);
+
+        // Set the main content as the only child of the layout
+        upgradeLayout.getChildren().clear();  // Clear the scanlines
+        upgradeLayout.getChildren().add(mainContent);
 
         Scene scene = new Scene(upgradeLayout, 320, 180);
-        scene.setFill(Color.TRANSPARENT); // Make scene background transparent
+        scene.setFill(Color.TRANSPARENT);
         upgradeStage.setScene(scene);
-        upgradeStage.showAndWait(); // Use showAndWait to enforce modal behavior
+        upgradeStage.showAndWait();
     }
 
     private void upgradeSkill(Stage upgradeStage) {
@@ -203,5 +428,29 @@ public class CircleStatusButton {
         } else {
             System.out.println("Not enough points to upgrade " + skillName);
         }
+    }
+    
+    // Helper method to get the appropriate color for each skill
+    private Color getColorForSkill(String skillName) {
+        switch (skillName) {
+            case "Deploy":
+                return Color.rgb(255, 50, 180); // Pink
+            case "Network":
+                return Color.rgb(50, 200, 255); // Blue
+            case "Security":
+                return Color.rgb(200, 50, 255); // Purple
+            case "Marketing":
+                return Color.rgb(0, 255, 170);  // Green
+            default:
+                return CYBER_PURPLE;
+        }
+    }
+    
+    // Helper method to convert Color to CSS RGB string
+    private String toRgbString(Color color) {
+        return String.format("#%02X%02X%02X", 
+            (int)(color.getRed() * 255), 
+            (int)(color.getGreen() * 255), 
+            (int)(color.getBlue() * 255));
     }
 } 
