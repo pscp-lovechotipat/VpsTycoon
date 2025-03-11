@@ -281,5 +281,7 @@ public class GameplayContentPane extends BorderPane {
     public void openKeroro() {
         System.out.println("Open Keroro");
         //รอตัวเองกลับมาทำ-บบ-
+//        this.rootStack.getChildren().clear();
+//        this.rootStack.getChildren().add(roomObjects.getKeroroLayer()); // Jiant keroro?
     }
 }
