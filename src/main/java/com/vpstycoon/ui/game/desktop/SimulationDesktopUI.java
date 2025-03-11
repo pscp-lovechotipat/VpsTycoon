@@ -26,6 +26,7 @@ public class SimulationDesktopUI {
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(desktop);
         parent.getRootStack().getChildren().remove(1);
+        parent.getInGameMarketMenuBar().setVisible(false);
 
         desktop.addExitButton(parent::returnToRoom);
     }

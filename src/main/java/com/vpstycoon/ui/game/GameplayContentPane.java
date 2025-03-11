@@ -35,6 +35,7 @@ public class GameplayContentPane extends BorderPane {
     private Group worldGroup;
     private final StackPane gameArea;
     private final GameMenuBar menuBar;
+
     private final InGameMarketMenuBar inGameMarketMenuBar;
     private final List<GameObject> gameObjects;
 
@@ -142,7 +143,10 @@ public class GameplayContentPane extends BorderPane {
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
         rootStack.getChildren().addAll(gameArea, menuBar, inGameMarketMenuBar, debugOverlay);
+
         menuBar.setVisible(true); // จำเป็นต้องใส่ เพราะมีการปิดการมองเห็ฯใน หน้าต่างๆ
+        menuBar.setPickOnBounds(false);
+
         inGameMarketMenuBar.setVisible(true);
         inGameMarketMenuBar.setPickOnBounds(false);
 
@@ -236,6 +240,10 @@ public class GameplayContentPane extends BorderPane {
 
     public int getOccupiedSlots() {
         return occupiedSlots;
+    }
+
+    public InGameMarketMenuBar getInGameMarketMenuBar() {
+        return inGameMarketMenuBar;
     }
 
     public void setOccupiedSlots(int occupiedSlots) {

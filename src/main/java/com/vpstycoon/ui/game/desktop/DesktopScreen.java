@@ -4,6 +4,7 @@ import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -36,7 +37,7 @@ public class DesktopScreen extends StackPane {
     private synchronized void setupUI() {
         setStyle("""
                 -fx-background-color: #1e1e1e;
-                -fx-background-image: url(/images/wallpaper/nice_nathapong_wallpaper.jpg);
+                -fx-background-image: url(/images/wallpaper/desktop_wallpaper_bambam.png);
                 -fx-background-size: cover;
                 -fx-background-position: center;
                 -fx-background-repeat: no-repeat;
