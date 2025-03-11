@@ -100,7 +100,7 @@ public class GameplayContentPane extends BorderPane {
 
         this.menuBar = new GameMenuBar();
 
-        this.inGameMarketMenuBar = new InGameMarketMenuBar(this);
+        this.inGameMarketMenuBar = new InGameMarketMenuBar(this, vpsManager);
 
         // เพิ่มข้อมูล VPS ตัวอย่าง
         initializeSampleVPS();
