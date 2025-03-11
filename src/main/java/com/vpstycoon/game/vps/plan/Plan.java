@@ -8,6 +8,21 @@ public class Plan {
     private int storage;
     private int network;
 
+    private String os;
+    private Boolean ddosProtection;
+
+    private int price;
+    private int keepUp;
+
+    public Plan(int keepUp, int network, int storage, int cpu, int ram, String planName) {
+        this.keepUp = keepUp;
+        this.network = network;
+        this.storage = storage;
+        this.cpu = cpu;
+        this.ram = ram;
+        this.planName = planName;
+    }
+
     public String getPlanName() {
         return planName;
     }
@@ -46,5 +61,21 @@ public class Plan {
 
     public void setNetwork(int network) {
         this.network = network;
+    }
+
+    public int getKeepUp() {
+        return keepUp;
+    }
+
+    public void setKeepUp(int keepUp) {
+        this.keepUp = keepUp;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
     }
 }
