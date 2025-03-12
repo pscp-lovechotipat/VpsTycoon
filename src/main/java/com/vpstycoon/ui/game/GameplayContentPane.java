@@ -213,14 +213,27 @@ public class GameplayContentPane extends BorderPane {
         gameArea.getChildren().add(worldGroup);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
-        rootStack.getChildren().addAll(gameArea, menuBar, inGameMarketMenuBar, notificationView, debugOverlay);
+        
+        // Control the order of elements in the stack
+        rootStack.getChildren().addAll(gameArea);
+        
+        // Add notification view
+        rootStack.getChildren().add(notificationView);
+        
+        // Add menu bars last to ensure they're on top
+        rootStack.getChildren().addAll(menuBar, inGameMarketMenuBar);
+        
+        // Add debug overlay
+        rootStack.getChildren().add(debugOverlay);
 
         // Explicitly set menu bars to visible in the main gameplay screen
         menuBar.setVisible(true);
         menuBar.setPickOnBounds(false);
+        menuBar.toFront();
 
         inGameMarketMenuBar.setVisible(true);
         inGameMarketMenuBar.setPickOnBounds(false);
+        inGameMarketMenuBar.toFront();
 
         StackPane.setAlignment(notificationView, Pos.TOP_RIGHT);
         notificationView.setMaxWidth(400); // จำกัดความกว้างของการแจ้งเตือน
@@ -265,6 +278,20 @@ public class GameplayContentPane extends BorderPane {
     public void pushNotification(String title, String content) {
         notificationModel.addNotification(new NotificationModel.Notification(title, content));
         notificationView.addNotificationPane(title, content);
+        
+        // Ensure UI elements stay visible
+        if (menuBar != null) {
+            menuBar.setVisible(true);
+            menuBar.toFront();
+        }
+        
+        if (inGameMarketMenuBar != null) {
+            inGameMarketMenuBar.setVisible(true);
+            inGameMarketMenuBar.toFront();
+        }
+        
+        // Make sure notificationView is always on top
+        notificationView.toFront();
     }
 
     public void openRackInfo() {

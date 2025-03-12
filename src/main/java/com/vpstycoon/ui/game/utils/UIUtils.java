@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.utils;
 
+import com.vpstycoon.FontLoader;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -24,6 +25,8 @@ public class UIUtils {
 
     public static Button createModernButton(String text, String color) {
         Button button = new Button(text);
+
+        button.setFont(FontLoader.loadFont(32));
         
         // Base cyberpunk style with purple glow
         String baseStyle = "-fx-background-color: #2a0a3a; " +
@@ -31,7 +34,7 @@ public class UIUtils {
                            "-fx-border-width: 2px; " +
                            "-fx-border-style: solid; " +
                            "-fx-text-fill: #e0b0ff; " + 
-                           "-fx-font-family: 'Courier New'; " +
+//                           "-fx-font-family: 'Courier New'; " +
                            "-fx-font-weight: bold; " +
                            "-fx-padding: 10px 20px; " +
                            "-fx-background-radius: 0; " +
@@ -44,7 +47,7 @@ public class UIUtils {
                             "-fx-border-width: 2px; " +
                             "-fx-border-style: solid; " +
                             "-fx-text-fill: #f0d0ff; " +
-                            "-fx-font-family: 'Courier New'; " +
+//                            "-fx-font-family: 'Courier New'; " +
                             "-fx-font-weight: bold; " +
                             "-fx-padding: 10px 20px; " +
                             "-fx-background-radius: 0; " +
@@ -57,7 +60,7 @@ public class UIUtils {
                               "-fx-border-width: 2px; " +
                               "-fx-border-style: solid; " +
                               "-fx-text-fill: #ffffff; " +
-                              "-fx-font-family: 'Courier New'; " +
+//                              "-fx-font-family: 'Courier New'; " +
                               "-fx-font-weight: bold; " +
                               "-fx-padding: 10px 20px; " +
                               "-fx-background-radius: 0; " +

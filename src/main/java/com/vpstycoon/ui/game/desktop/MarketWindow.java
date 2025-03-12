@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.desktop;
 
+import com.vpstycoon.FontLoader;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.resource.ResourceManager;
@@ -89,18 +90,18 @@ public class MarketWindow extends VBox {
         details.setAlignment(Pos.CENTER_LEFT);
 
         Label nameLabel = new Label(name);
-        nameLabel.setStyle("-fx-text-fill: #00ffff; -fx-font-size: 18px; -fx-font-weight: bold;");
+        nameLabel.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #00ffff; -fx-font-size: 18px; -fx-font-weight: bold;");
 
         Label descriptionLabel = new Label(description);
-        descriptionLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        descriptionLabel.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: white; -fx-font-size: 14px;");
 
         Label priceLabel = new Label(price);
-        priceLabel.setStyle("-fx-text-fill: #ff00ff; -fx-font-size: 16px; -fx-font-weight: bold;");
+        priceLabel.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #ff00ff; -fx-font-size: 16px; -fx-font-weight: bold;");
         
         // Size information
         VPSSize size = VPSSize.valueOf(sizeCode);
         Label sizeLabel = new Label("Size: " + size.getDisplayName() + " (" + size.getSlotsRequired() + " slots)");
-        sizeLabel.setStyle("-fx-text-fill: #00ff99; -fx-font-size: 14px;");
+        sizeLabel.setStyle("-fx-font-family: 'Courier New'; -fx-text-fill: #00ff99; -fx-font-size: 14px;");
 
         details.getChildren().addAll(nameLabel, descriptionLabel, priceLabel, sizeLabel);
 
@@ -108,8 +109,10 @@ public class MarketWindow extends VBox {
         Button buyButton = new Button("Purchase");
         buyButton.setStyle("""
                 -fx-background-color: #ff00ff;
-                -fx-text-fill: white;
+                -fx-font-family: 'Courier New'; 
                 -fx-font-weight: bold;
+                -fx-font-size: 20px;
+                -fx-text-fill: white;
                 -fx-padding: 8 15;
                 -fx-background-radius: 5;
                 -fx-effect: dropshadow(gaussian, rgba(255, 0, 255, 0.7), 10, 0, 0, 0);

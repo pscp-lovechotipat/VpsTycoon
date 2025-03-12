@@ -406,7 +406,7 @@ public class CircleStatusButton {
         upgradeLayout.getChildren().clear();  // Clear the scanlines
         upgradeLayout.getChildren().add(mainContent);
 
-        Scene scene = new Scene(upgradeLayout, 320, 180);
+        Scene scene = new Scene(upgradeLayout, 400, 180);
         scene.setFill(Color.TRANSPARENT);
         upgradeStage.setScene(scene);
         upgradeStage.showAndWait();

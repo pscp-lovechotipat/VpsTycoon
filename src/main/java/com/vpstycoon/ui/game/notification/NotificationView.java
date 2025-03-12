@@ -15,6 +15,8 @@ public class NotificationView extends VBox {
     public NotificationView() {
         setSpacing(10); // ระยะห่างระหว่างการแจ้งเตือน
         setPadding(new Insets(50)); // ขอบรอบนอก
+        // Ensure this doesn't block other UI elements
+        setMouseTransparent(true);
     }
 
     // เพิ่มการแจ้งเตือนใหม่เข้าไปใน View
@@ -69,6 +71,9 @@ public class NotificationView extends VBox {
     private Pane createNotificationPane(String title, String content) {
         VBox pane = new VBox(5); // ระยะห่างระหว่างหัวข้อและเนื้อหา
         pane.setPadding(new Insets(10));
+        
+        // Make sure each notification pane is mouse transparent as well
+        pane.setMouseTransparent(true);
         
         // ปรับแต่งสไตล์ให้ดูทันสมัยแบบ Cyberpunk
         pane.setStyle("""
