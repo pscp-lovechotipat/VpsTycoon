@@ -35,7 +35,6 @@ public class MessengerWindow extends VBox {
     private final Company company;
     private VBox messagesBox;
     private final Map<VPSOptimization.VM, CustomerRequest> vmAssignments;
-    private final Map<CustomerRequest, Boolean> requestStatus;
     private final Map<CustomerRequest, java.util.List<javafx.scene.Node>> customerChatHistory;
     private Label ratingLabel; // For dashboard
     private Label activeRequestsLabel; // For dashboard
@@ -43,6 +42,7 @@ public class MessengerWindow extends VBox {
     private Label totalVPSLabel; // For dashboard
     private Label customerNameLabel; // For chat header
     private Circle customerAvatar; // For chat header
+    private Label customerTypeLabel; // For chat header
     private final Random random = new Random();
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -54,7 +54,6 @@ public class MessengerWindow extends VBox {
         this.onClose = onClose;
         this.requestView = new ListView<>();
         this.vmAssignments = new HashMap<>();
-        this.requestStatus = new HashMap<>();
         this.customerChatHistory = new HashMap<>();
 
         getStylesheets().add(getClass().getResource("/css/messenger-window.css").toExternalForm());
@@ -143,22 +142,47 @@ public class MessengerWindow extends VBox {
                     
                     // Customer avatar (circle)
                     Circle avatar = new Circle(15);
-                    avatar.setFill(Color.rgb(random.nextInt(100) + 100, random.nextInt(100), random.nextInt(200) + 55));
+                    // สร้างสีที่คงที่สำหรับลูกค้านี้ตามชื่อ
+                    int nameHash = request.getName().hashCode();
+                    int r = Math.abs(nameHash % 100) + 100;
+                    int g = Math.abs((nameHash / 100) % 100);
+                    int b = Math.abs((nameHash / 10000) % 100) + 100;
+                    Color customerColor = Color.rgb(r, g, b);
+                    avatar.setFill(customerColor);
                     
                     VBox textContent = new VBox(3);
                     
+                    // เพิ่ม HBox สำหรับชื่อและสถานะ
+                    HBox nameStatusBox = new HBox(5);
+                    nameStatusBox.setAlignment(Pos.CENTER_LEFT);
+                    
                     Label nameLabel = new Label(request.getTitle());
                     nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: white; -fx-font-family: 'Monospace', 'Courier New', monospace;");
+                    
+                    // เพิ่ม Label สำหรับแสดงสถานะ
+                    Label statusLabel = new Label();
+                    statusLabel.setStyle("-fx-font-size: 10px; -fx-padding: 2 5; -fx-background-radius: 3;");
+                    
+                    boolean isAssigned = request.isActive();
+                    if (isAssigned) {
+                        statusLabel.setText("✓ Assigned");
+                        statusLabel.setStyle(statusLabel.getStyle() + "-fx-background-color: #2ecc71; -fx-text-fill: white;");
+                    } else {
+                        statusLabel.setText("⌛ Waiting");
+                        statusLabel.setStyle(statusLabel.getStyle() + "-fx-background-color: #3498db; -fx-text-fill: white;");
+                    }
+                    
+                    nameStatusBox.getChildren().addAll(nameLabel, statusLabel);
                     
                     Label previewLabel = new Label("Needs VPS: " + request.getRequiredVCPUs() + " vCPUs, " + 
                                                   request.getRequiredRam() + " RAM");
                     previewLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 12px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
                     
-                    textContent.getChildren().addAll(nameLabel, previewLabel);
+                    textContent.getChildren().addAll(nameStatusBox, previewLabel);
                     
                     // Status indicator
                     Circle statusIndicator = new Circle(5);
-                    statusIndicator.setFill(requestStatus.getOrDefault(request, false) ? 
+                    statusIndicator.setFill(request.isActive() ? 
                                            Color.rgb(0, 255, 128) : Color.rgb(0, 200, 255));
                     
                     HBox.setMargin(statusIndicator, new Insets(0, 0, 0, 5));
@@ -180,7 +204,7 @@ public class MessengerWindow extends VBox {
             CustomerRequest selected = requestView.getSelectionModel().getSelectedItem();
             if (selected != null) {
                 // Check if this customer already has a VM assigned
-                boolean alreadyAssigned = requestStatus.getOrDefault(selected, false);
+                boolean alreadyAssigned = selected.isActive();
                 if (alreadyAssigned) {
                     // Show a message that this customer already has a VM
                     addSystemMessage(selected, "This customer already has a VM assigned.");
@@ -359,11 +383,43 @@ public class MessengerWindow extends VBox {
         customerAvatar = new Circle(20);
         customerAvatar.setFill(Color.rgb(100, 50, 200));
         
+        VBox customerInfoBox = new VBox(3);
         customerNameLabel = new Label("Select a customer");
         customerNameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
         
-        chatHeader.getChildren().addAll(customerAvatar, customerNameLabel);
-        HBox.setHgrow(customerNameLabel, Priority.ALWAYS);
+        // เพิ่ม Label สำหรับแสดงประเภทลูกค้าและสถานะ
+        HBox customerTypeStatusBox = new HBox(10);
+        customerTypeStatusBox.setAlignment(Pos.CENTER_LEFT);
+        
+        customerTypeLabel = new Label("Customer Type");
+        customerTypeLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 12px;");
+        
+        // เพิ่ม Label สำหรับแสดงสถานะในส่วนหัวแชท
+        Label headerStatusLabel = new Label();
+        headerStatusLabel.setStyle("-fx-font-size: 11px; -fx-padding: 2 8; -fx-background-radius: 3;");
+        
+        customerTypeStatusBox.getChildren().addAll(customerTypeLabel, headerStatusLabel);
+        
+        customerInfoBox.getChildren().addAll(customerNameLabel, customerTypeStatusBox);
+        
+        chatHeader.getChildren().addAll(customerAvatar, customerInfoBox);
+        HBox.setHgrow(customerInfoBox, Priority.ALWAYS);
+
+        // อัปเดตสถานะในส่วนหัวแชทเมื่อเลือกลูกค้า
+        requestView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                boolean isAssigned = newVal.isActive();
+                if (isAssigned) {
+                    headerStatusLabel.setText("✓ VM Assigned");
+                    headerStatusLabel.setStyle(headerStatusLabel.getStyle() + "-fx-background-color: #2ecc71; -fx-text-fill: white;");
+                } else {
+                    headerStatusLabel.setText("⌛ Waiting for VM");
+                    headerStatusLabel.setStyle(headerStatusLabel.getStyle() + "-fx-background-color: #3498db; -fx-text-fill: white;");
+                }
+            } else {
+                headerStatusLabel.setText("");
+            }
+        });
 
         // Messages area
         ScrollPane messagesScroll = new ScrollPane();
@@ -397,7 +453,7 @@ public class MessengerWindow extends VBox {
                     messageInput.clear();
                     
                     // Simulate customer response after a short delay
-                    if (!requestStatus.getOrDefault(selected, false)) {
+                    if (!selected.isActive()) {
                         new Thread(() -> {
                             try {
                                 Thread.sleep(1000);
@@ -435,7 +491,7 @@ public class MessengerWindow extends VBox {
         archiveButton.setDisable(true);
         archiveButton.setOnAction(e -> {
             CustomerRequest selected = requestView.getSelectionModel().getSelectedItem();
-            if (selected != null && requestStatus.getOrDefault(selected, false)) {
+            if (selected != null && selected.isActive()) {
                 // We don't remove the customer from the list anymore
                 // Instead, we just mark them as inactive or archive them
                 
@@ -459,8 +515,8 @@ public class MessengerWindow extends VBox {
         });
 
         requestView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            sendWorkButton.setDisable(newVal == null || requestStatus.getOrDefault(newVal, false));
-            archiveButton.setDisable(newVal == null || !requestStatus.getOrDefault(newVal, false));
+            sendWorkButton.setDisable(newVal == null || newVal.isActive());
+            archiveButton.setDisable(newVal == null || !newVal.isActive());
             
             if (newVal != null) {
                 // Update chat header with customer info
@@ -489,7 +545,7 @@ public class MessengerWindow extends VBox {
     }
 
     private boolean isRequestCompleted(CustomerRequest request) {
-        return requestStatus.getOrDefault(request, false);
+        return request.isActive();
     }
 
     private void updateChatWithRequestDetails(CustomerRequest selectedRequest) {
@@ -512,7 +568,7 @@ public class MessengerWindow extends VBox {
                 addCustomerMessage(selectedRequest, requestMessage);
                 
                 // ตรวจสอบว่าคำขอนี้เสร็จสมบูรณ์แล้วหรือไม่
-                if (requestStatus.getOrDefault(selectedRequest, false)) {
+                if (selectedRequest.isActive()) {
                     VPSOptimization.VM assignedVM = vmAssignments.entrySet().stream()
                             .filter(entry -> entry.getValue() == selectedRequest)
                             .map(Map.Entry::getKey)
@@ -630,19 +686,25 @@ public class MessengerWindow extends VBox {
         if (selected == null) return;
         
         // ตรวจสอบว่าลูกค้านี้มี VM ที่กำหนดไว้แล้วหรือไม่
-        boolean alreadyAssigned = requestStatus.getOrDefault(selected, false);
+        boolean alreadyAssigned = selected.isActive();
         if (alreadyAssigned) {
             // แสดงข้อความว่าลูกค้านี้มี VM แล้ว
             addSystemMessage(selected, "This customer already has a VM assigned.");
             return;
         }
         
-        // สร้างกล่องโต้ตอบภายในเกม
+        // สร้างหน้าต่าง popup แบบ Stage แทนการใช้ modal overlay
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Assign VM to " + selected.getName());
+        popupStage.initOwner(getScene().getWindow());
+        
+        // สร้าง UI สำหรับ popup
         VBox content = new VBox(15);
         content.setPadding(new Insets(20));
-        content.setStyle("-fx-background-color: #2c3e50; -fx-border-color: #3498db; -fx-border-width: 2px; -fx-border-radius: 5px;");
-        content.setMaxWidth(400);
-        content.setMaxHeight(350);
+        content.setStyle("-fx-background-color: #2c3e50;");
+        content.setMinWidth(400);
+        content.setMinHeight(350);
         
         // Title
         Label titleLabel = new Label("Assign VM to " + selected.getName());
@@ -703,6 +765,10 @@ public class MessengerWindow extends VBox {
             }
         });
         
+        // Error label (initially hidden)
+        Label errorLabel = new Label();
+        errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-opacity: 0;");
+        
         // Buttons
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER);
@@ -723,210 +789,99 @@ public class MessengerWindow extends VBox {
                 new Separator(),
                 vpsLabel, 
                 vpsComboBox,
+                errorLabel,
                 new Separator(),
                 buttonBox
         );
         
-        // Create a popup that appears within the game (not a separate window)
-        StackPane modalOverlay = new StackPane();
-        modalOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
-        modalOverlay.setPrefSize(900, 650); // Match the size of the MessengerWindow
-        StackPane.setAlignment(content, Pos.CENTER); // Center the content in the overlay
-        modalOverlay.getChildren().add(content);
+        // การกระทำของปุ่ม
+        cancelButton.setOnAction(event -> {
+            popupStage.close();
+        });
         
-        // Add the modal to the parent container
-        // First check if we're already in the scene graph
-        if (getScene() != null && getScene().getRoot() instanceof StackPane) {
-            StackPane root = (StackPane) getScene().getRoot();
-            root.getChildren().add(modalOverlay);
-            
-            // การกระทำของปุ่ม
-            cancelButton.setOnAction(event -> {
-                root.getChildren().remove(modalOverlay);
-            });
-            
-            confirmButton.setOnAction(event -> {
-                VPSOptimization selectedVPS = vpsComboBox.getValue();
-                if (selectedVPS != null) {
-                    // ใช้ทรัพยากรตามที่ลูกค้าต้องการโดยตรง
-                    int vcpus = selected.getRequiredVCPUs();
-                    int ramGB = selected.getRequiredRamGB();
-                    int diskGB = selected.getRequiredDiskGB();
-                    
-                    // ปิดกล่องโต้ตอบ
-                    root.getChildren().remove(modalOverlay);
-                    
-                    // เพิ่มข้อความแจ้งลูกค้าว่าเรากำลังดำเนินการตามคำขอ
-                    addUserMessage(selected, "I'll set up your VM right away. Please wait a moment while I provision it for you.");
-                    
-                    // เพิ่มข้อความรอจากลูกค้า
-                    addCustomerMessage(selected, "Thank you! I'll wait for the setup to complete.");
-                    
-                    // เรียกใช้เมธอด acceptRequest
-                    requestManager.acceptRequest(selected, selectedVPS, vcpus, ramGB, diskGB)
-                        .thenAccept(vm -> {
-                            Platform.runLater(() -> {
-                                // อัปเดต UI หลังจากจัดเตรียม VM เสร็จสิ้น
-                                updateDashboard();
-                                
-                                // สร้างชื่อผู้ใช้และรหัสผ่านแบบสุ่ม
-                                String username = "user_" + selected.getName().toLowerCase().replaceAll("[^a-z0-9]", "") + random.nextInt(100);
-                                String password = generateRandomPassword();
-                                
-                                // เพิ่มข้อความพร้อมรายละเอียด VM
-                                String vmDetails = "Your VM has been provisioned successfully! Here are your access details:\n\n" +
-                                        "IP Address: " + vm.getIp() + "\n" +
-                                        "Username: " + username + "\n" +
-                                        "Password: " + password + "\n\n" +
-                                        "You can connect using SSH or RDP depending on your operating system.";
-                                
-                                addUserMessage(selected, vmDetails);
-                                
-                                // เพิ่มข้อความระบบ
-                                addSystemMessage(selected, "VM provisioned successfully");
-                                
-                                // ทำเครื่องหมายคำขอว่าเสร็จสมบูรณ์
-                                requestStatus.put(selected, true);
-                                
-                                // เก็บการกำหนด VM
-                                vmAssignments.put(vm, selected);
-                                
-                                // อัปเดตมุมมองคำขอเพื่อแสดงสถานะใหม่
-                                requestView.refresh();
-                                
-                                // เพิ่มข้อความขอบคุณจากลูกค้า
-                                addCustomerMessage(selected, "Thank you! I've received the access details and can connect to the VM now. It's working perfectly for my needs.");
-                                
-                                // เพิ่มตัวเลือกการต่ออายุหลังจากรอสักครู่
-                                new Thread(() -> {
-                                    try {
-                                        Thread.sleep(5000); // รอ 5 วินาที
-                                        Platform.runLater(() -> {
-                                            addSystemMessage(selected, "Customer contract will expire in " + selected.getRentalPeriodType().getDisplayName());
-                                            addRenewalOption(selected, vm);
-                                        });
-                                    } catch (InterruptedException e) {
-                                        Thread.currentThread().interrupt();
-                                    }
-                                }).start();
-                            });
-                        })
-                        .exceptionally(ex -> {
-                            Platform.runLater(() -> {
-                                addSystemMessage(selected, "Failed to provision VM: " + ex.getMessage());
-                                addUserMessage(selected, "I'm sorry, but there was an issue provisioning your VM. Let me try to resolve this for you.");
-                                addCustomerMessage(selected, "I understand. Please let me know when it's ready or if you need any additional information from me.");
-                            });
-                            return null;
+        confirmButton.setOnAction(event -> {
+            VPSOptimization selectedVPS = vpsComboBox.getValue();
+            if (selectedVPS != null) {
+                // ปิดหน้าต่าง popup ก่อนที่จะเพิ่มข้อความ
+                popupStage.close();
+                
+                // ใช้ทรัพยากรตามที่ลูกค้าต้องการโดยตรง
+                int vcpus = selected.getRequiredVCPUs();
+                int ramGB = selected.getRequiredRamGB();
+                int diskGB = selected.getRequiredDiskGB();
+                
+                // เพิ่มข้อความแจ้งลูกค้าว่าเรากำลังดำเนินการตามคำขอ
+                addUserMessage(selected, "I'll set up your VM right away. Please wait a moment while I provision it for you.");
+                
+                // เพิ่มข้อความรอจากลูกค้า
+                addCustomerMessage(selected, "Thank you! I'll wait for the setup to complete.");
+                
+                // เรียกใช้เมธอด acceptRequest
+                requestManager.acceptRequest(selected, selectedVPS, vcpus, ramGB, diskGB)
+                    .thenAccept(vm -> {
+                        Platform.runLater(() -> {
+                            // อัปเดต UI หลังจากจัดเตรียม VM เสร็จสิ้น
+                            updateDashboard();
+                            
+                            // สร้างชื่อผู้ใช้และรหัสผ่านแบบสุ่ม
+                            String username = "user_" + selected.getName().toLowerCase().replaceAll("[^a-z0-9]", "") + random.nextInt(100);
+                            String password = generateRandomPassword();
+                            
+                            // เพิ่มข้อความพร้อมรายละเอียด VM
+                            String vmDetails = "Your VM has been provisioned successfully! Here are your access details:\n\n" +
+                                    "IP Address: " + vm.getIp() + "\n" +
+                                    "Username: " + username + "\n" +
+                                    "Password: " + password + "\n\n" +
+                                    "You can connect using SSH or RDP depending on your operating system.";
+                            
+                            addUserMessage(selected, vmDetails);
+                            
+                            // เพิ่มข้อความระบบ
+                            addSystemMessage(selected, "VM provisioned successfully");
+                            
+                            // เก็บการกำหนด VM
+                            vmAssignments.put(vm, selected);
+                            
+                            // อัปเดตมุมมองคำขอเพื่อแสดงสถานะใหม่
+                            requestView.refresh();
+                            
+                            // เพิ่มข้อความขอบคุณจากลูกค้า
+                            addCustomerMessage(selected, "Thank you! I've received the access details and can connect to the VM now. It's working perfectly for my needs.");
+                            
+                            // เพิ่มตัวเลือกการต่ออายุหลังจากรอสักครู่
+                            new Thread(() -> {
+                                try {
+                                    Thread.sleep(5000); // รอ 5 วินาที
+                                    Platform.runLater(() -> {
+                                        addSystemMessage(selected, "Customer contract will expire in " + selected.getRentalPeriodType().getDisplayName());
+                                        addRenewalOption(selected, vm);
+                                    });
+                                } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                }
+                            }).start();
                         });
-                } else {
-                    // แสดงข้อความแจ้งเตือนภายในกล่องโต้ตอบ
-                    Label errorLabel = new Label("Please select a VPS server");
-                    errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                    
-                    // ลบข้อผิดพลาดก่อนหน้านี้ถ้ามี
-                    content.getChildren().removeIf(node -> node instanceof Label && ((Label) node).getText().contains("Please select"));
-                    
-                    // เพิ่มข้อความแจ้งเตือน
-                    content.getChildren().add(content.getChildren().size() - 1, errorLabel);
-                }
-            });
-        } else {
-            // ถ้าเรายังไม่อยู่ใน scene graph ให้เพิ่มกล่องโต้ตอบโดยตรงไปยัง VBox นี้
-            getChildren().add(modalOverlay);
-            
-            // การกระทำของปุ่ม
-            cancelButton.setOnAction(event -> {
-                getChildren().remove(modalOverlay);
-            });
-            
-            confirmButton.setOnAction(event -> {
-                VPSOptimization selectedVPS = vpsComboBox.getValue();
-                if (selectedVPS != null) {
-                    // ใช้ทรัพยากรตามที่ลูกค้าต้องการโดยตรง
-                    int vcpus = selected.getRequiredVCPUs();
-                    int ramGB = selected.getRequiredRamGB();
-                    int diskGB = selected.getRequiredDiskGB();
-                    
-                    // ปิดกล่องโต้ตอบ
-                    getChildren().remove(modalOverlay);
-                    
-                    // เพิ่มข้อความแจ้งลูกค้าว่าเรากำลังดำเนินการตามคำขอ
-                    addUserMessage(selected, "I'll set up your VM right away. Please wait a moment while I provision it for you.");
-                    
-                    // เพิ่มข้อความรอจากลูกค้า
-                    addCustomerMessage(selected, "Thank you! I'll wait for the setup to complete.");
-                    
-                    // เรียกใช้เมธอด acceptRequest
-                    requestManager.acceptRequest(selected, selectedVPS, vcpus, ramGB, diskGB)
-                        .thenAccept(vm -> {
-                            Platform.runLater(() -> {
-                                // อัปเดต UI หลังจากจัดเตรียม VM เสร็จสิ้น
-                                updateDashboard();
-                                
-                                // สร้างชื่อผู้ใช้และรหัสผ่านแบบสุ่ม
-                                String username = "user_" + selected.getName().toLowerCase().replaceAll("[^a-z0-9]", "") + random.nextInt(100);
-                                String password = generateRandomPassword();
-                                
-                                // เพิ่มข้อความพร้อมรายละเอียด VM
-                                String vmDetails = "Your VM has been provisioned successfully! Here are your access details:\n\n" +
-                                        "IP Address: " + vm.getIp() + "\n" +
-                                        "Username: " + username + "\n" +
-                                        "Password: " + password + "\n\n" +
-                                        "You can connect using SSH or RDP depending on your operating system.";
-                                
-                                addUserMessage(selected, vmDetails);
-                                
-                                // เพิ่มข้อความระบบ
-                                addSystemMessage(selected, "VM provisioned successfully");
-                                
-                                // ทำเครื่องหมายคำขอว่าเสร็จสมบูรณ์
-                                requestStatus.put(selected, true);
-                                
-                                // เก็บการกำหนด VM
-                                vmAssignments.put(vm, selected);
-                                
-                                // อัปเดตมุมมองคำขอเพื่อแสดงสถานะใหม่
-                                requestView.refresh();
-                                
-                                // เพิ่มข้อความขอบคุณจากลูกค้า
-                                addCustomerMessage(selected, "Thank you! I've received the access details and can connect to the VM now. It's working perfectly for my needs.");
-                                
-                                // เพิ่มตัวเลือกการต่ออายุหลังจากรอสักครู่
-                                new Thread(() -> {
-                                    try {
-                                        Thread.sleep(5000); // รอ 5 วินาที
-                                        Platform.runLater(() -> {
-                                            addSystemMessage(selected, "Customer contract will expire in " + selected.getRentalPeriodType().getDisplayName());
-                                            addRenewalOption(selected, vm);
-                                        });
-                                    } catch (InterruptedException e) {
-                                        Thread.currentThread().interrupt();
-                                    }
-                                }).start();
-                            });
-                        })
-                        .exceptionally(ex -> {
-                            Platform.runLater(() -> {
-                                addSystemMessage(selected, "Failed to provision VM: " + ex.getMessage());
-                                addUserMessage(selected, "I'm sorry, but there was an issue provisioning your VM. Let me try to resolve this for you.");
-                                addCustomerMessage(selected, "I understand. Please let me know when it's ready or if you need any additional information from me.");
-                            });
-                            return null;
+                    })
+                    .exceptionally(ex -> {
+                        Platform.runLater(() -> {
+                            addSystemMessage(selected, "Failed to provision VM: " + ex.getMessage());
+                            addUserMessage(selected, "I'm sorry, but there was an issue provisioning your VM. Let me try to resolve this for you.");
+                            addCustomerMessage(selected, "I understand. Please let me know when it's ready or if you need any additional information from me.");
                         });
-                } else {
-                    // แสดงข้อความแจ้งเตือนภายในกล่องโต้ตอบ
-                    Label errorLabel = new Label("Please select a VPS server");
-                    errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-                    
-                    // ลบข้อผิดพลาดก่อนหน้านี้ถ้ามี
-                    content.getChildren().removeIf(node -> node instanceof Label && ((Label) node).getText().contains("Please select"));
-                    
-                    // เพิ่มข้อความแจ้งเตือน
-                    content.getChildren().add(content.getChildren().size() - 1, errorLabel);
-                }
-            });
-        }
+                        return null;
+                    });
+            } else {
+                // แสดงข้อความแจ้งเตือน
+                errorLabel.setText("Please select a VPS server");
+                errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-opacity: 1;");
+            }
+        });
+        
+        // สร้าง Scene และแสดง popup
+        Scene scene = new Scene(content);
+        scene.getStylesheets().add(getClass().getResource("/css/messenger-window.css").toExternalForm());
+        popupStage.setScene(scene);
+        popupStage.showAndWait();
     }
     
     /**

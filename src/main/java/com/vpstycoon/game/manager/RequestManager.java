@@ -82,8 +82,12 @@ public class RequestManager implements Serializable {
             return future;
         }
         
-        // Remove from pending requests
-        pendingRequests.remove(request);
+        // ไม่ลบ request ออกจาก pendingRequests เพื่อให้ยังแสดงในรายการ
+        // pendingRequests.remove(request);
+        
+        // แทนที่จะลบออก เราจะทำเครื่องหมายว่า request นี้ได้รับการจัดการแล้ว
+        // โดยการเรียกใช้ activate() บน request
+        request.activate();
         
         // Provision VM
         return vmProvisioningManager.provisionVM(request, vps, vcpus, ramGB, diskGB);
