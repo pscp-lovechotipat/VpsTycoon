@@ -24,6 +24,10 @@ public class VMInfoUI {
         vmInfoPane.setPrefSize(800, 600);
         vmInfoPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
 
+        // Hide the menu bars
+        parent.getMenuBar().setVisible(false);
+        parent.getInGameMarketMenuBar().setVisible(false);
+        
         // ส่วนหัว
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
@@ -40,7 +44,7 @@ public class VMInfoUI {
         infoBox.setPadding(new Insets(15));
         VBox vmSection = UIUtils.createSection("VM Information");
         Label vmDetail = new Label("IP: " + vm.getIp() + "\nName: " + vm.getName() +
-                "\nStatus: " + vm.getStatus() + "\nvCPUs: " + vm.getVCPUs() +
+                "\nStatus: " + vm.getStatus() + "\nvCPUs: " + vm.getVcpu() +
                 " | RAM: " + vm.getRam() + " | Disk: " + vm.getDisk());
         vmDetail.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 14px;");
         vmSection.getChildren().add(vmDetail);

@@ -602,17 +602,17 @@ public class MessengerWindow extends VBox {
                     
                     topRow.getChildren().addAll(ipLabel, statusLabel);
                     
-                    Label specsLabel = new Label("Specs: " + vm.getVCPUs() + " vCPUs, " + 
+                    Label specsLabel = new Label("Specs: " + vm.getVcpu() + " vCPUs, " + 
                                                vm.getRam() + " RAM, " + vm.getDisk() + " Disk");
                     specsLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-family: 'Monospace', 'Courier New', monospace;");
                     
                     // Add a visual indicator for matching requirements
                     if (selectedRequest != null) {
-                        boolean meetsSpecs = vm.getVCPUs() >= selectedRequest.getRequiredVCPUs() &&
+                        boolean meetsSpecs = vm.getVcpu() >= selectedRequest.getRequiredVCPUs() &&
                                 vm.getRam().equals(selectedRequest.getRequiredRam()) &&
                                 vm.getDisk().equals(selectedRequest.getRequiredDisk());
                         
-                        boolean exceedsSpecs = vm.getVCPUs() > selectedRequest.getRequiredVCPUs() ||
+                        boolean exceedsSpecs = vm.getVcpu() > selectedRequest.getRequiredVCPUs() ||
                                 Integer.parseInt(vm.getRam().split(" ")[0]) > Integer.parseInt(selectedRequest.getRequiredRam().split(" ")[0]) ||
                                 Integer.parseInt(vm.getDisk().split(" ")[0]) > Integer.parseInt(selectedRequest.getRequiredDisk().split(" ")[0]);
                         
@@ -708,11 +708,11 @@ public class MessengerWindow extends VBox {
         vmAssignments.put(vm, request);
         requestStatus.put(request, true);
 
-        boolean meetsSpecs = vm.getVCPUs() >= request.getRequiredVCPUs() &&
+        boolean meetsSpecs = vm.getVcpu() >= request.getRequiredVCPUs() &&
                 vm.getRam().equals(request.getRequiredRam()) &&
                 vm.getDisk().equals(request.getRequiredDisk());
 
-        boolean exceedsSpecs = vm.getVCPUs() > request.getRequiredVCPUs() ||
+        boolean exceedsSpecs = vm.getVcpu() > request.getRequiredVCPUs() ||
                 Integer.parseInt(vm.getRam().split(" ")[0]) > Integer.parseInt(request.getRequiredRam().split(" ")[0]) ||
                 Integer.parseInt(vm.getDisk().split(" ")[0]) > Integer.parseInt(request.getRequiredDisk().split(" ")[0]);
 

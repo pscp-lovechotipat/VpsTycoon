@@ -4,6 +4,7 @@ import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
+import com.vpstycoon.game.vps.enums.VPSSize;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,15 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Glow;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderStroke;
-import javafx.scene.layout.BorderStrokeStyle;
-import javafx.scene.layout.BorderWidths;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
@@ -61,117 +54,66 @@ public class MarketWindow extends VBox {
         productList.setPadding(new Insets(20));
         productList.setStyle("-fx-background-color: rgba(30, 15, 40, 0.8);");
 
+        // Updated product list with size information
         String[][] products = {
-                {"Basic VPS", "1 CPU, 1GB RAM, 20GB SSD", "$5/month"},
-                {"Standard VPS", "2 CPU, 4GB RAM, 50GB SSD", "$10/month"},
-                {"Premium VPS", "4 CPU, 8GB RAM, 100GB SSD", "$20/month"},
-                {"Enterprise VPS", "8 CPU, 16GB RAM, 200GB SSD", "$50/month"}
+                {"Basic VPS (1U)", "1 CPU, 1GB RAM, 20GB SSD", "$5/month", "SIZE_1U"},
+                {"Standard VPS (1U)", "2 CPU, 4GB RAM, 50GB SSD", "$10/month", "SIZE_1U"},
+                {"Premium VPS (2U)", "4 CPU, 8GB RAM, 100GB SSD", "$20/month", "SIZE_2U"},
+                {"Enterprise VPS (3U)", "8 CPU, 16GB RAM, 200GB SSD", "$50/month", "SIZE_3U"},
+                {"Blade Server", "4 CPU, 8GB RAM, 100GB SSD", "$25/month", "BLADE"},
+                {"Tower Server (4U)", "16 CPU, 32GB RAM, 500GB SSD", "$100/month", "TOWER"}
         };
 
         for (String[] product : products) {
-            productList.getChildren().add(createProductCard(product[0], product[1], product[2]));
+            productList.getChildren().add(createProductCard(product[0], product[1], product[2], product[3]));
         }
 
         return productList;
     }
 
-    private HBox createProductCard(String name, String description, String price) {
+    private BorderPane createProductCard(String name, String description, String price, String sizeCode) {
         // Main card container with pixel art style
-        HBox card = new HBox(15);
+        BorderPane card = new BorderPane();
         card.setPadding(new Insets(15));
-        card.setAlignment(Pos.CENTER_LEFT);
-        
-        // Create pixel-art style background with gradient
-        LinearGradient gradient = new LinearGradient(
-            0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
-            new Stop(0, Color.rgb(40, 10, 60, 0.9)),
-            new Stop(1, Color.rgb(80, 20, 120, 0.9))
-        );
-        
-        // Create pixel border effect
-        BorderStroke borderStroke = new BorderStroke(
-            CYBER_PURPLE,
-            BorderStrokeStyle.SOLID,
-            new CornerRadii(0),
-            new BorderWidths(2)
-        );
-        Border pixelBorder = new Border(borderStroke);
-        card.setBorder(pixelBorder);
-        
-        // Add glow effect
-        DropShadow glow = new DropShadow();
-        glow.setColor(CYBER_GLOW);
-        glow.setRadius(10);
-        card.setEffect(glow);
-        
-        card.setStyle("-fx-background-color: rgba(40, 10, 60, 0.9);");
+        card.setStyle("""
+                -fx-background-color: rgba(40, 10, 60, 0.8);
+                -fx-border-color: #6a00ff;
+                -fx-border-width: 2px;
+                -fx-border-radius: 5;
+                -fx-background-radius: 5;
+                -fx-effect: dropshadow(gaussian, rgba(106, 0, 255, 0.6), 10, 0, 0, 0);
+                """);
 
-        // VPS Package details with cyberpunk styling
-        VBox details = new VBox(8);
-        
-        // Package name with glow effect
+        // Product details
+        VBox details = new VBox(10);
+        details.setAlignment(Pos.CENTER_LEFT);
+
         Label nameLabel = new Label(name);
-        nameLabel.setFont(Font.font("Courier New", FontWeight.BOLD, 18));
-        nameLabel.setTextFill(CYBER_BLUE);
-        Glow nameGlow = new Glow(0.8);
-        nameLabel.setEffect(nameGlow);
-        
-        // Specs with pixel font
-        Label descLabel = new Label(description);
-        descLabel.setFont(Font.font("Courier New", 14));
-        descLabel.setTextFill(Color.LIGHTGRAY);
-        
-        // Price with cyberpunk styling
-        Label priceLabel = new Label(price);
-        priceLabel.setFont(Font.font("Courier New", FontWeight.BOLD, 16));
-        priceLabel.setTextFill(CYBER_PINK);
-        
-        // Add a "specs" label to make it look more like a product
-        Label specsTitle = new Label("SPECIFICATIONS:");
-        specsTitle.setFont(Font.font("Courier New", FontWeight.BOLD, 12));
-        specsTitle.setTextFill(Color.LIGHTGRAY);
-        
-        details.getChildren().addAll(nameLabel, specsTitle, descLabel, priceLabel);
+        nameLabel.setStyle("-fx-text-fill: #00ffff; -fx-font-size: 18px; -fx-font-weight: bold;");
 
-        // Create a cyberpunk-style buy button
-        Button buyButton = new Button("PURCHASE");
-        buyButton.setFont(Font.font("Courier New", FontWeight.BOLD, 14));
-        buyButton.setTextFill(Color.WHITE);
-        buyButton.setStyle(
-            "-fx-background-color: linear-gradient(to bottom, #8a2be2, #4b0082);" +
-            "-fx-border-color: #ff00ff;" +
-            "-fx-border-width: 2px;" +
-            "-fx-border-radius: 0;" + // Sharp corners for pixel look
-            "-fx-background-radius: 0;" // Sharp corners for pixel look
-        );
+        Label descriptionLabel = new Label(description);
+        descriptionLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+
+        Label priceLabel = new Label(price);
+        priceLabel.setStyle("-fx-text-fill: #ff00ff; -fx-font-size: 16px; -fx-font-weight: bold;");
         
-        // Add hover effect
-        buyButton.setOnMouseEntered(e -> {
-            buyButton.setStyle(
-                "-fx-background-color: linear-gradient(to bottom, #9b3ff3, #5c1193);" +
-                "-fx-border-color: #ff50ff;" +
-                "-fx-border-width: 2px;" +
-                "-fx-border-radius: 0;" +
-                "-fx-background-radius: 0;"
-            );
-            
-            // Create pulsing glow effect
-            DropShadow buttonGlow = new DropShadow();
-            buttonGlow.setColor(CYBER_GLOW);
-            buttonGlow.setRadius(15);
-            buyButton.setEffect(buttonGlow);
-        });
-        
-        buyButton.setOnMouseExited(e -> {
-            buyButton.setStyle(
-                "-fx-background-color: linear-gradient(to bottom, #8a2be2, #4b0082);" +
-                "-fx-border-color: #ff00ff;" +
-                "-fx-border-width: 2px;" +
-                "-fx-border-radius: 0;" +
-                "-fx-background-radius: 0;"
-            );
-            buyButton.setEffect(null);
-        });
+        // Size information
+        VPSSize size = VPSSize.valueOf(sizeCode);
+        Label sizeLabel = new Label("Size: " + size.getDisplayName() + " (" + size.getSlotsRequired() + " slots)");
+        sizeLabel.setStyle("-fx-text-fill: #00ff99; -fx-font-size: 14px;");
+
+        details.getChildren().addAll(nameLabel, descriptionLabel, priceLabel, sizeLabel);
+
+        // Buy button with cyberpunk style
+        Button buyButton = new Button("Purchase");
+        buyButton.setStyle("""
+                -fx-background-color: #ff00ff;
+                -fx-text-fill: white;
+                -fx-font-weight: bold;
+                -fx-padding: 8 15;
+                -fx-background-radius: 5;
+                -fx-effect: dropshadow(gaussian, rgba(255, 0, 255, 0.7), 10, 0, 0, 0);
+                """);
         
         buyButton.setOnAction(e -> {
             // Parse specs from description
@@ -185,13 +127,9 @@ public class MarketWindow extends VBox {
 
             Company company = ResourceManager.getInstance().getCompany();
 
-            if (parent.getVpsList().size() >= parent.getOccupiedSlots()) {
-                System.out.println("Please Upgrade your rack slot.");
-                return;
-            }
-
             if (company.getMoney() < keepUp) {
                 System.out.println("no money to pay this vps");
+                parent.pushNotification("Purchase Failed", "Not enough money to purchase this VPS.");
                 return;
             }
             company.setMoney(company.getMoney() - keepUp);
@@ -201,27 +139,33 @@ public class MarketWindow extends VBox {
             newVPS.setVCPUs(vCPUs);
             newVPS.setRamInGB(ramInGB);
             newVPS.setDiskInGB(diskInGB);
+            
+            // Set the VPS size
+            newVPS.setSize(size);
 
             // Generate a unique ID (similar to your IP logic)
-            String vpsId = "103.216.158." + (parent.getVpsList().size() + 235) + "-" + name.replace(" ", "");
+            String vpsId = "103.216.158." + (parent.getVpsInventory().getSize() + 235) + "-" + name.replace(" ", "");
 
-            // Add to VPSManager and vpsList
+            // Add to VPSManager and inventory
             vpsManager.createVPS(vpsId);
             vpsManager.getVPSMap().put(vpsId, newVPS);
-            parent.getVpsList().add(newVPS);
+            parent.getVpsInventory().addVPS(vpsId, newVPS);
 
-            System.out.println("Purchased and added to rack: " + name + " (ID: " + vpsId + ")");
-            parent.openRackInfo(); // Refresh Rack view
+            System.out.println("Purchased and added to inventory: " + name + " (ID: " + vpsId + ")");
+            parent.pushNotification("VPS Purchased", 
+                    "Successfully purchased " + name + ". It has been added to your inventory.");
+            
             onCloseAfterPurchase.run();
         });
 
         // Create a VBox for the button to align it vertically
         VBox buttonContainer = new VBox();
-        buttonContainer.setAlignment(Pos.CENTER);
+        buttonContainer.setAlignment(Pos.CENTER_RIGHT);
         buttonContainer.getChildren().add(buyButton);
 
-        card.getChildren().addAll(details, buttonContainer);
-        HBox.setHgrow(details, Priority.ALWAYS);
+        // Add components to the card
+        card.setCenter(details);
+        card.setRight(buttonContainer);
 
         return card;
     }

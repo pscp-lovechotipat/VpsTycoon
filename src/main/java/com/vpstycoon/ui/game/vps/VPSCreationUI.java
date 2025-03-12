@@ -31,6 +31,10 @@ public class VPSCreationUI {
         createVPSPane.setPrefSize(800, 600);
         createVPSPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
 
+        // Hide the menu bars
+        parent.getMenuBar().setVisible(false);
+        parent.getInGameMarketMenuBar().setVisible(false);
+        
         // ส่วนหัว
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);

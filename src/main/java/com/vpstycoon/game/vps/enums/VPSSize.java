@@ -1,0 +1,35 @@
+package com.vpstycoon.game.vps.enums;
+
+/**
+ * Enum representing the physical size of a VPS server and the number of slots it requires in a rack.
+ */
+public enum VPSSize {
+    SIZE_1U("1U", 1, 1.0),
+    SIZE_2U("2U", 2, 1.5),
+    SIZE_3U("3U", 3, 2.0),
+    SIZE_4U("4U", 4, 2.5),
+    BLADE("Blade Server", 1, 1.2),
+    TOWER("Tower Server", 4, 3.0);
+
+    private final String displayName;
+    private final int slotsRequired;
+    private final double performanceMultiplier;
+
+    VPSSize(String displayName, int slotsRequired, double performanceMultiplier) {
+        this.displayName = displayName;
+        this.slotsRequired = slotsRequired;
+        this.performanceMultiplier = performanceMultiplier;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public int getSlotsRequired() {
+        return slotsRequired;
+    }
+
+    public double getPerformanceMultiplier() {
+        return performanceMultiplier;
+    }
+} 

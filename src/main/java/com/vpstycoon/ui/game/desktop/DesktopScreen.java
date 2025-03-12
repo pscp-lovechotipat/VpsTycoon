@@ -111,6 +111,8 @@ public class DesktopScreen extends StackPane {
                 companyRating,
                 marketingPoints,
                 5000.0, // Example monthly revenue; replace with real data
+                0, // Skill points
+                company.getMoney(), // Total money
                 () -> getChildren().removeIf(node -> node instanceof DashboardWindow)
         );
         StackPane.setAlignment(dashboardWindow, Pos.CENTER);

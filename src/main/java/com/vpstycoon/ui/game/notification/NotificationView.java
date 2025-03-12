@@ -9,6 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
+import javafx.scene.effect.Glow;
 
 public class NotificationView extends VBox {
     public NotificationView() {
@@ -68,19 +69,36 @@ public class NotificationView extends VBox {
     private Pane createNotificationPane(String title, String content) {
         VBox pane = new VBox(5); // ระยะห่างระหว่างหัวข้อและเนื้อหา
         pane.setPadding(new Insets(10));
-        pane.setStyle("-fx-background-color: lightgray; -fx-border-color: black; -fx-border-radius: 5;");
+        
+        // ปรับแต่งสไตล์ให้ดูทันสมัยแบบ Cyberpunk
+        pane.setStyle("""
+            -fx-background-color: rgba(40, 10, 60, 0.85); 
+            -fx-border-color: #6a00ff; 
+            -fx-border-width: 2px;
+            -fx-border-radius: 5;
+            -fx-background-radius: 5;
+            -fx-effect: dropshadow(gaussian, rgba(106, 0, 255, 0.6), 10, 0, 0, 0);
+        """);
 
         // หัวข้อ
         Label titleLabel = new Label(title);
         titleLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
-        titleLabel.setTextFill(Color.BLACK);
+        titleLabel.setTextFill(Color.rgb(0, 255, 255)); // สีฟ้าสว่าง
+        titleLabel.setStyle("-fx-padding: 0 0 5 0;");
 
         // เนื้อหา
         Label contentLabel = new Label(content);
         contentLabel.setFont(Font.font("System", 12));
-        contentLabel.setTextFill(Color.BLACK);
+        contentLabel.setTextFill(Color.WHITE);
+        contentLabel.setWrapText(true);
+        contentLabel.setMaxWidth(380);
 
         pane.getChildren().addAll(titleLabel, contentLabel);
+        
+        // เพิ่ม Glow effect
+        Glow glow = new Glow(0.3);
+        pane.setEffect(glow);
+        
         return pane;
     }
 }

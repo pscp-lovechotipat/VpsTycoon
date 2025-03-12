@@ -14,7 +14,6 @@ import javafx.scene.layout.VBox;
 
 public class VPSInfoUI {
     private final GameplayContentPane parent;
-
     public VPSInfoUI(GameplayContentPane parent) {
         this.parent = parent;
     }
@@ -24,6 +23,10 @@ public class VPSInfoUI {
         BorderPane vpsInfoPane = new BorderPane();
         vpsInfoPane.setPrefSize(800, 600);
         vpsInfoPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
+
+        // Hide the menu bar
+        parent.getMenuBar().setVisible(false);
+        parent.getInGameMarketMenuBar().setVisible(false);
 
         // ส่วนหัว
         HBox topBar = new HBox(20);
@@ -57,7 +60,12 @@ public class VPSInfoUI {
         HBox infoBox = UIUtils.createCard();
         infoBox.setPadding(new Insets(15));
         VBox vpsSection = UIUtils.createSection("VPS Information");
-        Label vpsDetail = new Label("vCPUs: " + vps.getVCPUs() + "\nRAM: " + vps.getRamInGB() + " GB\nDisk: " + vps.getDiskInGB() + " GB");
+        Label vpsDetail = new Label(
+                "vCPUs: " + vps.getVCPUs() + 
+                "\nRAM: " + vps.getRamInGB() + " GB" + 
+                "\nDisk: " + vps.getDiskInGB() + " GB" +
+                "\nSize: " + vps.getSize().getDisplayName() +
+                "\nSlots Required: " + vps.getSlotsRequired());
         vpsDetail.setStyle("""
                             -fx-text-fill: #B0BEC5; -fx-font-size: 14px;
                             """);
@@ -113,17 +121,14 @@ public class VPSInfoUI {
         HBox buttonBox = new HBox(15);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         buttonBox.setPadding(new Insets(10));
-        Button createVMButton = UIUtils.createModernButton("Create VM", "#2196F3");
+        
+        Button uninstallButton = UIUtils.createModernButton("Uninstall VPS", "#F44336");
+        uninstallButton.setOnAction(e -> uninstallVPS(vps));
+        
+        Button createVMButton = UIUtils.createModernButton("Create VM", "#4CAF50");
         createVMButton.setOnAction(e -> parent.openCreateVMPage(vps));
-        Button deleteVPSButton = UIUtils.createModernButton("Delete VPS", "#F44336");
-        deleteVPSButton.setOnAction(e -> {
-            parent.getVpsManager().getVPSMap().remove(vpsId);
-            parent.getVpsList().remove(vps);
-            System.out.println("VPS deleted: " + vpsId);
-            parent.openRackInfo();
-        });
-        buttonBox.getChildren().addAll(createVMButton, deleteVPSButton);
-
+        
+        buttonBox.getChildren().addAll(uninstallButton, createVMButton);
         vpsInfoPane.setTop(topBar);
         vpsInfoPane.setCenter(centerBox);
         vpsInfoPane.setBottom(buttonBox);
@@ -131,5 +136,32 @@ public class VPSInfoUI {
         // แสดงผล
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(vpsInfoPane);
+    }
+    
+    /**
+     * Uninstall a VPS from the rack and add it to inventory
+     * @param vps The VPS to uninstall
+     */
+    private void uninstallVPS(VPSOptimization vps) {
+        // Check if there are any VMs running on this VPS
+        if (!vps.getVms().isEmpty()) {
+            parent.pushNotification("Uninstall Failed", 
+                    "Cannot uninstall VPS with running VMs. Please delete all VMs first.");
+            return;
+        }
+        
+        // Uninstall the VPS
+        boolean success = parent.uninstallVPSToInventory(vps);
+        
+        if (success) {
+            parent.pushNotification("VPS Uninstalled", 
+                    "Successfully uninstalled VPS. It has been moved to your inventory.");
+            
+            // Return to rack management
+            parent.openRackInfo();
+        } else {
+            parent.pushNotification("Uninstall Failed", 
+                    "Failed to uninstall VPS.");
+        }
     }
 }

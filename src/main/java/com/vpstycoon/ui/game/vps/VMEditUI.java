@@ -26,6 +26,10 @@ public class VMEditUI {
         editVMPane.setPrefSize(800, 600);
         editVMPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
 
+        // Hide the menu bars
+        parent.getMenuBar().setVisible(false);
+        parent.getInGameMarketMenuBar().setVisible(false);
+        
         // ส่วนหัว
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
@@ -57,7 +61,7 @@ public class VMEditUI {
         // ส่วนการตั้งค่าประสิทธิภาพ
         VBox perfSection = UIUtils.createSection("Performance Settings");
         HBox perfBox = new HBox(10);
-        TextField vcpuField = new TextField(String.valueOf(vm.getVCPUs()));
+        TextField vcpuField = new TextField(String.valueOf(vm.getVcpu()));
         vcpuField.setPromptText("e.g., 1");
         TextField ramField = new TextField(vm.getRam());
         ramField.setPromptText("e.g., 2 GB");
@@ -87,7 +91,7 @@ public class VMEditUI {
         saveButton.setOnAction(e -> {
             try {
                 vm.setName(nameField.getText());
-                vm.setVCPUs(Integer.parseInt(vcpuField.getText()));
+                vm.setVcpu(Integer.parseInt(vcpuField.getText()));
                 vm.setRam(ramField.getText());
                 vm.setDisk(diskField.getText());
                 vm.setStatus(statusChoice.getValue());
