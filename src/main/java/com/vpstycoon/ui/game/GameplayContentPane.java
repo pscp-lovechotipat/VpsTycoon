@@ -32,6 +32,9 @@ import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
+import javafx.scene.media.AudioClip;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
@@ -380,6 +383,10 @@ public class GameplayContentPane extends BorderPane {
 
     public void openKeroro() {
         System.out.println("Open Keroro");
+        String soundPath = getClass().getResource("/sounds/keroro_sound.mp3").toExternalForm();
+        Media media = new Media(soundPath);
+        MediaPlayer mediaPlayer = new MediaPlayer(media);
+        mediaPlayer.play();
         //รอตัวเองกลับมาทำ-บบ-
 //        this.rootStack.getChildren().clear();
 //        this.rootStack.getChildren().add(roomObjects.getKeroroLayer()); // Jiant keroro?
