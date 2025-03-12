@@ -1,5 +1,6 @@
 package com.vpstycoon.game.resource;
 
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
@@ -31,8 +32,11 @@ public class ResourceManager implements Serializable {
     private Company company = new Company();
     private GameState currentState;
 
+    private final AudioManager audioManager;
+
     private ResourceManager() {
         this.company = new Company();
+        this.audioManager = new AudioManager();
 
         createBackupDirectory();
         // สร้าง GameState เริ่มต้นถ้ายังไม่มี
@@ -189,6 +193,10 @@ public class ResourceManager implements Serializable {
 
     public void setCompany(Company company) {
         this.company = company;
+    }
+
+    public AudioManager getAudioManager() {
+        return audioManager;
     }
 
     // เมธอดสำหรับสร้าง GameObject (ถ้าต้องการให้ ResourceManager สร้าง)

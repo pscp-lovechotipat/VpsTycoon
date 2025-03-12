@@ -18,7 +18,7 @@ public class AudioManager {
     private double musicVolume = 0.5;
     private double sfxVolume = 0.5;
 
-    private AudioManager() {
+    public AudioManager() {
         GameEventBus.getInstance().subscribe(
             SettingsChangedEvent.class, 
             this::onSettingsChanged

@@ -1,5 +1,6 @@
 package com.vpstycoon;
 
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.DefaultGameConfig;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
@@ -32,6 +33,7 @@ public class GameApplication extends Application implements Navigator {
     private GameplayScreen gameplayScreen;
     private GameSaveManager saveManager;
     private GameManager gameManager;
+    private AudioManager audioManager;
 
     @Override
     public void start(Stage primaryStage) {
@@ -65,6 +67,10 @@ public class GameApplication extends Application implements Navigator {
         this.gameConfig = createGameConfig();
         this.screenManager = new JavaFXScreenManager(gameConfig, primaryStage);
         this.gameManager = GameManager.getInstance();
+
+        this.audioManager = AudioManager.getInstance();
+
+        audioManager.playMusic("Pixel_Paradise.mp3");
         
         initializeGame();
         showMainMenu();
