@@ -128,9 +128,11 @@ public class RackManagementUI {
 
         rackPane.setTop(topBar);
         rackPane.setCenter(contentBox);
+        BorderPane.setMargin(contentBox, new Insets(10, 0, 10, 0));
 
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(rackPane);
+
     }
 
     /**
