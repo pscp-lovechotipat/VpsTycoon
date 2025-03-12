@@ -1,11 +1,11 @@
 package com.vpstycoon.ui.game.components;
 
+import com.vpstycoon.ui.game.status.CircleStatusButton;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.effect.DropShadow;
 
 /**
  * Creates the top menu bar with status indicators in a cyberpunk theme.

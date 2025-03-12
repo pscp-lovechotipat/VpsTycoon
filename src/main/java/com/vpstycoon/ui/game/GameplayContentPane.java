@@ -6,6 +6,7 @@ import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.VPSSize;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
@@ -21,6 +22,9 @@ import com.vpstycoon.ui.game.notification.NotificationController;
 import com.vpstycoon.ui.game.notification.NotificationModel;
 import com.vpstycoon.ui.game.notification.NotificationView;
 import com.vpstycoon.ui.game.rack.RackManagementUI;
+import com.vpstycoon.ui.game.status.money.MoneyController;
+import com.vpstycoon.ui.game.status.money.MoneyModel;
+import com.vpstycoon.ui.game.status.money.MoneyUI;
 import com.vpstycoon.ui.game.vps.*;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Pos;
@@ -48,6 +52,10 @@ public class GameplayContentPane extends BorderPane {
     private final NotificationModel notificationModel;
     private final NotificationView notificationView;
     private final NotificationController notificationController;
+
+    private final MoneyModel moneyModel;
+    private final MoneyUI moneyUI;
+    private final MoneyController moneyController;
 
     private Group worldGroup;
     private final StackPane gameArea;
@@ -99,11 +107,13 @@ public class GameplayContentPane extends BorderPane {
         this.gameObjects = gameObjects;
         this.navigator = navigator;
         this.chatSystem = chatSystem;
+
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
         this.gameFlowManager = gameFlowManager;
         this.debugOverlayManager = debugOverlayManager;
         this.company = company;
+
         this.rackManagementUI = new RackManagementUI(this);
         this.vpsCreationUI = new VPSCreationUI(this);
         this.vpsInfoUI = new VPSInfoUI(this);
@@ -117,6 +127,11 @@ public class GameplayContentPane extends BorderPane {
         this.notificationModel = new NotificationModel();
         this.notificationView = new NotificationView();
         this.notificationController = new NotificationController(notificationModel, notificationView);
+
+        this.moneyModel = new MoneyModel(ResourceManager.getInstance().getCompany().getMoney(),
+                ResourceManager.getInstance().getCompany().getRating()); // ค่าเริ่มต้นของ money และ ratting
+        this.moneyUI = new MoneyUI(this, moneyModel);
+        this.moneyController = new MoneyController(moneyModel, moneyUI);
 
         this.rootStack = new StackPane();
         rootStack.setPrefSize(800, 600);
@@ -191,14 +206,6 @@ public class GameplayContentPane extends BorderPane {
         vps1.addVM(vm1);
         vps1.addVM(vm2);
         
-        // Add sample VMs to the VPS servers in the VPS manager
-        VPSOptimization.VM vm3 = new VPSOptimization.VM("192.168.1.3", "Web Server", 1, "1 GB", "20 GB", "Running");
-        VPSOptimization.VM vm4 = new VPSOptimization.VM("192.168.1.4", "Database", 1, "2 GB", "30 GB", "Running");
-        VPSOptimization.VM vm5 = new VPSOptimization.VM("192.168.1.5", "Application Server", 2, "4 GB", "50 GB", "Running");
-        invVps1.addVM(vm3);
-        invVps1.addVM(vm4);
-        invVps2.addVM(vm5);
-        
         // Initialize total slots
         totalSlots = 10;
     }
@@ -213,34 +220,25 @@ public class GameplayContentPane extends BorderPane {
         gameArea.getChildren().add(worldGroup);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
-        
-        // Control the order of elements in the stack
-        rootStack.getChildren().addAll(gameArea);
-        
-        // Add notification view
-        rootStack.getChildren().add(notificationView);
-        
-        // Add menu bars last to ensure they're on top
-        rootStack.getChildren().addAll(menuBar, inGameMarketMenuBar);
-        
-        // Add debug overlay
-        rootStack.getChildren().add(debugOverlay);
+        rootStack.getChildren().addAll(gameArea, moneyUI, menuBar, inGameMarketMenuBar, notificationView, debugOverlay);
 
         // Explicitly set menu bars to visible in the main gameplay screen
         menuBar.setVisible(true);
         menuBar.setPickOnBounds(false);
-        menuBar.toFront();
 
         inGameMarketMenuBar.setVisible(true);
         inGameMarketMenuBar.setPickOnBounds(false);
-        inGameMarketMenuBar.toFront();
 
-        StackPane.setAlignment(notificationView, Pos.TOP_RIGHT);
         notificationView.setMaxWidth(400); // จำกัดความกว้างของการแจ้งเตือน
         notificationView.setPickOnBounds(false);
 
+        moneyUI.setPickOnBounds(false);
+        moneyUI.setVisible(true);
+
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
         StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
+        StackPane.setAlignment(notificationView, Pos.TOP_RIGHT);
+        StackPane.setAlignment(moneyUI, Pos.TOP_LEFT);
 
         debugOverlayManager.startTimer();
         zoomPanHandler = new ZoomPanHandler(worldGroup, gameArea, debugOverlayManager, showDebug);
@@ -278,20 +276,6 @@ public class GameplayContentPane extends BorderPane {
     public void pushNotification(String title, String content) {
         notificationModel.addNotification(new NotificationModel.Notification(title, content));
         notificationView.addNotificationPane(title, content);
-        
-        // Ensure UI elements stay visible
-        if (menuBar != null) {
-            menuBar.setVisible(true);
-            menuBar.toFront();
-        }
-        
-        if (inGameMarketMenuBar != null) {
-            inGameMarketMenuBar.setVisible(true);
-            inGameMarketMenuBar.toFront();
-        }
-        
-        // Make sure notificationView is always on top
-        notificationView.toFront();
     }
 
     public void openRackInfo() {
@@ -345,6 +329,10 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public GameMenuBar getMenuBar() { return this.menuBar; }
+
+    public MoneyUI getMoneyUI() {
+        return moneyUI;
+    }
 
     public List<VPSOptimization> getVpsList() {
         return vpsList;

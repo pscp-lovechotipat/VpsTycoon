@@ -33,6 +33,7 @@ public class RackManagementUI {
         // Hide the menu bars
         parent.getMenuBar().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
+        parent.getMoneyUI().setVisible(false);
         
         // ส่วนหัว (Top Bar)
         HBox topBar = new HBox(20);
