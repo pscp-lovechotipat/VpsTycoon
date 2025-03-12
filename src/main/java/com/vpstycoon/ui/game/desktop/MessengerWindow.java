@@ -22,6 +22,7 @@ import javafx.stage.Stage;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,7 +175,7 @@ public class MessengerWindow extends VBox {
                     
                     nameStatusBox.getChildren().addAll(nameLabel, statusLabel);
                     
-                    Label previewLabel = new Label("Needs VPS: " + request.getRequiredVCPUs() + " vCPUs, " + 
+                    Label previewLabel = new Label("Needs VM: " + request.getRequiredVCPUs() + " vCPUs, " + 
                                                   request.getRequiredRam() + " RAM");
                     previewLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 12px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
                     
@@ -458,7 +459,7 @@ public class MessengerWindow extends VBox {
                             try {
                                 Thread.sleep(1000);
                                 Platform.runLater(() -> {
-                                    addCustomerMessage(selected, "Thanks for your response! Can you help me with my VPS request?");
+                                    addCustomerMessage(selected, "Thanks for your response! Can you help me with my VM request?");
                                 });
                             } catch (InterruptedException ex) {
                                 Thread.currentThread().interrupt();
@@ -481,7 +482,7 @@ public class MessengerWindow extends VBox {
             }
         });
 
-        Button sendWorkButton = new Button("Assign VPS");
+        Button sendWorkButton = new Button("Assign VM");
         sendWorkButton.getStyleClass().add("cyber-button");
         sendWorkButton.setDisable(true);
         sendWorkButton.setOnAction(e -> showVMSelectionPopup());
@@ -559,7 +560,7 @@ public class MessengerWindow extends VBox {
                 messagesBox.getChildren().addAll(customerChatHistory.get(selectedRequest));
             } else {
                 // สร้างข้อความเริ่มต้นสำหรับลูกค้าใหม่
-                String requestMessage = "Hello! I need a VPS with the following specs:\n" +
+                String requestMessage = "Hello! I need a VM with the following specs:\n" +
                         "• " + selectedRequest.getRequiredVCPUs() + " vCPUs\n" +
                         "• " + selectedRequest.getRequiredRam() + " RAM\n" +
                         "• " + selectedRequest.getRequiredDisk() + " Disk\n\n" +
@@ -576,10 +577,10 @@ public class MessengerWindow extends VBox {
                             .orElse(null);
                     
                     if (assignedVM != null) {
-                        addUserMessage(selectedRequest, "I've assigned you a VPS with IP: " + assignedVM.getIp());
+                        addUserMessage(selectedRequest, "I've assigned you a VM with IP: " + assignedVM.getIp());
                         addCustomerMessage(selectedRequest, "Thank you! This works perfectly for my needs.");
                         
-                        addSystemMessage(selectedRequest, "VPS assignment completed successfully" +
+                        addSystemMessage(selectedRequest, "VM assignment completed successfully" +
                                 (assignedVM != null ? " (VM: " + assignedVM.getIp() + ")" : ""));
                     }
                 }
@@ -728,38 +729,53 @@ public class MessengerWindow extends VBox {
         
         requirementsBox.getChildren().addAll(requirementsTitle, vcpusReq, ramReq, diskReq);
         
-        // VPS selection
-        Label vpsLabel = new Label("Select VPS:");
-        vpsLabel.setStyle("-fx-text-fill: white;");
+        // สร้าง ComboBox สำหรับเลือก VM โดยตรง
+        Label vmLabel = new Label("Select VM to Assign:");
+        vmLabel.setStyle("-fx-text-fill: white;");
         
-        ComboBox<VPSOptimization> vpsComboBox = new ComboBox<>();
-        vpsComboBox.getItems().addAll(vpsManager.getVPSList());
-        vpsComboBox.setMaxWidth(Double.MAX_VALUE);
-        vpsComboBox.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
+        ComboBox<VPSOptimization.VM> vmComboBox = new ComboBox<>();
+        vmComboBox.setMaxWidth(Double.MAX_VALUE);
+        vmComboBox.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
         
-        vpsComboBox.setCellFactory(param -> new ListCell<VPSOptimization>() {
+        // รวบรวม VM ที่พร้อมใช้งานจากทุก VPS
+        List<VPSOptimization.VM> allAvailableVMs = new ArrayList<>();
+        for (VPSOptimization vps : vpsManager.getVPSList()) {
+            List<VPSOptimization.VM> availableVMs = vps.getVms().stream()
+                    .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
+                    .collect(java.util.stream.Collectors.toList());
+            allAvailableVMs.addAll(availableVMs);
+        }
+        
+        if (!allAvailableVMs.isEmpty()) {
+            vmComboBox.getItems().addAll(allAvailableVMs);
+            vmComboBox.setPromptText("Select a VM to assign");
+        } else {
+            vmComboBox.setPromptText("No available VMs found");
+        }
+        
+        vmComboBox.setCellFactory(param -> new ListCell<VPSOptimization.VM>() {
             @Override
-            protected void updateItem(VPSOptimization vps, boolean empty) {
-                super.updateItem(vps, empty);
-                if (empty || vps == null) {
+            protected void updateItem(VPSOptimization.VM vm, boolean empty) {
+                super.updateItem(vm, empty);
+                if (empty || vm == null) {
                     setText(null);
                 } else {
-                    setText("VPS #" + vps.getId() + " - " + vps.getVCPUs() + " vCPUs, " + 
-                            vps.getRamInGB() + "GB RAM, " + vps.getDiskInGB() + "GB Disk");
+                    setText(vm.getName() + " (" + vm.getIp() + ") - " + 
+                            vm.getVcpu() + " vCPUs, " + vm.getRam() + ", " + vm.getDisk());
                     setStyle("-fx-text-fill: white;");
                 }
             }
         });
         
-        vpsComboBox.setButtonCell(new ListCell<VPSOptimization>() {
+        vmComboBox.setButtonCell(new ListCell<VPSOptimization.VM>() {
             @Override
-            protected void updateItem(VPSOptimization vps, boolean empty) {
-                super.updateItem(vps, empty);
-                if (empty || vps == null) {
+            protected void updateItem(VPSOptimization.VM vm, boolean empty) {
+                super.updateItem(vm, empty);
+                if (empty || vm == null) {
                     setText(null);
                 } else {
-                    setText("VPS #" + vps.getId() + " - " + vps.getVCPUs() + " vCPUs, " + 
-                            vps.getRamInGB() + "GB RAM, " + vps.getDiskInGB() + "GB Disk");
+                    setText(vm.getName() + " (" + vm.getIp() + ") - " + 
+                            vm.getVcpu() + " vCPUs, " + vm.getRam() + ", " + vm.getDisk());
                     setStyle("-fx-text-fill: white;");
                 }
             }
@@ -787,8 +803,8 @@ public class MessengerWindow extends VBox {
                 new Separator(),
                 requirementsBox,
                 new Separator(),
-                vpsLabel, 
-                vpsComboBox,
+                vmLabel,
+                vmComboBox,
                 errorLabel,
                 new Separator(),
                 buttonBox
@@ -800,86 +816,58 @@ public class MessengerWindow extends VBox {
         });
         
         confirmButton.setOnAction(event -> {
-            VPSOptimization selectedVPS = vpsComboBox.getValue();
-            if (selectedVPS != null) {
-                // ปิดหน้าต่าง popup ก่อนที่จะเพิ่มข้อความ
-                popupStage.close();
-                
-                // ใช้ทรัพยากรตามที่ลูกค้าต้องการโดยตรง
-                int vcpus = selected.getRequiredVCPUs();
-                int ramGB = selected.getRequiredRamGB();
-                int diskGB = selected.getRequiredDiskGB();
-                
-                // เพิ่มข้อความแจ้งลูกค้าว่าเรากำลังดำเนินการตามคำขอ
-                addUserMessage(selected, "I'll set up your VM right away. Please wait a moment while I provision it for you.");
-                
-                // เพิ่มข้อความรอจากลูกค้า
-                addCustomerMessage(selected, "Thank you! I'll wait for the setup to complete.");
-                
-                // เรียกใช้เมธอด acceptRequest
-                requestManager.acceptRequest(selected, selectedVPS, vcpus, ramGB, diskGB)
-                    .thenAccept(vm -> {
-                        Platform.runLater(() -> {
-                            // อัปเดต UI หลังจากจัดเตรียม VM เสร็จสิ้น
-                            updateDashboard();
-                            
-                            // สร้างชื่อผู้ใช้และรหัสผ่านแบบสุ่ม
-                            String username = "user_" + selected.getName().toLowerCase().replaceAll("[^a-z0-9]", "") + random.nextInt(100);
-                            String password = generateRandomPassword();
-                            
-                            // เพิ่มข้อความพร้อมรายละเอียด VM
-                            String vmDetails = "Your VM has been provisioned successfully! Here are your access details:\n\n" +
-                                    "IP Address: " + vm.getIp() + "\n" +
-                                    "Username: " + username + "\n" +
-                                    "Password: " + password + "\n\n" +
-                                    "You can connect using SSH or RDP depending on your operating system.";
-                            
-                            addUserMessage(selected, vmDetails);
-                            
-                            // เพิ่มข้อความระบบ
-                            addSystemMessage(selected, "VM provisioned successfully");
-                            
-                            // เก็บการกำหนด VM
-                            vmAssignments.put(vm, selected);
-                            
-                            // อัปเดตมุมมองคำขอเพื่อแสดงสถานะใหม่
-                            requestView.refresh();
-                            
-                            // เพิ่มข้อความขอบคุณจากลูกค้า
-                            addCustomerMessage(selected, "Thank you! I've received the access details and can connect to the VM now. It's working perfectly for my needs.");
-                            
-                            // เพิ่มตัวเลือกการต่ออายุหลังจากรอสักครู่
-                            new Thread(() -> {
-                                try {
-                                    Thread.sleep(5000); // รอ 5 วินาที
-                                    Platform.runLater(() -> {
-                                        addSystemMessage(selected, "Customer contract will expire in " + selected.getRentalPeriodType().getDisplayName());
-                                        addRenewalOption(selected, vm);
-                                    });
-                                } catch (InterruptedException e) {
-                                    Thread.currentThread().interrupt();
-                                }
-                            }).start();
-                        });
-                    })
-                    .exceptionally(ex -> {
-                        Platform.runLater(() -> {
-                            addSystemMessage(selected, "Failed to provision VM: " + ex.getMessage());
-                            addUserMessage(selected, "I'm sorry, but there was an issue provisioning your VM. Let me try to resolve this for you.");
-                            addCustomerMessage(selected, "I understand. Please let me know when it's ready or if you need any additional information from me.");
-                        });
-                        return null;
-                    });
-            } else {
+            VPSOptimization.VM selectedVM = vmComboBox.getValue();
+            
+            if (selectedVM == null) {
                 // แสดงข้อความแจ้งเตือน
-                errorLabel.setText("Please select a VPS server");
+                errorLabel.setText("Please select a VM to assign");
                 errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-opacity: 1;");
+                return;
             }
+            
+            // ปิดหน้าต่าง popup ก่อนที่จะเพิ่มข้อความ
+            popupStage.close();
+            
+            // เพิ่มข้อความแจ้งลูกค้าว่าเรากำลังดำเนินการตามคำขอ
+            addUserMessage(selected, "I'll assign your VM right away.");
+            
+            // เพิ่มข้อความรอจากลูกค้า
+            addCustomerMessage(selected, "Thank you! I'll wait for the setup to complete.");
+            
+            // ถ้าเลือก VM ที่มีอยู่แล้ว ให้กำหนด VM นั้นให้กับลูกค้าทันที
+            Platform.runLater(() -> {
+                // อัปเดต UI หลังจากจัดเตรียม VM เสร็จสิ้น
+                updateDashboard();
+                
+                // สร้างชื่อผู้ใช้และรหัสผ่านแบบสุ่ม
+                String username = "user_" + selected.getName().toLowerCase().replaceAll("[^a-z0-9]", "") + random.nextInt(100);
+                String password = generateRandomPassword();
+                
+                // เพิ่มข้อความพร้อมรายละเอียด VM
+                String vmDetails = "Your VM has been assigned successfully! Here are your access details:\n\n" +
+                        "IP Address: " + selectedVM.getIp() + "\n" +
+                        "Username: " + username + "\n" +
+                        "Password: " + password + "\n\n" +
+                        "You can connect using SSH or RDP depending on your operating system.";
+                
+                addUserMessage(selected, vmDetails);
+                
+                // เพิ่มข้อความระบบ
+                addSystemMessage(selected, "VM assigned successfully");
+                
+                // ทำเครื่องหมายคำขอว่าเสร็จสมบูรณ์
+                selected.activate();
+                
+                // เก็บการกำหนด VM
+                vmAssignments.put(selectedVM, selected);
+                
+                // อัปเดตมุมมองคำขอเพื่อแสดงสถานะใหม่
+                updateRequestList();
+            });
         });
         
-        // สร้าง Scene และแสดง popup
+        // Set the scene and show the popup
         Scene scene = new Scene(content);
-        scene.getStylesheets().add(getClass().getResource("/css/messenger-window.css").toExternalForm());
         popupStage.setScene(scene);
         popupStage.showAndWait();
     }

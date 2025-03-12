@@ -191,6 +191,14 @@ public class GameplayContentPane extends BorderPane {
         vps1.addVM(vm1);
         vps1.addVM(vm2);
         
+        // Add sample VMs to the VPS servers in the VPS manager
+        VPSOptimization.VM vm3 = new VPSOptimization.VM("192.168.1.3", "Web Server", 1, "1 GB", "20 GB", "Running");
+        VPSOptimization.VM vm4 = new VPSOptimization.VM("192.168.1.4", "Database", 1, "2 GB", "30 GB", "Running");
+        VPSOptimization.VM vm5 = new VPSOptimization.VM("192.168.1.5", "Application Server", 2, "4 GB", "50 GB", "Running");
+        invVps1.addVM(vm3);
+        invVps1.addVM(vm4);
+        invVps2.addVM(vm5);
+        
         // Initialize total slots
         totalSlots = 10;
     }
