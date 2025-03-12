@@ -42,7 +42,7 @@ public class GameplayScreen extends GameScreen {
         this.gameObjects = new ArrayList<>();
         this.company = new Company();
         this.chatSystem = new ChatSystem();
-        this.requestManager = new RequestManager();
+        this.requestManager = new RequestManager(company);
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
@@ -56,9 +56,9 @@ public class GameplayScreen extends GameScreen {
         this.saveManager = new GameSaveManager();
         this.state = gameState;
         this.gameObjects = new ArrayList<>(gameState.getGameObjects());
-        this.company = new Company(); // Adjust if GameState provides company data
+        this.company = gameState.getCompany() != null ? gameState.getCompany() : new Company();
         this.chatSystem = new ChatSystem();
-        this.requestManager = new RequestManager();
+        this.requestManager = new RequestManager(company);
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();

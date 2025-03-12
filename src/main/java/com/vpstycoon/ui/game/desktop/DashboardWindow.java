@@ -179,16 +179,16 @@ public class DashboardWindow extends VBox {
 
     private LineChart<String, Number> createRevenueChart() {
         CategoryAxis xAxis = new CategoryAxis();
-        xAxis.setLabel("Time");
         NumberAxis yAxis = new NumberAxis();
-        yAxis.setLabel("Amount ($)");
-
-        LineChart<String, Number> lineChart = new LineChart<>(xAxis, yAxis);
-        lineChart.setTitle("Revenue & Expenses");
-        lineChart.setStyle("-fx-background-color: white; -fx-border-radius: 5; -fx-background-radius: 5;");
-        lineChart.setAnimated(false);
-        lineChart.setLegendVisible(true);
-
+        xAxis.setLabel("Time");
+        yAxis.setLabel("Amount (THB)");
+        
+        LineChart<String, Number> chart = new LineChart<>(xAxis, yAxis);
+        chart.setTitle("Financial Performance");
+        chart.setAnimated(false);
+        chart.setCreateSymbols(false);
+        
+        // Create series with proper generic type parameters
         revenueSeries = new XYChart.Series<>();
         revenueSeries.setName("Revenue");
         
@@ -197,46 +197,33 @@ public class DashboardWindow extends VBox {
         
         profitSeries = new XYChart.Series<>();
         profitSeries.setName("Profit");
-
+        
         // Initialize with some data
-        Random random = new Random();
-        double revenue = monthlyRevenue;
-        double expense = monthlyRevenue * 0.6;
-        
-        for (int i = 0; i < 5; i++) {
-            String timePoint = String.format("%02d:%02d", random.nextInt(24), random.nextInt(60));
-            
-            revenue = monthlyRevenue * (0.9 + (random.nextDouble() * 0.2));
-            expense = monthlyRevenue * 0.6 * (0.9 + (random.nextDouble() * 0.2));
-            double profit = revenue - expense;
-            
-            revenueSeries.getData().add(new XYChart.Data<>(timePoint, revenue));
-            expenseSeries.getData().add(new XYChart.Data<>(timePoint, expense));
-            profitSeries.getData().add(new XYChart.Data<>(timePoint, profit));
+        for (int i = 0; i < 10; i++) {
+            revenueSeries.getData().add(new XYChart.Data<>("Day " + i, 0));
+            expenseSeries.getData().add(new XYChart.Data<>("Day " + i, 0));
+            profitSeries.getData().add(new XYChart.Data<>("Day " + i, 0));
         }
-
-        lineChart.getData().addAll(revenueSeries, expenseSeries, profitSeries);
         
-        // Style the series
-        revenueSeries.getNode().setStyle("-fx-stroke: #27ae60; -fx-stroke-width: 2px;");
-        expenseSeries.getNode().setStyle("-fx-stroke: #e74c3c; -fx-stroke-width: 2px;");
-        profitSeries.getNode().setStyle("-fx-stroke: #3498db; -fx-stroke-width: 2px;");
+        chart.getData().add(revenueSeries);
+        chart.getData().add(expenseSeries);
+        chart.getData().add(profitSeries);
         
-        return lineChart;
+        return chart;
     }
     
     private LineChart<String, Number> createPerformanceChart() {
         CategoryAxis xAxis = new CategoryAxis();
-        xAxis.setLabel("Time");
         NumberAxis yAxis = new NumberAxis(0, 100, 10);
+        xAxis.setLabel("Time");
         yAxis.setLabel("Usage (%)");
-
-        LineChart<String, Number> lineChart = new LineChart<>(xAxis, yAxis);
-        lineChart.setTitle("System Performance");
-        lineChart.setStyle("-fx-background-color: white; -fx-border-radius: 5; -fx-background-radius: 5;");
-        lineChart.setAnimated(false);
-        lineChart.setLegendVisible(true);
-
+        
+        LineChart<String, Number> chart = new LineChart<>(xAxis, yAxis);
+        chart.setTitle("System Performance");
+        chart.setAnimated(false);
+        chart.setCreateSymbols(false);
+        
+        // Create series with proper generic type parameters
         cpuSeries = new XYChart.Series<>();
         cpuSeries.setName("CPU");
         
@@ -245,30 +232,19 @@ public class DashboardWindow extends VBox {
         
         diskSeries = new XYChart.Series<>();
         diskSeries.setName("Disk");
-
+        
         // Initialize with some data
-        Random random = new Random();
-        
-        for (int i = 0; i < 5; i++) {
-            String timePoint = String.format("%02d:%02d", random.nextInt(24), random.nextInt(60));
-            
-            double cpu = random.nextDouble() * 100;
-            double ram = random.nextDouble() * 100;
-            double disk = random.nextDouble() * 100;
-            
-            cpuSeries.getData().add(new XYChart.Data<>(timePoint, cpu));
-            ramSeries.getData().add(new XYChart.Data<>(timePoint, ram));
-            diskSeries.getData().add(new XYChart.Data<>(timePoint, disk));
+        for (int i = 0; i < 10; i++) {
+            cpuSeries.getData().add(new XYChart.Data<>("Day " + i, 0));
+            ramSeries.getData().add(new XYChart.Data<>("Day " + i, 0));
+            diskSeries.getData().add(new XYChart.Data<>("Day " + i, 0));
         }
-
-        lineChart.getData().addAll(cpuSeries, ramSeries, diskSeries);
         
-        // Style the series
-        cpuSeries.getNode().setStyle("-fx-stroke: #e74c3c; -fx-stroke-width: 2px;");
-        ramSeries.getNode().setStyle("-fx-stroke: #3498db; -fx-stroke-width: 2px;");
-        diskSeries.getNode().setStyle("-fx-stroke: #2ecc71; -fx-stroke-width: 2px;");
+        chart.getData().add(cpuSeries);
+        chart.getData().add(ramSeries);
+        chart.getData().add(diskSeries);
         
-        return lineChart;
+        return chart;
     }
 
     private void styleWindow() {
@@ -338,35 +314,36 @@ public class DashboardWindow extends VBox {
      * อัปเดตข้อมูลกราฟ
      */
     private void updateChartData() {
-        // อัปเดตข้อมูลกราฟรายได้
+        Random random = new Random();
+        
+        // Update revenue chart
         if (revenueSeries.getData().size() >= 10) {
             revenueSeries.getData().remove(0);
             expenseSeries.getData().remove(0);
             profitSeries.getData().remove(0);
         }
         
-        double newRevenue = monthlyRevenue * (0.9 + (new Random().nextDouble() * 0.2));
-        double newExpense = monthlyRevenue * 0.6 * (0.9 + (new Random().nextDouble() * 0.2));
-        double newProfit = newRevenue - newExpense;
+        double revenue = monthlyRevenue * (0.8 + 0.4 * random.nextDouble());
+        double expenses = monthlyRevenue * 0.6 * (0.8 + 0.4 * random.nextDouble());
+        double profit = revenue - expenses;
         
-        String timePoint = String.format("%02d:%02d", new Random().nextInt(24), new Random().nextInt(60));
-        revenueSeries.getData().add(new XYChart.Data<>(timePoint, newRevenue));
-        expenseSeries.getData().add(new XYChart.Data<>(timePoint, newExpense));
-        profitSeries.getData().add(new XYChart.Data<>(timePoint, newProfit));
+        revenueSeries.getData().add(new XYChart.Data<>("Day " + System.currentTimeMillis() % 1000, revenue));
+        expenseSeries.getData().add(new XYChart.Data<>("Day " + System.currentTimeMillis() % 1000, expenses));
+        profitSeries.getData().add(new XYChart.Data<>("Day " + System.currentTimeMillis() % 1000, profit));
         
-        // อัปเดตข้อมูลกราฟประสิทธิภาพ
+        // Update performance chart
         if (cpuSeries.getData().size() >= 10) {
             cpuSeries.getData().remove(0);
             ramSeries.getData().remove(0);
             diskSeries.getData().remove(0);
         }
         
-        double newCPU = new Random().nextDouble() * 100;
-        double newRAM = new Random().nextDouble() * 100;
-        double newDisk = new Random().nextDouble() * 100;
+        double cpu = 20 + 60 * random.nextDouble();
+        double ram = 30 + 50 * random.nextDouble();
+        double disk = 10 + 30 * random.nextDouble();
         
-        cpuSeries.getData().add(new XYChart.Data<>(timePoint, newCPU));
-        ramSeries.getData().add(new XYChart.Data<>(timePoint, newRAM));
-        diskSeries.getData().add(new XYChart.Data<>(timePoint, newDisk));
+        cpuSeries.getData().add(new XYChart.Data<>("Day " + System.currentTimeMillis() % 1000, cpu));
+        ramSeries.getData().add(new XYChart.Data<>("Day " + System.currentTimeMillis() % 1000, ram));
+        diskSeries.getData().add(new XYChart.Data<>("Day " + System.currentTimeMillis() % 1000, disk));
     }
 }

@@ -1,5 +1,6 @@
 package com.vpstycoon.game.vps;
 
+import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.vps.enums.VPSStatus;
 import com.vpstycoon.game.vps.enums.VPSSize;
 
@@ -8,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class VPSOptimization implements Serializable {
+public class VPSOptimization extends GameObject implements Serializable {
     private static final long serialVersionUID = 1L;
     private final List<VM> vms;
     private VPSStatus status;
@@ -58,7 +59,11 @@ public class VPSOptimization implements Serializable {
         return vms;
     }
 
-    public VPSStatus getStatus() {
+    public String getStatus() {
+        return status.toString();
+    }
+
+    public VPSStatus getVPSStatus() {
         return status;
     }
 

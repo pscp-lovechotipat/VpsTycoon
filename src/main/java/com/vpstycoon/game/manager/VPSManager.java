@@ -21,4 +21,12 @@ public class VPSManager {
     public Map<String, VPSOptimization> getVPSMap() {
         return vpsMap; // Direct access; consider returning Collections.unmodifiableMap(vpsMap) if immutability is needed
     }
+
+    /**
+     * Get a list of all VPS instances
+     * @return List of VPS instances
+     */
+    public java.util.List<VPSOptimization> getVPSList() {
+        return new java.util.ArrayList<>(vpsMap.values());
+    }
 }
