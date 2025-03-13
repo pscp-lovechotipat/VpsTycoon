@@ -26,6 +26,9 @@ import com.vpstycoon.ui.game.market.MarketUI;
 import com.vpstycoon.ui.game.notification.NotificationController;
 import com.vpstycoon.ui.game.notification.NotificationModel;
 import com.vpstycoon.ui.game.notification.NotificationView;
+import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationController;
+import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationModel;
+import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationView;
 import com.vpstycoon.ui.game.rack.RackManagementUI;
 import com.vpstycoon.ui.game.status.money.MoneyController;
 import com.vpstycoon.ui.game.status.money.MoneyModel;
@@ -52,6 +55,10 @@ public class GameplayContentPane extends BorderPane {
     private final NotificationModel notificationModel;
     private final NotificationView notificationView;
     private final NotificationController notificationController;
+
+    private final MouseNotificationModel mouseNotificationModel;
+    private final MouseNotificationView mouseNotificationView;
+    private final MouseNotificationController mouseNotificationController;
 
     private final MoneyModel moneyModel;
     private final MoneyUI moneyUI;
@@ -127,6 +134,10 @@ public class GameplayContentPane extends BorderPane {
         this.notificationModel = new NotificationModel();
         this.notificationView = new NotificationView();
         this.notificationController = new NotificationController(notificationModel, notificationView);
+
+        this.mouseNotificationModel = new MouseNotificationModel();
+        this.mouseNotificationView = new MouseNotificationView();
+        this.mouseNotificationController = new MouseNotificationController(mouseNotificationModel, mouseNotificationView);
 
         this.moneyModel = new MoneyModel(ResourceManager.getInstance().getCompany().getMoney(),
                 ResourceManager.getInstance().getCompany().getRating()); // ค่าเริ่มต้นของ money และ ratting
@@ -220,7 +231,7 @@ public class GameplayContentPane extends BorderPane {
         gameArea.getChildren().add(worldGroup);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
-        rootStack.getChildren().addAll(gameArea, moneyUI, menuBar, inGameMarketMenuBar, notificationView, debugOverlay);
+        rootStack.getChildren().addAll(gameArea, moneyUI, menuBar, inGameMarketMenuBar, mouseNotificationView, notificationView, debugOverlay);
 
         // Explicitly set menu bars to visible in the main gameplay screen
         menuBar.setVisible(true);
@@ -278,6 +289,10 @@ public class GameplayContentPane extends BorderPane {
     public void pushNotification(String title, String content) {
         notificationModel.addNotification(new NotificationModel.Notification(title, content));
         notificationView.addNotificationPane(title, content);
+    }
+
+    public void pushMouseNotification(String content) {
+        mouseNotificationController.addNotification(content);
     }
 
     public void openRackInfo() {
@@ -386,6 +401,7 @@ public class GameplayContentPane extends BorderPane {
         Media media = new Media(soundPath);
         MediaPlayer mediaPlayer = new MediaPlayer(media);
         mediaPlayer.play();
+        pushMouseNotification("Open Keroro");
         //รอตัวเองกลับมาทำ-บบ-
 //        this.rootStack.getChildren().clear();
 //        this.rootStack.getChildren().add(roomObjects.getKeroroLayer()); // Jiant keroro?
