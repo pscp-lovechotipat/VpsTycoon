@@ -15,6 +15,7 @@ public class CustomerRequest extends Customer {
     private final RentalPeriodType rentalPeriodType; // New field for rental period type
     private final double monthlyPayment; // Monthly payment amount
     private boolean isActive = false; // Whether this request is currently active
+    private boolean isExpired = false; // Whether this request has expired
     private long creationTime; // When this request was created
     private long lastPaymentTime; // When the last payment was made
 
@@ -217,6 +218,17 @@ public class CustomerRequest extends Customer {
         this.isActive = false;
     }
 
+    // Mark the request as expired
+    public void markAsExpired() {
+        this.isActive = false;
+        this.isExpired = true;
+    }
+
+    // Check if the request is expired
+    public boolean isExpired() {
+        return isExpired;
+    }
+
     // Getters
     public CustomerType getCustomerType() {
         return customerType;
@@ -256,6 +268,14 @@ public class CustomerRequest extends Customer {
 
     public RentalPeriodType getRentalPeriodType() {
         return rentalPeriodType;
+    }
+
+    /**
+     * Get the rental period in days
+     * @return The rental period in days
+     */
+    public int getRentalPeriod() {
+        return rentalPeriodType.getDays();
     }
 
     public double getMonthlyPayment() {

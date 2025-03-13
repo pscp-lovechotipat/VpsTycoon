@@ -206,6 +206,21 @@ public class Company implements Serializable {
         this.money = money;
     }
     
+    /**
+     * Add money to the company's balance
+     * @param amount Amount to add (can be negative to subtract)
+     */
+    public void addMoney(double amount) {
+        this.money += (long) amount;
+        
+        // Record as revenue if positive, expense if negative
+        if (amount > 0) {
+            addFinancialRecord((long) amount, 0, "VM Rental Payment");
+        } else if (amount < 0) {
+            addFinancialRecord(0, (long) Math.abs(amount), "Expense");
+        }
+    }
+    
     public long getTotalRevenue() {
         return totalRevenue;
     }

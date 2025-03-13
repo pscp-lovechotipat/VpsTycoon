@@ -18,9 +18,13 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.*;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MessengerWindow extends VBox {
     private final RequestManager requestManager;
@@ -30,7 +34,7 @@ public class MessengerWindow extends VBox {
     private final Company company;
     private VBox messagesBox;
     private final Map<VPSOptimization.VM, CustomerRequest> vmAssignments;
-    private final Map<CustomerRequest, java.util.List<javafx.scene.Node>> customerChatHistory;
+    private final Map<CustomerRequest, List<ChatMessage>> customerChatHistory;
     private Label ratingLabel; // For dashboard
     private Label activeRequestsLabel; // For dashboard
     private Label availableVMsLabel; // For dashboard
@@ -40,16 +44,64 @@ public class MessengerWindow extends VBox {
     private Label customerTypeLabel; // For chat header
     private final Random random = new Random();
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    private static final String CHAT_HISTORY_FILE = "chat_history.dat";
+    
+    // New fields for rental periods and payments
+    private final Map<CustomerRequest, Date> rentalEndDates;
+    private final Map<CustomerRequest, Timer> rentalTimers;
+    private final Map<CustomerRequest, ProgressBar> provisioningProgressBars;
+    private final ScheduledExecutorService scheduler;
+    private static final long GAME_MONTH_IN_MINUTES = 15; // 1 game month = 15 real minutes
+    private static final long MILLISECONDS_PER_GAME_DAY = (GAME_MONTH_IN_MINUTES * 60 * 1000) / 30; // Milliseconds per game day
+
+    // Chat message class for serialization
+    private static class ChatMessage implements Serializable {
+        private static final long serialVersionUID = 1L;
+        
+        public enum MessageType {
+            CUSTOMER, USER, SYSTEM
+        }
+        
+        private final MessageType type;
+        private final String content;
+        private final long timestamp;
+        
+        public ChatMessage(MessageType type, String content) {
+            this.type = type;
+            this.content = content;
+            this.timestamp = System.currentTimeMillis();
+        }
+        
+        public MessageType getType() {
+            return type;
+        }
+        
+        public String getContent() {
+            return content;
+        }
+        
+        public long getTimestamp() {
+            return timestamp;
+        }
+    }
 
     public MessengerWindow(RequestManager requestManager, VPSManager vpsManager,
                            Company company, Runnable onClose) {
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
         this.company = company;
-        this.onClose = onClose;
+        this.onClose = () -> {
+            saveChatHistory(); // Save chat history before closing
+            cleanup(); // Clean up resources before closing
+            onClose.run();
+        };
         this.requestView = new ListView<>();
         this.vmAssignments = new HashMap<>();
-        this.customerChatHistory = new HashMap<>();
+        this.customerChatHistory = loadChatHistory(); // Load chat history
+        this.rentalEndDates = new HashMap<>();
+        this.rentalTimers = new HashMap<>();
+        this.provisioningProgressBars = new HashMap<>();
+        this.scheduler = Executors.newScheduledThreadPool(1);
 
         getStylesheets().add(getClass().getResource("/css/messenger-window.css").toExternalForm());
         getStyleClass().add("messenger-window");
@@ -162,6 +214,9 @@ public class MessengerWindow extends VBox {
                     if (isAssigned) {
                         statusLabel.setText("✓ Assigned");
                         statusLabel.setStyle(statusLabel.getStyle() + "-fx-background-color: #2ecc71; -fx-text-fill: white;");
+                    } else if (request.isExpired()) {
+                        statusLabel.setText("⏱ Expired");
+                        statusLabel.setStyle(statusLabel.getStyle() + "-fx-background-color: #e74c3c; -fx-text-fill: white;");
                     } else {
                         statusLabel.setText("⌛ Waiting");
                         statusLabel.setStyle(statusLabel.getStyle() + "-fx-background-color: #3498db; -fx-text-fill: white;");
@@ -193,31 +248,7 @@ public class MessengerWindow extends VBox {
         
         requestView.getStyleClass().add("request-list-view");
 
-        Button acceptButton = new Button("Accept Request");
-        acceptButton.getStyleClass().add("cyber-button");
-        acceptButton.setOnAction(e -> {
-            CustomerRequest selected = requestView.getSelectionModel().getSelectedItem();
-            if (selected != null) {
-                // Check if this customer already has a VM assigned
-                boolean alreadyAssigned = selected.isActive();
-                if (alreadyAssigned) {
-                    // Show a message that this customer already has a VM
-                    addSystemMessage(selected, "This customer already has a VM assigned.");
-                    return;
-                }
-                
-                // Show the simplified VM selection popup
-                showVMSelectionPopup();
-                
-                // Add a system message to the chat
-                addSystemMessage(selected, "You accepted the request from " + selected.getName());
-            }
-        });
-        
-        // Make the button take full width
-        acceptButton.setMaxWidth(Double.MAX_VALUE);
-
-        requestList.getChildren().addAll(title, requestView, acceptButton);
+        requestList.getChildren().addAll(title, requestView);
         VBox.setVgrow(requestView, Priority.ALWAYS);
         
         return requestList;
@@ -407,6 +438,9 @@ public class MessengerWindow extends VBox {
                 if (isAssigned) {
                     headerStatusLabel.setText("✓ VM Assigned");
                     headerStatusLabel.setStyle(headerStatusLabel.getStyle() + "-fx-background-color: #2ecc71; -fx-text-fill: white;");
+                } else if (newVal.isExpired()) {
+                    headerStatusLabel.setText("⏱ Contract Expired");
+                    headerStatusLabel.setStyle(headerStatusLabel.getStyle() + "-fx-background-color: #e74c3c; -fx-text-fill: white;");
                 } else {
                     headerStatusLabel.setText("⌛ Waiting for VM");
                     headerStatusLabel.setStyle(headerStatusLabel.getStyle() + "-fx-background-color: #3498db; -fx-text-fill: white;");
@@ -486,16 +520,24 @@ public class MessengerWindow extends VBox {
         archiveButton.setDisable(true);
         archiveButton.setOnAction(e -> {
             CustomerRequest selected = requestView.getSelectionModel().getSelectedItem();
-            if (selected != null && selected.isActive()) {
-                // We don't remove the customer from the list anymore
-                // Instead, we just mark them as inactive or archive them
-                
+            if (selected != null && (selected.isActive() || selected.isExpired())) {
                 // Find the assigned VM
                 VPSOptimization.VM assignedVM = vmAssignments.entrySet().stream()
                         .filter(entry -> entry.getValue() == selected)
                         .map(Map.Entry::getKey)
                         .findFirst()
                         .orElse(null);
+                
+                // Release the VM if one is assigned
+                if (assignedVM != null) {
+                    releaseVM(assignedVM, true); // Use archiving behavior
+                    
+                    // Add a system message about releasing the VM
+                    addSystemMessage(selected, "VM has been released and is now available for other customers.");
+                } else {
+                    // If no VM is assigned, just remove the request
+                    requestManager.getRequests().remove(selected);
+                }
                 
                 // Add a system message about archiving
                 addSystemMessage(selected, "Customer " + selected.getTitle() + " has been archived.");
@@ -506,12 +548,15 @@ public class MessengerWindow extends VBox {
                 
                 // Clear the messages box but keep the history
                 messagesBox.getChildren().clear();
+                
+                // Update the request list to reflect the changes
+                updateRequestList();
             }
         });
 
         requestView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            sendWorkButton.setDisable(newVal == null || newVal.isActive());
-            archiveButton.setDisable(newVal == null || !newVal.isActive());
+            sendWorkButton.setDisable(newVal == null || newVal.isActive() || newVal.isExpired());
+            archiveButton.setDisable(newVal == null || (!newVal.isActive() && !newVal.isExpired()));
             
             if (newVal != null) {
                 // Update chat header with customer info
@@ -549,9 +594,23 @@ public class MessengerWindow extends VBox {
         
         if (selectedRequest != null) {
             // ตรวจสอบว่ามีประวัติแชทสำหรับลูกค้านี้หรือไม่
-            if (customerChatHistory.containsKey(selectedRequest)) {
+            List<ChatMessage> chatHistory = customerChatHistory.get(selectedRequest);
+            
+            if (chatHistory != null && !chatHistory.isEmpty()) {
                 // แสดงประวัติแชทที่มีอยู่
-                messagesBox.getChildren().addAll(customerChatHistory.get(selectedRequest));
+                for (ChatMessage message : chatHistory) {
+                    switch (message.getType()) {
+                        case CUSTOMER:
+                            renderCustomerMessage(selectedRequest, message.getContent());
+                            break;
+                        case USER:
+                            renderUserMessage(selectedRequest, message.getContent());
+                            break;
+                        case SYSTEM:
+                            renderSystemMessage(selectedRequest, message.getContent());
+                            break;
+                    }
+                }
             } else {
                 // สร้างข้อความเริ่มต้นสำหรับลูกค้าใหม่
                 String requestMessage = "Hello! I need a VM with the following specs:\n" +
@@ -561,46 +620,24 @@ public class MessengerWindow extends VBox {
                         "Can you help me set this up?";
                 
                 addCustomerMessage(selectedRequest, requestMessage);
-                
-                // ตรวจสอบว่าคำขอนี้เสร็จสมบูรณ์แล้วหรือไม่
-                if (selectedRequest.isActive()) {
-                    VPSOptimization.VM assignedVM = vmAssignments.entrySet().stream()
-                            .filter(entry -> entry.getValue() == selectedRequest)
-                            .map(Map.Entry::getKey)
-                            .findFirst()
-                            .orElse(null);
-                    
-                    if (assignedVM != null) {
-                        addUserMessage(selectedRequest, "I've assigned you a VM with IP: " + assignedVM.getIp());
-                        addCustomerMessage(selectedRequest, "Thank you! This works perfectly for my needs.");
-                        
-                        addSystemMessage(selectedRequest, "VM assignment completed successfully" +
-                                (assignedVM != null ? " (VM: " + assignedVM.getIp() + ")" : ""));
-                    }
-                }
             }
         }
     }
     
-    private void addCustomerMessage(CustomerRequest request, String message) {
+    // Helper methods to render messages without adding to history
+    private void renderCustomerMessage(CustomerRequest request, String message) {
         HBox messageContainer = new HBox();
         messageContainer.setAlignment(Pos.CENTER_LEFT);
         messageContainer.setPadding(new Insets(5, 0, 5, 0));
         messageContainer.getStyleClass().add("message-container");
         
-        // Customer avatar
         Circle avatar = new Circle(15);
-        if (request != null) {
-            // Generate a consistent color for this customer based on their name
-            int nameHash = request.getName().hashCode();
-            int r = Math.abs(nameHash % 100) + 100;
-            int g = Math.abs((nameHash / 100) % 100);
-            int b = Math.abs((nameHash / 10000) % 100) + 100;
-            Color customerColor = Color.rgb(r, g, b);
-            avatar.setFill(customerColor);
-        } else {
-            avatar.setFill(Color.rgb(100, 50, 200));
-        }
+        int nameHash = request.getName().hashCode();
+        int r = Math.abs(nameHash % 100) + 100;
+        int g = Math.abs((nameHash / 100) % 100);
+        int b = Math.abs((nameHash / 10000) % 100) + 100;
+        Color customerColor = Color.rgb(r, g, b);
+        avatar.setFill(customerColor);
         
         VBox messageBox = new VBox(3);
         
@@ -618,14 +655,9 @@ public class MessengerWindow extends VBox {
         HBox.setMargin(messageBox, new Insets(0, 0, 0, 10));
         
         messagesBox.getChildren().add(messageContainer);
-        
-        // Store in chat history
-        if (request != null) {
-            customerChatHistory.computeIfAbsent(request, k -> new java.util.ArrayList<>()).add(messageContainer);
-        }
     }
     
-    private void addUserMessage(CustomerRequest request, String message) {
+    private void renderUserMessage(CustomerRequest request, String message) {
         HBox messageContainer = new HBox();
         messageContainer.setAlignment(Pos.CENTER_RIGHT);
         messageContainer.setPadding(new Insets(5, 0, 5, 0));
@@ -648,14 +680,9 @@ public class MessengerWindow extends VBox {
         messageContainer.getChildren().add(messageBox);
         
         messagesBox.getChildren().add(messageContainer);
-        
-        // Store in chat history
-        if (request != null) {
-            customerChatHistory.computeIfAbsent(request, k -> new java.util.ArrayList<>()).add(messageContainer);
-        }
     }
     
-    private void addSystemMessage(CustomerRequest request, String message) {
+    private void renderSystemMessage(CustomerRequest request, String message) {
         HBox messageContainer = new HBox();
         messageContainer.setAlignment(Pos.CENTER);
         messageContainer.setPadding(new Insets(10, 0, 10, 0));
@@ -669,11 +696,6 @@ public class MessengerWindow extends VBox {
         
         messageContainer.getChildren().add(messageLabel);
         messagesBox.getChildren().add(messageContainer);
-        
-        // Store in chat history
-        if (request != null) {
-            customerChatHistory.computeIfAbsent(request, k -> new java.util.ArrayList<>()).add(messageContainer);
-        }
     }
 
     private void showVMSelectionPopup() {
@@ -699,7 +721,7 @@ public class MessengerWindow extends VBox {
         content.setPadding(new Insets(20));
         content.setStyle("-fx-background-color: #2c3e50;");
         content.setMinWidth(400);
-        content.setMinHeight(350);
+        content.setMinHeight(400); // Increased height for new content
         
         // Title
         Label titleLabel = new Label("Assign VM to " + selected.getName());
@@ -721,7 +743,11 @@ public class MessengerWindow extends VBox {
         Label diskReq = new Label("• Disk: " + selected.getRequiredDisk());
         diskReq.setStyle("-fx-text-fill: white;");
         
-        requirementsBox.getChildren().addAll(requirementsTitle, vcpusReq, ramReq, diskReq);
+        // Add rental period information
+        Label rentalPeriodLabel = new Label("• Rental Period: " + selected.getRentalPeriodType().getDisplayName());
+        rentalPeriodLabel.setStyle("-fx-text-fill: white;");
+        
+        requirementsBox.getChildren().addAll(requirementsTitle, vcpusReq, ramReq, diskReq, rentalPeriodLabel);
         
         // สร้าง ComboBox สำหรับเลือก VM โดยตรง
         Label vmLabel = new Label("Select VM to Assign:");
@@ -736,7 +762,7 @@ public class MessengerWindow extends VBox {
         for (VPSOptimization vps : vpsManager.getVPSList()) {
             List<VPSOptimization.VM> availableVMs = vps.getVms().stream()
                     .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
-                    .collect(java.util.stream.Collectors.toList());
+                            .collect(java.util.stream.Collectors.toList());
             allAvailableVMs.addAll(availableVMs);
         }
         
@@ -775,6 +801,92 @@ public class MessengerWindow extends VBox {
             }
         });
         
+        // Add rating impact preview
+        VBox ratingImpactBox = new VBox(5);
+        ratingImpactBox.setStyle("-fx-background-color: rgba(46, 204, 113, 0.2); -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
+        
+        Label ratingImpactTitle = new Label("Rating Impact Preview:");
+        ratingImpactTitle.setStyle("-fx-font-weight: bold; -fx-text-fill: #2ecc71;");
+        
+        Label ratingImpactLabel = new Label("Select a VM to see rating impact");
+        ratingImpactLabel.setStyle("-fx-text-fill: white;");
+        
+        ratingImpactBox.getChildren().addAll(ratingImpactTitle, ratingImpactLabel);
+        
+        // Update rating impact when VM is selected
+        vmComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                // Calculate rating impact
+                double ratingImpact = calculateRatingImpact(selected, newVal);
+                String ratingText;
+                String ratingColor;
+                
+                if (ratingImpact > 0) {
+                    ratingText = "Rating will increase by " + String.format("%.2f", ratingImpact);
+                    ratingColor = "#2ecc71"; // Green
+                } else if (ratingImpact < 0) {
+                    ratingText = "Rating will decrease by " + String.format("%.2f", Math.abs(ratingImpact));
+                    ratingColor = "#e74c3c"; // Red
+                } else {
+                    ratingText = "No change in rating";
+                    ratingColor = "#f1c40f"; // Yellow
+                }
+                
+                ratingImpactLabel.setText(ratingText);
+                ratingImpactLabel.setStyle("-fx-text-fill: " + ratingColor + ";");
+                
+                // Add VM comparison to requirements
+                StringBuilder comparisonText = new StringBuilder("VM Comparison:\n");
+                
+                // vCPUs comparison
+                int vcpuDiff = newVal.getVcpu() - selected.getRequiredVCPUs();
+                String vcpuCompText;
+                if (vcpuDiff > 0) {
+                    vcpuCompText = "• vCPUs: " + newVal.getVcpu() + " (+" + vcpuDiff + " more than required)";
+                } else if (vcpuDiff < 0) {
+                    vcpuCompText = "• vCPUs: " + newVal.getVcpu() + " (" + vcpuDiff + " less than required)";
+                } else {
+                    vcpuCompText = "• vCPUs: " + newVal.getVcpu() + " (exact match)";
+                }
+                comparisonText.append(vcpuCompText).append("\n");
+                
+                // RAM comparison
+                int vmRamGB = Integer.parseInt(newVal.getRam().replaceAll("[^0-9]", ""));
+                int requiredRamGB = Integer.parseInt(selected.getRequiredRam().replaceAll("[^0-9]", ""));
+                int ramDiff = vmRamGB - requiredRamGB;
+                String ramCompText;
+                if (ramDiff > 0) {
+                    ramCompText = "• RAM: " + newVal.getRam() + " (+" + ramDiff + "GB more than required)";
+                } else if (ramDiff < 0) {
+                    ramCompText = "• RAM: " + newVal.getRam() + " (" + ramDiff + "GB less than required)";
+                } else {
+                    ramCompText = "• RAM: " + newVal.getRam() + " (exact match)";
+                }
+                comparisonText.append(ramCompText).append("\n");
+                
+                // Disk comparison
+                int vmDiskGB = Integer.parseInt(newVal.getDisk().replaceAll("[^0-9]", ""));
+                int requiredDiskGB = Integer.parseInt(selected.getRequiredDisk().replaceAll("[^0-9]", ""));
+                int diskDiff = vmDiskGB - requiredDiskGB;
+                String diskCompText;
+                if (diskDiff > 0) {
+                    diskCompText = "• Disk: " + newVal.getDisk() + " (+" + diskDiff + "GB more than required)";
+                } else if (diskDiff < 0) {
+                    diskCompText = "• Disk: " + newVal.getDisk() + " (" + diskDiff + "GB less than required)";
+                } else {
+                    diskCompText = "• Disk: " + newVal.getDisk() + " (exact match)";
+                }
+                comparisonText.append(diskCompText);
+                
+                Label comparisonLabel = new Label(comparisonText.toString());
+                comparisonLabel.setStyle("-fx-text-fill: white;");
+                
+                // Update the rating impact box
+                ratingImpactBox.getChildren().clear();
+                ratingImpactBox.getChildren().addAll(ratingImpactTitle, ratingImpactLabel, comparisonLabel);
+            }
+        });
+        
         // Error label (initially hidden)
         Label errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold; -fx-opacity: 0;");
@@ -799,6 +911,7 @@ public class MessengerWindow extends VBox {
                 new Separator(),
                 vmLabel,
                 vmComboBox,
+                ratingImpactBox,
                 errorLabel,
                 new Separator(),
                 buttonBox
@@ -823,47 +936,477 @@ public class MessengerWindow extends VBox {
             popupStage.close();
             
             // เพิ่มข้อความแจ้งลูกค้าว่าเรากำลังดำเนินการตามคำขอ
-            addUserMessage(selected, "I'll assign your VM right away.");
+            addUserMessage(selected, "I'll assign your VM right away. Please wait while we set it up for you.");
             
             // เพิ่มข้อความรอจากลูกค้า
             addCustomerMessage(selected, "Thank you! I'll wait for the setup to complete.");
             
-            // ถ้าเลือก VM ที่มีอยู่แล้ว ให้กำหนด VM นั้นให้กับลูกค้าทันที
-            Platform.runLater(() -> {
-                // อัปเดต UI หลังจากจัดเตรียม VM เสร็จสิ้น
-                updateDashboard();
-                
-                // สร้างชื่อผู้ใช้และรหัสผ่านแบบสุ่ม
-                String username = "user_" + selected.getName().toLowerCase().replaceAll("[^a-z0-9]", "") + random.nextInt(100);
-                String password = generateRandomPassword();
-                
-                // เพิ่มข้อความพร้อมรายละเอียด VM
-                String vmDetails = "Your VM has been assigned successfully! Here are your access details:\n\n" +
-                        "IP Address: " + selectedVM.getIp() + "\n" +
-                        "Username: " + username + "\n" +
-                        "Password: " + password + "\n\n" +
-                        "You can connect using SSH or RDP depending on your operating system.";
-                
-                addUserMessage(selected, vmDetails);
-                
-                // เพิ่มข้อความระบบ
-                addSystemMessage(selected, "VM assigned successfully");
-                
-                // ทำเครื่องหมายคำขอว่าเสร็จสมบูรณ์
-                selected.activate();
-                
-                // เก็บการกำหนด VM
-                vmAssignments.put(selectedVM, selected);
-                
-                // อัปเดตมุมมองคำขอเพื่อแสดงสถานะใหม่
-                updateRequestList();
-            });
+            // Add a progress bar to show VM provisioning progress
+            HBox progressContainer = new HBox();
+            progressContainer.setAlignment(Pos.CENTER);
+            progressContainer.setPadding(new Insets(10, 0, 10, 0));
+            progressContainer.getStyleClass().add("message-container");
+            
+            VBox progressBox = new VBox(5);
+            progressBox.setAlignment(Pos.CENTER);
+            progressBox.setPadding(new Insets(10));
+            progressBox.setStyle("-fx-background-color: rgba(52, 152, 219, 0.2); -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
+            
+            Label progressLabel = new Label("Setting up your VM...");
+            progressLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+            
+            ProgressBar progressBar = new ProgressBar(0);
+            progressBar.setPrefWidth(200);
+            progressBar.setStyle("-fx-accent: #3498db;");
+            
+            progressBox.getChildren().addAll(progressLabel, progressBar);
+            progressContainer.getChildren().add(progressBox);
+            
+            // Add to messages
+            messagesBox.getChildren().add(progressContainer);
+            
+            // Store in chat history
+            customerChatHistory.computeIfAbsent(selected, k -> new ArrayList<>()).add(new ChatMessage(ChatMessage.MessageType.SYSTEM, "I'll assign your VM right away. Please wait while we set it up for you."));
+            
+            // Store progress bar for updates
+            provisioningProgressBars.put(selected, progressBar);
+            
+            // Random delay between 5 seconds and 1 minute
+            int provisioningDelay = 5 + random.nextInt(56); // 5-60 seconds
+            
+            // Update progress bar every 100ms
+            final int[] progress = {0};
+            final int totalSteps = provisioningDelay * 10; // 10 updates per second
+            
+            Timer progressTimer = new Timer();
+            progressTimer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    progress[0]++;
+                    final double progressValue = (double) progress[0] / totalSteps;
+                    
+                    Platform.runLater(() -> {
+                        progressBar.setProgress(progressValue);
+                        
+                        if (progress[0] >= totalSteps) {
+                            // Cancel timer when complete
+                            this.cancel();
+                            
+                            // Remove progress bar from map
+                            provisioningProgressBars.remove(selected);
+                            
+                            // Complete VM provisioning
+                            completeVMProvisioning(selected, selectedVM);
+                        }
+                    });
+                }
+            }, 0, 100);
         });
         
         // Set the scene and show the popup
         Scene scene = new Scene(content);
         popupStage.setScene(scene);
         popupStage.showAndWait();
+    }
+    
+    /**
+     * Calculate rating impact based on how well the VM meets requirements
+     * @param request The customer request
+     * @param vm The VM to assign
+     * @return The rating impact (positive or negative)
+     */
+    private double calculateRatingImpact(CustomerRequest request, VPSOptimization.VM vm) {
+        double ratingImpact = 0.0;
+        
+        // Compare vCPUs
+        int requiredVCPUs = request.getRequiredVCPUs();
+        int providedVCPUs = vm.getVcpu();
+        
+        if (providedVCPUs < requiredVCPUs) {
+            // Below requirements - negative impact
+            double vcpuDeficit = (double)(requiredVCPUs - providedVCPUs) / requiredVCPUs;
+            ratingImpact -= 0.5 * vcpuDeficit;
+        } else if (providedVCPUs == requiredVCPUs) {
+            // Exact match - positive impact
+            ratingImpact += 0.2;
+        } else {
+            // Above requirements - positive impact but halved
+            double vcpuExcess = (double)(providedVCPUs - requiredVCPUs) / requiredVCPUs;
+            ratingImpact += 0.1 * vcpuExcess;
+        }
+        
+        // Compare RAM
+        int vmRamGB = Integer.parseInt(vm.getRam().replaceAll("[^0-9]", ""));
+        int requiredRamGB = Integer.parseInt(request.getRequiredRam().replaceAll("[^0-9]", ""));
+        
+        if (vmRamGB < requiredRamGB) {
+            // Below requirements - negative impact
+            double ramDeficit = (double)(requiredRamGB - vmRamGB) / requiredRamGB;
+            ratingImpact -= 0.5 * ramDeficit;
+        } else if (vmRamGB == requiredRamGB) {
+            // Exact match - positive impact
+            ratingImpact += 0.2;
+        } else {
+            // Above requirements - positive impact but halved
+            double ramExcess = (double)(vmRamGB - requiredRamGB) / requiredRamGB;
+            ratingImpact += 0.1 * ramExcess;
+        }
+        
+        // Compare Disk
+        int vmDiskGB = Integer.parseInt(vm.getDisk().replaceAll("[^0-9]", ""));
+        int requiredDiskGB = Integer.parseInt(request.getRequiredDisk().replaceAll("[^0-9]", ""));
+        
+        if (vmDiskGB < requiredDiskGB) {
+            // Below requirements - negative impact
+            double diskDeficit = (double)(requiredDiskGB - vmDiskGB) / requiredDiskGB;
+            ratingImpact -= 0.5 * diskDeficit;
+        } else if (vmDiskGB == requiredDiskGB) {
+            // Exact match - positive impact
+            ratingImpact += 0.2;
+        } else {
+            // Above requirements - positive impact but halved
+            double diskExcess = (double)(vmDiskGB - requiredDiskGB) / requiredDiskGB;
+            ratingImpact += 0.1 * diskExcess;
+        }
+        
+        // Round to 2 decimal places
+        ratingImpact = Math.round(ratingImpact * 100.0) / 100.0;
+        
+        return ratingImpact;
+    }
+    
+    /**
+     * Complete VM provisioning after the delay
+     * @param request The customer request
+     * @param vm The VM to assign
+     */
+    private void completeVMProvisioning(CustomerRequest request, VPSOptimization.VM vm) {
+        // Calculate rating impact
+        double ratingImpact = calculateRatingImpact(request, vm);
+        
+        // Apply rating change
+        double newRating = company.getRating() + ratingImpact;
+        newRating = Math.max(1.0, Math.min(5.0, newRating)); // Clamp between 1.0 and 5.0
+        company.setRating(newRating);
+        
+        // Update dashboard
+        updateDashboard();
+        
+        // สร้างชื่อผู้ใช้และรหัสผ่านแบบสุ่ม
+        String username = "user_" + request.getName().toLowerCase().replaceAll("[^a-z0-9]", "") + random.nextInt(100);
+        String password = generateRandomPassword();
+        
+        // เพิ่มข้อความพร้อมรายละเอียด VM
+        String vmDetails = "Your VM has been assigned successfully! Here are your access details:\n\n" +
+                "IP Address: " + vm.getIp() + "\n" +
+                "Username: " + username + "\n" +
+                "Password: " + password + "\n\n" +
+                "You can connect using SSH or RDP depending on your operating system.";
+        
+        addUserMessage(request, vmDetails);
+        
+        // Add customer response
+        addCustomerMessage(request, "Thank you! I've received the VM details and will start using it right away.");
+        
+        // Add rating impact message
+        String ratingMessage;
+        if (ratingImpact > 0) {
+            ratingMessage = "Customer satisfaction increased! Rating impact: +" + String.format("%.2f", ratingImpact);
+        } else if (ratingImpact < 0) {
+            ratingMessage = "Customer not fully satisfied. Rating impact: " + String.format("%.2f", ratingImpact);
+        } else {
+            ratingMessage = "Customer satisfied. No change in rating.";
+        }
+        
+        addSystemMessage(request, ratingMessage);
+        
+        // เพิ่มข้อความระบบ
+        addSystemMessage(request, "VM assigned successfully");
+        
+        // ทำเครื่องหมายคำขอว่าเสร็จสมบูรณ์
+        request.activate();
+        
+        // เก็บการกำหนด VM
+        vmAssignments.put(vm, request);
+        
+        // Set up rental period and payment schedule
+        setupRentalPeriod(request, vm);
+        
+        // อัปเดตมุมมองคำขอเพื่อแสดงสถานะใหม่
+        updateRequestList();
+    }
+    
+    /**
+     * Set up rental period and payment schedule for a customer
+     * @param request The customer request
+     * @param vm The VM assigned to the customer
+     */
+    private void setupRentalPeriod(CustomerRequest request, VPSOptimization.VM vm) {
+        // Calculate rental end date based on rental period
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MILLISECOND, (int)(request.getRentalPeriod() * MILLISECONDS_PER_GAME_DAY));
+        Date endDate = calendar.getTime();
+        
+        // Store rental end date
+        rentalEndDates.put(request, endDate);
+        
+        // Calculate payment amount based on VM specs and rental period
+        double paymentAmount = calculatePaymentAmount(request, vm);
+        
+        // Add initial payment
+        company.addMoney(paymentAmount);
+        
+        // Add payment message
+        addSystemMessage(request, "Payment received: $" + String.format("%.2f", paymentAmount));
+        
+        // Set up recurring payments based on rental period type
+        long paymentInterval = getPaymentIntervalMillis(request);
+        
+        // Schedule recurring payments
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                // Check if rental period has ended
+                if (new Date().after(rentalEndDates.get(request))) {
+                    // Cancel timer
+                    this.cancel();
+                    
+                    // Offer renewal
+                    Platform.runLater(() -> offerRenewal(request, vm));
+                    
+                    // Remove from timers
+                    rentalTimers.remove(request);
+                } else {
+                    // Process payment
+                    Platform.runLater(() -> {
+                        company.addMoney(paymentAmount);
+                        addSystemMessage(request, "Recurring payment received: $" + String.format("%.2f", paymentAmount));
+                    });
+                }
+            }
+        }, paymentInterval, paymentInterval);
+        
+        // Store timer for cleanup
+        rentalTimers.put(request, timer);
+        
+        // Add rental period message
+        addSystemMessage(request, "Rental period: " + request.getRentalPeriod() + " days (" + 
+                request.getRentalPeriodType().getDisplayName() + " payments)");
+    }
+    
+    /**
+     * Calculate payment amount based on VM specs and rental period
+     * @param request The customer request
+     * @param vm The VM assigned to the customer
+     * @return The payment amount
+     */
+    private double calculatePaymentAmount(CustomerRequest request, VPSOptimization.VM vm) {
+        // Base price calculation based on VM specs
+        double basePrice = vm.getVcpu() * 5.0; // $5 per vCPU
+        
+        // Add RAM cost
+        int ramGB = Integer.parseInt(vm.getRam().replaceAll("[^0-9]", ""));
+        basePrice += ramGB * 2.0; // $2 per GB of RAM
+        
+        // Add disk cost
+        int diskGB = Integer.parseInt(vm.getDisk().replaceAll("[^0-9]", ""));
+        basePrice += diskGB * 0.1; // $0.1 per GB of disk
+        
+        // Adjust based on rental period type (longer periods get discounts)
+        switch (request.getRentalPeriodType()) {
+            case DAILY:
+                // No discount for daily rentals
+                break;
+            case WEEKLY:
+                // 5% discount for weekly rentals
+                basePrice *= 0.95;
+                break;
+            case MONTHLY:
+                // 10% discount for monthly rentals
+                basePrice *= 0.90;
+                break;
+            case YEARLY:
+                // 20% discount for yearly rentals
+                basePrice *= 0.80;
+                break;
+        }
+        
+        // Round to 2 decimal places
+        return Math.round(basePrice * 100.0) / 100.0;
+    }
+    
+    /**
+     * Get payment interval in milliseconds based on rental period type
+     * @param request The customer request
+     * @return The payment interval in milliseconds
+     */
+    private long getPaymentIntervalMillis(CustomerRequest request) {
+        switch (request.getRentalPeriodType()) {
+            case DAILY:
+                return MILLISECONDS_PER_GAME_DAY;
+            case WEEKLY:
+                return MILLISECONDS_PER_GAME_DAY * 7;
+            case MONTHLY:
+                return MILLISECONDS_PER_GAME_DAY * 30;
+            case YEARLY:
+                return MILLISECONDS_PER_GAME_DAY * 365;
+            default:
+                return MILLISECONDS_PER_GAME_DAY * 30; // Default to monthly
+        }
+    }
+    
+    /**
+     * Offer renewal to a customer when their rental period ends
+     * @param request The customer request
+     * @param vm The VM assigned to the customer
+     */
+    private void offerRenewal(CustomerRequest request, VPSOptimization.VM vm) {
+        // Add renewal option to chat
+        addRenewalOption(request, vm);
+    }
+    
+    /**
+     * Add a renewal option to the chat
+     * @param request The customer request
+     * @param vm The VM assigned to the customer
+     */
+    private void addRenewalOption(CustomerRequest request, VPSOptimization.VM vm) {
+        // Create a renewal button
+        HBox renewalContainer = new HBox();
+        renewalContainer.setAlignment(Pos.CENTER);
+        renewalContainer.setPadding(new Insets(10, 0, 10, 0));
+        renewalContainer.getStyleClass().add("message-container");
+        
+        VBox renewalBox = new VBox(10);
+        renewalBox.setAlignment(Pos.CENTER);
+        renewalBox.setPadding(new Insets(10));
+        renewalBox.setStyle("-fx-background-color: rgba(52, 152, 219, 0.2); -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
+        
+        Label renewalLabel = new Label("Customer " + request.getName() + " is eligible for contract renewal");
+        renewalLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        
+        // Calculate renewal probability based on company rating
+        double renewalProbability = calculateRenewalProbability();
+        
+        // Add probability indicator
+        Label probabilityLabel = new Label(String.format("Renewal Probability: %.0f%%", renewalProbability * 100));
+        probabilityLabel.setStyle("-fx-text-fill: " + getRatingColor(renewalProbability) + ";");
+        
+        Button renewButton = new Button("Offer Renewal");
+        renewButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
+        renewButton.setOnAction(e -> {
+            // Remove the renewal option
+            messagesBox.getChildren().remove(renewalContainer);
+            
+            // Add a renewal message
+            addUserMessage(request, "Would you like to renew your VM contract? We can offer you the same configuration at the current rate.");
+            
+            // Determine if customer accepts renewal based on probability
+            boolean customerAccepts = random.nextDouble() < renewalProbability;
+            
+            if (customerAccepts) {
+                // Add a positive customer response
+                addCustomerMessage(request, "Yes, I'd like to renew my contract. This VM has been working well for me.");
+                
+                // Add a confirmation message
+                addUserMessage(request, "Great! I've renewed your contract for another " + request.getRentalPeriodType().getDisplayName() + ". Your VM will continue to operate without interruption.");
+                
+                // Add a thank you message
+                addCustomerMessage(request, "Thank you for the seamless renewal process!");
+                
+                // Add a system message
+                addSystemMessage(request, "Contract renewed for another " + request.getRentalPeriodType().getDisplayName());
+                
+                // Set up a new rental period
+                setupRenewalPeriod(request, vm);
+            } else {
+                // Add a negative customer response
+                addCustomerMessage(request, "Thank you for the offer, but I won't be renewing my contract at this time. I appreciate your service.");
+                
+                // Add a polite response
+                addUserMessage(request, "We understand. Thank you for your business. Please let us know if you need our services in the future.");
+                
+                // Add a system message
+                addSystemMessage(request, "Customer declined renewal offer. VM will be released.");
+                
+                // Release the VM
+                releaseVM(vm, false); // Use expiration behavior
+                
+                // Update dashboard
+                updateDashboard();
+            }
+        });
+        
+        renewalBox.getChildren().addAll(renewalLabel, probabilityLabel, renewButton);
+        renewalContainer.getChildren().add(renewalBox);
+        
+        // Add to messages
+        messagesBox.getChildren().add(renewalContainer);
+        
+        // Store in chat history
+        customerChatHistory.computeIfAbsent(request, k -> new ArrayList<>()).add(new ChatMessage(ChatMessage.MessageType.SYSTEM, "Customer " + request.getName() + " is eligible for contract renewal"));
+    }
+    
+    /**
+     * Calculate renewal probability based on company rating
+     * @return Probability between 0.0 and 1.0
+     */
+    private double calculateRenewalProbability() {
+        // Base probability starts at 50%
+        double baseProbability = 0.5;
+        
+        // Add up to 45% based on rating (1.0 to 5.0)
+        double ratingFactor = (company.getRating() - 1.0) / 4.0; // 0.0 to 1.0
+        double ratingBonus = ratingFactor * 0.45;
+        
+        // Add a small random factor (±5%)
+        double randomFactor = (random.nextDouble() - 0.5) * 0.1;
+        
+        // Calculate final probability (clamped between 0.05 and 0.95)
+        double probability = baseProbability + ratingBonus + randomFactor;
+        probability = Math.max(0.05, Math.min(0.95, probability));
+        
+        return probability;
+    }
+    
+    /**
+     * Get color based on probability value
+     * @param probability Probability between 0.0 and 1.0
+     * @return Color string for CSS
+     */
+    private String getRatingColor(double probability) {
+        if (probability >= 0.7) {
+            return "#2ecc71"; // Green for high probability
+        } else if (probability >= 0.4) {
+            return "#f1c40f"; // Yellow for medium probability
+        } else {
+            return "#e74c3c"; // Red for low probability
+        }
+    }
+    
+    /**
+     * Set up a renewal period for a customer
+     * @param request The customer request
+     * @param vm The VM assigned to the customer
+     */
+    private void setupRenewalPeriod(CustomerRequest request, VPSOptimization.VM vm) {
+        // Cancel any existing timers
+        Timer existingTimer = rentalTimers.get(request);
+        if (existingTimer != null) {
+            existingTimer.cancel();
+        }
+        
+        // Set up a new rental period
+        setupRentalPeriod(request, vm);
+        
+        // Small rating boost for renewal
+        double newRating = company.getRating() + 0.1;
+        newRating = Math.min(5.0, newRating); // Cap at 5.0
+        company.setRating(newRating);
+        
+        // Update dashboard
+        updateDashboard();
     }
     
     /**
@@ -901,65 +1444,113 @@ public class MessengerWindow extends VBox {
         
         return new String(passwordArray);
     }
-    
-    /**
-     * Add a renewal option to the chat
-     * @param request The customer request
-     * @param vm The VM assigned to the customer
-     */
-    private void addRenewalOption(CustomerRequest request, VPSOptimization.VM vm) {
-        // Create a renewal button
-        HBox renewalContainer = new HBox();
-        renewalContainer.setAlignment(Pos.CENTER);
-        renewalContainer.setPadding(new Insets(10, 0, 10, 0));
-        renewalContainer.getStyleClass().add("message-container");
-        
-        VBox renewalBox = new VBox(10);
-        renewalBox.setAlignment(Pos.CENTER);
-        renewalBox.setPadding(new Insets(10));
-        renewalBox.setStyle("-fx-background-color: rgba(52, 152, 219, 0.2); -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
-        
-        Label renewalLabel = new Label("Customer " + request.getName() + " is eligible for contract renewal");
-        renewalLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
-        
-        Button renewButton = new Button("Offer Renewal");
-        renewButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
-        renewButton.setOnAction(e -> {
-            // Remove the renewal option
-            messagesBox.getChildren().remove(renewalContainer);
-            
-            // Add a renewal message
-            addUserMessage(request, "Would you like to renew your VM contract? We can offer you the same configuration at the current rate.");
-            
-            // Add a customer response
-            addCustomerMessage(request, "Yes, I'd like to renew my contract. This VM has been working well for me.");
-            
-            // Add a confirmation message
-            addUserMessage(request, "Great! I've renewed your contract for another " + request.getRentalPeriodType().getDisplayName() + ". Your VM will continue to operate without interruption.");
-            
-            // Add a thank you message
-            addCustomerMessage(request, "Thank you for the seamless renewal process!");
-            
-            // Add a system message
-            addSystemMessage(request, "Contract renewed for another " + request.getRentalPeriodType().getDisplayName());
-        });
-        
-        renewalBox.getChildren().addAll(renewalLabel, renewButton);
-        renewalContainer.getChildren().add(renewalBox);
-        
-        // Add to messages
-        messagesBox.getChildren().add(renewalContainer);
-        
-        // Store in chat history
-        customerChatHistory.computeIfAbsent(request, k -> new java.util.ArrayList<>()).add(renewalContainer);
-    }
 
     public boolean isVMAvailable(VPSOptimization.VM vm) {
         return !vmAssignments.containsKey(vm);
     }
 
-    public void releaseVM(VPSOptimization.VM vm) {
+    public void releaseVM(VPSOptimization.VM vm, boolean isArchiving) {
+        // Get the customer request associated with this VM before removing it
+        CustomerRequest request = vmAssignments.get(vm);
+        
+        // Find the VPS that contains this VM
+        VPSOptimization ownerVPS = null;
+        for (VPSOptimization vps : vpsManager.getVPSList()) {
+            if (vps.getVms().contains(vm)) {
+                ownerVPS = vps;
+                break;
+            }
+        }
+        
+        // Remove the VM from its VPS if found
+        if (ownerVPS != null) {
+            ownerVPS.removeVM(vm);
+        }
+        
+        // Remove the VM assignment
         vmAssignments.remove(vm);
+        
+        // Cancel any rental timers for this customer
+        if (request != null) {
+            Timer timer = rentalTimers.get(request);
+            if (timer != null) {
+                timer.cancel();
+                rentalTimers.remove(request);
+            }
+            
+            // Remove rental end date
+            rentalEndDates.remove(request);
+            
+            // Remove provisioning progress bar if exists
+            provisioningProgressBars.remove(request);
+            
+            // Handle the request based on action type
+            if (isArchiving) {
+                // If archiving, remove the request from the list
+                requestManager.getRequests().remove(request);
+            } else {
+                // If expiration, mark the request as expired
+                request.markAsExpired();
+            }
+        }
+        
+        // Update the dashboard to reflect the changes
+        updateDashboard();
+    }
+    
+    // Overload for backward compatibility
+    public void releaseVM(VPSOptimization.VM vm) {
+        releaseVM(vm, false); // Default to expiration behavior
+    }
+    
+    /**
+     * Clean up resources when the window is closed
+     */
+    public void cleanup() {
+        // Cancel all rental timers
+        for (Timer timer : rentalTimers.values()) {
+            timer.cancel();
+        }
+        rentalTimers.clear();
+        
+        // Shutdown scheduler
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    // Save chat history to file
+    private void saveChatHistory() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CHAT_HISTORY_FILE))) {
+            oos.writeObject(customerChatHistory);
+            System.out.println("Chat history saved successfully");
+        } catch (IOException e) {
+            System.err.println("Error saving chat history: " + e.getMessage());
+        }
+    }
+    
+    // Load chat history from file
+    @SuppressWarnings("unchecked")
+    private Map<CustomerRequest, List<ChatMessage>> loadChatHistory() {
+        File file = new File(CHAT_HISTORY_FILE);
+        if (!file.exists()) {
+            return new HashMap<>();
+        }
+        
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            Map<CustomerRequest, List<ChatMessage>> history = (Map<CustomerRequest, List<ChatMessage>>) ois.readObject();
+            System.out.println("Chat history loaded successfully");
+            return history;
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error loading chat history: " + e.getMessage());
+            return new HashMap<>();
+        }
     }
 
     // Keep the original methods for backward compatibility, but make them use the new methods
@@ -976,5 +1567,53 @@ public class MessengerWindow extends VBox {
     private void addSystemMessage(String message) {
         CustomerRequest selected = requestView.getSelectionModel().getSelectedItem();
         addSystemMessage(selected, message);
+    }
+    
+    /**
+     * Add a customer message to the chat
+     * @param request The customer request
+     * @param message The message content
+     */
+    private void addCustomerMessage(CustomerRequest request, String message) {
+        if (request == null) return;
+        
+        // Add to chat history
+        customerChatHistory.computeIfAbsent(request, k -> new ArrayList<>())
+            .add(new ChatMessage(ChatMessage.MessageType.CUSTOMER, message));
+        
+        // Render the message
+        renderCustomerMessage(request, message);
+    }
+    
+    /**
+     * Add a user message to the chat
+     * @param request The customer request
+     * @param message The message content
+     */
+    private void addUserMessage(CustomerRequest request, String message) {
+        if (request == null) return;
+        
+        // Add to chat history
+        customerChatHistory.computeIfAbsent(request, k -> new ArrayList<>())
+            .add(new ChatMessage(ChatMessage.MessageType.USER, message));
+        
+        // Render the message
+        renderUserMessage(request, message);
+    }
+    
+    /**
+     * Add a system message to the chat
+     * @param request The customer request
+     * @param message The message content
+     */
+    private void addSystemMessage(CustomerRequest request, String message) {
+        if (request == null) return;
+        
+        // Add to chat history
+        customerChatHistory.computeIfAbsent(request, k -> new ArrayList<>())
+            .add(new ChatMessage(ChatMessage.MessageType.SYSTEM, message));
+        
+        // Render the message
+        renderSystemMessage(request, message);
     }
 }
