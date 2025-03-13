@@ -427,6 +427,7 @@ public class CircleStatusButton {
         if (cost == -1) {
             System.out.println(skillName + " is already at max level.");
             parent.pushNotification("Skill Upgrade", "Skill Upgrade is already at max level.");
+            parent.pushMouseNotification("Skill Upgrade is max level.");
             parent.getRootStack().getChildren().removeAll(upgradeLayout, backgroundOverlay);
             return;
         }
