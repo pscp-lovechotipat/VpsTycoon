@@ -75,7 +75,7 @@ public class CircleStatusButton {
         StackPane buttonFrame = createCyberButton(topColor, bottomColor);
         
         // Add number with pixel-like font and make it BOLDER
-        numberLabel = new Label(String.valueOf(skillPoints));
+        numberLabel = new Label("Lv" + skillLevel);
         numberLabel.setTextFill(Color.WHITE);
         // numberLabel.setFont(Font.font("Monospace", FontWeight.EXTRA_BOLD, 24)); // Increased size and weight
         numberLabel.setFont(FontLoader.loadFont(42));
@@ -289,7 +289,7 @@ public class CircleStatusButton {
         titleBar.setSpacing(50);
 
         // สร้าง title label
-        Label titleLabel = new Label("UPGRADE " + skillName.toUpperCase() + " [LV:" + skillLevel + "]");
+        Label titleLabel = new Label("UPGRADE " + skillName.toUpperCase() + " Lv" + skillLevel);
         titleLabel.setTextFill(skillColor);
         titleLabel.setFont(Font.font("Monospace", FontWeight.BOLD, 16));
 
@@ -437,13 +437,13 @@ public class CircleStatusButton {
             skillLevel += 1;
             skillLevels.put(skillName, skillLevel);
             skillPointsMap.put(skillName, skillPoints);
-            numberLabel.setText(String.valueOf(skillPoints));
+            numberLabel.setText("Lv" + skillLevel);
 
             // อัปเดต UI ของแผงอัปเกรด
-            titleLabel.setText("UPGRADE " + skillName.toUpperCase() + " [LV:" + skillLevel + "]");
+            titleLabel.setText("UPGRADE " + skillName.toUpperCase() + " Lv" + skillLevel);
             pointsLabel.setText("AVAILABLE POINTS: " + skillPoints);
 
-            parent.pushNotification("Skill Upgrade", "Skill Upgrade " + skillName.toUpperCase() + " [LV:" + skillLevel + "]");
+            parent.pushNotification("Skill Upgrade", "Skill Upgrade " + skillName.toUpperCase() + " Lv" + skillLevel);
 
             // ลบทั้งแผงและพื้นหลังหลังอัปเกรด
              parent.getRootStack().getChildren().removeAll(upgradeLayout, backgroundOverlay);

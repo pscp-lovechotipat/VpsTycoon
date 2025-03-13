@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.Calendar;
 
 public class MessengerWindow extends VBox {
     private final RequestManager requestManager;
@@ -53,6 +54,32 @@ public class MessengerWindow extends VBox {
     private final ScheduledExecutorService scheduler;
     private static final long GAME_MONTH_IN_MINUTES = 15; // 1 game month = 15 real minutes
     private static final long MILLISECONDS_PER_GAME_DAY = (GAME_MONTH_IN_MINUTES * 60 * 1000) / 30; // Milliseconds per game day
+
+    // Skill levels and points
+    private int deployLevel = 1;
+    private int networkLevel = 1;
+    private int securityLevel = 1;
+    private int marketingLevel = 1;
+    
+    private int deployPoints = 0;
+    private int networkPoints = 0;
+    private int securityPoints = 0;
+    private int marketingPoints = 0;
+    
+    // Deployment times based on level (in milliseconds)
+    private static final long[] DEPLOY_TIMES = {
+        10000, // Level 1: 10 seconds
+        5000,  // Level 2: 5 seconds
+        2000,  // Level 3: 2 seconds
+        1000   // Level 4: 1 second (AI-optimized)
+    };
+    
+    // Customer type point rewards
+    private static final int INDIVIDUAL_POINTS = 2;
+    private static final int SMALL_BUSINESS_POINTS = 5;
+    private static final int MEDIUM_BUSINESS_POINTS = 7;
+    private static final int LARGE_BUSINESS_POINTS = 10;
+    private static final int ENTERPRISE_POINTS = 15;
 
     // Chat message class for serialization
     private static class ChatMessage implements Serializable {
@@ -102,6 +129,9 @@ public class MessengerWindow extends VBox {
         this.rentalTimers = new HashMap<>();
         this.provisioningProgressBars = new HashMap<>();
         this.scheduler = Executors.newScheduledThreadPool(1);
+
+        // Load skill levels from CircleStatusButton
+        loadSkillLevels();
 
         getStylesheets().add(getClass().getResource("/css/messenger-window.css").toExternalForm());
         getStyleClass().add("messenger-window");
@@ -971,8 +1001,16 @@ public class MessengerWindow extends VBox {
             // Store progress bar for updates
             provisioningProgressBars.put(selected, progressBar);
             
-            // Random delay between 5 seconds and 1 minute
-            int provisioningDelay = 5 + random.nextInt(56); // 5-60 seconds
+            // Get deployment time based on deploy level
+            long deploymentTime = getDeploymentTime();
+            
+            // Random delay between 5 seconds and 1 minute, adjusted by deployment time
+            int minDelay = 5; // 5 seconds minimum
+            int maxDelay = 60; // 60 seconds maximum
+            int provisioningDelay = minDelay + random.nextInt(maxDelay - minDelay + 1);
+            
+            // Apply deployment time reduction based on skill level
+            provisioningDelay = Math.max(minDelay, (int)(provisioningDelay * (deploymentTime / 10000.0)));
             
             // Update progress bar every 100ms
             final int[] progress = {0};
@@ -1092,6 +1130,9 @@ public class MessengerWindow extends VBox {
         // Update dashboard
         updateDashboard();
         
+        // Award skill points for successful deployment
+        awardSkillPoints(request, ratingImpact);
+        
         // สร้างชื่อผู้ใช้และรหัสผ่านแบบสุ่ม
         String username = "user_" + request.getName().toLowerCase().replaceAll("[^a-z0-9]", "") + random.nextInt(100);
         String password = generateRandomPassword();
@@ -1137,312 +1178,172 @@ public class MessengerWindow extends VBox {
     }
     
     /**
-     * Set up rental period and payment schedule for a customer
+     * Award skill points for successful VM provisioning
      * @param request The customer request
-     * @param vm The VM assigned to the customer
+     * @param ratingImpact The rating impact
      */
-    private void setupRentalPeriod(CustomerRequest request, VPSOptimization.VM vm) {
-        // Calculate rental end date based on rental period
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MILLISECOND, (int)(request.getRentalPeriod() * MILLISECONDS_PER_GAME_DAY));
-        Date endDate = calendar.getTime();
+    private void awardSkillPoints(CustomerRequest request, double ratingImpact) {
+        int basePoints = 0;
         
-        // Store rental end date
-        rentalEndDates.put(request, endDate);
+        // Determine base points based on customer type
+        switch (request.getCustomerType()) {
+            case INDIVIDUAL:
+                basePoints = INDIVIDUAL_POINTS;
+                break;
+            case SMALL_BUSINESS:
+                basePoints = SMALL_BUSINESS_POINTS;
+                break;
+            case MEDIUM_BUSINESS:
+                basePoints = MEDIUM_BUSINESS_POINTS;
+                break;
+            case LARGE_BUSINESS:
+                basePoints = LARGE_BUSINESS_POINTS;
+                break;
+            case ENTERPRISE:
+            case BUSINESS:
+                basePoints = ENTERPRISE_POINTS;
+                break;
+        }
         
-        // Calculate payment amount based on VM specs and rental period
-        double paymentAmount = calculatePaymentAmount(request, vm);
+        // Award deploy points
+        int deployPointsEarned = basePoints;
+        if (deployLevel >= 3) {
+            deployPointsEarned = (int)(deployPointsEarned * 1.2); // 20% bonus for bulk deployment
+        }
+        deployPoints += deployPointsEarned;
         
-        // Add initial payment
-        company.addMoney(paymentAmount);
+        // Award network points
+        int networkPointsEarned = basePoints;
+        if (random.nextDouble() < 0.9) {
+            networkPointsEarned = (int)(networkPointsEarned * 1.1); // 10% bonus for no downtime
+        }
+        if (networkLevel >= 4) {
+            networkPointsEarned = (int)(networkPointsEarned * 1.05); // 5% bonus for load balancer
+        }
+        networkPoints += networkPointsEarned;
         
-        // Add payment message
-        addSystemMessage(request, "Payment received: $" + String.format("%.2f", paymentAmount));
+        // Award security points
+        int securityPointsEarned = 5; // Base points
+        if (securityLevel >= 2) securityPointsEarned += 5; // Firewall
+        if (securityLevel >= 3) securityPointsEarned += 10; // DDoS and Data Breach protection
+        if (securityLevel >= 4) securityPointsEarned += 5; // AI Security
+        securityPoints += securityPointsEarned;
         
-        // Set up recurring payments based on rental period type
-        long paymentInterval = getPaymentIntervalMillis(request);
+        // Award marketing points
+        int marketingPointsEarned = 5; // Base points
+        // Additional points based on customer type
+        if (request.getCustomerType().toString().equals("SMALL_BUSINESS")) marketingPointsEarned += 5;
+        else if (request.getCustomerType().toString().equals("MEDIUM_BUSINESS")) marketingPointsEarned += 7;
+        else if (request.getCustomerType().toString().equals("LARGE_BUSINESS")) marketingPointsEarned += 10;
+        else if (request.getCustomerType().toString().equals("ENTERPRISE")) marketingPointsEarned += 15;
         
-        // Schedule recurring payments
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                // Check if rental period has ended
-                if (new Date().after(rentalEndDates.get(request))) {
-                    // Cancel timer
-                    this.cancel();
-                    
-                    // Offer renewal
-                    Platform.runLater(() -> offerRenewal(request, vm));
-                    
-                    // Remove from timers
-                    rentalTimers.remove(request);
-                } else {
-                    // Process payment
-                    Platform.runLater(() -> {
-                        company.addMoney(paymentAmount);
-                        addSystemMessage(request, "Recurring payment received: $" + String.format("%.2f", paymentAmount));
-                    });
-                }
+        // Bonus for positive rating
+        if (ratingImpact > 0) marketingPointsEarned += 5;
+        
+        marketingPoints += marketingPointsEarned;
+        
+        // Update CircleStatusButton's static HashMaps
+        try {
+            // Get skill points field
+            java.lang.reflect.Field skillPointsField = com.vpstycoon.ui.game.status.CircleStatusButton.class.getDeclaredField("skillPointsMap");
+            skillPointsField.setAccessible(true);
+            HashMap<String, Integer> skillPointsMap = (HashMap<String, Integer>) skillPointsField.get(null);
+            
+            // Update points
+            skillPointsMap.put("Deploy", deployPoints);
+            skillPointsMap.put("Network", networkPoints);
+            skillPointsMap.put("Security", securityPoints);
+            skillPointsMap.put("Marketing", marketingPoints);
+            
+            // Add system messages about points earned
+            addSystemMessage(request, "Earned " + deployPointsEarned + " Deploy points! Total: " + deployPoints);
+            addSystemMessage(request, "Earned " + networkPointsEarned + " Network points! Total: " + networkPoints);
+            addSystemMessage(request, "Earned " + securityPointsEarned + " Security points! Total: " + securityPoints);
+            addSystemMessage(request, "Earned " + marketingPointsEarned + " Marketing points! Total: " + marketingPoints);
+            
+            // Check for level ups
+            checkForLevelUps();
+            
+        } catch (Exception e) {
+            System.err.println("Error updating skill points: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Check for level ups and perform them if possible
+     */
+    private void checkForLevelUps() {
+        try {
+            // Get skill levels field
+            java.lang.reflect.Field skillLevelsField = com.vpstycoon.ui.game.status.CircleStatusButton.class.getDeclaredField("skillLevels");
+            skillLevelsField.setAccessible(true);
+            HashMap<String, Integer> skillLevels = (HashMap<String, Integer>) skillLevelsField.get(null);
+            
+            // Check Deploy level up
+            if (deployLevel == 1 && deployPoints >= 100) {
+                deployLevel = 2;
+                skillLevels.put("Deploy", 2);
+                addSystemMessage(null, "LEVEL UP! Deploy skill is now level 2! Deployment time reduced (10s → 5s)");
+            } else if (deployLevel == 2 && deployPoints >= 600) {
+                deployLevel = 3;
+                skillLevels.put("Deploy", 3);
+                addSystemMessage(null, "LEVEL UP! Deploy skill is now level 3! Deployment time further reduced (5s → 2s)");
+            } else if (deployLevel == 3 && deployPoints >= 1300) {
+                deployLevel = 4;
+                skillLevels.put("Deploy", 4);
+                addSystemMessage(null, "LEVEL UP! Deploy skill is now level 4! AI-Optimized VPS deployment unlocked");
             }
-        }, paymentInterval, paymentInterval);
-        
-        // Store timer for cleanup
-        rentalTimers.put(request, timer);
-        
-        // Add rental period message
-        addSystemMessage(request, "Rental period: " + request.getRentalPeriod() + " days (" + 
-                request.getRentalPeriodType().getDisplayName() + " payments)");
-    }
-    
-    /**
-     * Calculate payment amount based on VM specs and rental period
-     * @param request The customer request
-     * @param vm The VM assigned to the customer
-     * @return The payment amount
-     */
-    private double calculatePaymentAmount(CustomerRequest request, VPSOptimization.VM vm) {
-        // Base price calculation based on VM specs
-        double basePrice = vm.getVcpu() * 5.0; // $5 per vCPU
-        
-        // Add RAM cost
-        int ramGB = Integer.parseInt(vm.getRam().replaceAll("[^0-9]", ""));
-        basePrice += ramGB * 2.0; // $2 per GB of RAM
-        
-        // Add disk cost
-        int diskGB = Integer.parseInt(vm.getDisk().replaceAll("[^0-9]", ""));
-        basePrice += diskGB * 0.1; // $0.1 per GB of disk
-        
-        // Adjust based on rental period type (longer periods get discounts)
-        switch (request.getRentalPeriodType()) {
-            case DAILY:
-                // No discount for daily rentals
-                break;
-            case WEEKLY:
-                // 5% discount for weekly rentals
-                basePrice *= 0.95;
-                break;
-            case MONTHLY:
-                // 10% discount for monthly rentals
-                basePrice *= 0.90;
-                break;
-            case YEARLY:
-                // 20% discount for yearly rentals
-                basePrice *= 0.80;
-                break;
-        }
-        
-        // Round to 2 decimal places
-        return Math.round(basePrice * 100.0) / 100.0;
-    }
-    
-    /**
-     * Get payment interval in milliseconds based on rental period type
-     * @param request The customer request
-     * @return The payment interval in milliseconds
-     */
-    private long getPaymentIntervalMillis(CustomerRequest request) {
-        switch (request.getRentalPeriodType()) {
-            case DAILY:
-                return MILLISECONDS_PER_GAME_DAY;
-            case WEEKLY:
-                return MILLISECONDS_PER_GAME_DAY * 7;
-            case MONTHLY:
-                return MILLISECONDS_PER_GAME_DAY * 30;
-            case YEARLY:
-                return MILLISECONDS_PER_GAME_DAY * 365;
-            default:
-                return MILLISECONDS_PER_GAME_DAY * 30; // Default to monthly
-        }
-    }
-    
-    /**
-     * Offer renewal to a customer when their rental period ends
-     * @param request The customer request
-     * @param vm The VM assigned to the customer
-     */
-    private void offerRenewal(CustomerRequest request, VPSOptimization.VM vm) {
-        // Add renewal option to chat
-        addRenewalOption(request, vm);
-    }
-    
-    /**
-     * Add a renewal option to the chat
-     * @param request The customer request
-     * @param vm The VM assigned to the customer
-     */
-    private void addRenewalOption(CustomerRequest request, VPSOptimization.VM vm) {
-        // Create a renewal button
-        HBox renewalContainer = new HBox();
-        renewalContainer.setAlignment(Pos.CENTER);
-        renewalContainer.setPadding(new Insets(10, 0, 10, 0));
-        renewalContainer.getStyleClass().add("message-container");
-        
-        VBox renewalBox = new VBox(10);
-        renewalBox.setAlignment(Pos.CENTER);
-        renewalBox.setPadding(new Insets(10));
-        renewalBox.setStyle("-fx-background-color: rgba(52, 152, 219, 0.2); -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
-        
-        Label renewalLabel = new Label("Customer " + request.getName() + " is eligible for contract renewal");
-        renewalLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
-        
-        // Calculate renewal probability based on company rating
-        double renewalProbability = calculateRenewalProbability();
-        
-        // Add probability indicator
-        Label probabilityLabel = new Label(String.format("Renewal Probability: %.0f%%", renewalProbability * 100));
-        probabilityLabel.setStyle("-fx-text-fill: " + getRatingColor(renewalProbability) + ";");
-        
-        Button renewButton = new Button("Offer Renewal");
-        renewButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
-        renewButton.setOnAction(e -> {
-            // Remove the renewal option
-            messagesBox.getChildren().remove(renewalContainer);
             
-            // Add a renewal message
-            addUserMessage(request, "Would you like to renew your VM contract? We can offer you the same configuration at the current rate.");
-            
-            // Determine if customer accepts renewal based on probability
-            boolean customerAccepts = random.nextDouble() < renewalProbability;
-            
-            if (customerAccepts) {
-                // Add a positive customer response
-                addCustomerMessage(request, "Yes, I'd like to renew my contract. This VM has been working well for me.");
-                
-                // Add a confirmation message
-                addUserMessage(request, "Great! I've renewed your contract for another " + request.getRentalPeriodType().getDisplayName() + ". Your VM will continue to operate without interruption.");
-                
-                // Add a thank you message
-                addCustomerMessage(request, "Thank you for the seamless renewal process!");
-                
-                // Add a system message
-                addSystemMessage(request, "Contract renewed for another " + request.getRentalPeriodType().getDisplayName());
-                
-                // Set up a new rental period
-                setupRenewalPeriod(request, vm);
-            } else {
-                // Add a negative customer response
-                addCustomerMessage(request, "Thank you for the offer, but I won't be renewing my contract at this time. I appreciate your service.");
-                
-                // Add a polite response
-                addUserMessage(request, "We understand. Thank you for your business. Please let us know if you need our services in the future.");
-                
-                // Add a system message
-                addSystemMessage(request, "Customer declined renewal offer. VM will be released.");
-                
-                // Release the VM
-                releaseVM(vm, false); // Use expiration behavior
-                
-                // Update dashboard
-                updateDashboard();
+            // Check Network level up
+            if (networkLevel == 1 && networkPoints >= 300) {
+                networkLevel = 2;
+                skillLevels.put("Network", 2);
+                addSystemMessage(null, "LEVEL UP! Network skill is now level 2! Support for SME customers unlocked");
+            } else if (networkLevel == 2 && networkPoints >= 800) {
+                networkLevel = 3;
+                skillLevels.put("Network", 3);
+                addSystemMessage(null, "LEVEL UP! Network skill is now level 3! Support for Enterprise customers unlocked");
+            } else if (networkLevel == 3 && networkPoints >= 1500) {
+                networkLevel = 4;
+                skillLevels.put("Network", 4);
+                addSystemMessage(null, "LEVEL UP! Network skill is now level 4! Load Balancer for automatic VPS load adjustment unlocked");
             }
-        });
-        
-        renewalBox.getChildren().addAll(renewalLabel, probabilityLabel, renewButton);
-        renewalContainer.getChildren().add(renewalBox);
-        
-        // Add to messages
-        messagesBox.getChildren().add(renewalContainer);
-        
-        // Store in chat history
-        customerChatHistory.computeIfAbsent(request, k -> new ArrayList<>()).add(new ChatMessage(ChatMessage.MessageType.SYSTEM, "Customer " + request.getName() + " is eligible for contract renewal"));
-    }
-    
-    /**
-     * Calculate renewal probability based on company rating
-     * @return Probability between 0.0 and 1.0
-     */
-    private double calculateRenewalProbability() {
-        // Base probability starts at 50%
-        double baseProbability = 0.5;
-        
-        // Add up to 45% based on rating (1.0 to 5.0)
-        double ratingFactor = (company.getRating() - 1.0) / 4.0; // 0.0 to 1.0
-        double ratingBonus = ratingFactor * 0.45;
-        
-        // Add a small random factor (±5%)
-        double randomFactor = (random.nextDouble() - 0.5) * 0.1;
-        
-        // Calculate final probability (clamped between 0.05 and 0.95)
-        double probability = baseProbability + ratingBonus + randomFactor;
-        probability = Math.max(0.05, Math.min(0.95, probability));
-        
-        return probability;
-    }
-    
-    /**
-     * Get color based on probability value
-     * @param probability Probability between 0.0 and 1.0
-     * @return Color string for CSS
-     */
-    private String getRatingColor(double probability) {
-        if (probability >= 0.7) {
-            return "#2ecc71"; // Green for high probability
-        } else if (probability >= 0.4) {
-            return "#f1c40f"; // Yellow for medium probability
-        } else {
-            return "#e74c3c"; // Red for low probability
+            
+            // Check Security level up
+            if (securityLevel == 1 && securityPoints >= 300) {
+                securityLevel = 2;
+                skillLevels.put("Security", 2);
+                addSystemMessage(null, "LEVEL UP! Security skill is now level 2! Basic Firewall installation unlocked");
+            } else if (securityLevel == 2 && securityPoints >= 800) {
+                securityLevel = 3;
+                skillLevels.put("Security", 3);
+                addSystemMessage(null, "LEVEL UP! Security skill is now level 3! DDoS and Data Breach protection unlocked");
+            } else if (securityLevel == 3 && securityPoints >= 1500) {
+                securityLevel = 4;
+                skillLevels.put("Security", 4);
+                addSystemMessage(null, "LEVEL UP! Security skill is now level 4! AI Security System for automatic attack prevention unlocked");
+            }
+            
+            // Check Marketing level up
+            if (marketingLevel == 1 && marketingPoints >= 300) {
+                marketingLevel = 2;
+                skillLevels.put("Marketing", 2);
+                addSystemMessage(null, "LEVEL UP! Marketing skill is now level 2! Additional Racks and VPS unlocked");
+            } else if (marketingLevel == 2 && marketingPoints >= 800) {
+                marketingLevel = 3;
+                skillLevels.put("Marketing", 3);
+                addSystemMessage(null, "LEVEL UP! Marketing skill is now level 3! Expanded customer market unlocked");
+            } else if (marketingLevel == 3 && marketingPoints >= 1500) {
+                marketingLevel = 4;
+                skillLevels.put("Marketing", 4);
+                addSystemMessage(null, "LEVEL UP! Marketing skill is now level 4! Marketing Campaign to increase customers unlocked");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error checking for level ups: " + e.getMessage());
+            e.printStackTrace();
         }
-    }
-    
-    /**
-     * Set up a renewal period for a customer
-     * @param request The customer request
-     * @param vm The VM assigned to the customer
-     */
-    private void setupRenewalPeriod(CustomerRequest request, VPSOptimization.VM vm) {
-        // Cancel any existing timers
-        Timer existingTimer = rentalTimers.get(request);
-        if (existingTimer != null) {
-            existingTimer.cancel();
-        }
-        
-        // Set up a new rental period
-        setupRentalPeriod(request, vm);
-        
-        // Small rating boost for renewal
-        double newRating = company.getRating() + 0.1;
-        newRating = Math.min(5.0, newRating); // Cap at 5.0
-        company.setRating(newRating);
-        
-        // Update dashboard
-        updateDashboard();
-    }
-    
-    /**
-     * Generate a random secure password
-     * @return A random password
-     */
-    private String generateRandomPassword() {
-        String upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String lowerChars = "abcdefghijklmnopqrstuvwxyz";
-        String numbers = "0123456789";
-        String specialChars = "!@#$%^&*()_-+=<>?";
-        
-        StringBuilder password = new StringBuilder();
-        
-        // Add at least one character from each category
-        password.append(upperChars.charAt(random.nextInt(upperChars.length())));
-        password.append(lowerChars.charAt(random.nextInt(lowerChars.length())));
-        password.append(numbers.charAt(random.nextInt(numbers.length())));
-        password.append(specialChars.charAt(random.nextInt(specialChars.length())));
-        
-        // Add 6 more random characters
-        String allChars = upperChars + lowerChars + numbers + specialChars;
-        for (int i = 0; i < 6; i++) {
-            password.append(allChars.charAt(random.nextInt(allChars.length())));
-        }
-        
-        // Shuffle the password
-        char[] passwordArray = password.toString().toCharArray();
-        for (int i = 0; i < passwordArray.length; i++) {
-            int j = random.nextInt(passwordArray.length);
-            char temp = passwordArray[i];
-            passwordArray[i] = passwordArray[j];
-            passwordArray[j] = temp;
-        }
-        
-        return new String(passwordArray);
     }
 
     public boolean isVMAvailable(VPSOptimization.VM vm) {
@@ -1615,5 +1516,189 @@ public class MessengerWindow extends VBox {
         
         // Render the message
         renderSystemMessage(request, message);
+    }
+
+    /**
+     * Load skill levels from CircleStatusButton
+     */
+    private void loadSkillLevels() {
+        try {
+            // Get skill levels from CircleStatusButton's static HashMap
+            java.lang.reflect.Field skillLevelsField = com.vpstycoon.ui.game.status.CircleStatusButton.class.getDeclaredField("skillLevels");
+            skillLevelsField.setAccessible(true);
+            HashMap<String, Integer> skillLevels = (HashMap<String, Integer>) skillLevelsField.get(null);
+            
+            // Get skill points from CircleStatusButton's static HashMap
+            java.lang.reflect.Field skillPointsField = com.vpstycoon.ui.game.status.CircleStatusButton.class.getDeclaredField("skillPointsMap");
+            skillPointsField.setAccessible(true);
+            HashMap<String, Integer> skillPointsMap = (HashMap<String, Integer>) skillPointsField.get(null);
+            
+            // Load skill levels
+            deployLevel = skillLevels.getOrDefault("Deploy", 1);
+            networkLevel = skillLevels.getOrDefault("Network", 1);
+            securityLevel = skillLevels.getOrDefault("Security", 1);
+            marketingLevel = skillLevels.getOrDefault("Marketing", 1);
+            
+            // Load skill points
+            deployPoints = skillPointsMap.getOrDefault("Deploy", 0);
+            networkPoints = skillPointsMap.getOrDefault("Network", 0);
+            securityPoints = skillPointsMap.getOrDefault("Security", 0);
+            marketingPoints = skillPointsMap.getOrDefault("Marketing", 0);
+            
+            System.out.println("Loaded skill levels - Deploy: " + deployLevel + ", Network: " + networkLevel + 
+                               ", Security: " + securityLevel + ", Marketing: " + marketingLevel);
+        } catch (Exception e) {
+            System.err.println("Error loading skill levels: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Get deployment time based on deploy level
+     * @return Deployment time in milliseconds
+     */
+    private long getDeploymentTime() {
+        // Ensure level is within bounds
+        int level = Math.max(1, Math.min(deployLevel, DEPLOY_TIMES.length));
+        
+        // Get deployment time for current level
+        return DEPLOY_TIMES[level - 1];
+    }
+    
+    /**
+     * Generate a random password for VM access
+     * @return A random password string
+     */
+    private String generateRandomPassword() {
+        String upperChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lowerChars = "abcdefghijklmnopqrstuvwxyz";
+        String numbers = "0123456789";
+        String specialChars = "!@#$%^&*()-_=+";
+        String allChars = upperChars + lowerChars + numbers + specialChars;
+        
+        StringBuilder password = new StringBuilder();
+        
+        // Ensure at least one character from each category
+        password.append(upperChars.charAt(random.nextInt(upperChars.length())));
+        password.append(lowerChars.charAt(random.nextInt(lowerChars.length())));
+        password.append(numbers.charAt(random.nextInt(numbers.length())));
+        password.append(specialChars.charAt(random.nextInt(specialChars.length())));
+        
+        // Add 6 more random characters for a total length of 10
+        for (int i = 0; i < 6; i++) {
+            password.append(allChars.charAt(random.nextInt(allChars.length())));
+        }
+        
+        // Shuffle the password characters
+        char[] passwordArray = password.toString().toCharArray();
+        for (int i = 0; i < passwordArray.length; i++) {
+            int j = random.nextInt(passwordArray.length);
+            char temp = passwordArray[i];
+            passwordArray[i] = passwordArray[j];
+            passwordArray[j] = temp;
+        }
+        
+        return new String(passwordArray);
+    }
+    
+    /**
+     * Set up rental period and payment schedule for a customer request
+     * @param request The customer request
+     * @param vm The VM assigned to the request
+     */
+    private void setupRentalPeriod(CustomerRequest request, VPSOptimization.VM vm) {
+        if (request == null || vm == null) return;
+        
+        // Calculate rental end date based on rental period
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MILLISECOND, (int)(request.getRentalPeriod() * MILLISECONDS_PER_GAME_DAY));
+        Date endDate = calendar.getTime();
+        
+        // Store rental end date
+        rentalEndDates.put(request, endDate);
+        
+        // Create a timer to handle contract expiration
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Platform.runLater(() -> {
+                    // Calculate renewal probability
+                    double renewalProbability = calculateRenewalProbability(request);
+                    
+                    // Check if customer wants to renew
+                    boolean willRenew = random.nextDouble() < renewalProbability;
+                    
+                    if (willRenew) {
+                        // Customer wants to renew
+                        addSystemMessage(request, "Customer has decided to renew their contract!");
+                        
+                        // Reset rental period
+                        setupRentalPeriod(request, vm);
+                        
+                        // Process payment
+                        double paymentAmount = request.getPaymentAmount();
+                        company.addMoney(paymentAmount);
+                        
+                        // Add message about payment
+                        addSystemMessage(request, "Received payment of $" + String.format("%.2f", paymentAmount) + 
+                                " for contract renewal.");
+                    } else {
+                        // Customer does not want to renew
+                        addSystemMessage(request, "Customer has decided not to renew their contract.");
+                        
+                        // Release VM
+                        releaseVM(vm, false);
+                    }
+                });
+            }
+        }, endDate);
+        
+        // Store timer for cleanup
+        rentalTimers.put(request, timer);
+        
+        // Add system message about rental period
+        addSystemMessage(request, "VM assigned for " + request.getRentalPeriodType().getDisplayName() + 
+                " rental period (ends on " + endDate.toString() + ")");
+        
+        // Process initial payment
+        double paymentAmount = request.getPaymentAmount();
+        company.addMoney(paymentAmount);
+        
+        // Add message about payment
+        addSystemMessage(request, "Received payment of $" + String.format("%.2f", paymentAmount));
+        
+        // Mark request as active and record payment time
+        request.activate();
+        request.recordPayment(System.currentTimeMillis());
+    }
+    
+    /**
+     * Calculate the probability that a customer will renew their contract
+     * @param request The customer request
+     * @return Probability between 0.0 and 1.0
+     */
+    private double calculateRenewalProbability(CustomerRequest request) {
+        if (request == null) return 0.0;
+        
+        // Base probability (50%)
+        double baseProbability = 0.5;
+        
+        // Factor in company rating (0-5 stars)
+        // Each star adds 10% to renewal probability
+        double ratingFactor = company.getRating() * 0.1;
+        
+        // Factor in marketing level (1-4)
+        // Each level adds 5% to renewal probability
+        double marketingBonus = (marketingLevel - 1) * 0.05;
+        
+        // Calculate final probability with some randomness
+        double finalProbability = baseProbability + ratingFactor + marketingBonus;
+        
+        // Add some randomness (-10% to +10%)
+        finalProbability += (random.nextDouble() * 0.2) - 0.1;
+        
+        // Clamp between 0.1 (10%) and 0.95 (95%)
+        return Math.max(0.1, Math.min(0.95, finalProbability));
     }
 }
