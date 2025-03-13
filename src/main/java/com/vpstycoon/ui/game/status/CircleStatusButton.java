@@ -393,7 +393,7 @@ public class CircleStatusButton {
         });
 
         // การกดปุ่มอัปเกรด
-        upgradeButton.setOnAction(e -> upgradeSkill(upgradeLayout, backgroundOverlay));
+        upgradeButton.setOnAction(e -> upgradeSkill(upgradeLayout, backgroundOverlay, titleLabel, pointsLabel));
 
         // จัดวางเนื้อหาใน StackPane เพื่อให้ scanlines อยู่ด้านหลัง
         VBox contentBox = new VBox(15);
@@ -421,11 +421,13 @@ public class CircleStatusButton {
         });
     }
 
-    private void upgradeSkill(VBox upgradeLayout, Rectangle backgroundOverlay) {
+    private void upgradeSkill(VBox upgradeLayout, Rectangle backgroundOverlay, Label titleLabel, Label pointsLabel) {
         int cost = (skillLevel == 1) ? 100 : (skillLevel == 2) ? 500 : -1;
 
         if (cost == -1) {
             System.out.println(skillName + " is already at max level.");
+            parent.pushNotification("Skill Upgrade", "Skill Upgrade is already at max level.");
+            parent.getRootStack().getChildren().removeAll(upgradeLayout, backgroundOverlay);
             return;
         }
 
@@ -435,8 +437,15 @@ public class CircleStatusButton {
             skillLevels.put(skillName, skillLevel);
             skillPointsMap.put(skillName, skillPoints);
             numberLabel.setText(String.valueOf(skillPoints));
+
+            // อัปเดต UI ของแผงอัปเกรด
+            titleLabel.setText("UPGRADE " + skillName.toUpperCase() + " [LV:" + skillLevel + "]");
+            pointsLabel.setText("AVAILABLE POINTS: " + skillPoints);
+
+            parent.pushNotification("Skill Upgrade", "Skill Upgrade " + skillName.toUpperCase() + " [LV:" + skillLevel + "]");
+
             // ลบทั้งแผงและพื้นหลังหลังอัปเกรด
-//            parent.getRootStack().getChildren().removeAll(upgradeLayout, backgroundOverlay);
+             parent.getRootStack().getChildren().removeAll(upgradeLayout, backgroundOverlay);
         } else {
             System.out.println("Not enough points to upgrade " + skillName);
         }
