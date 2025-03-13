@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.components;
 
+import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.status.CircleStatusButton;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,6 +12,7 @@ import javafx.scene.paint.Color;
  * Creates the top menu bar with status indicators in a cyberpunk theme.
  */
 public class GameMenuBar extends HBox {
+    private final GameplayContentPane parent;
 
     // Cyberpunk theme colors
     private static final Color CYBER_PURPLE_BRIGHT = Color.rgb(200, 50, 255);
@@ -22,8 +24,9 @@ public class GameMenuBar extends HBox {
     private static final Color CYBER_GREEN = Color.rgb(0, 255, 170);
     private static final Color CYBER_GREEN_DARK = Color.rgb(0, 180, 120);
 
-    public GameMenuBar() {
+    public GameMenuBar(GameplayContentPane parent) {
         super(20);
+        this.parent = parent;
         setPadding(new Insets(40));
         setAlignment(Pos.TOP_CENTER);
         setPrefHeight(50);
@@ -75,7 +78,7 @@ public class GameMenuBar extends HBox {
     
     private VBox createStatusButton(String labelText, int number, Color topColor, Color bottomColor) {
         // Create CircleStatusButton and wrap it in a VBox
-        CircleStatusButton statusButton = new CircleStatusButton(labelText, number, topColor, bottomColor);
+        CircleStatusButton statusButton = new CircleStatusButton(labelText, number, topColor, bottomColor, parent);
         return statusButton.getContainer();
     }
 } 

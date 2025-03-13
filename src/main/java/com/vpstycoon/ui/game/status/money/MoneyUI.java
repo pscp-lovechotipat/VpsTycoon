@@ -51,12 +51,8 @@ public class MoneyUI extends VBox {
         // เพิ่มเอฟเฟกต์เงา
         DropShadow dropShadow = new DropShadow();
         dropShadow.setColor(Color.web("#00FFFF"));
-        dropShadow.setRadius(40);
-        dropShadow.setSpread(0.1);
-        moneyText.setEffect(dropShadow);
-        moneyValue.setEffect(dropShadow);
-        rattingText.setEffect(dropShadow);
-        rattingValue.setEffect(dropShadow);
+        dropShadow.setRadius(20);
+        dropShadow.setSpread(0.5);
 
         // สร้าง HBox สำหรับแถว Money
         HBox moneyBox = new HBox(moneyText, moneyValue);
@@ -75,7 +71,8 @@ public class MoneyUI extends VBox {
         this.setPadding(new Insets(10)); // Padding น้อยๆ เพื่อความสวยงาม
 
         // ตั้งค่าสไตล์ (ขอบและพื้นหลัง)
-        this.setStyle("-fx-border-color: #00FFFF; -fx-border-width: 2px; -fx-background-color: #000000;");
+        this.setStyle("-fx-border-color: #00FFFF; -fx-border-width: 2px;");
+        this.setEffect(dropShadow);
 
         // ทำให้ขนาดของ VBox พอดีกับเนื้อหา
         this.setMaxWidth(Region.USE_PREF_SIZE);

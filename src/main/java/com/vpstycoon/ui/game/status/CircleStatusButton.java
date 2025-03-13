@@ -1,11 +1,11 @@
 package com.vpstycoon.ui.game.status;
 
 import com.vpstycoon.FontLoader;
+import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
@@ -19,9 +19,6 @@ import javafx.scene.paint.Stop;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import javafx.util.Duration;
 
 import java.util.HashMap;
@@ -31,11 +28,17 @@ import java.util.HashMap;
  */
 public class CircleStatusButton {
     private final VBox container;
+
+    private VBox upgradeLayout;
+
     private Runnable onClickAction;
     private int skillLevel;
     private int skillPoints;
     private Label numberLabel;
     private String skillName;
+
+    private final GameplayContentPane parent;
+
     private static HashMap<String, Integer> skillLevels = new HashMap<>();
     private static HashMap<String, Integer> skillPointsMap = new HashMap<>();
 
@@ -56,8 +59,9 @@ public class CircleStatusButton {
         skillPointsMap.put("Marketing", 1000);
     }
 
-    public CircleStatusButton(String labelText, int number, Color topColor, Color bottomColor) {
+    public CircleStatusButton(String labelText, int number, Color topColor, Color bottomColor, GameplayContentPane parent) {
         this.skillName = labelText;
+        this.parent = parent;
         this.skillLevel = skillLevels.getOrDefault(skillName, 1);
         this.skillPoints = skillPointsMap.getOrDefault(skillName, number);
         this.container = createContainer(skillName, topColor, bottomColor);
@@ -231,180 +235,193 @@ public class CircleStatusButton {
     public VBox getContainer() {
         return container;
     }
-    
-    private void openUpgradePanel() {
-        Stage upgradeStage = new Stage();
-        upgradeStage.initModality(Modality.APPLICATION_MODAL);
-        upgradeStage.initStyle(StageStyle.TRANSPARENT);
-        upgradeStage.setResizable(false);
 
-        VBox upgradeLayout = new VBox(15);
+    private void openUpgradePanel() {
+        // สร้าง Rectangle สำหรับพื้นหลังกึ่งโปร่งใส
+        Rectangle backgroundOverlay = new Rectangle();
+        backgroundOverlay.setFill(Color.rgb(0, 0, 0, 0.7));
+        backgroundOverlay.widthProperty().bind(parent.getRootStack().widthProperty());
+        backgroundOverlay.heightProperty().bind(parent.getRootStack().heightProperty());
+
+        // สร้าง VBox สำหรับแผงอัปเกรด
+        upgradeLayout = new VBox(15);
         upgradeLayout.setAlignment(Pos.CENTER);
         upgradeLayout.setPadding(new Insets(20));
-        
-        // Get the appropriate color for this skill
-        Color skillColor = getColorForSkill(skillName);
-        
-        // Pixel-art style background - fully black for contrast
+        upgradeLayout.setPrefSize(400, 180); // กำหนดขนาดคงที่
+        upgradeLayout.setMaxSize(400, 180);
+
+        // ตั้งค่าพื้นหลังของแผงอัปเกรด
         upgradeLayout.setBackground(new Background(new BackgroundFill(
-            Color.rgb(0, 0, 0, 0.95), 
-            new CornerRadii(0), 
-            Insets.EMPTY
+                Color.rgb(0, 0, 0, 0.95), // สีดำเกือบทึบสำหรับแผง
+                new CornerRadii(0),
+                Insets.EMPTY
         )));
-        
-        // Add pixel-art border with the skill's color
+
+        // กำหนดสีตามสกิล
+        Color skillColor = getColorForSkill(skillName);
+
+        // เพิ่มเส้นขอบสไตล์ pixel-art
         upgradeLayout.setBorder(new Border(new BorderStroke(
-            skillColor, 
-            BorderStrokeStyle.SOLID, 
-            new CornerRadii(0), 
-            new BorderWidths(2)
+                skillColor,
+                BorderStrokeStyle.SOLID,
+                new CornerRadii(0),
+                new BorderWidths(2)
         )));
-        
-        // Add scanlines for CRT effect
-        for (int i = 0; i < 320; i += 4) {
-            Rectangle scanLine = new Rectangle(320, 1);
+
+        // เพิ่ม scanlines สำหรับเอฟเฟกต์ CRT (ปรับให้เหมาะกับขนาดแผง)
+        for (int i = 0; i < 180; i += 4) {
+            Rectangle scanLine = new Rectangle(400, 1);
             scanLine.setFill(Color.rgb(255, 255, 255, 0.03));
             scanLine.setTranslateY(i);
             upgradeLayout.getChildren().add(scanLine);
         }
-        
-        // Add reduced glow effect with the skill's color
+
+        // เพิ่มเอฟเฟกต์ glow
         DropShadow panelGlow = new DropShadow();
         panelGlow.setColor(skillColor);
-        panelGlow.setRadius(10);  // Reduced from 20
-        panelGlow.setSpread(0.2);  // Reduced from 0.4
+        panelGlow.setRadius(10);
+        panelGlow.setSpread(0.2);
         upgradeLayout.setEffect(panelGlow);
 
-        // Create pixel-art style title bar
+        // สร้าง title bar
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER);
         titleBar.setSpacing(50);
-        
-        // Pixel-art style title with the skill's color
+
+        // สร้าง title label
         Label titleLabel = new Label("UPGRADE " + skillName.toUpperCase() + " [LV:" + skillLevel + "]");
         titleLabel.setTextFill(skillColor);
         titleLabel.setFont(Font.font("Monospace", FontWeight.BOLD, 16));
-        
-        // Add glitch effect to title (occasional color change)
+
+        // เพิ่ม glitch effect
         Timeline glitchTimeline = new Timeline(
-            new KeyFrame(Duration.seconds(0.8), evt -> titleLabel.setTextFill(skillColor)),
-            new KeyFrame(Duration.seconds(0.9), evt -> titleLabel.setTextFill(Color.WHITE)),
-            new KeyFrame(Duration.seconds(1.0), evt -> titleLabel.setTextFill(skillColor))
+                new KeyFrame(Duration.seconds(0.8), evt -> titleLabel.setTextFill(skillColor)),
+                new KeyFrame(Duration.seconds(0.9), evt -> titleLabel.setTextFill(Color.WHITE)),
+                new KeyFrame(Duration.seconds(1.0), evt -> titleLabel.setTextFill(skillColor))
         );
         glitchTimeline.setCycleCount(Timeline.INDEFINITE);
         glitchTimeline.play();
 
-        // Pixel-art style exit button with the skill's color
+        // สร้างปุ่มปิด
         Button exitButton = new Button("X");
         exitButton.setStyle(
-            "-fx-background-color: transparent;" +
-            "-fx-text-fill: " + toRgbString(skillColor) + ";" +
-            "-fx-font-family: 'Monospace';" +
-            "-fx-font-weight: bold;" +
-            "-fx-border-color: " + toRgbString(skillColor) + ";" +
-            "-fx-border-width: 2px;"
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: " + toRgbString(skillColor) + ";" +
+                        "-fx-font-family: 'Monospace';" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-border-color: " + toRgbString(skillColor) + ";" +
+                        "-fx-border-width: 2px;"
         );
-        
-        // Add hover effect to exit button
+
+        // Hover effect สำหรับปุ่มปิด
         exitButton.setOnMouseEntered(e -> {
             exitButton.setStyle(
-                "-fx-background-color: " + toRgbString(skillColor) + ";" +
-                "-fx-text-fill: #000000;" +
-                "-fx-font-family: 'Monospace';" +
-                "-fx-font-weight: bold;" +
-                "-fx-border-color: " + toRgbString(skillColor) + ";" +
-                "-fx-border-width: 2px;"
+                    "-fx-background-color: " + toRgbString(skillColor) + ";" +
+                            "-fx-text-fill: #000000;" +
+                            "-fx-font-family: 'Monospace';" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-border-color: " + toRgbString(skillColor) + ";" +
+                            "-fx-border-width: 2px;"
             );
         });
-        
+
         exitButton.setOnMouseExited(e -> {
             exitButton.setStyle(
-                "-fx-background-color: transparent;" +
-                "-fx-text-fill: " + toRgbString(skillColor) + ";" +
-                "-fx-font-family: 'Monospace';" +
-                "-fx-font-weight: bold;" +
-                "-fx-border-color: " + toRgbString(skillColor) + ";" +
-                "-fx-border-width: 2px;"
+                    "-fx-background-color: transparent;" +
+                            "-fx-text-fill: " + toRgbString(skillColor) + ";" +
+                            "-fx-font-family: 'Monospace';" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-border-color: " + toRgbString(skillColor) + ";" +
+                            "-fx-border-width: 2px;"
             );
         });
-        
-        exitButton.setOnAction(e -> upgradeStage.close());
+
+        // การกดปุ่มปิดจะลบทั้งแผงและพื้นหลัง
+        exitButton.setOnAction(e -> {
+            parent.getRootStack().getChildren().removeAll(upgradeLayout, backgroundOverlay);
+        });
 
         titleBar.getChildren().addAll(titleLabel, exitButton);
 
-        // Pixel-art style points display
+        // แสดงคะแนนที่มี
         Label pointsLabel = new Label("AVAILABLE POINTS: " + skillPoints);
         pointsLabel.setTextFill(Color.LIGHTGRAY);
         pointsLabel.setFont(Font.font("Monospace", FontWeight.NORMAL, 14));
-        
-        // Add pixel-art border to points display
         pointsLabel.setPadding(new Insets(5, 10, 5, 10));
         pointsLabel.setBorder(new Border(new BorderStroke(
-            Color.LIGHTGRAY, 
-            BorderStrokeStyle.SOLID, 
-            new CornerRadii(0), 
-            new BorderWidths(1)
+                Color.LIGHTGRAY,
+                BorderStrokeStyle.SOLID,
+                new CornerRadii(0),
+                new BorderWidths(1)
         )));
 
-        // Pixel-art style upgrade button with the skill's color
+        // สร้างปุ่มอัปเกรด
         Button upgradeButton = new Button("[ UPGRADE ]");
         upgradeButton.setStyle(
-            "-fx-background-color: transparent;" +
-            "-fx-text-fill: " + toRgbString(skillColor) + ";" +
-            "-fx-font-family: 'Monospace';" +
-            "-fx-font-weight: bold;" +
-            "-fx-border-color: " + toRgbString(skillColor) + ";" +
-            "-fx-border-width: 2px;" +
-            "-fx-padding: 8px 16px;"
+                "-fx-background-color: transparent;" +
+                        "-fx-text-fill: " + toRgbString(skillColor) + ";" +
+                        "-fx-font-family: 'Monospace';" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-border-color: " + toRgbString(skillColor) + ";" +
+                        "-fx-border-width: 2px;" +
+                        "-fx-padding: 8px 16px;"
         );
-        
-        // Add hover effect with pixel-art animation
+
+        // Hover effect สำหรับปุ่มอัปเกรด
         upgradeButton.setOnMouseEntered(e -> {
             upgradeButton.setStyle(
-                "-fx-background-color: " + toRgbString(skillColor) + ";" +
-                "-fx-text-fill: #000000;" +
-                "-fx-font-family: 'Monospace';" +
-                "-fx-font-weight: bold;" +
-                "-fx-border-color: " + toRgbString(skillColor) + ";" +
-                "-fx-border-width: 2px;" +
-                "-fx-padding: 8px 16px;"
+                    "-fx-background-color: " + toRgbString(skillColor) + ";" +
+                            "-fx-text-fill: #000000;" +
+                            "-fx-font-family: 'Monospace';" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-border-color: " + toRgbString(skillColor) + ";" +
+                            "-fx-border-width: 2px;" +
+                            "-fx-padding: 8px 16px;"
             );
         });
-        
+
         upgradeButton.setOnMouseExited(e -> {
             upgradeButton.setStyle(
-                "-fx-background-color: transparent;" +
-                "-fx-text-fill: " + toRgbString(skillColor) + ";" +
-                "-fx-font-family: 'Monospace';" +
-                "-fx-font-weight: bold;" +
-                "-fx-border-color: " + toRgbString(skillColor) + ";" +
-                "-fx-border-width: 2px;" +
-                "-fx-padding: 8px 16px;"
+                    "-fx-background-color: transparent;" +
+                            "-fx-text-fill: " + toRgbString(skillColor) + ";" +
+                            "-fx-font-family: 'Monospace';" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-border-color: " + toRgbString(skillColor) + ";" +
+                            "-fx-border-width: 2px;" +
+                            "-fx-padding: 8px 16px;"
             );
         });
-        
-        upgradeButton.setOnAction(e -> upgradeSkill(upgradeStage));
 
-        // Create a container for the main content (excluding scanlines)
+        // การกดปุ่มอัปเกรด
+        upgradeButton.setOnAction(e -> upgradeSkill(upgradeLayout, backgroundOverlay));
+
+        // จัดวางเนื้อหาใน StackPane เพื่อให้ scanlines อยู่ด้านหลัง
         VBox contentBox = new VBox(15);
         contentBox.setAlignment(Pos.CENTER);
         contentBox.getChildren().addAll(titleBar, pointsLabel, upgradeButton);
-        
-        // Add the content on top of the scanlines
-        StackPane mainContent = new StackPane();
-        mainContent.getChildren().addAll(contentBox);
 
-        // Set the main content as the only child of the layout
-        upgradeLayout.getChildren().clear();  // Clear the scanlines
+        StackPane mainContent = new StackPane();
+        mainContent.getChildren().add(contentBox);
+
+        upgradeLayout.getChildren().clear(); // ลบ scanlines เดิม
         upgradeLayout.getChildren().add(mainContent);
 
-        Scene scene = new Scene(upgradeLayout, 400, 180);
-        scene.setFill(Color.TRANSPARENT);
-        upgradeStage.setScene(scene);
-        upgradeStage.showAndWait();
+        // เพิ่ม backgroundOverlay และ upgradeLayout ลงใน RootStack
+        parent.getRootStack().getChildren().addAll(backgroundOverlay, upgradeLayout);
+        upgradeLayout.toFront();
+
+        // จัดให้แผงอยู่กึ่งกลาง
+        StackPane.setAlignment(upgradeLayout, Pos.CENTER);
+
+        // เพิ่ม EventFilter เพื่อตรวจจับการคลิกนอกแผง
+        parent.getRootStack().addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+            if (!upgradeLayout.getBoundsInParent().contains(event.getX(), event.getY())) {
+                parent.getRootStack().getChildren().removeAll(upgradeLayout, backgroundOverlay);
+            }
+        });
     }
 
-    private void upgradeSkill(Stage upgradeStage) {
+    private void upgradeSkill(VBox upgradeLayout, Rectangle backgroundOverlay) {
         int cost = (skillLevel == 1) ? 100 : (skillLevel == 2) ? 500 : -1;
 
         if (cost == -1) {
@@ -418,7 +435,8 @@ public class CircleStatusButton {
             skillLevels.put(skillName, skillLevel);
             skillPointsMap.put(skillName, skillPoints);
             numberLabel.setText(String.valueOf(skillPoints));
-            upgradeStage.close();
+            // ลบทั้งแผงและพื้นหลังหลังอัปเกรด
+//            parent.getRootStack().getChildren().removeAll(upgradeLayout, backgroundOverlay);
         } else {
             System.out.println("Not enough points to upgrade " + skillName);
         }

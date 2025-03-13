@@ -152,7 +152,7 @@ public class GameplayContentPane extends BorderPane {
         gameArea.setPrefSize(800, 600);
         gameArea.setMinSize(800, 600);
 
-        this.menuBar = new GameMenuBar();
+        this.menuBar = new GameMenuBar(this);
 
         this.inGameMarketMenuBar = new InGameMarketMenuBar(this, vpsManager);
 
