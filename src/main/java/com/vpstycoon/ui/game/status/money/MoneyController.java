@@ -4,7 +4,6 @@ import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
 public class MoneyController {

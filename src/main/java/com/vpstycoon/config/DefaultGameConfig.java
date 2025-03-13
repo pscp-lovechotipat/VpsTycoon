@@ -1,6 +1,7 @@
 package com.vpstycoon.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.screen.ScreenResolution;
 
 public class DefaultGameConfig implements GameConfig {
@@ -8,7 +9,7 @@ public class DefaultGameConfig implements GameConfig {
     private static DefaultGameConfig instance;
     private ScreenResolution selectedResolution = ScreenResolution.RES_1280x720;
     private boolean isFullscreen = false;
-    private double musicVolume = 0.5;
+    private double musicVolume = 0.3;
     private double sfxVolume = 0.5;
     private boolean vsyncEnabled = true;
     
@@ -91,6 +92,9 @@ public class DefaultGameConfig implements GameConfig {
                 this.musicVolume = loaded.getMusicVolume();
                 this.sfxVolume = loaded.getSfxVolume();
                 this.vsyncEnabled = loaded.isVsyncEnabled();
+
+                AudioManager.getInstance().setMusicVolume(this.musicVolume);
+                AudioManager.getInstance().setSfxVolume(this.sfxVolume);
             }
         } catch (Exception e) {
             System.err.println("Failed to load config: " + e.getMessage());

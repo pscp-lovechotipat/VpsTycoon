@@ -1,8 +1,8 @@
 package com.vpstycoon.game.vps;
 
 import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.vps.enums.VPSStatus;
 import com.vpstycoon.game.vps.enums.VPSSize;
+import com.vpstycoon.game.vps.enums.VPSStatus;
 
 import java.io.Serializable;
 import java.util.ArrayList;

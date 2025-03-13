@@ -1,6 +1,9 @@
 package com.vpstycoon.ui.game.status.money;
 
-import javafx.beans.property.*;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleLongProperty;
 
 public class MoneyModel {
     private final LongProperty money = new SimpleLongProperty();

@@ -1,9 +1,7 @@
 package com.vpstycoon.ui.menu;
 
-import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.game.GameSaveManager;
-import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;

@@ -1,10 +1,7 @@
 package com.vpstycoon.game.thread;
 
-import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.manager.CustomerRequest;
-import com.vpstycoon.game.manager.RandomGenerateName;
 import com.vpstycoon.game.manager.RequestManager;
-import com.vpstycoon.game.vps.enums.RequestType;
 
 import java.util.Random;
 

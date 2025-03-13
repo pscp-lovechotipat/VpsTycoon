@@ -3,7 +3,6 @@ package com.vpstycoon.ui.game.rack;
 import com.vpstycoon.game.SkillPointsSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.ui.game.utils.UIUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;

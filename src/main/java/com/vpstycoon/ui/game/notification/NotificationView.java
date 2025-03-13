@@ -3,13 +3,13 @@ package com.vpstycoon.ui.game.notification;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
+import javafx.scene.effect.Glow;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
-import javafx.scene.effect.Glow;
 
 public class NotificationView extends VBox {
     public NotificationView() {

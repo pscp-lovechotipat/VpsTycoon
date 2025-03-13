@@ -1,12 +1,15 @@
 package com.vpstycoon.ui.game;
 
-import com.vpstycoon.FontLoader;
+import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameObject;
+import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.SkillPointsSystem;
 import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.VPSSize;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
@@ -14,9 +17,11 @@ import com.vpstycoon.ui.game.components.GameMenuBar;
 import com.vpstycoon.ui.game.components.InGameMarketMenuBar;
 import com.vpstycoon.ui.game.components.RoomObjectsLayer;
 import com.vpstycoon.ui.game.desktop.SimulationDesktopUI;
+import com.vpstycoon.ui.game.desktop.SkillPointsWindow;
 import com.vpstycoon.ui.game.flow.GameFlowManager;
 import com.vpstycoon.ui.game.handlers.KeyEventHandler;
 import com.vpstycoon.ui.game.handlers.ZoomPanHandler;
+import com.vpstycoon.ui.game.inventory.VPSInventoryUI;
 import com.vpstycoon.ui.game.market.MarketUI;
 import com.vpstycoon.ui.game.notification.NotificationController;
 import com.vpstycoon.ui.game.notification.NotificationModel;
@@ -27,27 +32,19 @@ import com.vpstycoon.ui.game.status.money.MoneyModel;
 import com.vpstycoon.ui.game.status.money.MoneyUI;
 import com.vpstycoon.ui.game.vps.*;
 import com.vpstycoon.ui.navigation.Navigator;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.layout.*;
-import javafx.scene.media.AudioClip;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import com.vpstycoon.game.SkillPointsSystem;
-import com.vpstycoon.ui.game.desktop.SkillPointsWindow;
-import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.GameManager;
-import com.vpstycoon.game.vps.enums.VPSStatus;
-import com.vpstycoon.game.vps.VPSInventory;
-import com.vpstycoon.ui.game.inventory.VPSInventoryUI;
 
 public class GameplayContentPane extends BorderPane {
     private final StackPane rootStack;
@@ -237,6 +234,8 @@ public class GameplayContentPane extends BorderPane {
 
         moneyUI.setPickOnBounds(false);
         moneyUI.setVisible(true);
+
+        StackPane.setMargin(this.moneyUI, new Insets(40));
 
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
         StackPane.setAlignment(menuBar, Pos.TOP_CENTER);

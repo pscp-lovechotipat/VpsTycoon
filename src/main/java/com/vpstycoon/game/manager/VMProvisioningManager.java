@@ -2,7 +2,6 @@ package com.vpstycoon.game.manager;
 
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.vps.VPSOptimization;
-import com.vpstycoon.game.vps.enums.VPSStatus;
 
 import java.io.Serializable;
 import java.util.HashMap;
