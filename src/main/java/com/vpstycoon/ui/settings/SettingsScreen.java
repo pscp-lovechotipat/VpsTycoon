@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.settings;
 
 import com.vpstycoon.FontLoader;
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
@@ -24,10 +25,12 @@ public class SettingsScreen extends GameScreen {
     private ComboBox<ScreenResolution> resolutionComboBox;
     private CheckBox fullscreenCheckBox;
     private CheckBox vsyncCheckBox;
+    private AudioManager audioManager;
 
     public SettingsScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
         this.navigator = navigator;
+        this.audioManager = AudioManager.getInstance();
     }
 
     @Override
@@ -192,13 +195,17 @@ public class SettingsScreen extends GameScreen {
 
     protected MenuButton createBackButton() {
         MenuButton backButton = new MenuButton(MenuButtonType.BACK);
-        backButton.setOnAction(e -> navigator.showMainMenu());
+        backButton.setOnAction(e -> {
+            navigator.showMainMenu();
+            audioManager.playSoundEffect("click.wav");
+        });
         return backButton;
     }
 
     protected MenuButton createApplyButton() {
         MenuButton applyButton = new MenuButton(MenuButtonType.APPLY);
         applyButton.setOnAction(e -> {
+            audioManager.playSoundEffect("click.wav");
             config.save();
             GameEventBus.getInstance().publish(new SettingsChangedEvent(config));
             

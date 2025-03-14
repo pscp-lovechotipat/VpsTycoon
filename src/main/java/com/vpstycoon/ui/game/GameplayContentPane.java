@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game;
 
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
@@ -106,6 +107,8 @@ public class GameplayContentPane extends BorderPane {
     private SkillPointsSystem skillPointsSystem;
 
     private final VPSInventoryUI vpsInventoryUI;
+
+    private AudioManager audioManager;
 
     public GameplayContentPane(
             List<GameObject> gameObjects, Navigator navigator, ChatSystem chatSystem,
@@ -397,12 +400,9 @@ public class GameplayContentPane extends BorderPane {
 
     public void openKeroro() {
         System.out.println("Open Keroro");
-        String soundPath = getClass().getResource("/sounds/keroro_sound.mp3").toExternalForm();
-        Media media = new Media(soundPath);
-        MediaPlayer mediaPlayer = new MediaPlayer(media);
-        mediaPlayer.play();
-        pushMouseNotification("Open Keroro");
-        //รอตัวเองกลับมาทำ-บบ-
+        this.audioManager = AudioManager.getInstance();
+        audioManager.playSoundEffect("keroro_sound.mp3");
+        pushMouseNotification("Keroro");
 //        this.rootStack.getChildren().clear();
 //        this.rootStack.getChildren().add(roomObjects.getKeroroLayer()); // Jiant keroro?
     }

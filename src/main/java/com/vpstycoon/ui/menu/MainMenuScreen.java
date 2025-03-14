@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.menu;
 
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.screen.ScreenManager;
@@ -23,11 +24,13 @@ public class MainMenuScreen extends GameScreen {
     private SettingsScreen settingsScreen;
     private final Navigator navigator;
     private final GameSaveManager saveManager;
+    private AudioManager audioManager;
 
     public MainMenuScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
         this.navigator = navigator;
         this.saveManager = new GameSaveManager();
+        this.audioManager = AudioManager.getInstance();
     }
 
     public void setSettingsScreen(SettingsScreen settingsScreen) {
@@ -72,15 +75,24 @@ public class MainMenuScreen extends GameScreen {
 
         // New Game Button
         MenuButton newGameButton = new MenuButton(MenuButtonType.NEW_GAME);
-        newGameButton.setOnAction(e -> navigator.startNewGame());
+        newGameButton.setOnAction(e -> {
+            navigator.startNewGame();
+            audioManager.playSoundEffect("click.wav");
+        });
 
         // Settings Button
         MenuButton settingsButton = new MenuButton(MenuButtonType.SETTINGS);
-        settingsButton.setOnAction(e -> navigator.showSettings());
+        settingsButton.setOnAction(e -> {
+            audioManager.playSoundEffect("click.wav");
+            navigator.showSettings();
+        });
 
         // Quit Button
         MenuButton quitButton = new MenuButton(MenuButtonType.QUIT);
-        quitButton.setOnAction(e -> Platform.exit());
+        quitButton.setOnAction(e -> {
+            audioManager.playSoundEffect("click.wav");
+            Platform.exit();
+        });
 
         // Delete Game Button
         MenuButton deleteButton = new MenuButton(MenuButtonType.DELETEGAME);
@@ -96,7 +108,10 @@ public class MainMenuScreen extends GameScreen {
         // Continue Button (แสดงเฉพาะเมื่อมีเซฟเกม)
         if (saveManager.saveExists()) {
             MenuButton continueButton = new MenuButton(MenuButtonType.CONTINUE);
-            continueButton.setOnAction(e -> navigator.showLoadGame());
+            continueButton.setOnAction(e -> {
+                navigator.showLoadGame();
+                audioManager.playSoundEffect("click.wav");
+            });
             root.getChildren().add(continueButton);
         }
 

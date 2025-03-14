@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.components.buttons.Menu;
 
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import javafx.scene.control.Button;
 import javafx.scene.effect.ColorAdjust;
@@ -15,10 +16,12 @@ import java.net.URL;
 public class MenuButton extends Button {
     private static final double WIDTH = 160;
     private static final double HEIGHT = 40;
+    private AudioManager audioManager;
 
     private MenuButtonType type;
 
     public MenuButton(MenuButtonType type) {
+        this.audioManager = AudioManager.getInstance();
         this.type = type;
         this.render();
     }
@@ -74,8 +77,10 @@ public class MenuButton extends Button {
         }
 
         // เพิ่ม hover effect ด้วย stroke
-        this.setOnMouseEntered(e ->
-                this.setEffect(neon())
+        this.setOnMouseEntered(e -> {
+                this.setEffect(neon());
+                audioManager.playSoundEffect("hover.wav");
+        }
         );
 
         this.setOnMouseExited(e ->

@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game;
 
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
 import com.vpstycoon.ui.navigation.Navigator;
@@ -21,10 +22,12 @@ import javafx.scene.text.Text;
 public class ResumeScreen extends StackPane {
     private final Navigator navigator;
     private final Runnable onResumeGame;
+    private AudioManager audioManager;
 
     public ResumeScreen(Navigator navigator, Runnable onResumeGame) {
         this.navigator = navigator;
         this.onResumeGame = onResumeGame;
+        this.audioManager = AudioManager.getInstance();
         setupUI();
     }
 
@@ -79,22 +82,34 @@ public class ResumeScreen extends StackPane {
         
         // ปุ่ม Resume (กลับไปเล่นเกม)
         MenuButton resumeButton = new MenuButton(MenuButtonType.RESUME);
-        resumeButton.setOnAction(e -> onResumeGame.run());
+        resumeButton.setOnAction(e -> {
+            audioManager.playSoundEffect("click.wav");
+            onResumeGame.run();
+        });
         styleButton(resumeButton);
 
         // Settings Button
         MenuButton settingsButton = new MenuButton(MenuButtonType.SETTINGS);
-        settingsButton.setOnAction(e -> navigator.showInGameSettings());
+        settingsButton.setOnAction(e -> {
+            audioManager.playSoundEffect("click.wav");
+            navigator.showInGameSettings();
+        });
         styleButton(settingsButton);
 
         // ปุ่ม Main Menu (กลับไปหน้าหลัก)
         MenuButton mainMenuButton = new MenuButton(MenuButtonType.MAIN_MENU);
-        mainMenuButton.setOnAction(e -> navigator.showMainMenu());
+        mainMenuButton.setOnAction(e ->{
+            audioManager.playSoundEffect("click.wav");
+            navigator.showMainMenu();
+        });
         styleButton(mainMenuButton);
 
         // ปุ่ม Quit (ออกจากเกม)
         MenuButton quitButton = new MenuButton(MenuButtonType.QUIT);
-        quitButton.setOnAction(e -> System.exit(0));
+        quitButton.setOnAction(e -> {
+            audioManager.playSoundEffect("click.wav");
+            System.exit(0);
+        });
         styleButton(quitButton);
 
         menuBox.getChildren().addAll(titleText, resumeButton, settingsButton, mainMenuButton, quitButton);
