@@ -46,7 +46,9 @@ public class VPSInventoryUI {
         titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
         
         Button backButton = UIUtils.createModernButton("Back", "#F44336");
-        backButton.setOnAction(e -> parent.returnToRoom());
+        backButton.setOnAction(e -> {
+            parent.openRackInfo();
+        });
         
         titleBar.getChildren().addAll(backButton, titleLabel);
         
