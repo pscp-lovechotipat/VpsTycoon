@@ -8,20 +8,20 @@ import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class AudioManager {
     private static final AudioManager instance = new AudioManager();
     private final Map<String, Media> soundCache = new HashMap<>();
+    private final List<MediaPlayer> activeSfxPlayers = new ArrayList<>();
     private MediaPlayer musicPlayer;
     private double musicVolume = 0.5;
     private double sfxVolume = 0.5;
 
     public AudioManager() {
         GameEventBus.getInstance().subscribe(
-            SettingsChangedEvent.class, 
-            this::onSettingsChanged
+                SettingsChangedEvent.class,
+                this::onSettingsChanged
         );
     }
 
@@ -75,11 +75,29 @@ public class AudioManager {
                 if (sound != null) {
                     MediaPlayer player = new MediaPlayer(sound);
                     player.setVolume(sfxVolume);
+                    activeSfxPlayers.add(player);
                     player.play();
-                    player.setOnEndOfMedia(player::dispose);
+                    player.setOnEndOfMedia(() -> {
+                        player.dispose();
+                        activeSfxPlayers.remove(player);
+                    });
                 }
             } catch (Exception e) {
                 System.err.println("Failed to play sound effect: " + e.getMessage());
+            }
+        });
+    }
+
+    public void stopSoundEffect(String soundFile) {
+        Platform.runLater(() -> {
+            Iterator<MediaPlayer> iterator = activeSfxPlayers.iterator();
+            while (iterator.hasNext()) {
+                MediaPlayer player = iterator.next();
+                if (player.getMedia().getSource().endsWith(soundFile)) {
+                    player.stop();
+                    player.dispose();
+                    iterator.remove();
+                }
             }
         });
     }
@@ -99,6 +117,10 @@ public class AudioManager {
         if (musicPlayer != null) {
             musicPlayer.dispose();
         }
+        for (MediaPlayer player : activeSfxPlayers) {
+            player.dispose();
+        }
+        activeSfxPlayers.clear();
         soundCache.clear();
     }
 } 
