@@ -59,7 +59,7 @@ public class DesktopScreen extends StackPane {
             chatWindow = new MessengerWindow();
             ChatHistoryManager chatHistoryManager = new ChatHistoryManager();
             chatController = new MessengerController(requestManager, vpsManager, company, chatHistoryManager,
-                    chatWindow.getRequestListView(), chatWindow.getChatAreaView(), chatWindow.getDashboardView(), this::closeChatWindow);
+                    chatWindow.getRequestListView(), chatWindow.getChatAreaView(), chatWindow.getDashboardView(), parent.getRootStack(), this::closeChatWindow);
             // ตั้งค่าปุ่มปิดให้ทำงานอย่างถูกต้อง
             chatWindow.getCloseButton().setOnAction(e -> {
                 chatController.close(); // ถ้ามีเมธอด close() ใน MessengerController

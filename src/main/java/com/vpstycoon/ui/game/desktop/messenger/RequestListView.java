@@ -19,7 +19,7 @@ public class RequestListView extends VBox {
 
     public RequestListView() {
         setPadding(new Insets(10));
-        setPrefWidth(350);
+        setPrefWidth(450);
         getStyleClass().add("request-list");
 
         Label title = new Label("Customer Requests");
