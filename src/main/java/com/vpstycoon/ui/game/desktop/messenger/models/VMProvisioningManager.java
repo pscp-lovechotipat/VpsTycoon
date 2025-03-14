@@ -31,10 +31,13 @@ public class VMProvisioningManager {
         this.provisioningProgressBars = provisioningProgressBars;
     }
 
-    // ปรับเมธอดโดยเพิ่ม Runnable onComplete
     public void startVMProvisioning(CustomerRequest request, VPSOptimization.VM vm, Runnable onComplete) {
+        // บันทึกข้อความระบบเมื่อเริ่ม provisioning และแสดงใน UI
+        chatAreaView.addSystemMessage("Starting VM provisioning...");
+
         sendInitialMessages(request);
 
+        // สร้างและแสดง progressBox ใน UI เหมือนเดิม
         HBox progressContainer = new HBox();
         progressContainer.setAlignment(Pos.CENTER);
         progressContainer.setPadding(new Insets(10, 0, 10, 0));
@@ -59,6 +62,8 @@ public class VMProvisioningManager {
         final int[] progress = {0};
         final int totalSteps = provisioningDelay * 10;
 
+        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "Starting VM provisioning in " + provisioningDelay + " seconds..."));
+
         Timer progressTimer = new Timer();
         progressTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -71,8 +76,11 @@ public class VMProvisioningManager {
                         this.cancel();
                         provisioningProgressBars.remove(request);
                         sendVMDetails(request, vm);
+                        // บันทึกข้อความระบบเมื่อ provisioning เสร็จสิ้น และแสดงใน UI
+                        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed."));
+                        chatAreaView.addSystemMessage("VM provisioning completed.");
                         if (onComplete != null) {
-                            onComplete.run(); // เรียก callback เมื่อ provisioning เสร็จสิ้น
+                            onComplete.run();
                         }
                     }
                 });
