@@ -1,6 +1,7 @@
-package com.vpstycoon.ui.game.desktop.messenger;
+package com.vpstycoon.ui.game.desktop.messenger.models;
 
 import com.vpstycoon.game.manager.CustomerRequest;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;

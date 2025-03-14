@@ -1,8 +1,8 @@
 package com.vpstycoon.ui.game.desktop;
 
-import com.vpstycoon.ui.game.desktop.messenger.ChatAreaView;
-import com.vpstycoon.ui.game.desktop.messenger.DashboardView;
-import com.vpstycoon.ui.game.desktop.messenger.RequestListView;
+import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
+import com.vpstycoon.ui.game.desktop.messenger.views.DashboardView;
+import com.vpstycoon.ui.game.desktop.messenger.views.RequestListView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;

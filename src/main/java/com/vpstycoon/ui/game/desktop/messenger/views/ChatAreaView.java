@@ -1,7 +1,6 @@
-package com.vpstycoon.ui.game.desktop.messenger;
+package com.vpstycoon.ui.game.desktop.messenger.views;
 
 import com.vpstycoon.game.manager.CustomerRequest;
-import com.vpstycoon.game.vps.VPSOptimization;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,7 +15,6 @@ import javafx.scene.text.TextAlignment;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Random;
 
 public class ChatAreaView extends VBox {
