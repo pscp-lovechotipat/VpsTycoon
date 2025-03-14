@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.components;
 
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.status.CircleStatusButton;
 import javafx.geometry.Insets;
@@ -13,6 +14,7 @@ import javafx.scene.paint.Color;
  */
 public class GameMenuBar extends HBox {
     private final GameplayContentPane parent;
+    private AudioManager audioManager;
 
     // Cyberpunk theme colors
     private static final Color CYBER_PURPLE_BRIGHT = Color.rgb(200, 50, 255);
@@ -31,6 +33,8 @@ public class GameMenuBar extends HBox {
         setAlignment(Pos.TOP_CENTER);
         setPrefHeight(50);
         setMaxHeight(50);
+
+        this.audioManager = AudioManager.getInstance();
     
         
         // Make the menu bar fully transparent
@@ -79,6 +83,7 @@ public class GameMenuBar extends HBox {
     private VBox createStatusButton(String labelText, int number, Color topColor, Color bottomColor) {
         // Create CircleStatusButton and wrap it in a VBox
         CircleStatusButton statusButton = new CircleStatusButton(labelText, number, topColor, bottomColor, parent);
+        audioManager.playSoundEffect("hover2.wav");
         return statusButton.getContainer();
     }
 } 

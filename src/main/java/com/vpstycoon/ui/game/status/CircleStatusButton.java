@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game.status;
 
 import com.vpstycoon.FontLoader;
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -47,6 +48,8 @@ public class CircleStatusButton {
     private static final Color CYBER_DARK = Color.rgb(20, 10, 30);
     private static final Color CYBER_GLOW = Color.rgb(255, 0, 255, 0.7);
 
+    private AudioManager audioManager;
+
     static {
         skillLevels.put("Deploy", 1);
         skillLevels.put("Network", 1);
@@ -65,6 +68,8 @@ public class CircleStatusButton {
         this.skillLevel = skillLevels.getOrDefault(skillName, 1);
         this.skillPoints = skillPointsMap.getOrDefault(skillName, number);
         this.container = createContainer(skillName, topColor, bottomColor);
+
+        this.audioManager = AudioManager.getInstance();
     }
 
     private VBox createContainer(String skillName, Color topColor, Color bottomColor) {
@@ -93,6 +98,7 @@ public class CircleStatusButton {
             // Only scale effect, no glow change
             buttonStack.setScaleX(1.05);
             buttonStack.setScaleY(1.05);
+            audioManager.playSoundEffect("hover2.wav");
         });
         
         buttonStack.setOnMouseExited(e -> {
@@ -393,7 +399,9 @@ public class CircleStatusButton {
         });
 
         // การกดปุ่มอัปเกรด
-        upgradeButton.setOnAction(e -> upgradeSkill(upgradeLayout, backgroundOverlay, titleLabel, pointsLabel));
+        upgradeButton.setOnAction(e -> {
+            upgradeSkill(upgradeLayout, backgroundOverlay, titleLabel, pointsLabel);
+        });
 
         // จัดวางเนื้อหาใน StackPane เพื่อให้ scanlines อยู่ด้านหลัง
         VBox contentBox = new VBox(15);

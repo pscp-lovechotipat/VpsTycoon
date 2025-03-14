@@ -90,7 +90,7 @@ public class RoomObjectsLayer {
 
         monitorLayer.setStyle(normalStyle);
         monitorLayer.setOnMouseEntered(event -> {
-            audioManager.playSoundEffect("hover.wav");
+            audioManager.playSoundEffect("hover2.wav");
             monitorLayer.setStyle(hoverStyle);
         });
         monitorLayer.setOnMouseExited(event -> {monitorLayer.setStyle(normalStyle);});

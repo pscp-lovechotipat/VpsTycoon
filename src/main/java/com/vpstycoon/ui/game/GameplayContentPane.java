@@ -170,6 +170,8 @@ public class GameplayContentPane extends BorderPane {
 
         // Initialize total slots
         this.totalSlots = 10; // Default total slots
+
+        this.audioManager = AudioManager.getInstance();
     }
 
     private void initializeSampleVPS() {
@@ -327,6 +329,7 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public void openSimulationDesktop() {
+        audioManager.playSoundEffect("click_app.wav");
         simulationDesktopUI.openSimulationDesktop();
     }
 
@@ -400,7 +403,6 @@ public class GameplayContentPane extends BorderPane {
 
     public void openKeroro() {
         System.out.println("Open Keroro");
-        this.audioManager = AudioManager.getInstance();
         audioManager.playSoundEffect("keroro_sound.mp3");
         pushMouseNotification("Keroro");
 //        this.rootStack.getChildren().clear();

@@ -60,6 +60,7 @@ public class MouseNotificationView extends Pane {
 
         pane.getChildren().add(label);
 
+
         return pane;
     }
 }

@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.notification;
 
+import com.vpstycoon.audio.AudioManager;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -12,11 +13,14 @@ import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
 public class NotificationView extends VBox {
+    private AudioManager audioManager;
     public NotificationView() {
         setSpacing(10); // ระยะห่างระหว่างการแจ้งเตือน
         setPadding(new Insets(50)); // ขอบรอบนอก
         // Ensure this doesn't block other UI elements
         setMouseTransparent(true);
+
+        this.audioManager = AudioManager.getInstance();
     }
 
     // เพิ่มการแจ้งเตือนใหม่เข้าไปใน View
@@ -65,6 +69,8 @@ public class NotificationView extends VBox {
 
         // ลบการแจ้งเตือนเมื่อ animation เสร็จ
         parallelOutTransition.setOnFinished(event -> getChildren().remove(notificationPane));
+
+        audioManager.playSoundEffect("noti.mp3");
     }
 
     // สร้างหน้าตาของการแจ้งเตือนแต่ละอัน
