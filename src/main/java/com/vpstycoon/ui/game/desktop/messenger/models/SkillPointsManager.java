@@ -28,7 +28,7 @@ public class SkillPointsManager {
 
             skillPointsMap.put("Deploy", skillPointsMap.getOrDefault("Deploy", 0) + points);
             chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                    "Earned " + points + " Deploy points! Total: " + skillPointsMap.get("Deploy")));
+                    "Earned " + points + " Deploy points! Total: " + skillPointsMap.get("Deploy"), new HashMap<>()));
             chatAreaView.addSystemMessage("Earned " + points + " Deploy points! Total: " + skillPointsMap.get("Deploy"));
         } catch (Exception e) {
             System.err.println("Error updating skill points: " + e.getMessage());

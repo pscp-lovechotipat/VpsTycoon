@@ -48,19 +48,18 @@ public class RentalManager {
 
                     if (willRenew) {
                         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                                "Customer has decided to renew their contract!"));
+                                "Customer has decided to renew their contract!", new HashMap<>()));
                         chatAreaView.addSystemMessage("Customer has decided to renew their contract!");
                         setupRentalPeriod(request, vm);
                         double paymentAmount = request.getPaymentAmount();
                         company.addMoney(paymentAmount);
                         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                                "Received payment of $" + String.format("%.2f", paymentAmount) + " for contract renewal."));
+                                "Received payment of $" + String.format("%.2f", paymentAmount) + " for contract renewal.", new HashMap<>()));
                         chatAreaView.addSystemMessage("Received payment of $" + String.format("%.2f", paymentAmount) + " for contract renewal.");
                     } else {
                         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                                "Customer has decided not to renew their contract."));
+                                "Customer has decided not to renew their contract.", new HashMap<>()));
                         chatAreaView.addSystemMessage("Customer has decided not to renew their contract.");
-                        // releaseVM logic จะถูกเรียกจาก controller
                     }
                 });
             }
@@ -70,13 +69,15 @@ public class RentalManager {
 
         String rentalMessage = "VM assigned for " + request.getRentalPeriodType().getDisplayName() +
                 " rental period (ends on " + endDate.toString() + ")";
-        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, rentalMessage));
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("endDate", endDate.getTime());
+        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, rentalMessage, metadata));
         chatAreaView.addSystemMessage(rentalMessage);
 
         double paymentAmount = request.getPaymentAmount();
         company.addMoney(paymentAmount);
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                "Received payment of $" + String.format("%.2f", paymentAmount)));
+                "Received payment of $" + String.format("%.2f", paymentAmount), new HashMap<>()));
         chatAreaView.addSystemMessage("Received payment of $" + String.format("%.2f", paymentAmount));
     }
 

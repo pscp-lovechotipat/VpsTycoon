@@ -1,6 +1,9 @@
 package com.vpstycoon.ui.game.desktop.messenger.views;
 
 import com.vpstycoon.game.manager.CustomerRequest;
+import com.vpstycoon.ui.game.desktop.messenger.MessageType;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatMessage;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,7 +18,10 @@ import javafx.scene.text.TextAlignment;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Random;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ChatAreaView extends VBox {
     private VBox messagesBox;
@@ -28,13 +34,15 @@ public class ChatAreaView extends VBox {
     private Label customerTypeLabel;
     private Label headerStatusLabel;
     private DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-    private Random random = new Random();
+    private final ChatHistoryManager chatHistoryManager;
 
-    public ChatAreaView() {
+    public ChatAreaView(ChatHistoryManager chatHistoryManager) {
+        this.chatHistoryManager = chatHistoryManager;
         setPadding(new Insets(10));
         getStyleClass().add("chat-area");
         VBox.setVgrow(this, Priority.ALWAYS);
 
+        // Chat Header
         HBox chatHeader = new HBox(10);
         chatHeader.setAlignment(Pos.CENTER_LEFT);
         chatHeader.setPadding(new Insets(0, 0, 10, 0));
@@ -61,6 +69,7 @@ public class ChatAreaView extends VBox {
         chatHeader.getChildren().addAll(customerAvatar, customerInfoBox);
         HBox.setHgrow(customerInfoBox, Priority.ALWAYS);
 
+        // Messages Area
         ScrollPane messagesScroll = new ScrollPane();
         messagesScroll.setFitToWidth(true);
         messagesScroll.getStyleClass().add("messages-scroll");
@@ -71,6 +80,7 @@ public class ChatAreaView extends VBox {
         messagesBox.getStyleClass().add("messages-box");
         messagesScroll.setContent(messagesBox);
 
+        // Input Area
         HBox inputArea = new HBox(10);
         inputArea.setAlignment(Pos.CENTER);
         inputArea.getStyleClass().add("input-area");
@@ -95,6 +105,7 @@ public class ChatAreaView extends VBox {
 
         getChildren().addAll(chatHeader, messagesScroll, inputArea);
 
+        // Auto-scroll to bottom when new message is added
         messagesBox.heightProperty().addListener((obs, oldVal, newVal) -> messagesScroll.setVvalue(1.0));
     }
 
@@ -124,7 +135,79 @@ public class ChatAreaView extends VBox {
         }
     }
 
-    public void addCustomerMessage(CustomerRequest request, String message) {
+    public void loadChatHistory(CustomerRequest request) {
+        messagesBox.getChildren().clear(); // ล้าง UI เดิม
+        if (request == null) return;
+
+        List<ChatMessage> history = chatHistoryManager.getChatHistory(request);
+        for (ChatMessage message : history) {
+            switch (message.getType()) {
+                case CUSTOMER:
+                    addCustomerMessageFromHistory(request, message.getContent());
+                    break;
+                case USER:
+                    addUserMessageFromHistory(message.getContent());
+                    break;
+                case SYSTEM:
+                    if (message.getContent().startsWith("Starting VM provisioning...")) {
+                        Map<String, Object> metadata = message.getMetadata();
+                        if (metadata.containsKey("isProvisioning") && (boolean) metadata.get("isProvisioning")) {
+                            long startTime = (long) metadata.get("startTime");
+                            int provisioningDelay = (int) metadata.get("provisioningDelay");
+                            long elapsedTime = System.currentTimeMillis() - startTime;
+                            int remainingSeconds = (int) Math.max(0, provisioningDelay - (elapsedTime / 1000));
+
+                            HBox progressContainer = new HBox();
+                            progressContainer.setAlignment(Pos.CENTER);
+                            progressContainer.setPadding(new Insets(10, 0, 10, 0));
+                            progressContainer.getStyleClass().add("message-container");
+
+                            VBox progressBox = new VBox(5);
+                            progressBox.setAlignment(Pos.CENTER);
+                            progressBox.setPadding(new Insets(10));
+                            progressBox.setStyle("-fx-background-color: rgba(52, 152, 219, 0.2); -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
+
+                            Label timeRemainingLabel = new Label("Starting VM provisioning in " + remainingSeconds + " seconds...");
+                            timeRemainingLabel.setStyle("-fx-text-fill: white;");
+                            ProgressBar progressBar = new ProgressBar((double) elapsedTime / (provisioningDelay * 1000));
+                            progressBar.setPrefWidth(200);
+                            progressBar.setStyle("-fx-accent: #3498db;");
+
+                            progressBox.getChildren().addAll(timeRemainingLabel, progressBar);
+                            progressContainer.getChildren().add(progressBox);
+
+                            Platform.runLater(() -> messagesBox.getChildren().add(progressContainer));
+
+                            // อัปเดตแบบ real-time
+                            Timer timer = new Timer();
+                            timer.scheduleAtFixedRate(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    long currentElapsed = System.currentTimeMillis() - startTime;
+                                    int currentRemaining = (int) Math.max(0, provisioningDelay - (currentElapsed / 1000));
+                                    double progressValue = (double) currentElapsed / (provisioningDelay * 1000);
+                                    Platform.runLater(() -> {
+                                        timeRemainingLabel.setText("Starting VM provisioning in " + currentRemaining + " seconds...");
+                                        progressBar.setProgress(progressValue);
+                                        if (currentRemaining <= 0) {
+                                            timeRemainingLabel.setText("VM provisioning completed.");
+                                            timer.cancel();
+                                        }
+                                    });
+                                }
+                            }, 0, 1000); // อัปเดตทุก 1 วินาที
+                        } else {
+                            addSystemMessageFromHistory(message.getContent());
+                        }
+                    } else {
+                        addSystemMessageFromHistory(message.getContent());
+                    }
+                    break;
+            }
+        }
+    }
+
+    private void addCustomerMessageFromHistory(CustomerRequest request, String message) {
         HBox messageContainer = new HBox();
         messageContainer.setAlignment(Pos.CENTER_LEFT);
         messageContainer.setPadding(new Insets(5, 0, 5, 0));
@@ -154,7 +237,7 @@ public class ChatAreaView extends VBox {
         Platform.runLater(() -> messagesBox.getChildren().add(messageContainer));
     }
 
-    public void addUserMessage(String message) {
+    private void addUserMessageFromHistory(String message) {
         HBox messageContainer = new HBox();
         messageContainer.setAlignment(Pos.CENTER_RIGHT);
         messageContainer.setPadding(new Insets(5, 0, 5, 0));
@@ -179,7 +262,7 @@ public class ChatAreaView extends VBox {
         Platform.runLater(() -> messagesBox.getChildren().add(messageContainer));
     }
 
-    public void addSystemMessage(String message) {
+    private void addSystemMessageFromHistory(String message) {
         HBox messageContainer = new HBox();
         messageContainer.setAlignment(Pos.CENTER);
         messageContainer.setPadding(new Insets(10, 0, 10, 0));
@@ -193,6 +276,18 @@ public class ChatAreaView extends VBox {
 
         messageContainer.getChildren().add(messageLabel);
         Platform.runLater(() -> messagesBox.getChildren().add(messageContainer));
+    }
+
+    public void addCustomerMessage(CustomerRequest request, String message) {
+        addCustomerMessageFromHistory(request, message);
+    }
+
+    public void addUserMessage(String message) {
+        addUserMessageFromHistory(message);
+    }
+
+    public void addSystemMessage(String message) {
+        addSystemMessageFromHistory(message);
     }
 
     public void clearMessages() {

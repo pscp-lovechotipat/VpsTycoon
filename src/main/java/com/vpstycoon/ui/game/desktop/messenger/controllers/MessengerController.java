@@ -5,7 +5,8 @@ import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.vps.VPSOptimization;
-import com.vpstycoon.ui.game.desktop.messenger.*;
+import com.vpstycoon.ui.game.desktop.MessengerWindow;
+import com.vpstycoon.ui.game.desktop.messenger.MessageType;
 import com.vpstycoon.ui.game.desktop.messenger.models.*;
 import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import com.vpstycoon.ui.game.desktop.messenger.views.DashboardView;
@@ -27,6 +28,7 @@ public class MessengerController {
     private final VPSManager vpsManager;
     private final Company company;
     private final ChatHistoryManager chatHistoryManager;
+    private final MessengerWindow messengerWindow;
     private final RequestListView requestListView;
     private final ChatAreaView chatAreaView;
     private final DashboardView dashboardView;
@@ -40,21 +42,23 @@ public class MessengerController {
     private final SkillPointsManager skillPointsManager;
 
     public MessengerController(RequestManager requestManager, VPSManager vpsManager, Company company,
-                               ChatHistoryManager chatHistoryManager, RequestListView requestListView,
-                               ChatAreaView chatAreaView, DashboardView dashboardView, StackPane rootStack, Runnable onClose) {
+                               ChatHistoryManager chatHistoryManager, StackPane rootStack, Runnable onClose) {
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
         this.company = company;
         this.chatHistoryManager = chatHistoryManager;
-        this.requestListView = requestListView;
-        this.chatAreaView = chatAreaView;
-        this.dashboardView = dashboardView;
         this.rootStack = rootStack;
         this.onClose = () -> {
             chatHistoryManager.saveChatHistory();
             cleanup();
             onClose.run();
         };
+
+        // สร้าง MessengerWindow โดยส่ง ChatHistoryManager
+        this.messengerWindow = new MessengerWindow(chatHistoryManager);
+        this.requestListView = messengerWindow.getRequestListView();
+        this.chatAreaView = messengerWindow.getChatAreaView();
+        this.dashboardView = messengerWindow.getDashboardView();
 
         this.vmProvisioningManager = new VMProvisioningManager(chatHistoryManager, chatAreaView, provisioningProgressBars);
         this.rentalManager = new RentalManager(chatHistoryManager, chatAreaView, company);
@@ -88,7 +92,7 @@ public class MessengerController {
             if (!message.isEmpty()) {
                 CustomerRequest selected = requestListView.getSelectedRequest();
                 if (selected != null) {
-                    chatHistoryManager.addMessage(selected, new ChatMessage(MessageType.USER, message));
+                    chatHistoryManager.addMessage(selected, new ChatMessage(MessageType.USER, message, new HashMap<>()));
                     chatAreaView.addUserMessage(message);
                     chatAreaView.getMessageInput().clear();
 
@@ -97,7 +101,7 @@ public class MessengerController {
                             try {
                                 Thread.sleep(1000);
                                 Platform.runLater(() -> {
-                                    chatHistoryManager.addMessage(selected, new ChatMessage(MessageType.CUSTOMER, "Thanks for your response! Can you help me with my VM request?"));
+                                    chatHistoryManager.addMessage(selected, new ChatMessage(MessageType.CUSTOMER, "Thanks for your response! Can you help me with my VM request?", new HashMap<>()));
                                     chatAreaView.addCustomerMessage(selected, "Thanks for your response! Can you help me with my VM request?");
                                 });
                             } catch (InterruptedException ex) {
@@ -109,7 +113,7 @@ public class MessengerController {
                             try {
                                 Thread.sleep(1000);
                                 Platform.runLater(() -> {
-                                    chatHistoryManager.addMessage(selected, new ChatMessage(MessageType.CUSTOMER, "Thank you for checking in! The VM is working great."));
+                                    chatHistoryManager.addMessage(selected, new ChatMessage(MessageType.CUSTOMER, "Thank you for checking in! The VM is working great.", new HashMap<>()));
                                     chatAreaView.addCustomerMessage(selected, "Thank you for checking in! The VM is working great.");
                                 });
                             } catch (InterruptedException ex) {
@@ -135,9 +139,6 @@ public class MessengerController {
                     VPSOptimization.VM selectedVM = dialog.getSelectedVM();
                     if (selectedVM != null) {
                         vmProvisioningManager.startVMProvisioning(selected, selectedVM, () -> {
-                            // โค้ดที่ต้องการให้ทำงานหลัง provisioning เสร็จสิ้น
-                            System.out.println("Provisioning เสร็จแล้ว! VM ได้ถูก assign เรียบร้อย");
-                            // ตัวอย่าง: เรียกเมธอดอื่นๆ หรืออัปเดตสถานะ
                             completeVMProvisioning(selected, selectedVM);
                         });
                     }
@@ -163,37 +164,27 @@ public class MessengerController {
     }
 
     private void updateChatWithRequestDetails(CustomerRequest request) {
-        chatAreaView.clearMessages();
-        List<ChatMessage> chatHistory = chatHistoryManager.getChatHistory(request);
-        if (chatHistory != null && !chatHistory.isEmpty()) {
-            for (ChatMessage message : chatHistory) {
-                switch (message.getType()) {
-                    case CUSTOMER:
-                        chatAreaView.addCustomerMessage(request, message.getContent());
-                        break;
-                    case USER:
-                        chatAreaView.addUserMessage(message.getContent());
-                        break;
-                    case SYSTEM:
-                        chatAreaView.addSystemMessage(message.getContent());
-                        break;
-                }
+        if (request != null) {
+            List<ChatMessage> chatHistory = chatHistoryManager.getChatHistory(request);
+            if (chatHistory == null || chatHistory.isEmpty()) {
+                // ถ้าไม่มีประวัติแชท แสดงข้อความเริ่มต้นที่ระบุ CPU, RAM, Storage
+                String requestMessage = "Hello! I need a VM with the following specs:\n" +
+                        "• " + request.getRequiredVCPUs() + " vCPUs\n" +
+                        "• " + request.getRequiredRam() + " RAM\n" +
+                        "• " + request.getRequiredDisk() + " Disk\n\n" +
+                        "Can you help me set this up?";
+                chatHistoryManager.addMessage(request, new ChatMessage(MessageType.CUSTOMER, requestMessage, new HashMap<>()));
             }
+            chatAreaView.loadChatHistory(request); // โหลดประวัติแชท
         } else {
-            String requestMessage = "Hello! I need a VM with the following specs:\n" +
-                    "• " + request.getRequiredVCPUs() + " vCPUs\n" +
-                    "• " + request.getRequiredRam() + " RAM\n" +
-                    "• " + request.getRequiredDisk() + " Disk\n\n" +
-                    "Can you help me set this up?";
-            chatHistoryManager.addMessage(request, new ChatMessage(MessageType.CUSTOMER, requestMessage));
-            chatAreaView.addCustomerMessage(request, requestMessage);
+            chatAreaView.clearMessages();
         }
     }
 
     private void completeVMProvisioning(CustomerRequest request, VPSOptimization.VM vm) {
         vmAssignments.put(vm, request);
         request.activate();
-        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM assigned successfully"));
+        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM assigned successfully", new HashMap<>()));
         chatAreaView.addSystemMessage("VM assigned successfully");
         updateRequestList();
         updateDashboard();
@@ -226,12 +217,12 @@ public class MessengerController {
             if (isArchiving) {
                 requestManager.getRequests().remove(request);
                 chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                        "Request archived and VM released"));
+                        "Request archived and VM released", new HashMap<>()));
                 chatAreaView.addSystemMessage("Request archived and VM released");
             } else {
                 request.markAsExpired();
                 chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                        "Contract expired and VM released"));
+                        "Contract expired and VM released", new HashMap<>()));
                 chatAreaView.addSystemMessage("Contract expired and VM released");
             }
         }
@@ -276,5 +267,10 @@ public class MessengerController {
     public void close() {
         chatHistoryManager.saveChatHistory();
         cleanup();
+    }
+
+    // เมธอดให้ DesktopScreen ดึง MessengerWindow
+    public MessengerWindow getMessengerWindow() {
+        return messengerWindow;
     }
 }

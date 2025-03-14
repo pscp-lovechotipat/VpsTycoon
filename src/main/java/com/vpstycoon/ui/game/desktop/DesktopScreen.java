@@ -5,8 +5,8 @@ import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 import com.vpstycoon.ui.game.desktop.messenger.controllers.MessengerController;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -22,6 +22,7 @@ public class DesktopScreen extends StackPane {
     private final VPSManager vpsManager;
     private final Company company;
     private final GameplayContentPane parent;
+
     private MessengerWindow chatWindow;
     private MessengerController chatController;
 
@@ -48,7 +49,8 @@ public class DesktopScreen extends StackPane {
         iconsContainer.setAlignment(Pos.TOP_LEFT);
 
         DesktopIcon messengerIcon = new DesktopIcon(FontAwesomeSolid.COMMENTS.toString(), "Messenger", this::openChatWindow);
-        iconsContainer.getChildren().addAll(messengerIcon, new DesktopIcon(FontAwesomeSolid.SHOPPING_CART.toString(), "Market", this::openMarketWindow),
+        iconsContainer.getChildren().addAll(messengerIcon,
+                new DesktopIcon(FontAwesomeSolid.SHOPPING_CART.toString(), "Market", this::openMarketWindow),
                 new DesktopIcon(FontAwesomeSolid.CHART_LINE.toString(), "Dashboard", this::openDashboardWindow));
 
         getChildren().add(iconsContainer);
@@ -56,13 +58,19 @@ public class DesktopScreen extends StackPane {
 
     private void openChatWindow() {
         if (chatWindow == null) {
-            chatWindow = new MessengerWindow();
+            // สร้าง ChatHistoryManager
             ChatHistoryManager chatHistoryManager = new ChatHistoryManager();
+
+            // สร้าง MessengerController และส่ง ChatHistoryManager เข้าไป
             chatController = new MessengerController(requestManager, vpsManager, company, chatHistoryManager,
-                    chatWindow.getRequestListView(), chatWindow.getChatAreaView(), chatWindow.getDashboardView(), parent.getRootStack(), this::closeChatWindow);
+                    parent.getRootStack(), this::closeChatWindow);
+
+            // ดึง MessengerWindow จาก MessengerController
+            chatWindow = chatController.getMessengerWindow();
+
             // ตั้งค่าปุ่มปิดให้ทำงานอย่างถูกต้อง
             chatWindow.getCloseButton().setOnAction(e -> {
-                chatController.close(); // ถ้ามีเมธอด close() ใน MessengerController
+                chatController.close();
                 closeChatWindow();
             });
         }
@@ -75,6 +83,8 @@ public class DesktopScreen extends StackPane {
     private void closeChatWindow() {
         if (chatWindow != null && getChildren().contains(chatWindow)) {
             getChildren().remove(chatWindow);
+            chatWindow = null; // รีเซ็ต chatWindow เพื่อให้สามารถสร้างใหม่ได้
+            chatController = null; // รีเซ็ต chatController
         }
     }
 

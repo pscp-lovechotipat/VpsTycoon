@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.desktop;
 
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import com.vpstycoon.ui.game.desktop.messenger.views.DashboardView;
 import com.vpstycoon.ui.game.desktop.messenger.views.RequestListView;
@@ -18,23 +19,24 @@ public class MessengerWindow extends VBox {
     private ChatAreaView chatAreaView;
     private DashboardView dashboardView;
 
-    public MessengerWindow() {
+    // Constructor ที่รับ ChatHistoryManager
+    public MessengerWindow(ChatHistoryManager chatHistoryManager) {
         setPrefSize(900, 650);
         getStylesheets().add(getClass().getResource("/css/messenger-window.css").toExternalForm());
         getStyleClass().add("messenger-window");
 
         HBox titleBar = createTitleBar();
         requestListView = new RequestListView();
-        chatAreaView = new ChatAreaView();
+        chatAreaView = new ChatAreaView(chatHistoryManager); // ส่ง ChatHistoryManager ไปยัง ChatAreaView
         dashboardView = new DashboardView();
 
         // สร้าง chatContainer และตั้งค่า Vgrow ให้ chatAreaView ขยายเต็มที่ในแนวตั้ง
         VBox chatContainer = new VBox(dashboardView, chatAreaView);
-        VBox.setVgrow(chatAreaView, Priority.ALWAYS); // ให้ chatAreaView ขยายเต็มพื้นที่แนวตั้ง
+        VBox.setVgrow(chatAreaView, Priority.ALWAYS);
 
         // สร้าง HBox content และตั้งค่า Hgrow ให้ chatContainer ขยายเต็มที่ในแนวนอน
         HBox content = new HBox(requestListView, chatContainer);
-        HBox.setHgrow(chatContainer, Priority.ALWAYS); // ให้ chatContainer ขยายเต็มพื้นที่แนวนอนที่เหลือ
+        HBox.setHgrow(chatContainer, Priority.ALWAYS);
         content.setPadding(new Insets(0));
 
         // ตั้งค่า Vgrow ให้ content ขยายเต็มที่ใน MessengerWindow
@@ -72,7 +74,7 @@ public class MessengerWindow extends VBox {
     public ChatAreaView getChatAreaView() { return chatAreaView; }
     public DashboardView getDashboardView() { return dashboardView; }
     public Button getCloseButton() {
-        HBox titleBar = (HBox) getChildren().get(0); // ดึง titleBar ที่ตำแหน่ง 0
-        return (Button) titleBar.getChildren().get(1); // ดึง closeButton ที่ตำแหน่ง 1 ใน titleBar
+        HBox titleBar = (HBox) getChildren().get(0);
+        return (Button) titleBar.getChildren().get(1);
     }
 }
