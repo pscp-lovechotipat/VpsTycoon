@@ -6,9 +6,11 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
 
 import java.util.List;
 
@@ -17,61 +19,77 @@ public class VMSelectionDialog extends VBox {
     private Button confirmButton;
     private VPSOptimization.VM selectedVM;
     private StackPane parentPane;
-    private Runnable onConfirm; // ตัวแปรสำหรับเก็บ callback
+    private Runnable onConfirm;
 
-    // Constructor ที่ปรับแล้ว (ลบ Runnable onConfirm ออก)
     public VMSelectionDialog(List<VPSOptimization.VM> availableVMs, StackPane parentPane) {
         this.parentPane = parentPane;
 
-        setAlignment(Pos.CENTER);
-        setPadding(new Insets(20));
-        setPrefSize(300, 200);
-        setMaxSize(300, 200);
-        setStyle("-fx-background-color: #34495e; -fx-border-color: #6a00ff; -fx-border-width: 2;");
+        // โหลด CSS ภายนอก
+        getStylesheets().add(getClass().getResource("/css/vmselect-modal.css").toExternalForm());
+
+        // ตั้งค่าพื้นฐาน
+        setAlignment(Pos.TOP_CENTER); // ปรับเป็น TOP_CENTER เพื่อให้เริ่มจากด้านบน
+        setPadding(new Insets(25));
+        setPrefSize(320, 440);
+        setMaxSize(320, 440);
+        getStyleClass().add("vm-selection-dialog");
+        setEffect(new DropShadow(20, Color.valueOf("#00ffcc")));
+
+        // Top Bar (สำหรับปุ่ม Close)
+        HBox topBar = new HBox();
+        topBar.setAlignment(Pos.TOP_RIGHT); // ขวาบน
+        Button closeButton = new Button("X");
+        closeButton.getStyleClass().add("close-button");
+        closeButton.setPrefSize(30, 30);
+        closeButton.setOnAction(e -> closeDialog());
+        topBar.getChildren().add(closeButton);
 
         // Label
-        Label selectVMLabel = new Label("Select VM:");
-        selectVMLabel.setStyle("-fx-text-fill: white; -fx-font-family: 'Monospace'; -fx-font-size: 16;");
+        Label selectVMLabel = new Label("SELECT VM:");
+        selectVMLabel.setFont(Font.font("Monospace", 18));
+        selectVMLabel.getStyleClass().add("select-vm-label");
 
-        // ComboBox สำหรับเลือก VM
+        // ComboBox
         vmComboBox = new ComboBox<>();
-        vmComboBox.setMaxWidth(Double.MAX_VALUE);
-        vmComboBox.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
+        vmComboBox.setMaxWidth(250);
+        vmComboBox.getStyleClass().add("vm-combobox");
         vmComboBox.getItems().addAll(availableVMs);
-        vmComboBox.setPromptText(availableVMs.isEmpty() ? "No available VMs" : "Select a VM");
+        vmComboBox.setPromptText(availableVMs.isEmpty() ? "NO VM DETECTED" : "CHOOSE YOUR VM");
 
-        // ปุ่มยืนยัน
-        confirmButton = new Button("Confirm");
-        confirmButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-family: 'Monospace';");
+        // ปุ่ม Confirm (ใส่ใน HBox เพื่อจัดกึ่งกลางด้านล่าง)
+        confirmButton = new Button("CONFIRM");
+        confirmButton.setPrefWidth(120);
+        confirmButton.getStyleClass().add("confirm-button");
         confirmButton.setOnAction(e -> {
             selectedVM = vmComboBox.getValue();
             if (selectedVM != null) {
-                if (onConfirm != null) { // ตรวจสอบว่า onConfirm ไม่เป็น null
+                if (onConfirm != null) {
                     onConfirm.run();
                 }
                 closeDialog();
             }
         });
 
-        // ปุ่มปิด
-        Button closeButton = new Button("X");
-        closeButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-family: 'Monospace';");
-        closeButton.setOnAction(e -> closeDialog());
+        // HBox สำหรับ Confirm เพื่อจัดกึ่งกลางด้านล่าง
+        HBox confirmBox = new HBox();
+        confirmBox.setAlignment(Pos.CENTER);
+        confirmBox.getChildren().add(confirmButton);
 
-        // จัดตำแหน่งปุ่มปิดที่มุมขวาบน
-        HBox topBar = new HBox(10);
-        topBar.setAlignment(Pos.CENTER_RIGHT);
-        topBar.getChildren().add(closeButton);
+        // เพิ่ม Spacer เพื่อดัน Confirm ลงล่าง
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS); // ทำให้ Spacer ขยายตัวดัน Confirm ลงล่าง
 
-        getChildren().addAll(topBar, selectVMLabel, vmComboBox, confirmButton);
+        // จัดเรียงองค์ประกอบ
+        getChildren().addAll(topBar, selectVMLabel, vmComboBox, spacer, confirmBox);
+        setSpacing(20);
 
-        // เพิ่มพื้นหลังกึ่งโปร่งใสให้กับ dialog
+        // Overlay
         Rectangle overlay = new Rectangle();
-        overlay.setFill(Color.rgb(0, 0, 0, 0.7));
+        overlay.setFill(Color.rgb(10, 10, 20, 0.85));
         overlay.widthProperty().bind(parentPane.widthProperty());
         overlay.heightProperty().bind(parentPane.heightProperty());
 
-        // เพิ่ม dialog และ overlay เข้าไปใน parentPane
+        // เพิ่มเข้า parentPane
         parentPane.getChildren().addAll(overlay, this);
         StackPane.setAlignment(this, Pos.CENTER);
     }
@@ -82,10 +100,9 @@ public class VMSelectionDialog extends VBox {
 
     private void closeDialog() {
         parentPane.getChildren().remove(this);
-        parentPane.getChildren().remove(parentPane.getChildren().size() - 1); // ลบ overlay
+        parentPane.getChildren().remove(parentPane.getChildren().size() - 1);
     }
 
-    // เมธอดใหม่สำหรับกำหนด callback
     public void setOnConfirm(Runnable onConfirm) {
         this.onConfirm = onConfirm;
     }

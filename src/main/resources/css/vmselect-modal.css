@@ -1,0 +1,58 @@
+/* สไตล์สำหรับ Dialog */
+.vm-selection-dialog {
+    -fx-background-color: #1a1a2e;
+    -fx-border-color: #00ffcc;
+    -fx-border-width: 3;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+/* สไตล์สำหรับ Label */
+.select-vm-label {
+    -fx-text-fill: #ff00ff;
+    -fx-font-family: "Monospace";
+    -fx-font-size: 18;
+    -fx-effect: dropshadow(gaussian, #ff00ff, 10, 0.1, 0, 0);
+}
+
+/* สไตล์สำหรับ ComboBox */
+.vm-combobox {
+    -fx-background-color: #0f0f23;
+    -fx-text-fill: #00ffcc;
+    -fx-border-color: #ff00ff;
+    -fx-border-width: 2;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-font-family: "Monospace";
+    -fx-font-size: 14;
+}
+
+/* สไตล์สำหรับปุ่ม Confirm (สถานะปกติ) */
+.confirm-button {
+    -fx-background-color: linear-gradient(to bottom, #00ffcc, #00b894);
+    -fx-text-fill: #1a1a2e;
+    -fx-font-family: "Monospace";
+    -fx-font-size: 14;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, #00ffcc, 15, 0.1, 0, 0);
+}
+
+/* สไตล์สำหรับปุ่ม Confirm (เมื่อ hover) */
+.confirm-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #00ffcc, #00e6b8);
+    -fx-text-fill: #1a1a2e;
+    -fx-font-family: "Monospace";
+    -fx-font-size: 14;
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, #00ffcc, 20, 0.1, 0, 0);
+}
+
+/* สไตล์สำหรับปุ่ม Close */
+.close-button {
+    -fx-background-color: #ff0066;
+    -fx-text-fill: #1a1a2e;
+    -fx-font-family: "Monospace";
+    -fx-font-size: 14;
+    -fx-background-radius: 50%;
+    -fx-effect: dropshadow(gaussian, #ff0066, 10, 0.8, 0, 0);
+}
