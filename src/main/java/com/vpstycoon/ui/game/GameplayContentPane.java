@@ -486,7 +486,7 @@ public class GameplayContentPane extends BorderPane {
 
         // Check if there are enough slots available
         int slotsRequired = vps.getSlotsRequired();
-        if (occupiedSlots + slotsRequired > totalSlots) {
+        if (vpsList.size() + slotsRequired > totalSlots) {
             return false; // Not enough slots available
         }
 
@@ -495,8 +495,8 @@ public class GameplayContentPane extends BorderPane {
         vpsList.add(vps);
         vps.setInstalled(true);
 
-        // Update occupied slots
-        occupiedSlots += slotsRequired;
+        // Update occupied slots ไม่ต้องใส่ อย่าหาใส่มา คืออะไรแบบ add vps เข้าไปแล้ว เพิ่ม occupiedSlots ทำไม ในเมื่อเก็บเป็น List อยู่แล้ว แล้ว occupiedSlots คือ slot ของ upgrade
+//        occupiedSlots -= slotsRequired;
 
         return true;
     }
