@@ -42,3 +42,4 @@ build/
 .DS_Store
 /backups
 savegame.dat
+chat_history.dat

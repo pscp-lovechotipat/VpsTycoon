@@ -1,4 +1,4 @@
-package com.vpstycoon.ui.game.desktop.messenger;
+package com.vpstycoon.ui.game.desktop.messenger.views;
 
 import com.vpstycoon.game.manager.CustomerRequest;
 import javafx.application.Platform;
@@ -92,6 +92,7 @@ public class ChatAreaView extends VBox {
         archiveButton.setDisable(true);
 
         inputArea.getChildren().addAll(messageInput, sendButton, assignVMButton, archiveButton);
+
         getChildren().addAll(chatHeader, messagesScroll, inputArea);
 
         messagesBox.heightProperty().addListener((obs, oldVal, newVal) -> messagesScroll.setVvalue(1.0));
@@ -198,8 +199,10 @@ public class ChatAreaView extends VBox {
         messagesBox.getChildren().clear();
     }
 
+    // Getters
     public Button getSendButton() { return sendButton; }
     public Button getAssignVMButton() { return assignVMButton; }
     public Button getArchiveButton() { return archiveButton; }
     public TextField getMessageInput() { return messageInput; }
+    public VBox getMessagesBox() { return messagesBox; }
 }

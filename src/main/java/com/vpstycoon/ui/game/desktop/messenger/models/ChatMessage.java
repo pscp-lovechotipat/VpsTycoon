@@ -1,4 +1,6 @@
-package com.vpstycoon.ui.game.desktop.messenger;
+package com.vpstycoon.ui.game.desktop.messenger.models;
+
+import com.vpstycoon.ui.game.desktop.messenger.MessageType;
 
 import java.io.Serializable;
 

@@ -96,10 +96,33 @@ public class ZoomPanHandler {
             if (isPanning) {
                 double deltaX = e.getSceneX() - mouseAnchorX;
                 double deltaY = e.getSceneY() - mouseAnchorY;
-                
-                worldGroup.setTranslateX(translateAnchorX + deltaX);
-                worldGroup.setTranslateY(translateAnchorY + deltaY);
-                
+
+                // คำนวณค่าใหม่
+                double newTranslateX = translateAnchorX + deltaX;
+                double newTranslateY = translateAnchorY + deltaY;
+
+                // ดึงขนาดของ worldGroup และ gameArea
+                double worldWidth = worldGroup.getBoundsInLocal().getWidth();
+                double worldHeight = worldGroup.getBoundsInLocal().getHeight();
+                double viewWidth = gameArea.getWidth();
+                double viewHeight = gameArea.getHeight();
+
+                // คำนวณขอบเขต
+                int delta = 500;
+
+                double minX = Math.min(-delta, viewWidth - worldWidth); // ค่าต่ำสุดของ translateX
+                double maxX = delta; // ค่าสูงสุดของ translateX
+                double minY = Math.min(-delta, viewHeight - worldHeight); // ค่าต่ำสุดของ translateY
+                double maxY = delta; // ค่าสูงสุดของ translateY
+
+                // จำกัดค่า translateX และ translateY
+                newTranslateX = Math.max(minX, Math.min(maxX, newTranslateX));
+                newTranslateY = Math.max(minY, Math.min(maxY, newTranslateY));
+
+                // ตั้งค่าที่จำกัดแล้ว
+                worldGroup.setTranslateX(newTranslateX);
+                worldGroup.setTranslateY(newTranslateY);
+
                 updateDebugInfoIfNeeded();
                 e.consume();
             }

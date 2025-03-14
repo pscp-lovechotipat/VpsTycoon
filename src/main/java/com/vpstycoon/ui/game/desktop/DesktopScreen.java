@@ -5,8 +5,8 @@ import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.ui.game.desktop.messenger.ChatHistoryManager;
-import com.vpstycoon.ui.game.desktop.messenger.MessengerController;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
+import com.vpstycoon.ui.game.desktop.messenger.controllers.MessengerController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -59,7 +59,7 @@ public class DesktopScreen extends StackPane {
             chatWindow = new MessengerWindow();
             ChatHistoryManager chatHistoryManager = new ChatHistoryManager();
             chatController = new MessengerController(requestManager, vpsManager, company, chatHistoryManager,
-                    chatWindow.getRequestListView(), chatWindow.getChatAreaView(), chatWindow.getDashboardView(), this::closeChatWindow);
+                    chatWindow.getRequestListView(), chatWindow.getChatAreaView(), chatWindow.getDashboardView(), parent.getRootStack(), this::closeChatWindow);
             // ตั้งค่าปุ่มปิดให้ทำงานอย่างถูกต้อง
             chatWindow.getCloseButton().setOnAction(e -> {
                 chatController.close(); // ถ้ามีเมธอด close() ใน MessengerController

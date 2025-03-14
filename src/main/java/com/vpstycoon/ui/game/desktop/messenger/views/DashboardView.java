@@ -1,4 +1,4 @@
-package com.vpstycoon.ui.game.desktop.messenger;
+package com.vpstycoon.ui.game.desktop.messenger.views;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

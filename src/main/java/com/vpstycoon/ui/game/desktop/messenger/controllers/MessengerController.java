@@ -1,25 +1,26 @@
-package com.vpstycoon.ui.game.desktop.messenger;
+package com.vpstycoon.ui.game.desktop.messenger.controllers;
 
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.vps.VPSOptimization;
+import com.vpstycoon.ui.game.desktop.messenger.*;
+import com.vpstycoon.ui.game.desktop.messenger.models.*;
+import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
+import com.vpstycoon.ui.game.desktop.messenger.views.DashboardView;
+import com.vpstycoon.ui.game.desktop.messenger.views.RequestListView;
+import com.vpstycoon.ui.game.desktop.messenger.views.VMSelectionDialog;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.layout.StackPane;
 
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class MessengerController {
     private final RequestManager requestManager;
@@ -29,19 +30,18 @@ public class MessengerController {
     private final RequestListView requestListView;
     private final ChatAreaView chatAreaView;
     private final DashboardView dashboardView;
+    private final StackPane rootStack;
     private Runnable onClose;
     private final Map<VPSOptimization.VM, CustomerRequest> vmAssignments = new HashMap<>();
-    private final Map<CustomerRequest, Date> rentalEndDates = new HashMap<>();
-    private final Map<CustomerRequest, Timer> rentalTimers = new HashMap<>();
     private final Map<CustomerRequest, ProgressBar> provisioningProgressBars = new HashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final Random random = new Random();
-    private static final long GAME_MONTH_IN_MINUTES = 15;
-    private static final long MILLISECONDS_PER_GAME_DAY = (GAME_MONTH_IN_MINUTES * 60 * 1000) / 30;
+    private final VMProvisioningManager vmProvisioningManager;
+    private final RentalManager rentalManager;
+    private final SkillPointsManager skillPointsManager;
 
     public MessengerController(RequestManager requestManager, VPSManager vpsManager, Company company,
                                ChatHistoryManager chatHistoryManager, RequestListView requestListView,
-                               ChatAreaView chatAreaView, DashboardView dashboardView, Runnable onClose) {
+                               ChatAreaView chatAreaView, DashboardView dashboardView, StackPane rootStack, Runnable onClose) {
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
         this.company = company;
@@ -49,15 +49,21 @@ public class MessengerController {
         this.requestListView = requestListView;
         this.chatAreaView = chatAreaView;
         this.dashboardView = dashboardView;
+        this.rootStack = rootStack;
         this.onClose = () -> {
             chatHistoryManager.saveChatHistory();
             cleanup();
             onClose.run();
         };
 
+        this.vmProvisioningManager = new VMProvisioningManager(chatHistoryManager, chatAreaView, provisioningProgressBars);
+        this.rentalManager = new RentalManager(chatHistoryManager, chatAreaView, company);
+        this.skillPointsManager = new SkillPointsManager(chatHistoryManager, chatAreaView);
+
         setupListeners();
         updateRequestList();
         updateDashboard();
+        loadSkillLevels();
     }
 
     private void setupListeners() {
@@ -115,7 +121,30 @@ public class MessengerController {
             }
         });
 
-        chatAreaView.getAssignVMButton().setOnAction(e -> showVMSelectionPopup());
+        chatAreaView.getAssignVMButton().setOnAction(e -> {
+            CustomerRequest selected = requestListView.getSelectedRequest();
+            if (selected != null && !selected.isActive()) {
+                List<VPSOptimization.VM> allAvailableVMs = new ArrayList<>();
+                for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                    allAvailableVMs.addAll(vps.getVms().stream()
+                            .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
+                            .collect(Collectors.toList()));
+                }
+                VMSelectionDialog dialog = new VMSelectionDialog(allAvailableVMs, rootStack);
+                dialog.setOnConfirm(() -> {
+                    VPSOptimization.VM selectedVM = dialog.getSelectedVM();
+                    if (selectedVM != null) {
+                        vmProvisioningManager.startVMProvisioning(selected, selectedVM, () -> {
+                            // โค้ดที่ต้องการให้ทำงานหลัง provisioning เสร็จสิ้น
+                            System.out.println("Provisioning เสร็จแล้ว! VM ได้ถูก assign เรียบร้อย");
+                            // ตัวอย่าง: เรียกเมธอดอื่นๆ หรืออัปเดตสถานะ
+                            completeVMProvisioning(selected, selectedVM);
+                        });
+                    }
+                });
+            }
+        });
+
         chatAreaView.getArchiveButton().setOnAction(e -> archiveRequest());
     }
 
@@ -161,69 +190,6 @@ public class MessengerController {
         }
     }
 
-    private void showVMSelectionPopup() {
-        CustomerRequest selected = requestListView.getSelectedRequest();
-        if (selected == null || selected.isActive()) return;
-
-        Stage popupStage = new Stage();
-        popupStage.initModality(Modality.APPLICATION_MODAL);
-        popupStage.setTitle("Assign VM to " + selected.getName());
-
-        VBox content = new VBox(15);
-        content.setPadding(new Insets(20));
-        content.setStyle("-fx-background-color: #2c3e50;");
-        content.setMinWidth(400);
-
-        Label titleLabel = new Label("Assign VM to " + selected.getName());
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
-
-        VBox requirementsBox = new VBox(5);
-        requirementsBox.setStyle("-fx-background-color: rgba(52, 152, 219, 0.2); -fx-padding: 10px; -fx-border-radius: 5px;");
-
-        Label requirementsTitle = new Label("Customer Requirements:");
-        requirementsTitle.setStyle("-fx-font-weight: bold; -fx-text-fill: #3498db;");
-
-        Label vcpusLabel = new Label("• vCPUs: " + selected.getRequiredVCPUs());
-        vcpusLabel.setStyle("-fx-text-fill: white;");
-
-        Label ramLabel = new Label("• RAM: " + selected.getRequiredRam());
-        ramLabel.setStyle("-fx-text-fill: white;");
-
-        Label diskLabel = new Label("• Disk: " + selected.getRequiredDisk());
-        diskLabel.setStyle("-fx-text-fill: white;");
-
-        requirementsBox.getChildren().addAll(requirementsTitle, vcpusLabel, ramLabel, diskLabel);
-
-        ComboBox<VPSOptimization.VM> vmComboBox = new ComboBox<>();
-        vmComboBox.setMaxWidth(Double.MAX_VALUE);
-        vmComboBox.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
-        List<VPSOptimization.VM> allAvailableVMs = new ArrayList<>();
-        for (VPSOptimization vps : vpsManager.getVPSList()) {
-            allAvailableVMs.addAll(vps.getVms().stream()
-                    .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
-                    .collect(java.util.stream.Collectors.toList()));
-        }
-        vmComboBox.getItems().addAll(allAvailableVMs);
-        vmComboBox.setPromptText(allAvailableVMs.isEmpty() ? "No available VMs" : "Select a VM");
-
-        Button confirmButton = new Button("Assign VM");
-        confirmButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
-        confirmButton.setOnAction(e -> {
-            VPSOptimization.VM selectedVM = vmComboBox.getValue();
-            if (selectedVM != null) {
-                popupStage.close();
-                completeVMProvisioning(selected, selectedVM);
-            }
-        });
-
-        Label selectVMLabel = new Label("Select VM:");
-        selectVMLabel.setStyle("-fx-text-fill: white;");
-
-        content.getChildren().addAll(titleLabel, requirementsBox, selectVMLabel, vmComboBox, confirmButton);
-        popupStage.setScene(new Scene(content));
-        popupStage.showAndWait();
-    }
-
     private void completeVMProvisioning(CustomerRequest request, VPSOptimization.VM vm) {
         vmAssignments.put(vm, request);
         request.activate();
@@ -231,6 +197,8 @@ public class MessengerController {
         chatAreaView.addSystemMessage("VM assigned successfully");
         updateRequestList();
         updateDashboard();
+        rentalManager.setupRentalPeriod(request, vm);
+        skillPointsManager.awardSkillPoints(request, 0.2);
     }
 
     private void archiveRequest() {
@@ -253,25 +221,44 @@ public class MessengerController {
     public void releaseVM(VPSOptimization.VM vm, boolean isArchiving) {
         CustomerRequest request = vmAssignments.get(vm);
         if (request != null) {
-            Timer timer = rentalTimers.remove(request);
-            if (timer != null) timer.cancel();
-            rentalEndDates.remove(request);
+            rentalManager.cancelRental(request);
             provisioningProgressBars.remove(request);
             if (isArchiving) {
                 requestManager.getRequests().remove(request);
+                chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
+                        "Request archived and VM released"));
+                chatAreaView.addSystemMessage("Request archived and VM released");
             } else {
                 request.markAsExpired();
+                chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
+                        "Contract expired and VM released"));
+                chatAreaView.addSystemMessage("Contract expired and VM released");
             }
         }
         vmAssignments.remove(vm);
         updateDashboard();
     }
 
+    private void loadSkillLevels() {
+        try {
+            java.lang.reflect.Field skillLevelsField = com.vpstycoon.ui.game.status.CircleStatusButton.class
+                    .getDeclaredField("skillLevels");
+            skillLevelsField.setAccessible(true);
+            HashMap<String, Integer> skillLevels = (HashMap<String, Integer>) skillLevelsField.get(null);
+            int deployLevel = skillLevels.getOrDefault("Deploy", 1);
+            vmProvisioningManager.setDeployLevel(deployLevel);
+            System.out.println("Loaded skill levels: " + skillLevels);
+        } catch (Exception e) {
+            System.err.println("Error loading skill levels: " + e.getMessage());
+            vmProvisioningManager.setDeployLevel(1);
+        }
+    }
+
     private void cleanup() {
-        for (Timer timer : rentalTimers.values()) {
+        for (Timer timer : rentalManager.getRentalTimers().values()) {
             timer.cancel();
         }
-        rentalTimers.clear();
+        rentalManager.getRentalTimers().clear();
         scheduler.shutdown();
         try {
             if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
