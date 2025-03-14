@@ -115,6 +115,7 @@ public class RackManagementUI {
         upgradeButton.setOnAction(e -> {
             if (parent.getOccupiedSlots() < MAX_SLOTS) {
                 parent.setOccupiedSlots(parent.getOccupiedSlots() + 1);
+                parent.pushNotification("Rack upgraded", "Rack upgraded to " + parent.getOccupiedSlots() + " slots");
                 System.out.println("Rack upgraded to " + parent.getOccupiedSlots() + " slots");
                 openRackInfo(); // รีเฟรชหน้า
             } else {

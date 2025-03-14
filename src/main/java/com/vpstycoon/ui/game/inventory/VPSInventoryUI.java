@@ -197,7 +197,7 @@ public class VPSInventoryUI {
      */
     private void installVPS(String vpsId, VPSOptimization vps) {
         // Check if there are enough slots available
-        if (parent.getOccupiedSlots() + vps.getSlotsRequired() > parent.getTotalSlots()) {
+        if (vps.getSlotsRequired() > parent.getOccupiedSlots() - parent.getVpsList().size()) {
             parent.pushNotification("Installation Failed", 
                     "Not enough slots available in the rack. You need " + vps.getSlotsRequired() + 
                     " slots, but only " + (parent.getTotalSlots() - parent.getOccupiedSlots()) + " are available.");
