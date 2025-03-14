@@ -29,20 +29,20 @@ public class NotificationView extends VBox {
         getChildren().add(notificationPane);
 
         // สร้าง TranslateTransition สำหรับเลื่อนไปทางขวา
-        TranslateTransition translateOutTransition = new TranslateTransition(Duration.seconds(1), notificationPane);
+        TranslateTransition translateOutTransition = new TranslateTransition(Duration.seconds(0.3), notificationPane);
         translateOutTransition.setFromX(0); // เริ่มจากตำแหน่งปัจจุบัน
         translateOutTransition.setToX(300); // เลื่อนไปทางขวา 300 หน่วย
 
-        TranslateTransition translateInTransition = new TranslateTransition(Duration.seconds(1), notificationPane);
+        TranslateTransition translateInTransition = new TranslateTransition(Duration.seconds(0.3), notificationPane);
         translateInTransition.setFromX(300);
         translateInTransition.setToX(0);
 
         // สร้าง FadeTransition สำหรับลด opacity
-        FadeTransition fadeOutTransition = new FadeTransition(Duration.seconds(1), notificationPane);
+        FadeTransition fadeOutTransition = new FadeTransition(Duration.seconds(0.3), notificationPane);
         fadeOutTransition.setFromValue(1.0); // เริ่มจากไม่โปร่งใส
         fadeOutTransition.setToValue(0.0); // จางหายไปจนโปร่งใส
 
-        FadeTransition fadeInTransition = new FadeTransition(Duration.seconds(1), notificationPane);
+        FadeTransition fadeInTransition = new FadeTransition(Duration.seconds(0.3), notificationPane);
         fadeInTransition.setFromValue(0.0);
         fadeInTransition.setToValue(1.0);
 

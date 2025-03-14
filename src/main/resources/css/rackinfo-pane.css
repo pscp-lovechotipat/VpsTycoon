@@ -1,0 +1,138 @@
+/* Main Pane */
+.rack-pane {
+    -fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F);
+    -fx-padding: 20px;
+}
+
+/* Top Bar */
+.top-bar {
+    -fx-background-color: #37474F;
+    -fx-padding: 10px;
+    -fx-background-radius: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);
+    -fx-border-color: #9e33ff;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+    -fx-spacing: 20px;
+}
+
+.title-label {
+    -fx-text-fill: #E0FFFF;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, #bf00ff, 5, 0.1, 0, 0);
+}
+
+/* Close Button (กำหนดผ่าน UIUtils.createModernButton ปรับที่นี่) */
+.close-button {
+    -fx-background-color: #F44336;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 14px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, #F44336, 10, 0.5, 0, 0);
+}
+.close-button:hover {
+    -fx-background-color: #EF5350;
+}
+
+/* Content Box */
+.content-box {
+    -fx-background-color: #263238;
+    -fx-padding: 15px;
+    -fx-background-radius: 10px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);
+    -fx-border-color: #9900ff;
+    -fx-border-width: 1px;
+    -fx-border-radius: 10px;
+    -fx-spacing: 20px;
+}
+
+/* Rack Box */
+.rack-box {
+    -fx-background-color: #37474F;
+    -fx-border-color: #ff0080;
+    -fx-border-width: 2px;
+    -fx-background-radius: 8px;
+    -fx-effect: innershadow(gaussian, #d000ff, 10, 0.5, 0, 0);
+    -fx-padding: 5px;
+}
+
+/* Rack Slots */
+.vps-slot {
+    -fx-fill: #00b2ff;
+    -fx-stroke: #FFFFFF;
+    -fx-arc-height: 5;
+    -fx-arc-width: 5;
+    -fx-effect: dropshadow(gaussian, #00d9ff, 10, 0.1, 0, 0);
+}
+.vps-slot:hover {
+    -fx-fill: #84f5ff;
+}
+
+.available-slot {
+    -fx-fill: #B0BEC5;
+    -fx-stroke: #FFFFFF;
+    -fx-arc-height: 5;
+    -fx-arc-width: 5;
+}
+.available-slot:hover {
+    -fx-fill: #E0FFFF;
+    -fx-effect: dropshadow(gaussian, #00FFFF, 10, 0.5, 0, 0);
+}
+
+.not-available-slot {
+    -fx-fill: #424242;
+    -fx-stroke: #FFFFFF;
+    -fx-arc-height: 5;
+    -fx-arc-width: 5;
+}
+
+.size-label {
+    -fx-text-fill: #E0FFFF;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+/* Info Pane */
+.info-pane {
+    -fx-alignment: center;
+    -fx-spacing: 10px;
+}
+
+.info-title {
+    -fx-text-fill: #E0FFFF;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, #a100ff, 5, 0.1, 0, 0);
+}
+
+.info-label {
+    -fx-text-fill: #B0BEC5;
+    -fx-font-size: 16px;
+}
+
+/* Buttons ใน Info Pane */
+.inventory-button {
+    -fx-background-color: #00FFFF;
+    -fx-text-fill: #000000;
+    -fx-font-size: 14px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, #00FFFF, 10, 0.5, 0, 0);
+}
+.inventory-button:hover {
+    -fx-background-color: #66FFFF;
+}
+
+.upgrade-button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 14px;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, #4CAF50, 10, 0.5, 0, 0);
+}
+.upgrade-button:hover {
+    -fx-background-color: #66BB6A;
+}

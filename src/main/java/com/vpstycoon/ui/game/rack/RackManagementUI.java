@@ -25,38 +25,40 @@ public class RackManagementUI {
     }
 
     public synchronized void openRackInfo() {
-        // สร้างหน้าหลักสำหรับ Rack Management
         BorderPane rackPane = new BorderPane();
         rackPane.setPrefSize(800, 600);
-        rackPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
+        rackPane.getStyleClass().add("rack-pane");
 
-        // Hide the menu bars
+        // ซ่อนเมนูอื่น ๆ
         parent.getMenuBar().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
         parent.getMoneyUI().setVisible(false);
-        
-        // ส่วนหัว (Top Bar)
+
+        // Top Bar
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
-        topBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
-        Label titleLabel = new Label("Rack Management");
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
-        Button closeButton = UIUtils.createModernButton("Close", "#F44336");
+        topBar.getStyleClass().add("top-bar");
 
+        Label titleLabel = new Label("Rack Management");
+        titleLabel.getStyleClass().add("title-label");
+
+        Button closeButton = UIUtils.createModernButton("Close", "#F44336");
+        closeButton.getStyleClass().add("close-button");
         closeButton.setOnAction(e -> parent.returnToRoom());
 
         topBar.getChildren().addAll(titleLabel, closeButton);
 
-        // ส่วนเนื้อหาหลัก
+        // Content Box
         HBox contentBox = UIUtils.createCard();
+        contentBox.getStyleClass().add("content-box");
         contentBox.setAlignment(Pos.CENTER);
         contentBox.setPadding(new Insets(15));
 
-        // ส่วนแสดง Rack Slots
+        // Rack Box
         GridPane rackBox = new GridPane();
         rackBox.setPrefSize(150, 400);
         rackBox.setPadding(new Insets(5));
-        rackBox.setStyle("-fx-background-color: #37474F; -fx-border-color: white; -fx-border-width: 2px; -fx-background-radius: 8px;");
+        rackBox.getStyleClass().add("rack-box");
         rackBox.setAlignment(Pos.TOP_CENTER);
 
         GridPane rackSlots = new GridPane();
@@ -76,49 +78,46 @@ public class RackManagementUI {
             rackSlots.getRowConstraints().add(row);
         }
 
-        // Update parent's total slots
         parent.setTotalSlots(MAX_SLOTS);
-
-        // Create and display rack slots
         createRackSlots(rackSlots);
         rackBox.getChildren().add(rackSlots);
 
-        // ส่วนข้อมูล Rack
+        // Info Pane
         VBox infoPane = new VBox(10);
-        infoPane.setAlignment(Pos.CENTER);
-        Label infoTitle = new Label("Rack Status");
+        infoPane.getStyleClass().add("info-pane");
 
-        infoTitle.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
-        
-        // Calculate used and available slots
+        Label infoTitle = new Label("Rack Status");
+        infoTitle.getStyleClass().add("info-title");
+
         int usedSlots = parent.getOccupiedSlots();
         int availableSlots = parent.getTotalSlots() - usedSlots;
-        
+
         Label serverCount = new Label("VPS: " + parent.getVpsList().size());
-        serverCount.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 16px;");
-        
+        serverCount.getStyleClass().add("info-label");
+
         Label slotCount = new Label("Slots: " + usedSlots + "/" + parent.getTotalSlots() + " (" + availableSlots + " available)");
-        slotCount.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 16px;");
+        slotCount.getStyleClass().add("info-label");
 
         Label networkUsage = new Label("Network: 10 Gbps");
-        networkUsage.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 16px;");
-        
+        networkUsage.getStyleClass().add("info-label");
+
         Label userCount = new Label("Active Users: 10");
-        userCount.setStyle("-fx-text-fill: #B0BEC5; -fx-font-size: 16px;");
-        
-        // Add inventory button
+        userCount.getStyleClass().add("info-label");
+
         Button inventoryButton = UIUtils.createModernButton("VPS Inventory", "#3498db");
+        inventoryButton.getStyleClass().add("inventory-button");
         inventoryButton.setOnAction(e -> parent.openVPSInventory());
-        
-        // Add upgrade button
+
         Button upgradeButton = UIUtils.createModernButton("Upgrade Rack", "#4CAF50");
+        upgradeButton.getStyleClass().add("upgrade-button");
         upgradeButton.setOnAction(e -> {
             if (parent.getOccupiedSlots() < MAX_SLOTS) {
                 parent.setOccupiedSlots(parent.getOccupiedSlots() + 1);
                 parent.pushNotification("Rack upgraded", "Rack upgraded to " + parent.getOccupiedSlots() + " slots");
                 System.out.println("Rack upgraded to " + parent.getOccupiedSlots() + " slots");
-                openRackInfo(); // รีเฟรชหน้า
+                openRackInfo();
             } else {
+                parent.pushNotification("Rack upgraded", "Max slots reached, cannot upgrade.");
                 System.out.println("Max slots reached, cannot upgrade.");
             }
         });
@@ -134,31 +133,29 @@ public class RackManagementUI {
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(rackPane);
 
+        // โหลด CSS
+        rackPane.getStylesheets().add(getClass().getResource("/css/rackinfo-pane.css").toExternalForm());
     }
 
-    /**
-     * Create and display rack slots with installed VPS servers
-     * @param rackSlots The GridPane to add slots to
-     */
     private void createRackSlots(GridPane rackSlots) {
         slotPanes.clear();
-        
+
         // Track current slot position
         int currentSlot = 0;
-        
+
         // Create slots for installed VPS servers
         for (VPSOptimization vps : parent.getVpsList()) {
             int slotsRequired = vps.getSlotsRequired();
-            
+
             // Create a slot that spans multiple rows based on VPS size
             Pane slot = createRackSlot(currentSlot, vps, true);
             rackSlots.add(slot, 0, currentSlot, 1, slotsRequired);
             slotPanes.add(slot);
-            
+
             // Update current slot position
             currentSlot += slotsRequired;
         }
-        
+
         // Fill remaining slots
         for (int i = currentSlot; i < MAX_SLOTS; i++) {
             Pane slot = createRackSlot(i, null, i < parent.getOccupiedSlots());
@@ -169,39 +166,36 @@ public class RackManagementUI {
 
     private Pane createRackSlot(int index, VPSOptimization vps, boolean isSlotAvailable) {
         Pane slot = new Pane();
-        
-        // Adjust height based on VPS size
         int slotHeight = 25;
         if (vps != null) {
             slotHeight = vps.getSlotsRequired() * 25;
         }
-        
         slot.setPrefSize(100, slotHeight);
-        Rectangle rect = new Rectangle(100, slotHeight);
-        rect.setFill(vps != null ? Color.web("#42A5F5") : (isSlotAvailable ? Color.LIGHTGRAY : Color.DARKGRAY));
-        rect.setStroke(Color.WHITE);
-        rect.setArcHeight(5);
-        rect.setArcWidth(5);
-        rect.setEffect(new DropShadow(5, Color.BLACK));
 
-        // Add label for VPS size if applicable
+        Rectangle rect = new Rectangle(100, slotHeight);
+        if (vps != null) {
+            rect.getStyleClass().add("vps-slot");
+        } else if (isSlotAvailable) {
+            rect.getStyleClass().add("available-slot");
+        } else {
+            rect.getStyleClass().add("not-available-slot");
+        }
+
         if (vps != null) {
             Label sizeLabel = new Label(vps.getSize().getDisplayName());
-            sizeLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+            sizeLabel.getStyleClass().add("size-label");
             sizeLabel.setLayoutX(5);
             sizeLabel.setLayoutY(5);
             slot.getChildren().add(sizeLabel);
         }
 
-        // เอฟเฟกต์เมื่อเมาส์ hover
         rect.setOnMouseEntered(e -> {
-            if (vps != null) rect.setFill(Color.web("#90CAF9"));
+            if (vps != null) rect.setFill(Color.web("#66FFFF"));
         });
         rect.setOnMouseExited(e -> {
-            if (vps != null) rect.setFill(Color.web("#42A5F5"));
+            if (vps != null) rect.setFill(Color.web("#00FFFF"));
         });
 
-        // การคลิกสล็อต
         if (vps != null) {
             slot.setOnMouseClicked(e -> parent.openVPSInfoPage(vps));
         } else if (isSlotAvailable) {
