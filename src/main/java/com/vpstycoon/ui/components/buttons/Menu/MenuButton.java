@@ -79,7 +79,7 @@ public class MenuButton extends Button {
         // เพิ่ม hover effect ด้วย stroke
         this.setOnMouseEntered(e -> {
                 this.setEffect(neon());
-                audioManager.playSoundEffect("hover.wav");
+                audioManager.playSoundEffect("hover2.wav");
         }
         );
 

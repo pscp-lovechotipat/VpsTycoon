@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.components;
 
+import com.vpstycoon.audio.AudioManager;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -15,6 +16,7 @@ public class RoomObjectsLayer {
     private final Runnable onMonitorClick;
     private final Runnable onServerClick;
     private final Runnable onKeroroClick;
+    private AudioManager audioManager;
 
     public RoomObjectsLayer(Runnable onMonitorClick ,Runnable onServerClick, Runnable onKeroroClick) {
         this.onMonitorClick = onMonitorClick;
@@ -24,6 +26,7 @@ public class RoomObjectsLayer {
         this.serverLayer = createServerLayer();
         this.keroroLayer = createKeroroLayer();
         this.onKeroroClick = onKeroroClick;
+        this.audioManager = AudioManager.getInstance();
     }
 
     private synchronized Pane createKeroroLayer() {
@@ -51,7 +54,10 @@ public class RoomObjectsLayer {
         """);
 
         keroroLayer.setStyle(normalStyle);
-        keroroLayer.setOnMouseEntered(event -> {keroroLayer.setStyle(hoverStyle);});
+        keroroLayer.setOnMouseEntered(event -> {
+            audioManager.playSoundEffect("hover2.wav");
+            keroroLayer.setStyle(hoverStyle);
+        });
         keroroLayer.setOnMouseExited(event -> {keroroLayer.setStyle(normalStyle);});
 
         keroroLayer.setOnMouseClicked((MouseEvent e) -> onKeroroClick.run());
@@ -83,7 +89,10 @@ public class RoomObjectsLayer {
         """);
 
         monitorLayer.setStyle(normalStyle);
-        monitorLayer.setOnMouseEntered(event -> {monitorLayer.setStyle(hoverStyle);});
+        monitorLayer.setOnMouseEntered(event -> {
+            audioManager.playSoundEffect("hover.wav");
+            monitorLayer.setStyle(hoverStyle);
+        });
         monitorLayer.setOnMouseExited(event -> {monitorLayer.setStyle(normalStyle);});
 
         monitorLayer.setOnMouseClicked((MouseEvent e) -> onMonitorClick.run());
@@ -135,8 +144,14 @@ public class RoomObjectsLayer {
         """;
 
         // ตั้งค่า hover effect
-        serverLayer.setOnMouseEntered(e -> serverLayer.setStyle(hoverStyle)); // เปลี่ยนเป็น hoverStyle ตอนเมาส์เข้า
-        serverLayer.setOnMouseExited(e -> serverLayer.setStyle(normalStyle));
+        serverLayer.setOnMouseEntered(e -> {
+            audioManager.playSoundEffect("server.mp3");
+            serverLayer.setStyle(hoverStyle);
+        }); // เปลี่ยนเป็น hoverStyle ตอนเมาส์เข้า
+        serverLayer.setOnMouseExited(e -> {
+            audioManager.stopSoundEffect("server.mp3");
+            serverLayer.setStyle(normalStyle);
+        });
 
         serverLayer.setOnMouseClicked(e -> {
             e.consume();
