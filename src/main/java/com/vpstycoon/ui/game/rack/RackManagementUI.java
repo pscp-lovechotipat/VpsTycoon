@@ -7,7 +7,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -78,7 +77,7 @@ public class RackManagementUI {
             rackSlots.getRowConstraints().add(row);
         }
 
-        parent.setTotalSlots(MAX_SLOTS);
+//        parent.setTotalSlots(MAX_SLOTS);
         createRackSlots(rackSlots);
         rackBox.getChildren().add(rackSlots);
 
@@ -89,13 +88,13 @@ public class RackManagementUI {
         Label infoTitle = new Label("Rack Status");
         infoTitle.getStyleClass().add("info-title");
 
-        int usedSlots = parent.getOccupiedSlots();
-        int availableSlots = parent.getTotalSlots() - usedSlots;
+        int usedSlots = parent.getRack().getOccupiedSlotUnits();
+        int availableSlots = parent.getRack().getMaxSlotUnits() - usedSlots;
 
         Label serverCount = new Label("VPS: " + parent.getVpsList().size());
         serverCount.getStyleClass().add("info-label");
 
-        Label slotCount = new Label("Slots: " + usedSlots + "/" + parent.getTotalSlots() + " (" + availableSlots + " available)");
+        Label slotCount = new Label("Slots: " + usedSlots + "/" + parent.getRack().getMaxSlotUnits() + " (" + parent.getRack().getAvailableSlotUnits() + " available)");
         slotCount.getStyleClass().add("info-label");
 
         Label networkUsage = new Label("Network: 10 Gbps");
@@ -111,10 +110,9 @@ public class RackManagementUI {
         Button upgradeButton = UIUtils.createModernButton("Upgrade Rack", "#4CAF50");
         upgradeButton.getStyleClass().add("upgrade-button");
         upgradeButton.setOnAction(e -> {
-            if (parent.getAllAvailableSlots() < MAX_SLOTS) {
-                parent.setAvailableSlot(parent.getAvailableSlot() + 1);
-                parent.pushNotification("Rack upgraded", "Rack upgraded to " + parent.getAllAvailableSlots() + " slots");
-                System.out.println("Rack upgraded to " + parent.getAllAvailableSlots() + " slots");
+            if (parent.getRack().upgrade()) {
+                parent.pushNotification("Rack upgraded", "Rack upgraded to " + parent.getRack().getUnlockedSlotUnits() + " slots");
+                System.out.println("Rack upgraded to " + parent.getRack().getUnlockedSlotUnits() + " slots");
                 openRackInfo();
             } else {
                 parent.pushNotification("Rack upgraded", "Max slots reached, cannot upgrade.");
@@ -139,26 +137,20 @@ public class RackManagementUI {
 
     private void createRackSlots(GridPane rackSlots) {
         slotPanes.clear();
-
-        // Track current slot position
         int currentSlot = 0;
 
         // Create slots for installed VPS servers
         for (VPSOptimization vps : parent.getVpsList()) {
             int slotsRequired = vps.getSlotsRequired();
-
-            // Create a slot that spans multiple rows based on VPS size
             Pane slot = createRackSlot(currentSlot, vps, true);
             rackSlots.add(slot, 0, currentSlot, 1, slotsRequired);
             slotPanes.add(slot);
-
-            // Update current slot position
             currentSlot += slotsRequired;
         }
 
         // Fill remaining slots
-        for (int i = currentSlot; i < MAX_SLOTS; i++) {
-            Pane slot = createRackSlot(i, null, i < parent.getAllAvailableSlots());
+        for (int i = currentSlot; i < parent.getRack().getMaxSlotUnits(); i++) {
+            Pane slot = createRackSlot(i, null, i < parent.getRack().getUnlockedSlotUnits());
             rackSlots.add(slot, 0, i);
             slotPanes.add(slot);
         }
@@ -209,6 +201,6 @@ public class RackManagementUI {
     }
 
     public int getMAX_SLOTS() {
-        return MAX_SLOTS;
+        return parent.getRack().getMaxSlotUnits();
     }
 }

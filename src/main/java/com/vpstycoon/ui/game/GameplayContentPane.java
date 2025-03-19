@@ -30,6 +30,7 @@ import com.vpstycoon.ui.game.notification.NotificationView;
 import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationController;
 import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationModel;
 import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationView;
+import com.vpstycoon.ui.game.rack.Rack;
 import com.vpstycoon.ui.game.rack.RackManagementUI;
 import com.vpstycoon.ui.game.status.money.MoneyController;
 import com.vpstycoon.ui.game.status.money.MoneyModel;
@@ -76,6 +77,7 @@ public class GameplayContentPane extends BorderPane {
 
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
+    private final Rack rack;
 
     private final GameFlowManager gameFlowManager;
 
@@ -83,11 +85,11 @@ public class GameplayContentPane extends BorderPane {
     private final Company company;
     private RoomObjectsLayer roomObjects;
 
-    private int availableSlot = 0;
-    private int occupiedSlots = 0;
-    private int totalSlots = 0; // Total number of slots in the rack
+//    private int availableSlot = 0; // slot not install vps in rack
+//    private int occupiedSlots = 0; // slot is install vps in rack
+//    private int totalSlots = 0; // Total number of slots in the rack
 
-    private final List<VPSOptimization> vpsList = new ArrayList<>();
+//    private final List<VPSOptimization> vpsList = new ArrayList<>();
     private final VPSInventory vpsInventory = new VPSInventory(); // Inventory of uninstalled VPS servers
 
     private ZoomPanHandler zoomPanHandler;
@@ -120,6 +122,7 @@ public class GameplayContentPane extends BorderPane {
 
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
+        this.rack = new Rack(10,3);
         this.gameFlowManager = gameFlowManager;
         this.debugOverlayManager = debugOverlayManager;
         this.company = company;
@@ -169,7 +172,7 @@ public class GameplayContentPane extends BorderPane {
         setupDebugFeatures();
 
         // Initialize total slots
-        this.totalSlots = rackManagementUI.getMAX_SLOTS(); // Default total slots
+//        this.totalSlots = rackManagementUI.getMAX_SLOTS(); // Default total slots
 
         this.audioManager = AudioManager.getInstance();
     }
@@ -182,7 +185,7 @@ public class GameplayContentPane extends BorderPane {
         vps1.setDiskInGB(50);
         vps1.setSize(VPSSize.SIZE_1U);
         vps1.setInstalled(true);
-        vpsList.add(vps1);
+        rack.installVPS(vps1);
 
         VPSOptimization vps2 = new VPSOptimization();
         vps2.setVCPUs(4);
@@ -190,10 +193,10 @@ public class GameplayContentPane extends BorderPane {
         vps2.setDiskInGB(100);
         vps2.setSize(VPSSize.SIZE_2U);
         vps2.setInstalled(true);
-        vpsList.add(vps2);
+        rack.installVPS(vps2);
 
         // Update occupied slots based on installed VPS sizes
-        occupiedSlots = vps1.getSlotsRequired() + vps2.getSlotsRequired();
+//        occupiedSlots = vps1.getSlotsRequired() + vps2.getSlotsRequired();
 
         // Create sample VPS for the inventory
         VPSOptimization invVps1 = new VPSOptimization();
@@ -223,7 +226,7 @@ public class GameplayContentPane extends BorderPane {
         vps1.addVM(vm2);
 
         // Initialize total slots
-        totalSlots = rackManagementUI.getMAX_SLOTS();
+//        totalSlots = rackManagementUI.getMAX_SLOTS();
     }
 
     private synchronized void setupUI() {
@@ -358,19 +361,11 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public List<VPSOptimization> getVpsList() {
-        return vpsList;
-    }
-
-    public int getOccupiedSlots() {
-        return occupiedSlots;
+        return rack.getInstalledVPS();
     }
 
     public InGameMarketMenuBar getInGameMarketMenuBar() {
         return inGameMarketMenuBar;
-    }
-
-    public void setOccupiedSlots(int occupiedSlots) {
-        this.occupiedSlots = occupiedSlots;
     }
 
     public VPSManager getVpsManager() {
@@ -387,6 +382,35 @@ public class GameplayContentPane extends BorderPane {
 
     public RequestManager getRequestManager() {
         return requestManager;
+    }
+
+    /**
+     * Get the VPS inventory
+     * @return The VPS inventory
+     */
+    public VPSInventory getVpsInventory() {
+        return vpsInventory;
+    }
+
+    public Rack getRack() {
+        return rack;
+    }
+
+    // ปรับปรุง getters เดิม
+    public int getOccupiedSlots() {
+        return rack.getOccupiedSlotUnits();
+    }
+
+    public int getTotalSlots() {
+        return rack.getMaxSlotUnits();
+    }
+
+    public int getAvailableSlot() {
+        return rack.getAvailableSlotUnits();
+    }
+
+    public int getAllAvailableSlots() {
+        return rack.getUnlockedSlotUnits();
     }
 
     public boolean isShowDebug() {
@@ -450,69 +474,20 @@ public class GameplayContentPane extends BorderPane {
     }
 
     /**
-     * Get the VPS inventory
-     * @return The VPS inventory
-     */
-    public VPSInventory getVpsInventory() {
-        return vpsInventory;
-    }
-
-    /**
-     * Get the total number of slots in the rack
-     * @return The total number of slots
-     */
-    public int getTotalSlots() {
-        return totalSlots;
-    }
-
-    public int getAvailableSlot() {
-        return availableSlot;
-    }
-
-    public int getAllAvailableSlots() {
-        return occupiedSlots + availableSlot;
-    }
-
-    public void setAvailableSlot(int availableSlot) {
-        this.availableSlot = availableSlot;
-    }
-
-    /**
-     * Set the total number of slots in the rack
-     * @param totalSlots The total number of slots
-     */
-    public void setTotalSlots(int totalSlots) {
-        this.totalSlots = totalSlots;
-    }
-
-    /**
      * Install a VPS from inventory into the rack
      * @param vpsId The ID of the VPS to install
      * @return true if installation was successful, false otherwise
      */
     public boolean installVPSFromInventory(String vpsId) {
-        // Get the VPS from inventory
         VPSOptimization vps = vpsInventory.getVPS(vpsId);
         if (vps == null) {
-            return false; // VPS not found in inventory
+            return false;
         }
-
-        // Check if there are enough slots available
-        int slotsRequired = vps.getSlotsRequired();
-        if (vpsList.size() + slotsRequired > totalSlots) {
-            return false; // Not enough slots available
+        if (rack.installVPS(vps)) {
+            vpsInventory.removeVPS(vpsId);
+            return true;
         }
-
-        // Remove from inventory and add to rack
-        vpsInventory.removeVPS(vpsId);
-        vpsList.add(vps);
-        vps.setInstalled(true);
-
-        // Update occupied slots ไม่ต้องใส่ อย่าหาใส่มา คืออะไรแบบ add vps เข้าไปแล้ว เพิ่ม occupiedSlots ทำไม ในเมื่อเก็บเป็น List อยู่แล้ว แล้ว occupiedSlots คือ slot ของ upgrade
-        availableSlot -= slotsRequired;
-        occupiedSlots += slotsRequired;
-
-        return true;
+        return false;
     }
 
     /**
@@ -521,25 +496,18 @@ public class GameplayContentPane extends BorderPane {
      * @return true if uninstallation was successful, false otherwise
      */
     public boolean uninstallVPSToInventory(VPSOptimization vps) {
-        // Find the VPS ID
         String vpsId = vpsManager.getVPSMap().keySet().stream()
                 .filter(id -> vpsManager.getVPS(id) == vps)
                 .findFirst()
                 .orElse(null);
-
-        if (vpsId == null || !vpsList.contains(vps)) {
-            return false; // VPS not found in rack
+        if (vpsId == null || !rack.getInstalledVPS().contains(vps)) {
+            return false;
         }
-
-        // Remove from rack and add to inventory
-        vpsList.remove(vps);
-        vpsInventory.addVPS(vpsId, vps);
-        vps.setInstalled(false);
-
-        // Update occupied slots
-        occupiedSlots += vps.getSlotsRequired();
-
-        return true;
+        if (rack.uninstallVPS(vps)) {
+            vpsInventory.addVPS(vpsId, vps);
+            return true;
+        }
+        return false;
     }
 
     /**

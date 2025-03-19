@@ -24,8 +24,8 @@ public class RackUpgradeWindow extends VBox {
     private final SkillPointsSystem skillPointsSystem;
     
     // Current rack and room stats
-    private int currentRacks;
-    private int maxRacks;
+    private int numberOfRacks;
+    private int maxNumberOfRacks;
     private int rackSlots;
     
     // UI components
@@ -46,9 +46,9 @@ public class RackUpgradeWindow extends VBox {
         this.skillPointsSystem = parent.getSkillPointsSystem();
         
         // Initialize current stats
-        this.currentRacks = parent.getOccupiedSlots();
-        this.maxRacks = 10; // Default max racks
-        this.rackSlots = skillPointsSystem != null ? 
+        this.numberOfRacks = 1;
+        this.maxNumberOfRacks = 10; // Default max racks
+        this.rackSlots = skillPointsSystem != null ?
                 skillPointsSystem.getAvailableRackSlots() : 4; // Default slots per rack
         
         setupUI();
@@ -96,11 +96,11 @@ public class RackUpgradeWindow extends VBox {
         racksBox.setAlignment(Pos.CENTER_LEFT);
         Label racksTitleLabel = new Label("Racks:");
         racksTitleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-        
-        racksLabel = new Label(currentRacks + " / " + maxRacks);
+
+        racksLabel = new Label(numberOfRacks + " / " + maxNumberOfRacks);
         racksLabel.setStyle("-fx-font-size: 16px;");
-        
-        ProgressBar racksProgressBar = new ProgressBar((double) currentRacks / maxRacks);
+
+        ProgressBar racksProgressBar = new ProgressBar((double) numberOfRacks / maxNumberOfRacks);
         racksProgressBar.setPrefWidth(200);
         
         racksBox.getChildren().addAll(racksTitleLabel, racksLabel, racksProgressBar);
@@ -127,7 +127,7 @@ public class RackUpgradeWindow extends VBox {
                 "Buy New Rack",
                 "Purchase a new server rack to increase your hosting capacity.",
                 "$" + rackCost,
-                currentRacks < maxRacks && company.getMoney() >= rackCost
+                numberOfRacks < maxNumberOfRacks && company.getMoney() >= rackCost
         );
         
         buyRackButton = (Button) buyRackPane.getRight();
@@ -225,21 +225,12 @@ public class RackUpgradeWindow extends VBox {
      * Buy a new rack
      */
     private void buyNewRack() {
-        if (currentRacks < maxRacks && company.getMoney() >= rackCost) {
-            // Deduct cost
+        if (numberOfRacks < maxNumberOfRacks && company.getMoney() >= rackCost) {
             company.setMoney(company.getMoney() - rackCost);
-            
-            // Add rack
-            currentRacks++;
-            parent.setOccupiedSlots(currentRacks);
-            
-            // Update UI
+            numberOfRacks++;
             updateUI();
-            
-            // Show notification
-            parent.pushNotification("New Rack Purchased", 
-                    "You have successfully purchased a new server rack. " +
-                    "It has been installed in your server room.");
+            parent.pushNotification("New Rack Purchased",
+                    "You have successfully purchased a new server rack.");
         }
     }
     
@@ -248,19 +239,12 @@ public class RackUpgradeWindow extends VBox {
      */
     private void upgradeRoom() {
         if (company.getMoney() >= roomUpgradeCost) {
-            // Deduct cost
             company.setMoney(company.getMoney() - roomUpgradeCost);
-            
-            // Increase max racks
-            maxRacks += 5;
-            
-            // Update UI
+            maxNumberOfRacks += 5;
             updateUI();
-            
-            // Show notification
-            parent.pushNotification("Server Room Upgraded", 
-                    "Your server room has been expanded. You can now install up to " + 
-                    maxRacks + " racks.");
+            parent.pushNotification("Server Room Upgraded",
+                    "Your server room has been expanded. You can now install up to " +
+                            maxNumberOfRacks + " racks.");
         }
     }
     
@@ -268,19 +252,12 @@ public class RackUpgradeWindow extends VBox {
      * Update the UI to reflect current stats
      */
     public void updateUI() {
-        // Update money display
         moneyLabel.setText("$" + company.getMoney());
-        
-        // Update racks display
-        racksLabel.setText(currentRacks + " / " + maxRacks);
-        
-        // Update slots display
-        rackSlots = skillPointsSystem != null ? 
+        racksLabel.setText(numberOfRacks + " / " + maxNumberOfRacks);
+        rackSlots = skillPointsSystem != null ?
                 skillPointsSystem.getAvailableRackSlots() : 4;
         slotsLabel.setText(String.valueOf(rackSlots));
-        
-        // Update button states
-        buyRackButton.setDisable(!(currentRacks < maxRacks && company.getMoney() >= rackCost));
+        buyRackButton.setDisable(!(numberOfRacks < maxNumberOfRacks && company.getMoney() >= rackCost));
         upgradeRoomButton.setDisable(!(company.getMoney() >= roomUpgradeCost));
     }
 }

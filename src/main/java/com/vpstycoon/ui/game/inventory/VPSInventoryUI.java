@@ -64,8 +64,8 @@ public class VPSInventoryUI {
         
         Label inventoryCountLabel = new Label("VPS in Inventory: " + parent.getVpsInventory().getSize());
         inventoryCountLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-        
-        Label rackStatsLabel = new Label("Rack Slots: " + parent.getOccupiedSlots() + "/" + parent.getTotalSlots());
+
+        Label rackStatsLabel = new Label("Rack Slots: " + parent.getRack().getOccupiedSlotUnits() + "/" + parent.getRack().getMaxSlotUnits());
         rackStatsLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
         
         statsBox.getChildren().addAll(inventoryCountLabel, rackStatsLabel);
@@ -197,10 +197,10 @@ public class VPSInventoryUI {
      */
     private void installVPS(String vpsId, VPSOptimization vps) {
         // Check if there are enough slots available
-        if (vps.getSlotsRequired() > parent.getAvailableSlot()) {
-            parent.pushNotification("Installation Failed", 
-                    "Not enough slots available in the rack. You need " + vps.getSlotsRequired() + 
-                    " slots, but only " + parent.getAvailableSlot() + " are available.");
+        if (vps.getSlotsRequired() > parent.getRack().getAvailableSlotUnits()) {
+            parent.pushNotification("Installation Failed",
+                    "Not enough slots available in the rack. You need " + vps.getSlotsRequired() +
+                            " slots, but only " + parent.getRack().getAvailableSlotUnits() + " are available.");
             return;
         }
 
