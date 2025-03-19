@@ -98,7 +98,6 @@ public class CircleStatusButton {
             // Only scale effect, no glow change
             buttonStack.setScaleX(1.05);
             buttonStack.setScaleY(1.05);
-            audioManager.playSoundEffect("hover2.wav");
         });
         
         buttonStack.setOnMouseExited(e -> {
@@ -107,7 +106,10 @@ public class CircleStatusButton {
             buttonStack.setScaleY(1.0);
         });
 
-        buttonStack.setOnMouseClicked((MouseEvent e) -> openUpgradePanel());
+        buttonStack.setOnMouseClicked((MouseEvent e) -> {
+            openUpgradePanel();
+            audioManager.playSoundEffect("click.wav");
+        });
 
         // Create cyber-style label with pixel art aesthetic
         Label textLabel = createCyberLabel(skillName, topColor);

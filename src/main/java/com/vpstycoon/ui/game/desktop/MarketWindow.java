@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.desktop;
 
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.resource.ResourceManager;
@@ -33,7 +34,9 @@ public class MarketWindow extends VBox {
     private final Runnable onClose, onCloseAfterPurchase;
     private final VPSManager vpsManager;
     private final GameplayContentPane parent;
-    
+
+    private AudioManager audioManager;
+
     // Cyberpunk theme colors
     private static final Color CYBER_PURPLE = Color.rgb(200, 50, 255);
     private static final Color CYBER_DARK = Color.rgb(20, 10, 30);
@@ -46,6 +49,7 @@ public class MarketWindow extends VBox {
         this.onCloseAfterPurchase = onCloseAfterPurchase;
         this.vpsManager = vpsManager;
         this.parent = gameplayContentPane;
+        this.audioManager = AudioManager.getInstance();
 
         setupUI();
         styleWindow();
@@ -121,6 +125,7 @@ public class MarketWindow extends VBox {
         
         buyButton.setOnAction(e -> {
             // Parse specs from description
+            audioManager.playSoundEffect("cash.mp3");
             String[] specs = description.split(", ");
 
             int vCPUs = Integer.parseInt(specs[0].split(" ")[0]);
