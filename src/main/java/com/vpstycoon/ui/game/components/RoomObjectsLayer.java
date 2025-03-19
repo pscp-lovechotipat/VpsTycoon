@@ -55,7 +55,6 @@ public class RoomObjectsLayer {
 
         keroroLayer.setStyle(normalStyle);
         keroroLayer.setOnMouseEntered(event -> {
-            audioManager.playSoundEffect("hover2.wav");
             keroroLayer.setStyle(hoverStyle);
         });
         keroroLayer.setOnMouseExited(event -> {keroroLayer.setStyle(normalStyle);});
@@ -90,7 +89,6 @@ public class RoomObjectsLayer {
 
         monitorLayer.setStyle(normalStyle);
         monitorLayer.setOnMouseEntered(event -> {
-            audioManager.playSoundEffect("hover2.wav");
             monitorLayer.setStyle(hoverStyle);
         });
         monitorLayer.setOnMouseExited(event -> {monitorLayer.setStyle(normalStyle);});
