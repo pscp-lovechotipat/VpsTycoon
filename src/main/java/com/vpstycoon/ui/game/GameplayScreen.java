@@ -8,7 +8,7 @@ import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
-import com.vpstycoon.game.object.VPSObject;
+import com.vpstycoon.game.object.RackObject;
 import com.vpstycoon.game.thread.GameTimeUpdater;
 import com.vpstycoon.game.thread.RequestGenerator;
 import com.vpstycoon.screen.ScreenManager;
@@ -104,22 +104,22 @@ public class GameplayScreen extends GameScreen {
         gameObjects.clear();
 
         // ปุ่ม Deploy
-        VPSObject deploy = new VPSObject("deploy", "Deploy", 0, 0);
+        RackObject deploy = new RackObject("deploy", "Deploy", 0, 0);
         deploy.setGridPosition(centerX - spacing * 2, topMargin);
         gameObjects.add(deploy);
 
         // ปุ่ม Network
-        VPSObject network = new VPSObject("network", "Network", 0, 0);
+        RackObject network = new RackObject("network", "Network", 0, 0);
         network.setGridPosition(centerX - spacing, topMargin);
         gameObjects.add(network);
 
         // ปุ่ม Security
-        VPSObject security = new VPSObject("security", "Security", 0, 0);
+        RackObject security = new RackObject("security", "Security", 0, 0);
         security.setGridPosition(centerX, topMargin);
         gameObjects.add(security);
 
         // ปุ่ม Marketing
-        VPSObject marketing = new VPSObject("marketing", "Marketing", 0, 0);
+        RackObject marketing = new RackObject("marketing", "Marketing", 0, 0);
         marketing.setGridPosition(centerX + spacing, topMargin);
         gameObjects.add(marketing);
 

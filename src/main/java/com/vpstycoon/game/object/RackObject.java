@@ -3,22 +3,22 @@ package com.vpstycoon.game.object;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
 
-public class VPSObject extends GameObject {
+public class RackObject extends GameObject {
     private Runnable onClickAction;
 
-    public VPSObject() {
+    public RackObject() {
         super();
     }
 
-    public VPSObject(String id , int level) {
+    public RackObject(String id , int level) {
         super(id ,level);
     }
 
-    public VPSObject(String id, int x, int y) {
+    public RackObject(String id, int x, int y) {
         super(id, x, y);
     }
 
-    public VPSObject(String id , String type, int x , int y) {
+    public RackObject(String id , String type, int x , int y) {
         super(id , type, x, y);
     }
 

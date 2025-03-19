@@ -197,13 +197,13 @@ public class VPSInventoryUI {
      */
     private void installVPS(String vpsId, VPSOptimization vps) {
         // Check if there are enough slots available
-        if (vps.getSlotsRequired() > parent.getOccupiedSlots() - parent.getVpsList().size()) {
+        if (vps.getSlotsRequired() > parent.getAvailableSlot()) {
             parent.pushNotification("Installation Failed", 
                     "Not enough slots available in the rack. You need " + vps.getSlotsRequired() + 
-                    " slots, but only " + (parent.getTotalSlots() - parent.getOccupiedSlots()) + " are available.");
+                    " slots, but only " + parent.getAvailableSlot() + " are available.");
             return;
         }
-        
+
         // Install the VPS
         boolean success = parent.installVPSFromInventory(vpsId);
         

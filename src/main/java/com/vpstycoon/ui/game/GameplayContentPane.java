@@ -83,6 +83,7 @@ public class GameplayContentPane extends BorderPane {
     private final Company company;
     private RoomObjectsLayer roomObjects;
 
+    private int availableSlot = 0;
     private int occupiedSlots = 0;
     private int totalSlots = 0; // Total number of slots in the rack
 
@@ -168,7 +169,7 @@ public class GameplayContentPane extends BorderPane {
         setupDebugFeatures();
 
         // Initialize total slots
-        this.totalSlots = 10; // Default total slots
+        this.totalSlots = rackManagementUI.getMAX_SLOTS(); // Default total slots
 
         this.audioManager = AudioManager.getInstance();
     }
@@ -222,7 +223,7 @@ public class GameplayContentPane extends BorderPane {
         vps1.addVM(vm2);
 
         // Initialize total slots
-        totalSlots = 10;
+        totalSlots = rackManagementUI.getMAX_SLOTS();
     }
 
     private synchronized void setupUI() {
@@ -464,6 +465,18 @@ public class GameplayContentPane extends BorderPane {
         return totalSlots;
     }
 
+    public int getAvailableSlot() {
+        return availableSlot;
+    }
+
+    public int getAllAvailableSlots() {
+        return occupiedSlots + availableSlot;
+    }
+
+    public void setAvailableSlot(int availableSlot) {
+        this.availableSlot = availableSlot;
+    }
+
     /**
      * Set the total number of slots in the rack
      * @param totalSlots The total number of slots
@@ -496,7 +509,8 @@ public class GameplayContentPane extends BorderPane {
         vps.setInstalled(true);
 
         // Update occupied slots ไม่ต้องใส่ อย่าหาใส่มา คืออะไรแบบ add vps เข้าไปแล้ว เพิ่ม occupiedSlots ทำไม ในเมื่อเก็บเป็น List อยู่แล้ว แล้ว occupiedSlots คือ slot ของ upgrade
-//        occupiedSlots -= slotsRequired;
+        availableSlot -= slotsRequired;
+        occupiedSlots += slotsRequired;
 
         return true;
     }
@@ -523,7 +537,7 @@ public class GameplayContentPane extends BorderPane {
         vps.setInstalled(false);
 
         // Update occupied slots
-        occupiedSlots -= vps.getSlotsRequired();
+        occupiedSlots += vps.getSlotsRequired();
 
         return true;
     }

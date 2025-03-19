@@ -18,7 +18,7 @@ import java.util.List;
 public class RackManagementUI {
     private final GameplayContentPane parent;
     private final List<Pane> slotPanes = new ArrayList<>();
-    private static final int MAX_SLOTS = 10;
+    private final int MAX_SLOTS = 10;
 
     public RackManagementUI(GameplayContentPane parent) {
         this.parent = parent;
@@ -111,10 +111,10 @@ public class RackManagementUI {
         Button upgradeButton = UIUtils.createModernButton("Upgrade Rack", "#4CAF50");
         upgradeButton.getStyleClass().add("upgrade-button");
         upgradeButton.setOnAction(e -> {
-            if (parent.getOccupiedSlots() < MAX_SLOTS) {
-                parent.setOccupiedSlots(parent.getOccupiedSlots() + 1);
-                parent.pushNotification("Rack upgraded", "Rack upgraded to " + parent.getOccupiedSlots() + " slots");
-                System.out.println("Rack upgraded to " + parent.getOccupiedSlots() + " slots");
+            if (parent.getAllAvailableSlots() < MAX_SLOTS) {
+                parent.setAvailableSlot(parent.getAvailableSlot() + 1);
+                parent.pushNotification("Rack upgraded", "Rack upgraded to " + parent.getAllAvailableSlots() + " slots");
+                System.out.println("Rack upgraded to " + parent.getAllAvailableSlots() + " slots");
                 openRackInfo();
             } else {
                 parent.pushNotification("Rack upgraded", "Max slots reached, cannot upgrade.");
@@ -158,7 +158,7 @@ public class RackManagementUI {
 
         // Fill remaining slots
         for (int i = currentSlot; i < MAX_SLOTS; i++) {
-            Pane slot = createRackSlot(i, null, i < parent.getOccupiedSlots());
+            Pane slot = createRackSlot(i, null, i < parent.getAllAvailableSlots());
             rackSlots.add(slot, 0, i);
             slotPanes.add(slot);
         }
@@ -206,5 +206,9 @@ public class RackManagementUI {
 
         slot.getChildren().add(rect);
         return slot;
+    }
+
+    public int getMAX_SLOTS() {
+        return MAX_SLOTS;
     }
 }
