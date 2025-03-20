@@ -35,6 +35,9 @@ import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationModel;
 import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationView;
 import com.vpstycoon.ui.game.rack.Rack;
 import com.vpstycoon.ui.game.rack.RackManagementUI;
+import com.vpstycoon.ui.game.status.date.DateController;
+import com.vpstycoon.ui.game.status.date.DateModel;
+import com.vpstycoon.ui.game.status.date.DateView;
 import com.vpstycoon.ui.game.status.money.MoneyController;
 import com.vpstycoon.ui.game.status.money.MoneyModel;
 import com.vpstycoon.ui.game.status.money.MoneyUI;
@@ -68,6 +71,10 @@ public class GameplayContentPane extends BorderPane {
     private final MouseNotificationModel mouseNotificationModel;
     private final MouseNotificationView mouseNotificationView;
     private final MouseNotificationController mouseNotificationController;
+
+    private final DateView dateView;
+    private final DateController dateController;
+    private final DateModel dateModel;
 
     private final MoneyModel moneyModel;
     private final MoneyUI moneyUI;
@@ -166,6 +173,10 @@ public class GameplayContentPane extends BorderPane {
         this.moneyUI = new MoneyUI(this, moneyModel);
         this.moneyController = new MoneyController(moneyModel, moneyUI);
 
+        this.dateModel = new DateModel(ResourceManager.getInstance().getCurrentState().getLocalDateTime());
+        this.dateView = new DateView(this, dateModel);
+        this.dateController = new DateController(dateModel, dateView);
+
         this.rootStack = new StackPane();
         rootStack.setPrefSize(800, 600);
         rootStack.setMinSize(800, 600);
@@ -242,7 +253,8 @@ public class GameplayContentPane extends BorderPane {
         gameArea.getChildren().add(worldGroup);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
-        rootStack.getChildren().addAll(gameArea, moneyUI, menuBar,
+        rootStack.getChildren().addAll(gameArea,
+                moneyUI, menuBar,dateView,
                 inGameMarketMenuBar, mouseNotificationView, notificationView, centerNotificationView,
                 debugOverlay
         );

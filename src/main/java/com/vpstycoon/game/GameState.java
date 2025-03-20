@@ -2,7 +2,11 @@ package com.vpstycoon.game;
 
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 
+import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,7 +18,7 @@ public class GameState implements Serializable {
     private transient int temporaryValue;
 
     private static final long serialVersionUID = 1L;
-    private LocalDateTime localDateTime;
+    private transient ObjectProperty<LocalDateTime> localDateTime = new SimpleObjectProperty<>();
 
     private Company company;
 
@@ -32,7 +36,7 @@ public class GameState implements Serializable {
         this.lastSaveTime = System.currentTimeMillis();
         this.gameObjects = new ArrayList<>();
 
-        this.localDateTime = LocalDateTime.now();
+        this.localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
     
     public GameState(ArrayList<GameObject> gameObjects) {
@@ -101,10 +105,26 @@ public class GameState implements Serializable {
     }
 
     public LocalDateTime getLocalDateTime() {
-        return localDateTime;
+        return localDateTime.get();
     }
 
     public void setLocalDateTime(LocalDateTime localDateTime) {
-        this.localDateTime = localDateTime;
+        this.localDateTime.set(localDateTime);
+    }
+
+    public ObjectProperty<LocalDateTime> localDateTimeProperty() {
+        return localDateTime;
+    }
+
+    // ต้องจัดการ serialization ด้วย เพราะ ObjectProperty ไม่ได้ implements Serializable โดยตรง
+    @Serial
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        out.writeObject(localDateTime.get());
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        localDateTime = new SimpleObjectProperty<>((LocalDateTime) in.readObject());
     }
 }

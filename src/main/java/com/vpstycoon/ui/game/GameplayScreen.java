@@ -133,7 +133,7 @@ public class GameplayScreen extends GameScreen {
 
         // Start separate threads
         RequestGenerator requestGenerator = new RequestGenerator(requestManager);
-        GameTimeUpdater gameTimeUpdater = new GameTimeUpdater(state);
+        GameTimeUpdater gameTimeUpdater = new GameTimeUpdater();
 
         requestGenerator.start();
         gameTimeUpdater.start();
