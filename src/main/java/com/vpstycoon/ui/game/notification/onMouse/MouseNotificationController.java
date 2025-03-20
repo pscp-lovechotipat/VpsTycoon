@@ -1,7 +1,5 @@
 package com.vpstycoon.ui.game.notification.onMouse;
 
-import javafx.scene.input.MouseEvent;
-
 import java.awt.*;
 
 public class MouseNotificationController {

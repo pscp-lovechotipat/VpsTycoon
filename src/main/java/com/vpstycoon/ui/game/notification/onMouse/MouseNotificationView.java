@@ -2,12 +2,10 @@ package com.vpstycoon.ui.game.notification.onMouse;
 
 import javafx.animation.PauseTransition;
 import javafx.animation.TranslateTransition;
-import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.util.Duration;
 
 public class MouseNotificationView extends Pane {

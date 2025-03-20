@@ -1,7 +1,5 @@
 package com.vpstycoon.ui.game.notification.onMouse;
 
-import com.vpstycoon.ui.game.notification.NotificationModel;
-
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game.notification.center;
 
 import javafx.scene.image.Image;
+
 import java.util.LinkedList;
 import java.util.Queue;
 

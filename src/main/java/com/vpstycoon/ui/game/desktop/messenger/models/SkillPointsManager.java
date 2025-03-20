@@ -2,8 +2,8 @@ package com.vpstycoon.ui.game.desktop.messenger.models;
 
 import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.manager.CustomerRequest;
-import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import com.vpstycoon.ui.game.desktop.messenger.MessageType;
+import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 
 import java.util.HashMap;
 

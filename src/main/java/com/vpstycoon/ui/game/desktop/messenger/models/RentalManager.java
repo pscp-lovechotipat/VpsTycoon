@@ -3,16 +3,11 @@ package com.vpstycoon.ui.game.desktop.messenger.models;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.vps.VPSOptimization;
-import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import com.vpstycoon.ui.game.desktop.messenger.MessageType;
+import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import javafx.application.Platform;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class RentalManager {
     private final ChatHistoryManager chatHistoryManager;

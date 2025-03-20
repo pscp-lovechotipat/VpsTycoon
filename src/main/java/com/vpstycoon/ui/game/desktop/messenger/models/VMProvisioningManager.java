@@ -2,21 +2,17 @@ package com.vpstycoon.ui.game.desktop.messenger.models;
 
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.vps.VPSOptimization;
-import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import com.vpstycoon.ui.game.desktop.messenger.MessageType;
+import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class VMProvisioningManager {
     private final ChatHistoryManager chatHistoryManager;

@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game.rack;
 
 import com.vpstycoon.game.vps.VPSOptimization;
+
 import java.util.ArrayList;
 import java.util.List;
 

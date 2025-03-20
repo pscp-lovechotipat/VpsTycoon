@@ -1,7 +1,6 @@
 package com.vpstycoon.ui.game.desktop.messenger.views;
 
 import com.vpstycoon.game.manager.CustomerRequest;
-import com.vpstycoon.ui.game.desktop.messenger.MessageType;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatMessage;
 import javafx.application.Platform;

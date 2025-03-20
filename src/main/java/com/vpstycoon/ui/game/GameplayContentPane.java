@@ -43,13 +43,15 @@ import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.*;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
-import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,13 +93,6 @@ public class GameplayContentPane extends BorderPane {
     private final Company company;
     private RoomObjectsLayer roomObjects;
 
-//    private int availableSlot = 0; // slot not install vps in rack
-//    private int occupiedSlots = 0; // slot is install vps in rack
-//    private int totalSlots = 0; // Total number of slots in the rack
-
-//    private final List<VPSOptimization> vpsList = new ArrayList<>();
-    private final VPSInventory vpsInventory = new VPSInventory(); // Inventory of uninstalled VPS servers
-
     private ZoomPanHandler zoomPanHandler;
     private KeyEventHandler keyEventHandler;
 
@@ -118,6 +113,9 @@ public class GameplayContentPane extends BorderPane {
 
     private AudioManager audioManager;
 
+    private final VPSInventory vpsInventory = new VPSInventory();
+
+    // Constructor
     public GameplayContentPane(
             List<GameObject> gameObjects, Navigator navigator, ChatSystem chatSystem,
             RequestManager requestManager, VPSManager vpsManager, GameFlowManager gameFlowManager,
@@ -164,7 +162,7 @@ public class GameplayContentPane extends BorderPane {
         );
 
         this.moneyModel = new MoneyModel(ResourceManager.getInstance().getCompany().getMoney(),
-                ResourceManager.getInstance().getCompany().getRating()); // ค่าเริ่มต้นของ money และ ratting
+                ResourceManager.getInstance().getCompany().getRating());
         this.moneyUI = new MoneyUI(this, moneyModel);
         this.moneyController = new MoneyController(moneyModel, moneyUI);
 
@@ -180,7 +178,6 @@ public class GameplayContentPane extends BorderPane {
 
         this.inGameMarketMenuBar = new InGameMarketMenuBar(this, vpsManager);
 
-        // เพิ่มข้อมูล VPS ตัวอย่าง
         initializeSampleVPS();
 
         setupUI();
@@ -189,14 +186,11 @@ public class GameplayContentPane extends BorderPane {
         setCenter(rootStack);
         setupDebugFeatures();
 
-        // Initialize total slots
-//        this.totalSlots = rackManagementUI.getMAX_SLOTS(); // Default total slots
-
         this.audioManager = AudioManager.getInstance();
     }
 
+    // === Initialization Methods ===
     private void initializeSampleVPS() {
-        // Create sample VPS for the rack
         VPSOptimization vps1 = new VPSOptimization();
         vps1.setVCPUs(2);
         vps1.setRamInGB(4);
@@ -213,10 +207,6 @@ public class GameplayContentPane extends BorderPane {
         vps2.setInstalled(true);
         rack.installVPS(vps2);
 
-        // Update occupied slots based on installed VPS sizes
-//        occupiedSlots = vps1.getSlotsRequired() + vps2.getSlotsRequired();
-
-        // Create sample VPS for the inventory
         VPSOptimization invVps1 = new VPSOptimization();
         invVps1.setVCPUs(1);
         invVps1.setRamInGB(2);
@@ -231,20 +221,15 @@ public class GameplayContentPane extends BorderPane {
         invVps2.setSize(VPSSize.SIZE_3U);
         vpsInventory.addVPS("103.216.158.236-EnterpriseVPS", invVps2);
 
-        // Add to VPS manager
         vpsManager.createVPS("103.216.158.235-BasicVPS");
         vpsManager.getVPSMap().put("103.216.158.235-BasicVPS", invVps1);
         vpsManager.createVPS("103.216.158.236-EnterpriseVPS");
         vpsManager.getVPSMap().put("103.216.158.236-EnterpriseVPS", invVps2);
 
-        // Add sample VMs to the first VPS
         VPSOptimization.VM vm1 = new VPSOptimization.VM("192.168.1.1", "Web Server", 1, "1 GB", "20 GB", "Running");
         VPSOptimization.VM vm2 = new VPSOptimization.VM("192.168.1.2", "Database", 1, "2 GB", "30 GB", "Running");
         vps1.addVM(vm1);
         vps1.addVM(vm2);
-
-        // Initialize total slots
-//        totalSlots = rackManagementUI.getMAX_SLOTS();
     }
 
     private synchronized void setupUI() {
@@ -262,14 +247,13 @@ public class GameplayContentPane extends BorderPane {
                 debugOverlay
         );
 
-        // Explicitly set menu bars to visible in the main gameplay screen
         menuBar.setVisible(true);
         menuBar.setPickOnBounds(false);
 
         inGameMarketMenuBar.setVisible(true);
         inGameMarketMenuBar.setPickOnBounds(false);
 
-        notificationView.setMaxWidth(400); // จำกัดความกว้างของการแจ้งเตือน
+        notificationView.setMaxWidth(400);
         notificationView.setPickOnBounds(false);
 
         centerNotificationView.setPickOnBounds(false);
@@ -289,23 +273,17 @@ public class GameplayContentPane extends BorderPane {
         zoomPanHandler = new ZoomPanHandler(worldGroup, gameArea, debugOverlayManager, showDebug);
         zoomPanHandler.setup();
 
-//        this.pushCenterNotification("Hello Keroror!", "Wellcome to Keroror!");
-//        this.pushCenterNotification("Hello Keroror2!", "Wellcome to Keroror!");
-//        this.pushCenterNotification("Hello Keroror3!", "Wellcome to Keroror!");
-
-
         setStyle("-fx-background-color: #000000;");
     }
 
     private Pane createBackgroundLayer() {
         Pane backgroundLayer = new Pane();
-        Image backgroundImage = new Image("/images/rooms/room2_NoKeroro(70)2.png"); // เปลี่ยน path รูปตามที่คุณใช้
+        Image backgroundImage = new Image("/images/rooms/room2_NoKeroro(70)2.png");
 
         double scaleFactor = 0.26;
         backgroundLayer.setPrefWidth(backgroundImage.getWidth() * scaleFactor);
         backgroundLayer.setPrefHeight(backgroundImage.getHeight() * scaleFactor);
 
-        // ใช้ CSS ตั้ง background
         backgroundLayer.setStyle("""
         -fx-background-image: url("/images/rooms/room2_NoKeroro(70)2.png");
         -fx-background-size: cover;
@@ -324,6 +302,7 @@ public class GameplayContentPane extends BorderPane {
         });
     }
 
+    // === Notification Methods ===
     public void pushNotification(String title, String content) {
         notificationModel.addNotification(new NotificationModel.Notification(title, content));
         notificationView.addNotificationPane(title, content);
@@ -341,6 +320,7 @@ public class GameplayContentPane extends BorderPane {
         centerNotificationController.push(title, content, image);
     }
 
+    // === UI Opening Methods ===
     public void openRackInfo() {
         rackManagementUI.openRackInfo();
     }
@@ -374,16 +354,128 @@ public class GameplayContentPane extends BorderPane {
         simulationDesktopUI.openSimulationDesktop();
     }
 
+    public void openVPSInventory() {
+        vpsInventoryUI.openInventory();
+    }
+
+    public void openSkillPointsWindow() {
+        SkillPointsWindow skillPointsWindow = new SkillPointsWindow(getSkillPointsSystem(), () -> {
+            getGameArea().getChildren().remove(getGameArea().getChildren().size() - 1);
+        });
+
+        getGameArea().getChildren().add(skillPointsWindow);
+    }
+
+    public void openKeroro() {
+        System.out.println("Open Keroro");
+        audioManager.playSoundEffect("keroro_sound.mp3");
+        pushMouseNotification("Keroro");
+    }
+
+    // === Navigation Methods ===
     public void returnToRoom() {
         gameArea.getChildren().clear();
         setupUI();
 
-        // Make sure menu bars are visible in the main gameplay screen
         menuBar.setVisible(true);
         inGameMarketMenuBar.setVisible(true);
     }
 
-    // Getters and setters
+    // === VPS Management Methods ===
+    public boolean installVPSFromInventory(String vpsId) {
+        VPSOptimization vps = vpsInventory.getVPS(vpsId);
+        if (vps == null) {
+            return false;
+        }
+        if (rack.installVPS(vps)) {
+            vpsInventory.removeVPS(vpsId);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean uninstallVPSToInventory(VPSOptimization vps) {
+        String vpsId = vpsManager.getVPSMap().keySet().stream()
+                .filter(id -> vpsManager.getVPS(id) == vps)
+                .findFirst()
+                .orElse(null);
+        if (vpsId == null || !rack.getInstalledVPS().contains(vps)) {
+            return false;
+        }
+        if (rack.uninstallVPS(vps)) {
+            vpsInventory.addVPS(vpsId, vps);
+            return true;
+        }
+        return false;
+    }
+
+    // === Dialog Methods ===
+    public void showVMSelectionDialog() {
+        List<VPSOptimization.VM> allAvailableVMs = new ArrayList<>();
+        for (VPSOptimization vps : vpsManager.getVPSList()) {
+            allAvailableVMs.addAll(vps.getVms().stream()
+                    .filter(vm -> "Running".equals(vm.getStatus()))
+                    .collect(java.util.stream.Collectors.toList()));
+        }
+        if (allAvailableVMs.isEmpty()) {
+            pushNotification("Error", "No available VMs to assign.");
+            return;
+        }
+
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Assign VM");
+
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: #2c3e50;");
+
+        Label titleLabel = new Label("Select a VM to Assign");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        ComboBox<VPSOptimization.VM> vmComboBox = new ComboBox<>();
+        vmComboBox.setMaxWidth(Double.MAX_VALUE);
+        vmComboBox.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
+        vmComboBox.getItems().addAll(allAvailableVMs);
+        vmComboBox.setPromptText("Select a VM");
+
+        Button confirmButton = new Button("Confirm");
+        confirmButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
+        confirmButton.setOnAction(e -> {
+            VPSOptimization.VM selectedVM = vmComboBox.getValue();
+            if (selectedVM != null) {
+                pushNotification("Success", "Assigned VM: " + selectedVM.getName());
+                dialog.close();
+            } else {
+                pushNotification("Error", "Please select a VM.");
+            }
+        });
+
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
+        cancelButton.setOnAction(e -> dialog.close());
+
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().addAll(confirmButton, cancelButton);
+
+        Label selectVMLabel = new Label("Select VM:");
+        selectVMLabel.setStyle("-fx-text-fill: white;");
+
+        content.getChildren().addAll(titleLabel, selectVMLabel, vmComboBox, buttonBox);
+        dialog.getDialogPane().setContent(content);
+
+        dialog.setOnShown(event -> {
+            Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
+            Stage mainStage = (Stage) getScene().getWindow();
+            stage.setX(mainStage.getX() + (mainStage.getWidth() / 2) - (stage.getWidth() / 2));
+            stage.setY(mainStage.getY() + (mainStage.getHeight() / 2) - (stage.getHeight() / 2));
+        });
+
+        dialog.showAndWait();
+    }
+
+    // === Getter Methods ===
     public StackPane getRootStack() {
         return rootStack;
     }
@@ -392,7 +484,9 @@ public class GameplayContentPane extends BorderPane {
         return gameArea;
     }
 
-    public GameMenuBar getMenuBar() { return this.menuBar; }
+    public GameMenuBar getMenuBar() {
+        return this.menuBar;
+    }
 
     public MoneyUI getMoneyUI() {
         return moneyUI;
@@ -422,10 +516,6 @@ public class GameplayContentPane extends BorderPane {
         return requestManager;
     }
 
-    /**
-     * Get the VPS inventory
-     * @return The VPS inventory
-     */
     public VPSInventory getVpsInventory() {
         return vpsInventory;
     }
@@ -434,7 +524,6 @@ public class GameplayContentPane extends BorderPane {
         return rack;
     }
 
-    // ปรับปรุง getters เดิม
     public int getOccupiedSlots() {
         return rack.getOccupiedSlotUnits();
     }
@@ -455,26 +544,10 @@ public class GameplayContentPane extends BorderPane {
         return showDebug;
     }
 
-    public void setShowDebug(boolean showDebug) {
-        this.showDebug = showDebug;
-    }
-
     public Navigator getNavigator() {
-        return  this.navigator;
+        return this.navigator;
     }
 
-    public void openKeroro() {
-        System.out.println("Open Keroro");
-        audioManager.playSoundEffect("keroro_sound.mp3");
-        pushMouseNotification("Keroro");
-//        this.rootStack.getChildren().clear();
-//        this.rootStack.getChildren().add(roomObjects.getKeroroLayer()); // Jiant keroro?
-    }
-
-    /**
-     * Get the skill points system
-     * @return The skill points system
-     */
     public SkillPointsSystem getSkillPointsSystem() {
         if (skillPointsSystem == null) {
             skillPointsSystem = new SkillPointsSystem();
@@ -482,150 +555,16 @@ public class GameplayContentPane extends BorderPane {
         return skillPointsSystem;
     }
 
-    /**
-     * Set the skill points system
-     * @param skillPointsSystem The skill points system to set
-     */
-    public void setSkillPointsSystem(SkillPointsSystem skillPointsSystem) {
-        this.skillPointsSystem = skillPointsSystem;
-    }
-
-    /**
-     * Open the skill points window
-     */
-    public void openSkillPointsWindow() {
-        SkillPointsWindow skillPointsWindow = new SkillPointsWindow(getSkillPointsSystem(), () -> {
-            // Close action
-            getGameArea().getChildren().remove(getGameArea().getChildren().size() - 1);
-        });
-
-        getGameArea().getChildren().add(skillPointsWindow);
-    }
-
-    /**
-     * Get the game state
-     * @return The game state
-     */
     public GameState getGameState() {
-        // ใช้ GameState จาก GameManager
         return GameManager.getInstance().getCurrentState();
     }
 
-    /**
-     * Install a VPS from inventory into the rack
-     * @param vpsId The ID of the VPS to install
-     * @return true if installation was successful, false otherwise
-     */
-    public boolean installVPSFromInventory(String vpsId) {
-        VPSOptimization vps = vpsInventory.getVPS(vpsId);
-        if (vps == null) {
-            return false;
-        }
-        if (rack.installVPS(vps)) {
-            vpsInventory.removeVPS(vpsId);
-            return true;
-        }
-        return false;
+    // === Setter Methods ===
+    public void setShowDebug(boolean showDebug) {
+        this.showDebug = showDebug;
     }
 
-    /**
-     * Uninstall a VPS from the rack and add it to inventory
-     * @param vps The VPS to uninstall
-     * @return true if uninstallation was successful, false otherwise
-     */
-    public boolean uninstallVPSToInventory(VPSOptimization vps) {
-        String vpsId = vpsManager.getVPSMap().keySet().stream()
-                .filter(id -> vpsManager.getVPS(id) == vps)
-                .findFirst()
-                .orElse(null);
-        if (vpsId == null || !rack.getInstalledVPS().contains(vps)) {
-            return false;
-        }
-        if (rack.uninstallVPS(vps)) {
-            vpsInventory.addVPS(vpsId, vps);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Open the VPS inventory UI
-     */
-    public void openVPSInventory() {
-        vpsInventoryUI.openInventory();
-    }
-
-    /**
-     * แสดง Dialog สำหรับเลือก VM
-     */
-    public void showVMSelectionDialog() {
-        // ตรวจสอบว่าไม่มี VM ที่พร้อมใช้งานหรือไม่
-        List<VPSOptimization.VM> allAvailableVMs = new ArrayList<>();
-        for (VPSOptimization vps : vpsManager.getVPSList()) {
-            allAvailableVMs.addAll(vps.getVms().stream()
-                    .filter(vm -> "Running".equals(vm.getStatus()))
-                    .collect(java.util.stream.Collectors.toList()));
-        }
-        if (allAvailableVMs.isEmpty()) {
-            pushNotification("Error", "No available VMs to assign.");
-            return;
-        }
-
-        // สร้าง Dialog
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.initModality(Modality.APPLICATION_MODAL); // ทำให้เป็น Modal
-        dialog.setTitle("Assign VM");
-
-        // สร้างเนื้อหาของ Dialog
-        VBox content = new VBox(15);
-        content.setPadding(new Insets(20));
-        content.setStyle("-fx-background-color: #2c3e50;");
-
-        Label titleLabel = new Label("Select a VM to Assign");
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
-
-        ComboBox<VPSOptimization.VM> vmComboBox = new ComboBox<>();
-        vmComboBox.setMaxWidth(Double.MAX_VALUE);
-        vmComboBox.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
-        vmComboBox.getItems().addAll(allAvailableVMs);
-        vmComboBox.setPromptText("Select a VM");
-
-        Button confirmButton = new Button("Confirm");
-        confirmButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
-        confirmButton.setOnAction(e -> {
-            VPSOptimization.VM selectedVM = vmComboBox.getValue();
-            if (selectedVM != null) {
-                // ทำอะไรสักอย่างเมื่อเลือก VM (เช่น assign VM)
-                pushNotification("Success", "Assigned VM: " + selectedVM.getName());
-                dialog.close();
-            } else {
-                pushNotification("Error", "Please select a VM.");
-            }
-        });
-
-        Button cancelButton = new Button("Cancel");
-        cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
-        cancelButton.setOnAction(e -> dialog.close());
-
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().addAll(confirmButton, cancelButton);
-
-        Label selectVMLabel = new Label("Select VM:");
-        selectVMLabel.setStyle("-fx-text-fill: white;");
-
-        content.getChildren().addAll(titleLabel, selectVMLabel, vmComboBox, buttonBox);
-        dialog.getDialogPane().setContent(content);
-
-        // ตั้งค่าตำแหน่ง Dialog ให้อยู่กลางจอ
-        dialog.setOnShown(event -> {
-            Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-            Stage mainStage = (Stage) getScene().getWindow();
-            stage.setX(mainStage.getX() + (mainStage.getWidth() / 2) - (stage.getWidth() / 2));
-            stage.setY(mainStage.getY() + (mainStage.getHeight() / 2) - (stage.getHeight() / 2));
-        });
-
-        // แสดง Dialog
-        dialog.showAndWait();
+    public void setSkillPointsSystem(SkillPointsSystem skillPointsSystem) {
+        this.skillPointsSystem = skillPointsSystem;
     }
 }

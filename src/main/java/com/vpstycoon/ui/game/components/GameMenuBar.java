@@ -1,6 +1,5 @@
 package com.vpstycoon.ui.game.components;
 
-import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.status.CircleStatusButton;
 import javafx.geometry.Insets;

@@ -1,6 +1,5 @@
 package com.vpstycoon.ui.base;
 
-import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
