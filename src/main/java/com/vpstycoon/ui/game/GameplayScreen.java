@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game;
 
+import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameSaveManager;
@@ -47,6 +48,8 @@ public class GameplayScreen extends GameScreen {
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
 
+        AudioManager.getInstance().playMusic("Pixel Paradise2.mp3");
+
         loadGame(); // Load existing game or initialize a new one
     }
 
@@ -62,6 +65,8 @@ public class GameplayScreen extends GameScreen {
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
+
+        AudioManager.getInstance().playMusic("Pixel Paradise2.mp3");
 
         loadGame(gameState); // Set up game state from provided GameState
     }

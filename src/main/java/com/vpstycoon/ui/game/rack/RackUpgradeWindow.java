@@ -260,4 +260,8 @@ public class RackUpgradeWindow extends VBox {
         buyRackButton.setDisable(!(numberOfRacks < maxNumberOfRacks && company.getMoney() >= rackCost));
         upgradeRoomButton.setDisable(!(company.getMoney() >= roomUpgradeCost));
     }
+
+    public void increaseMaxSlotUnits(int additionalSlots) {
+        this.maxNumberOfRacks += additionalSlots;
+    }
 }

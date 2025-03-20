@@ -70,7 +70,7 @@ public class GameApplication extends Application implements Navigator {
 
         this.audioManager = AudioManager.getInstance();
 
-        audioManager.playMusic("Pixel_Paradise.mp3");
+        audioManager.playMusic("Untitled.mp3");
         
         initializeGame();
         showMainMenu();

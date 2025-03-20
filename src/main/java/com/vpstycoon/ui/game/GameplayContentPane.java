@@ -27,6 +27,9 @@ import com.vpstycoon.ui.game.market.MarketUI;
 import com.vpstycoon.ui.game.notification.NotificationController;
 import com.vpstycoon.ui.game.notification.NotificationModel;
 import com.vpstycoon.ui.game.notification.NotificationView;
+import com.vpstycoon.ui.game.notification.center.CenterNotificationController;
+import com.vpstycoon.ui.game.notification.center.CenterNotificationModel;
+import com.vpstycoon.ui.game.notification.center.CenterNotificationView;
 import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationController;
 import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationModel;
 import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationView;
@@ -56,6 +59,9 @@ public class GameplayContentPane extends BorderPane {
     private final NotificationModel notificationModel;
     private final NotificationView notificationView;
     private final NotificationController notificationController;
+
+    private final CenterNotificationView centerNotificationView;
+    private final CenterNotificationController centerNotificationController;
 
     private final MouseNotificationModel mouseNotificationModel;
     private final MouseNotificationView mouseNotificationView;
@@ -139,11 +145,23 @@ public class GameplayContentPane extends BorderPane {
 
         this.notificationModel = new NotificationModel();
         this.notificationView = new NotificationView();
-        this.notificationController = new NotificationController(notificationModel, notificationView);
+        this.notificationController = new NotificationController(
+                notificationModel,
+                notificationView
+        );
 
         this.mouseNotificationModel = new MouseNotificationModel();
         this.mouseNotificationView = new MouseNotificationView();
-        this.mouseNotificationController = new MouseNotificationController(mouseNotificationModel, mouseNotificationView);
+        this.mouseNotificationController = new MouseNotificationController(
+                mouseNotificationModel,
+                mouseNotificationView
+        );
+
+        this.centerNotificationView = new CenterNotificationView();
+        this.centerNotificationController = new CenterNotificationController(
+                new CenterNotificationModel(),
+                centerNotificationView
+        );
 
         this.moneyModel = new MoneyModel(ResourceManager.getInstance().getCompany().getMoney(),
                 ResourceManager.getInstance().getCompany().getRating()); // ค่าเริ่มต้นของ money และ ratting
@@ -239,7 +257,10 @@ public class GameplayContentPane extends BorderPane {
         gameArea.getChildren().add(worldGroup);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
-        rootStack.getChildren().addAll(gameArea, moneyUI, menuBar, inGameMarketMenuBar, mouseNotificationView, notificationView, debugOverlay);
+        rootStack.getChildren().addAll(gameArea, moneyUI, menuBar,
+                inGameMarketMenuBar, mouseNotificationView, notificationView, centerNotificationView,
+                debugOverlay
+        );
 
         // Explicitly set menu bars to visible in the main gameplay screen
         menuBar.setVisible(true);
@@ -250,6 +271,9 @@ public class GameplayContentPane extends BorderPane {
 
         notificationView.setMaxWidth(400); // จำกัดความกว้างของการแจ้งเตือน
         notificationView.setPickOnBounds(false);
+
+        centerNotificationView.setPickOnBounds(false);
+        StackPane.setAlignment(centerNotificationView, Pos.CENTER);
 
         moneyUI.setPickOnBounds(false);
         moneyUI.setVisible(true);
@@ -264,6 +288,12 @@ public class GameplayContentPane extends BorderPane {
         debugOverlayManager.startTimer();
         zoomPanHandler = new ZoomPanHandler(worldGroup, gameArea, debugOverlayManager, showDebug);
         zoomPanHandler.setup();
+
+//        this.pushCenterNotification("Hello Keroror!", "Wellcome to Keroror!");
+//        this.pushCenterNotification("Hello Keroror2!", "Wellcome to Keroror!");
+//        this.pushCenterNotification("Hello Keroror3!", "Wellcome to Keroror!");
+
+
         setStyle("-fx-background-color: #000000;");
     }
 
@@ -301,6 +331,14 @@ public class GameplayContentPane extends BorderPane {
 
     public void pushMouseNotification(String content) {
         mouseNotificationController.addNotification(content);
+    }
+
+    public void pushCenterNotification(String title, String content) {
+        centerNotificationController.push(title, content);
+    }
+
+    public void pushCenterNotification(String title, String content, Image image) {
+        centerNotificationController.push(title, content, image);
     }
 
     public void openRackInfo() {
