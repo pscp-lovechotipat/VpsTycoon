@@ -26,6 +26,7 @@ public class InGameMarketMenuBar extends StackPane {
             // ซ่อน MenuBar
             parent.getMenuBar().setVisible(false);
             parent.getMoneyUI().setVisible(false);
+            parent.getDateView().setVisible(false);
 
             openMarketWindow();
         });
@@ -44,12 +45,14 @@ public class InGameMarketMenuBar extends StackPane {
                     parent.getMenuBar().setVisible(true);
                     setVisible(true);
                     parent.getMoneyUI().setVisible(true);
+                    parent.getDateView().setVisible(true);
                 },
                 () -> {
                     parent.getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
                     parent.getMenuBar().setVisible(true);
                     setVisible(true);
                     parent.getMoneyUI().setVisible(true);
+                    parent.getDateView().setVisible(true);
                 },
                 vpsManager,
                 parent

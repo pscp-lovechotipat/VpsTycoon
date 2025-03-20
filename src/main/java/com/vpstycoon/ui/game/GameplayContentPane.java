@@ -274,6 +274,8 @@ public class GameplayContentPane extends BorderPane {
         moneyUI.setPickOnBounds(false);
         moneyUI.setVisible(true);
 
+        dateView.setVisible(true);
+
         StackPane.setMargin(this.moneyUI, new Insets(40));
 
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
@@ -502,6 +504,10 @@ public class GameplayContentPane extends BorderPane {
 
     public MoneyUI getMoneyUI() {
         return moneyUI;
+    }
+
+    public DateView getDateView() {
+        return dateView;
     }
 
     public List<VPSOptimization> getVpsList() {

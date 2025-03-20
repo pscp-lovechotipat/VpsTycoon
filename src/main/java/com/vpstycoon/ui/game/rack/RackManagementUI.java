@@ -32,6 +32,7 @@ public class RackManagementUI {
         parent.getMenuBar().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
         parent.getMoneyUI().setVisible(false);
+        parent.getDateView().setVisible(false);
 
         // Top Bar
         HBox topBar = new HBox(20);
