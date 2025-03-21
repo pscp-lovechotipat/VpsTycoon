@@ -50,7 +50,7 @@ public class ResourceManager implements Serializable {
                 this.company,
                 this.requestManager,
                 this.rack,
-                LocalDateTime.now()
+                LocalDateTime.of(2000, 1, 1, 0, 0, 0)
         );
 
         createBackupDirectory();
@@ -97,6 +97,7 @@ public class ResourceManager implements Serializable {
         if (!saveFile.exists() || saveFile.length() == 0) {
             System.out.println("No save game file found or file is empty.");
             GameState newState = new GameState();
+            newState.setLocalDateTime(LocalDateTime.of(2000, 1, 1, 0, 0, 0));
             this.currentState = newState;
             this.company = newState.getCompany();
             this.requestManager = new RequestManager(this.company);

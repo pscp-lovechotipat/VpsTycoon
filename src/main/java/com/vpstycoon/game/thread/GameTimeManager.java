@@ -54,7 +54,7 @@ public class GameTimeManager {
         this.company = company;
         this.requestManager = requestManager;
         this.rack = rack;
-        this.gameDateTime = startTime;
+        this.gameDateTime = startTime != null ? startTime : LocalDateTime.of(2000, 1, 1, 0, 0, 0);
         this.lastProcessedMonth = gameDateTime.getMonthValue();
     }
 

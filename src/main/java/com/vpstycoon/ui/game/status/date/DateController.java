@@ -1,29 +1,33 @@
 package com.vpstycoon.ui.game.status.date;
 
+import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.resource.ResourceManager;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.util.Duration;
+import com.vpstycoon.game.thread.GameTimeManager;
 
-public class DateController {
+import java.time.LocalDateTime;
+
+public class DateController implements GameTimeManager.GameTimeListener{
     private final ResourceManager resourceManager = ResourceManager.getInstance();
     private final DateModel dateModel;
     private final DateView dateView;
-    private final Timeline timeline;
 
     public DateController(DateModel dateModel, DateView dateView) {
         this.dateModel = dateModel;
         this.dateView = dateView;
 
-        // Set up Timeline to update every second
-        timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> update()));
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play(); // Start the timeline
+        resourceManager.getGameTimeManager().addTimeListener(this);
+
+        dateModel.setDate(resourceManager.getGameTimeManager().getGameDateTime());
     }
 
-    public void update() {
-        dateModel.setDate(resourceManager.getCurrentState().getLocalDateTime());
-        // หรือถ้าจะ bind โดยตรง:
-        // dateModel.dateProperty().bind(resourceManager.getCurrentState().localDateTimeProperty());
+    @Override
+    public void onTimeChanged(LocalDateTime newTime, long gameTimeMs) {
+        // อัปเดตทันทีเมื่อเวลาในเกมเปลี่ยนแปลง
+        dateModel.setDate(newTime);
+    }
+
+    @Override
+    public void onRentalPeriodCheck(CustomerRequest request, CustomerRequest.RentalPeriodType period) {
+        // ไม่ต้องทำอะไรที่นี่สำหรับ UI ของวันที่
     }
 }
