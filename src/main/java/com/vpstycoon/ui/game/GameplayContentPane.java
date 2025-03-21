@@ -1,9 +1,7 @@
 package com.vpstycoon.ui.game;
 
 import com.vpstycoon.audio.AudioManager;
-import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.SkillPointsSystem;
 import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
@@ -126,14 +124,14 @@ public class GameplayContentPane extends BorderPane {
     public GameplayContentPane(
             List<GameObject> gameObjects, Navigator navigator, ChatSystem chatSystem,
             RequestManager requestManager, VPSManager vpsManager, GameFlowManager gameFlowManager,
-            DebugOverlayManager debugOverlayManager, Company company) {
+            DebugOverlayManager debugOverlayManager, Company company, Rack rack) {
         this.gameObjects = gameObjects;
         this.navigator = navigator;
         this.chatSystem = chatSystem;
 
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
-        this.rack = new Rack(10,3);
+        this.rack = rack;
         this.gameFlowManager = gameFlowManager;
         this.debugOverlayManager = debugOverlayManager;
         this.company = company;
@@ -571,10 +569,6 @@ public class GameplayContentPane extends BorderPane {
             skillPointsSystem = new SkillPointsSystem();
         }
         return skillPointsSystem;
-    }
-
-    public GameState getGameState() {
-        return GameManager.getInstance().getCurrentState();
     }
 
     // === Setter Methods ===

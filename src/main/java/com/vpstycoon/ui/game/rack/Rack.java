@@ -1,11 +1,14 @@
 package com.vpstycoon.ui.game.rack;
 
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Rack {
+public class Rack implements Serializable {
     private final int maxSlotUnits;         // จำนวนสล็อตสูงสุดของ Rack
     private int unlockedSlotUnits;          // จำนวนสล็อตที่ถูกปลดล็อกแล้ว
     private int occupiedSlotUnits;          // จำนวนสล็อตที่ถูกใช้งาน
@@ -17,6 +20,7 @@ public class Rack {
         this.unlockedSlotUnits = initialUnlockedSlotUnits;
         this.occupiedSlotUnits = 0;
         this.installedVPS = new ArrayList<>();
+
     }
 
     // อัปเกรด Rack เพื่อปลดล็อกสล็อตเพิ่ม
@@ -71,4 +75,6 @@ public class Rack {
     public List<VPSOptimization> getInstalledVPS() {
         return installedVPS;
     }
+
+
 }

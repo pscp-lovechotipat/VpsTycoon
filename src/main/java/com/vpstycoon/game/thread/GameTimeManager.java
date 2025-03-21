@@ -2,7 +2,10 @@ package com.vpstycoon.game.thread;
 
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
+import com.vpstycoon.game.vps.enums.VPSProduct;
+import com.vpstycoon.ui.game.rack.Rack; // เพิ่ม import
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -16,10 +19,11 @@ public class GameTimeManager {
 
     private final Company company;
     private final RequestManager requestManager;
-    private final List<VPSOptimization> vpsServers;
+    private final Rack rack; // เพิ่ม reference ไปยัง Rack
     private LocalDateTime gameDateTime;
     private final AtomicLong gameTimeMs = new AtomicLong(0);
     private volatile boolean running = true;
+    private int lastProcessedMonth = -1;
 
     private final List<GameTimeListener> timeListeners = new ArrayList<>();
 
@@ -27,11 +31,12 @@ public class GameTimeManager {
         void onTimeChanged(LocalDateTime newTime, long gameTimeMs);
     }
 
-    public GameTimeManager(Company company, RequestManager requestManager, LocalDateTime startTime) {
+    public GameTimeManager(Company company, RequestManager requestManager, Rack rack, LocalDateTime startTime) {
         this.company = company;
         this.requestManager = requestManager;
+        this.rack = rack; // รับ Rack เข้ามาใน constructor
         this.gameDateTime = startTime;
-        this.vpsServers = new ArrayList<>();
+        this.lastProcessedMonth = gameDateTime.getMonthValue();
     }
 
     public void start() {
@@ -50,7 +55,14 @@ public class GameTimeManager {
                 long newGameTimeMs = gameTimeMs.addAndGet(elapsedMs);
                 long daysElapsed = elapsedMs / (GAME_MONTH_MS / 30);
                 if (daysElapsed > 0) {
+                    LocalDateTime previousDateTime = gameDateTime;
                     gameDateTime = gameDateTime.plus(daysElapsed, ChronoUnit.DAYS);
+
+                    if (gameDateTime.getMonthValue() != previousDateTime.getMonthValue()) {
+                        processMonthlyKeepUp();
+                        lastProcessedMonth = gameDateTime.getMonthValue();
+                    }
+
                     notifyTimeListeners();
                 }
 
@@ -60,7 +72,7 @@ public class GameTimeManager {
                 }
 
                 if (currentTime - lastOverheadTime >= overheadInterval) {
-                    processOverheadCosts(overheadCost);
+//                    processOverheadCosts(overheadCost);
                     lastOverheadTime = currentTime;
                 }
 
@@ -71,9 +83,35 @@ public class GameTimeManager {
         }
     }
 
+    private void processMonthlyKeepUp() {
+        long totalKeepUpCost = 0;
+
+        // ดึง VPS ที่ติดตั้งจาก Rack แทนการใช้ vpsServers
+        List<VPSOptimization> installedVPS = rack.getInstalledVPS();
+
+        for (VPSOptimization vps : installedVPS) {
+            for (VPSProduct product : VPSProduct.values()) {
+                if (product.getCpu() == vps.getVCPUs() &&
+                        product.getRam() == vps.getRamInGB() &&
+                        product.getStorage() == vps.getDiskInGB() &&
+                        product.getSize() == vps.getSize()) {
+                    totalKeepUpCost += product.getKeepUp();
+                    break;
+                }
+            }
+        }
+
+        if (totalKeepUpCost > 0) {
+            long currentMoney = ResourceManager.getInstance().getCompany().getMoney();
+            ResourceManager.getInstance().getCompany().setMoney(currentMoney - totalKeepUpCost);
+            System.out.println("Monthly keep-up cost deducted: $" + totalKeepUpCost +
+                    " | New balance: $" + ResourceManager.getInstance().getCompany().getMoney());
+        }
+    }
+
     private void processOverheadCosts(long overheadCost) {
         long totalCost = overheadCost;
-        for (VPSOptimization vps : vpsServers) {
+        for (VPSOptimization vps : rack.getInstalledVPS()) { // เปลี่ยนจาก vpsServers เป็น rack.getInstalledVPS()
             totalCost += vps.getVCPUs() * 1000;
         }
         long currentMoney = company.getMoney();
@@ -87,13 +125,14 @@ public class GameTimeManager {
     }
 
     public void addVPSServer(VPSOptimization vps) {
-        vpsServers.add(vps);
+        rack.installVPS(vps);
     }
 
     public void removeVPSServer(VPSOptimization vps) {
-        vpsServers.remove(vps);
+        rack.uninstallVPS(vps);
     }
 
+    // ลบเมธอด addVPSServer และ removeVPSServer ออก เพราะจะใช้ Rack แทน
     public void addTimeListener(GameTimeListener listener) {
         timeListeners.add(listener);
     }

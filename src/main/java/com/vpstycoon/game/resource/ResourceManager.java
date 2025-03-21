@@ -4,6 +4,7 @@ import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.ui.game.rack.Rack; // เพิ่ม import
 import javafx.scene.image.Image;
 
 import java.io.*;
@@ -31,15 +32,16 @@ public class ResourceManager implements Serializable {
 
     private Company company = new Company();
     private GameState currentState;
+    private Rack rack; // เพิ่ม field สำหรับ Rack
 
     private final AudioManager audioManager;
 
     private ResourceManager() {
         this.company = new Company();
         this.audioManager = new AudioManager();
+        this.rack = new Rack(10, 3); // สร้าง Rack เริ่มต้นใน ResourceManager
 
         createBackupDirectory();
-        // สร้าง GameState เริ่มต้นถ้ายังไม่มี
         if (currentState == null) {
             currentState = new GameState(this.company);
         }
@@ -63,13 +65,12 @@ public class ResourceManager implements Serializable {
         });
     }
 
-    // เมธอดใหม่สำหรับการบันทึกและโหลดเกม
     public void saveGameState(GameState state) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
             oos.writeObject(state);
             System.out.println("Game saved successfully to: " + SAVE_FILE);
-            this.currentState = state; // อัปเดต currentState
-            this.company = state.getCompany(); // อัปเดต company
+            this.currentState = state;
+            this.company = state.getCompany();
         } catch (IOException e) {
             System.err.println("Failed to save game: " + e.getMessage());
             e.printStackTrace();
@@ -83,13 +84,17 @@ public class ResourceManager implements Serializable {
             GameState newState = new GameState();
             this.currentState = newState;
             this.company = newState.getCompany();
+            this.rack = new Rack(10, 3); // รีเซ็ต Rack ถ้าไม่มี save
             return newState;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(saveFile))) {
             GameState state = (GameState) ois.readObject();
             System.out.println("Game loaded successfully from: " + SAVE_FILE);
             this.currentState = state;
-            this.company = state.getCompany(); // อัปเดต company จาก state ที่โหลดมา
+            this.company = state.getCompany();
+            // หาก Rack ถูกเก็บใน GameState ด้วย จะต้องโหลดจาก state ด้วย
+            // ถ้าไม่เก็บใน state จะใช้ค่าเริ่มต้น
+            this.rack = new Rack(10, 3); // หรือโหลดจาก state ถ้ามี
             return state;
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Failed to load game: " + e.getMessage());
@@ -98,10 +103,21 @@ public class ResourceManager implements Serializable {
             GameState newState = new GameState();
             this.currentState = newState;
             this.company = newState.getCompany();
+            this.rack = new Rack(10, 3);
             return newState;
         }
     }
 
+    // Getter และ Setter สำหรับ Rack
+    public Rack getRack() {
+        return rack;
+    }
+
+    public void setRack(Rack rack) {
+        this.rack = rack;
+    }
+
+    // เมธอดอื่นๆ คงเดิม
     public void deleteSaveFile() {
         File saveFile = new File(SAVE_FILE);
         if (saveFile.exists()) {
@@ -177,14 +193,13 @@ public class ResourceManager implements Serializable {
         });
     }
 
-    // Getter และ Setter สำหรับ GameState และ Company
     public GameState getCurrentState() {
         return currentState;
     }
 
     public void setCurrentState(GameState state) {
         this.currentState = state;
-        this.company = state.getCompany(); // อัปเดต company ให้สอดคล้อง
+        this.company = state.getCompany();
     }
 
     public Company getCompany() {
@@ -199,7 +214,6 @@ public class ResourceManager implements Serializable {
         return audioManager;
     }
 
-    // เมธอดสำหรับสร้าง GameObject (ถ้าต้องการให้ ResourceManager สร้าง)
     public GameObject createGameObject(String id, String type, int gridX, int gridY) {
         return new GameObject(id, type, gridX, gridY);
     }

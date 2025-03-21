@@ -22,16 +22,10 @@ public class GameManager {
     private VPSInventory vpsInventory;
     private List<VPSOptimization> installedServers;
     
-    // Game threads
-    private final List<Object> gameThreads = new ArrayList<>();
-
-    private RequestGenerator requestGenThread;
-    
     // Game state
     private boolean gameRunning = false;
 
     private GameManager() {
-        // Initialize with empty state
         installedServers = new ArrayList<>();
         vpsInventory = new VPSInventory();
     }
@@ -52,7 +46,7 @@ public class GameManager {
         requestManager = new RequestManager(company);
         
         // Create time manager
-        timeManager = new GameTimeManager(company, requestManager, LocalDateTime.now());
+        timeManager = new GameTimeManager(company, requestManager, ResourceManager.getInstance().getRack(),LocalDateTime.now());
         
         // Create request generator
         requestGenerator = new RequestGenerator(requestManager);
@@ -81,50 +75,6 @@ public class GameManager {
         server.setRamInGB(16);
         server.setDiskInGB(500);
         return server;
-    }
-    
-    /**
-     * Start the game threads
-     */
-    public void startGame() {
-        if (gameRunning) {
-            return;
-        }
-        
-        // Start time manager
-        timeManager.start();
-        gameThreads.add(timeManager);
-        
-        // Start request generator
-        requestGenerator.start();
-        gameThreads.add(requestGenerator);
-        
-        gameRunning = true;
-    }
-    
-    /**
-     * Stop the game threads
-     */
-    public void stopGame() {
-        if (!gameRunning) {
-            return;
-        }
-        
-        // Stop time manager
-        timeManager.stop();
-        
-        // Stop request generator
-        requestGenerator.stopGenerator();
-        
-        // Interrupt all game threads
-        for (Object thread : gameThreads) {
-            if (thread instanceof Thread) {
-                ((Thread) thread).interrupt();
-            }
-        }
-        
-        gameThreads.clear();
-        gameRunning = false;
     }
 
     /**
@@ -167,7 +117,7 @@ public class GameManager {
             
             // Set date/time from saved state
             if (savedState.getLocalDateTime() != null) {
-                timeManager = new GameTimeManager(company, requestManager, savedState.getLocalDateTime());
+                timeManager = new GameTimeManager(company, requestManager, ResourceManager.getInstance().getRack(), savedState.getLocalDateTime());
             }
             
             // Load installed servers

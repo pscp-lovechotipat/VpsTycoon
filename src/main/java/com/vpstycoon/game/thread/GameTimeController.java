@@ -3,6 +3,7 @@ package com.vpstycoon.game.thread;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.vps.VPSOptimization;
+import com.vpstycoon.ui.game.rack.Rack; // เพิ่ม import
 
 import java.time.LocalDateTime;
 
@@ -10,8 +11,8 @@ public class GameTimeController {
     private final GameTimeManager timeManager;
     private Thread timeThread;
 
-    public GameTimeController(Company company, RequestManager requestManager, LocalDateTime startTime) {
-        this.timeManager = new GameTimeManager(company, requestManager, startTime);
+    public GameTimeController(Company company, RequestManager requestManager, Rack rack, LocalDateTime startTime) {
+        this.timeManager = new GameTimeManager(company, requestManager, rack, startTime);
     }
 
     public void startTime() {
@@ -27,20 +28,14 @@ public class GameTimeController {
         timeManager.stop();
         if (timeThread != null) {
             try {
-                timeThread.join(); // รอให้เธรดหยุดทำงาน
+                timeThread.join();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    public void addVPSServer(VPSOptimization vps) {
-        timeManager.addVPSServer(vps);
-    }
-
-    public void removeVPSServer(VPSOptimization vps) {
-        timeManager.removeVPSServer(vps);
-    }
+    // ลบ addVPSServer และ removeVPSServer ออก เพราะจัดการผ่าน Rack
 
     public void addTimeListener(GameTimeManager.GameTimeListener listener) {
         timeManager.addTimeListener(listener);

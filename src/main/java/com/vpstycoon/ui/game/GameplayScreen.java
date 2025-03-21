@@ -12,7 +12,6 @@ import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.object.RackObject;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.thread.GameTimeController;
-import com.vpstycoon.game.thread.GameTimeUpdater;
 import com.vpstycoon.game.thread.RequestGenerator;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
@@ -23,9 +22,6 @@ import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
 
-/**
- * GameplayScreen หลังแยกโค้ด UI ออกไปเป็น GameplayContentPane
- */
 public class GameplayScreen extends GameScreen {
     private GameState state;
     private final Navigator navigator;
@@ -43,7 +39,7 @@ public class GameplayScreen extends GameScreen {
         this.navigator = navigator;
         this.saveManager = new GameSaveManager();
         this.gameObjects = new ArrayList<>();
-        this.company = new Company();
+        this.company = ResourceManager.getInstance().getCompany(); // ใช้ company จาก ResourceManager
         this.chatSystem = new ChatSystem();
         this.requestManager = new RequestManager(company);
         this.vpsManager = new VPSManager();
@@ -52,7 +48,7 @@ public class GameplayScreen extends GameScreen {
 
         AudioManager.getInstance().playMusic("Pixel Paradise2.mp3");
 
-        loadGame(); // Load existing game or initialize a new one
+        loadGame();
     }
 
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator, GameState gameState) {
@@ -61,7 +57,7 @@ public class GameplayScreen extends GameScreen {
         this.saveManager = new GameSaveManager();
         this.state = gameState;
         this.gameObjects = new ArrayList<>(gameState.getGameObjects());
-        this.company = gameState.getCompany() != null ? gameState.getCompany() : new Company();
+        this.company = ResourceManager.getInstance().getCompany(); // ใช้ company จาก ResourceManager
         this.chatSystem = new ChatSystem();
         this.requestManager = new RequestManager(company);
         this.vpsManager = new VPSManager();
@@ -70,7 +66,7 @@ public class GameplayScreen extends GameScreen {
 
         AudioManager.getInstance().playMusic("Pixel Paradise2.mp3");
 
-        loadGame(gameState); // Set up game state from provided GameState
+        loadGame(gameState);
     }
 
     private void loadGame() {
@@ -105,37 +101,36 @@ public class GameplayScreen extends GameScreen {
         int screenWidth = config.getResolution().getWidth();
         int screenHeight = config.getResolution().getHeight();
         int centerX = screenWidth / 2;
-        int topMargin = screenHeight / 12; // ระยะห่างจากขอบบน
-        int spacing = screenWidth / 10; // ระยะห่างระหว่างปุ่ม
+        int topMargin = screenHeight / 12;
+        int spacing = screenWidth / 10;
 
         gameObjects.clear();
 
-        // ปุ่ม Deploy
         RackObject deploy = new RackObject("deploy", "Deploy", 0, 0);
         deploy.setGridPosition(centerX - spacing * 2, topMargin);
         gameObjects.add(deploy);
 
-        // ปุ่ม Network
         RackObject network = new RackObject("network", "Network", 0, 0);
         network.setGridPosition(centerX - spacing, topMargin);
         gameObjects.add(network);
 
-        // ปุ่ม Security
         RackObject security = new RackObject("security", "Security", 0, 0);
         security.setGridPosition(centerX, topMargin);
         gameObjects.add(security);
 
-        // ปุ่ม Marketing
         RackObject marketing = new RackObject("marketing", "Marketing", 0, 0);
         marketing.setGridPosition(centerX + spacing, topMargin);
         gameObjects.add(marketing);
 
-        // อัปเดตสถานะเกม
         state.setGameObjects(gameObjects);
 
-        // Start separate threads
         RequestGenerator requestGenerator = new RequestGenerator(requestManager);
-        GameTimeController gameTimeController = new GameTimeController(company, requestManager, ResourceManager.getInstance().getCurrentState().getLocalDateTime());
+        GameTimeController gameTimeController = new GameTimeController(
+                company,
+                requestManager,
+                ResourceManager.getInstance().getRack(), // ใช้ Rack จาก ResourceManager
+                ResourceManager.getInstance().getCurrentState().getLocalDateTime()
+        );
 
         requestGenerator.start();
         gameTimeController.startTime();
@@ -151,7 +146,8 @@ public class GameplayScreen extends GameScreen {
                 this.vpsManager,
                 this.gameFlowManager,
                 this.debugOverlayManager,
-                this.company  // Added Company argument
+                this.company,
+                ResourceManager.getInstance().getRack() // ใช้ Rack จาก ResourceManager
         );
     }
 }
