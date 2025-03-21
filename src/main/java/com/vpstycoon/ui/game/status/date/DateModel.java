@@ -2,6 +2,7 @@ package com.vpstycoon.ui.game.status.date;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+
 import java.time.LocalDateTime;
 
 public class DateModel {

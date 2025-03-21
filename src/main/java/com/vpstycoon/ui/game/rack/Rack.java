@@ -1,10 +1,8 @@
 package com.vpstycoon.ui.game.rack;
 
-import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

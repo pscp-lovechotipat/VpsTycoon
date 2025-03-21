@@ -2,7 +2,7 @@ package com.vpstycoon.game.manager;
 
 import com.vpstycoon.game.customer.Customer;
 import com.vpstycoon.game.customer.enums.CustomerType;
-import com.vpstycoon.game.thread.GameTimeManager; // เพิ่ม import
+import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.game.vps.enums.RequestType;
 
 import java.util.Random;

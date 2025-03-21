@@ -6,7 +6,7 @@ import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.thread.GameTimeManager;
-import com.vpstycoon.ui.game.rack.Rack; // เพิ่ม import
+import com.vpstycoon.ui.game.rack.Rack;
 import javafx.scene.image.Image;
 
 import java.io.*;

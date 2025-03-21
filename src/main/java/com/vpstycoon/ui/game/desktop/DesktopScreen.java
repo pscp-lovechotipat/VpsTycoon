@@ -4,7 +4,6 @@ import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
-import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.desktop.messenger.controllers.MessengerController;
