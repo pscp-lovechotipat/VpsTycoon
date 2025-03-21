@@ -4,6 +4,8 @@ import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.desktop.messenger.controllers.MessengerController;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
@@ -22,13 +24,14 @@ public class DesktopScreen extends StackPane {
     private final VPSManager vpsManager;
     private final Company company;
     private final GameplayContentPane parent;
+    private final GameTimeManager gameTimeManager;
 
     private MessengerWindow chatWindow;
     private MessengerController chatController;
 
     public DesktopScreen(double companyRating, int marketingPoints,
                          ChatSystem chatSystem, RequestManager requestManager,
-                         VPSManager vpsManager, Company company, GameplayContentPane parent) {
+                         VPSManager vpsManager, Company company, GameplayContentPane parent, GameTimeManager gameTimeManager) {
         this.companyRating = companyRating;
         this.marketingPoints = marketingPoints;
         this.chatSystem = chatSystem;
@@ -36,6 +39,7 @@ public class DesktopScreen extends StackPane {
         this.vpsManager = vpsManager;
         this.company = company;
         this.parent = parent;
+        this.gameTimeManager = gameTimeManager;
 
         setupUI();
     }
@@ -63,7 +67,7 @@ public class DesktopScreen extends StackPane {
 
             // สร้าง MessengerController และส่ง ChatHistoryManager เข้าไป
             chatController = new MessengerController(requestManager, vpsManager, company, chatHistoryManager,
-                    parent.getRootStack(), this::closeChatWindow);
+                    parent.getRootStack(), gameTimeManager, this::closeChatWindow);
 
             // ดึง MessengerWindow จาก MessengerController
             chatWindow = chatController.getMessengerWindow();

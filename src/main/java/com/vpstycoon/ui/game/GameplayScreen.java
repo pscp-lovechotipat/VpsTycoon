@@ -33,6 +33,7 @@ public class GameplayScreen extends GameScreen {
     private final VPSManager vpsManager;
     private final GameFlowManager gameFlowManager;
     private final DebugOverlayManager debugOverlayManager;
+    private GameTimeController gameTimeController;
 
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
@@ -41,7 +42,7 @@ public class GameplayScreen extends GameScreen {
         this.gameObjects = new ArrayList<>();
         this.company = ResourceManager.getInstance().getCompany(); // ใช้ company จาก ResourceManager
         this.chatSystem = new ChatSystem();
-        this.requestManager = new RequestManager(company);
+        this.requestManager = ResourceManager.getInstance().getRequestManager();
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
@@ -59,7 +60,7 @@ public class GameplayScreen extends GameScreen {
         this.gameObjects = new ArrayList<>(gameState.getGameObjects());
         this.company = ResourceManager.getInstance().getCompany(); // ใช้ company จาก ResourceManager
         this.chatSystem = new ChatSystem();
-        this.requestManager = new RequestManager(company);
+        this.requestManager = ResourceManager.getInstance().getRequestManager();
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
@@ -125,7 +126,7 @@ public class GameplayScreen extends GameScreen {
         state.setGameObjects(gameObjects);
 
         RequestGenerator requestGenerator = new RequestGenerator(requestManager);
-        GameTimeController gameTimeController = new GameTimeController(
+        this.gameTimeController = new GameTimeController(
                 company,
                 requestManager,
                 ResourceManager.getInstance().getRack(), // ใช้ Rack จาก ResourceManager
@@ -147,7 +148,8 @@ public class GameplayScreen extends GameScreen {
                 this.gameFlowManager,
                 this.debugOverlayManager,
                 this.company,
-                ResourceManager.getInstance().getRack() // ใช้ Rack จาก ResourceManager
+                ResourceManager.getInstance().getRack(),
+                gameTimeController
         );
     }
 }

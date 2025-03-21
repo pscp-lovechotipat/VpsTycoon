@@ -8,6 +8,7 @@ import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.VPSSize;
@@ -120,11 +121,14 @@ public class GameplayContentPane extends BorderPane {
 
     private final VPSInventory vpsInventory = new VPSInventory();
 
+    private final GameTimeController gameTimeController;
+
     // Constructor
     public GameplayContentPane(
             List<GameObject> gameObjects, Navigator navigator, ChatSystem chatSystem,
             RequestManager requestManager, VPSManager vpsManager, GameFlowManager gameFlowManager,
-            DebugOverlayManager debugOverlayManager, Company company, Rack rack) {
+            DebugOverlayManager debugOverlayManager, Company company, Rack rack,
+            GameTimeController gameTimeController) {
         this.gameObjects = gameObjects;
         this.navigator = navigator;
         this.chatSystem = chatSystem;
@@ -135,6 +139,8 @@ public class GameplayContentPane extends BorderPane {
         this.gameFlowManager = gameFlowManager;
         this.debugOverlayManager = debugOverlayManager;
         this.company = company;
+
+        this.gameTimeController = gameTimeController;
 
         this.rackManagementUI = new RackManagementUI(this);
         this.vpsCreationUI = new VPSCreationUI(this);
@@ -522,6 +528,10 @@ public class GameplayContentPane extends BorderPane {
 
     public Company getCompany() {
         return company;
+    }
+
+    public GameTimeController getGameTimeController() {
+        return gameTimeController;
     }
 
     public ChatSystem getChatSystem() {

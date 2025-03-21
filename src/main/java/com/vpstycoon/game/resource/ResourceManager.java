@@ -4,6 +4,8 @@ import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.ui.game.rack.Rack; // เพิ่ม import
 import javafx.scene.image.Image;
 
@@ -34,12 +36,22 @@ public class ResourceManager implements Serializable {
     private GameState currentState;
     private Rack rack; // เพิ่ม field สำหรับ Rack
 
+    private RequestManager requestManager;
     private final AudioManager audioManager;
+    private GameTimeManager gameTimeManager;
 
     private ResourceManager() {
         this.company = new Company();
         this.audioManager = new AudioManager();
+        this.requestManager = new RequestManager(this.company);
         this.rack = new Rack(10, 3); // สร้าง Rack เริ่มต้นใน ResourceManager
+
+        this.gameTimeManager = new GameTimeManager(
+                this.company,
+                this.requestManager,
+                this.rack,
+                LocalDateTime.now()
+        );
 
         createBackupDirectory();
         if (currentState == null) {
@@ -66,6 +78,9 @@ public class ResourceManager implements Serializable {
     }
 
     public void saveGameState(GameState state) {
+        state.setLocalDateTime(gameTimeManager.getGameDateTime());
+        state.setGameTimeMs(gameTimeManager.getGameTimeMs());
+
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
             oos.writeObject(state);
             System.out.println("Game saved successfully to: " + SAVE_FILE);
@@ -84,6 +99,7 @@ public class ResourceManager implements Serializable {
             GameState newState = new GameState();
             this.currentState = newState;
             this.company = newState.getCompany();
+            this.requestManager = new RequestManager(this.company);
             this.rack = new Rack(10, 3); // รีเซ็ต Rack ถ้าไม่มี save
             return newState;
         }
@@ -92,6 +108,14 @@ public class ResourceManager implements Serializable {
             System.out.println("Game loaded successfully from: " + SAVE_FILE);
             this.currentState = state;
             this.company = state.getCompany();
+            this.requestManager = new RequestManager(this.company);
+            this.gameTimeManager = new GameTimeManager(
+                    this.company,
+                    this.requestManager,
+                    this.rack,
+                    state.getLocalDateTime()
+            );
+            this.gameTimeManager.getGameTimeMs();
             // หาก Rack ถูกเก็บใน GameState ด้วย จะต้องโหลดจาก state ด้วย
             // ถ้าไม่เก็บใน state จะใช้ค่าเริ่มต้น
             this.rack = new Rack(10, 3); // หรือโหลดจาก state ถ้ามี
@@ -115,6 +139,18 @@ public class ResourceManager implements Serializable {
 
     public void setRack(Rack rack) {
         this.rack = rack;
+    }
+
+    public RequestManager getRequestManager() {
+        return requestManager;
+    }
+
+    public void setRequestManager(RequestManager requestManager) {
+        this.requestManager = requestManager;
+    }
+
+    public GameTimeManager getGameTimeManager() {
+        return gameTimeManager;
     }
 
     // เมธอดอื่นๆ คงเดิม

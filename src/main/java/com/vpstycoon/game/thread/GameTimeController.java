@@ -2,7 +2,7 @@ package com.vpstycoon.game.thread;
 
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
-import com.vpstycoon.game.vps.VPSOptimization;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.rack.Rack; // เพิ่ม import
 
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ public class GameTimeController {
     private Thread timeThread;
 
     public GameTimeController(Company company, RequestManager requestManager, Rack rack, LocalDateTime startTime) {
-        this.timeManager = new GameTimeManager(company, requestManager, rack, startTime);
+        this.timeManager = ResourceManager.getInstance().getGameTimeManager();
     }
 
     public void startTime() {
@@ -47,6 +47,10 @@ public class GameTimeController {
 
     public LocalDateTime getGameDateTime() {
         return timeManager.getGameDateTime();
+    }
+
+    public GameTimeManager getGameTimeManager() {
+        return timeManager;
     }
 
     public long getGameTimeMs() {

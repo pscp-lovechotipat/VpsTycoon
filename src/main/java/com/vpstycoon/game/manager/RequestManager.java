@@ -2,6 +2,7 @@ package com.vpstycoon.game.manager;
 
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.customer.enums.CustomerType;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.RequestType;
 import javafx.collections.FXCollections;
@@ -87,7 +88,7 @@ public class RequestManager implements Serializable {
         
         // แทนที่จะลบออก เราจะทำเครื่องหมายว่า request นี้ได้รับการจัดการแล้ว
         // โดยการเรียกใช้ activate() บน request
-        request.activate();
+        request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
         
         // Provision VM
         return vmProvisioningManager.provisionVM(request, vps, vcpus, ramGB, diskGB);

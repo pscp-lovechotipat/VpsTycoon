@@ -43,10 +43,10 @@ public class GameManager {
      */
     public void initializeNewGame(Company company) {
         // Create request manager with the company
-        requestManager = new RequestManager(company);
+        requestManager = ResourceManager.getInstance().getRequestManager();
         
         // Create time manager
-        timeManager = new GameTimeManager(company, requestManager, ResourceManager.getInstance().getRack(),LocalDateTime.now());
+        timeManager = ResourceManager.getInstance().getGameTimeManager();
         
         // Create request generator
         requestGenerator = new RequestGenerator(requestManager);
@@ -117,7 +117,7 @@ public class GameManager {
             
             // Set date/time from saved state
             if (savedState.getLocalDateTime() != null) {
-                timeManager = new GameTimeManager(company, requestManager, ResourceManager.getInstance().getRack(), savedState.getLocalDateTime());
+                timeManager = ResourceManager.getInstance().getGameTimeManager();
             }
             
             // Load installed servers

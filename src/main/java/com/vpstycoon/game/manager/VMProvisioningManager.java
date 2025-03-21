@@ -1,6 +1,8 @@
 package com.vpstycoon.game.manager;
 
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 
 import java.io.Serializable;
@@ -99,7 +101,7 @@ public class VMProvisioningManager implements Serializable {
                 activeRequests.put(request, vm);
                 
                 // Activate the request to start receiving payments
-                request.activate();
+                request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
                 
                 // Complete the future with the new VM
                 future.complete(vm);

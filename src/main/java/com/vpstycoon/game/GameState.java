@@ -19,6 +19,7 @@ public class GameState implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private transient ObjectProperty<LocalDateTime> localDateTime = new SimpleObjectProperty<>();
+    private long gameTimeMs;
 
     private Company company;
 
@@ -126,5 +127,13 @@ public class GameState implements Serializable {
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         localDateTime = new SimpleObjectProperty<>((LocalDateTime) in.readObject());
+    }
+
+    public void setGameTimeMs(long gameTimeMs) {
+        this.gameTimeMs = gameTimeMs;
+    }
+
+    public long getGameTimeMs() {
+        return gameTimeMs;
     }
 }

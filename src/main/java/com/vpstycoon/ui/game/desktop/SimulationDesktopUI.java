@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.desktop;
 
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
@@ -19,7 +20,8 @@ public class SimulationDesktopUI {
                 parent.getRequestManager(),
                 parent.getVpsManager(),
                 parent.getCompany(),
-                parent
+                parent,
+                ResourceManager.getInstance().getGameTimeManager()
         );
         StackPane.setAlignment(desktop, Pos.CENTER);
         desktop.setMaxSize(parent.getGameArea().getWidth() * 0.8, parent.getGameArea().getHeight() * 0.8);

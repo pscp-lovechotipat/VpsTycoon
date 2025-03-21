@@ -1,11 +1,12 @@
 package com.vpstycoon.game.thread;
 
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.VPSProduct;
-import com.vpstycoon.ui.game.rack.Rack; // เพิ่ม import
+import com.vpstycoon.ui.game.rack.Rack;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -14,12 +15,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GameTimeManager {
-    private static final long GAME_MONTH_MS = 15 * 60 * 1000; // 15 minutes
-    private static final long TICK_INTERVAL_MS = 1000; // Update every second
+    public static final long GAME_DAY_MS = 30_000;    // 30 วินาทีต่อวันในเกม
+    public static final long GAME_WEEK_MS = GAME_DAY_MS * 7;
+    public static final long GAME_MONTH_MS = GAME_DAY_MS * 30;
+    public static final long GAME_YEAR_MS = GAME_MONTH_MS * 12;
+    public static final long TICK_INTERVAL_MS = 1000;
 
     private final Company company;
     private final RequestManager requestManager;
-    private final Rack rack; // เพิ่ม reference ไปยัง Rack
+    private final Rack rack;
     private LocalDateTime gameDateTime;
     private final AtomicLong gameTimeMs = new AtomicLong(0);
     private volatile boolean running = true;
@@ -27,14 +31,29 @@ public class GameTimeManager {
 
     private final List<GameTimeListener> timeListeners = new ArrayList<>();
 
+    private static GameTimeManager instance; // เพิ่ม instance ถ้าต้องการ getInstance()
+
+    public static GameTimeManager getInstance() {
+        if (instance == null) {
+            instance = new GameTimeManager(
+                    ResourceManager.getInstance().getCompany(),
+                    ResourceManager.getInstance().getRequestManager(),
+                    ResourceManager.getInstance().getRack(),
+                    ResourceManager.getInstance().getCurrentState().getLocalDateTime()
+            );
+        }
+        return instance;
+    }
+
     public interface GameTimeListener {
         void onTimeChanged(LocalDateTime newTime, long gameTimeMs);
+        void onRentalPeriodCheck(CustomerRequest request, CustomerRequest.RentalPeriodType period);
     }
 
     public GameTimeManager(Company company, RequestManager requestManager, Rack rack, LocalDateTime startTime) {
         this.company = company;
         this.requestManager = requestManager;
-        this.rack = rack; // รับ Rack เข้ามาใน constructor
+        this.rack = rack;
         this.gameDateTime = startTime;
         this.lastProcessedMonth = gameDateTime.getMonthValue();
     }
@@ -43,8 +62,8 @@ public class GameTimeManager {
         long lastTickTime = System.currentTimeMillis();
         long lastPaymentCheckTime = lastTickTime;
         long lastOverheadTime = lastTickTime;
+        long lastRentalCheckTime = lastTickTime;
         final long overheadInterval = GAME_MONTH_MS;
-        final long overheadCost = 5000;
 
         while (running) {
             try {
@@ -53,7 +72,7 @@ public class GameTimeManager {
                 lastTickTime = currentTime;
 
                 long newGameTimeMs = gameTimeMs.addAndGet(elapsedMs);
-                long daysElapsed = elapsedMs / (GAME_MONTH_MS / 30);
+                long daysElapsed = (long) Math.floor((double) elapsedMs / GAME_DAY_MS);
                 if (daysElapsed > 0) {
                     LocalDateTime previousDateTime = gameDateTime;
                     gameDateTime = gameDateTime.plus(daysElapsed, ChronoUnit.DAYS);
@@ -66,14 +85,18 @@ public class GameTimeManager {
                     notifyTimeListeners();
                 }
 
-                if (currentTime - lastPaymentCheckTime >= 1000) {
+                if (currentTime - lastPaymentCheckTime >= GAME_DAY_MS) {
                     requestManager.processPayments(newGameTimeMs);
                     lastPaymentCheckTime = currentTime;
                 }
 
                 if (currentTime - lastOverheadTime >= overheadInterval) {
-//                    processOverheadCosts(overheadCost);
                     lastOverheadTime = currentTime;
+                }
+
+                if (currentTime - lastRentalCheckTime >= GAME_DAY_MS) {
+                    checkRentalExpirations(newGameTimeMs);
+                    lastRentalCheckTime = currentTime;
                 }
 
                 Thread.sleep(TICK_INTERVAL_MS);
@@ -83,10 +106,41 @@ public class GameTimeManager {
         }
     }
 
+    private void checkRentalExpirations(long currentGameTimeMs) {
+        for (CustomerRequest request : requestManager.getRequests()) {
+            if (request.isActive()) {
+                long rentalStartTime = request.getLastPaymentTime();
+                CustomerRequest.RentalPeriodType period = request.getRentalPeriodType();
+                if (period != null && rentalStartTime > 0) {
+                    long durationMs = period.getDays() * GAME_DAY_MS;
+                    long timeSinceLastPaymentMs = currentGameTimeMs - rentalStartTime;
+
+                    System.out.println("Checking request: " + request.getName() +
+                            " | Time since last payment: " + timeSinceLastPaymentMs +
+                            "ms | Payment interval: " + (period.getDays() * GAME_DAY_MS) + "ms");
+                    // ตรวจสอบการชำระเงินตามรอบ
+                    if (request.isPaymentDue(currentGameTimeMs)) {
+                        double payment = request.getPaymentAmount();
+                        company.addMoney(payment); // เพิ่มเงินให้บริษัท
+                        request.recordPayment(currentGameTimeMs); // บันทึกเวลาชำระเงิน
+                        System.out.println("Payment received from " + request.getName() + ": $" + payment +
+                                " | Game time: " + currentGameTimeMs);
+                    }
+                    // ตรวจสอบการหมดสัญญา
+                    if (currentGameTimeMs >= rentalStartTime + durationMs) {
+                        for (GameTimeListener listener : timeListeners) {
+                            listener.onRentalPeriodCheck(request, period);
+                            System.out.println("Rental period check completed for " + request.getName());
+                        }
+                        request.markAsExpired();
+                    }
+                }
+            }
+        }
+    }
+
     private void processMonthlyKeepUp() {
         long totalKeepUpCost = 0;
-
-        // ดึง VPS ที่ติดตั้งจาก Rack แทนการใช้ vpsServers
         List<VPSOptimization> installedVPS = rack.getInstalledVPS();
 
         for (VPSOptimization vps : installedVPS) {
@@ -102,25 +156,10 @@ public class GameTimeManager {
         }
 
         if (totalKeepUpCost > 0) {
-            long currentMoney = ResourceManager.getInstance().getCompany().getMoney();
-            ResourceManager.getInstance().getCompany().setMoney(currentMoney - totalKeepUpCost);
+            long currentMoney = company.getMoney();
+            company.setMoney(currentMoney - totalKeepUpCost);
             System.out.println("Monthly keep-up cost deducted: $" + totalKeepUpCost +
-                    " | New balance: $" + ResourceManager.getInstance().getCompany().getMoney());
-        }
-    }
-
-    private void processOverheadCosts(long overheadCost) {
-        long totalCost = overheadCost;
-        for (VPSOptimization vps : rack.getInstalledVPS()) { // เปลี่ยนจาก vpsServers เป็น rack.getInstalledVPS()
-            totalCost += vps.getVCPUs() * 1000;
-        }
-        long currentMoney = company.getMoney();
-        company.setMoney(currentMoney - totalCost);
-    }
-
-    private void notifyTimeListeners() {
-        for (GameTimeListener listener : timeListeners) {
-            listener.onTimeChanged(gameDateTime, gameTimeMs.get());
+                    " | New balance: $" + company.getMoney());
         }
     }
 
@@ -132,7 +171,12 @@ public class GameTimeManager {
         rack.uninstallVPS(vps);
     }
 
-    // ลบเมธอด addVPSServer และ removeVPSServer ออก เพราะจะใช้ Rack แทน
+    private void notifyTimeListeners() {
+        for (GameTimeListener listener : timeListeners) {
+            listener.onTimeChanged(gameDateTime, gameTimeMs.get());
+        }
+    }
+
     public void addTimeListener(GameTimeListener listener) {
         timeListeners.add(listener);
     }
@@ -146,7 +190,7 @@ public class GameTimeManager {
     }
 
     public long getGameTimeMs() {
-        return gameTimeMs.get();
+        return this.gameTimeMs.get();
     }
 
     public void stop() {
