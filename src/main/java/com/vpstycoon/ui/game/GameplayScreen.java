@@ -10,6 +10,8 @@ import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.object.RackObject;
+import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.thread.GameTimeUpdater;
 import com.vpstycoon.game.thread.RequestGenerator;
 import com.vpstycoon.screen.ScreenManager;
@@ -133,10 +135,10 @@ public class GameplayScreen extends GameScreen {
 
         // Start separate threads
         RequestGenerator requestGenerator = new RequestGenerator(requestManager);
-        GameTimeUpdater gameTimeUpdater = new GameTimeUpdater();
+        GameTimeController gameTimeController = new GameTimeController(company, requestManager, ResourceManager.getInstance().getCurrentState().getLocalDateTime());
 
         requestGenerator.start();
-        gameTimeUpdater.start();
+        gameTimeController.startTime();
     }
 
     @Override

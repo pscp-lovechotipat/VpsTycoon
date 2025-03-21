@@ -23,7 +23,9 @@ public class GameManager {
     private List<VPSOptimization> installedServers;
     
     // Game threads
-    private final List<Thread> gameThreads = new ArrayList<>();
+    private final List<Object> gameThreads = new ArrayList<>();
+
+    private RequestGenerator requestGenThread;
     
     // Game state
     private boolean gameRunning = false;
@@ -109,14 +111,16 @@ public class GameManager {
         }
         
         // Stop time manager
-        timeManager.stopTimeManager();
+        timeManager.stop();
         
         // Stop request generator
         requestGenerator.stopGenerator();
         
         // Interrupt all game threads
-        for (Thread thread : gameThreads) {
-            thread.interrupt();
+        for (Object thread : gameThreads) {
+            if (thread instanceof Thread) {
+                ((Thread) thread).interrupt();
+            }
         }
         
         gameThreads.clear();
