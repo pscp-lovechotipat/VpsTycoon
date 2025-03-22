@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game;
 
+import com.vpstycoon.FontLoader;
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
@@ -70,7 +71,8 @@ public class ResumeScreen extends StackPane {
         
         // Add a title to the menu
         Text titleText = new Text("PAUSED");
-        titleText.setFont(Font.font("Monospace", FontWeight.BOLD, 28));
+        titleText.setFont(FontLoader.SUBTITLE_FONT);
+//        titleText.setFont(Font.font("Monospace", FontWeight.BOLD, 28));
         titleText.setFill(Color.WHITE);
         
         // Add glow effect to the title
