@@ -43,3 +43,4 @@ build/
 /backups
 savegame.dat
 chat_history.dat
+*.dat
