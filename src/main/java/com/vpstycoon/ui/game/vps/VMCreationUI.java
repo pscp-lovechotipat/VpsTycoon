@@ -38,7 +38,7 @@ public class VMCreationUI {
         topBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
         String vpsId = parent.getVpsManager().getVPSMap().keySet().stream()
                 .filter(id -> parent.getVpsManager().getVPS(id) == vps).findFirst().orElse("Unknown");
-        Label titleLabel = new Label("Create VM for VPS: " + vpsId);
+        Label titleLabel = new Label("Create VM for Server: " + vpsId);
         titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
         Button backButton = UIUtils.createModernButton("Back", "#F44336");
         backButton.setOnAction(e -> parent.openVPSInfoPage(vps));

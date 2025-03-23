@@ -22,7 +22,7 @@ public class VPSCreationUI {
     public void openCreateVPSPage() {
         // ตรวจสอบว่ามีสล็อตว่างหรือไม่
         if (parent.getVpsList().size() >= parent.getOccupiedSlots()) {
-            System.out.println("Cannot create VPS: All slots are occupied.");
+            System.out.println("Cannot create Server: All slots are occupied.");
             return;
         }
 
@@ -64,7 +64,7 @@ public class VPSCreationUI {
 
         HBox nameBox = new HBox(10);
         TextField nameField = new TextField();
-        nameField.setPromptText("Enter VPS Name");
+        nameField.setPromptText("Enter Server Name");
 
         nameBox.getChildren().addAll(new Label("Name:"), nameField);
 
@@ -127,7 +127,7 @@ public class VPSCreationUI {
                     parent.getVpsManager().createVPS(vpsId);
                     parent.getVpsManager().getVPSMap().put(vpsId, newVPS);
                     parent.getVpsList().add(newVPS);
-                    System.out.println("Success: VPS created: " + vpsId);
+                    System.out.println("Success: Server created: " + vpsId);
                     parent.openRackInfo();
                 } catch (NumberFormatException ex) {
                     System.out.println("Error: Invalid numeric input for vCPUs, RAM, or Disk.");

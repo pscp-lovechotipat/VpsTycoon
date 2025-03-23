@@ -117,7 +117,7 @@ public class DashboardWindow extends VBox {
         statsContainer2.setPadding(new Insets(5, 15, 15, 15));
         statsContainer2.setStyle("-fx-background-color: #ecf0f1; -fx-border-radius: 5; -fx-background-radius: 5;");
         
-        VBox vpsCard = createStatCard("Total VPS", String.valueOf(totalVPS), "#2980b9");
+        VBox vpsCard = createStatCard("Total Servers", String.valueOf(totalVPS), "#2980b9");
         VBox vmCard = createStatCard("Total VMs", String.valueOf(totalVMs), "#16a085");
         VBox customerCard = createStatCard("Customers", String.valueOf(totalCustomers), "#f39c12");
         VBox ratingAvgCard = createStatCard("Avg. Rating", String.format("%.1f ★", averageRating), "#c0392b");

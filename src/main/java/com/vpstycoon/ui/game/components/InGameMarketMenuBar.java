@@ -35,7 +35,7 @@ public class InGameMarketMenuBar extends StackPane {
         StackPane.setAlignment(openMarketButton, Pos.BOTTOM_RIGHT);
 
         // เพิ่มปุ่มเข้า StackPane
-        this.getChildren().add(openMarketButton);
+        // this.getChildren().add(openMarketButton);
     }
 
     private void openMarketWindow() {

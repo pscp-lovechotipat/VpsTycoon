@@ -34,7 +34,7 @@ public class DashboardView extends VBox {
         VBox availableVMsCard = createCard("FREE VMs");
         availableVMsLabel = (Label) availableVMsCard.getChildren().get(0);
 
-        VBox totalVPSCard = createCard("TOTAL VPS");
+        VBox totalVPSCard = createCard("TOTAL SERVERS");
         totalVPSLabel = (Label) totalVPSCard.getChildren().get(0);
 
         dashboardGrid.add(ratingCard, 0, 0);

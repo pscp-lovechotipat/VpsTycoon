@@ -92,7 +92,7 @@ public class RackManagementUI {
         int usedSlots = parent.getRack().getOccupiedSlotUnits();
         int availableSlots = parent.getRack().getMaxSlotUnits() - usedSlots;
 
-        Label serverCount = new Label("VPS: " + parent.getVpsList().size());
+        Label serverCount = new Label("Server: " + parent.getVpsList().size());
         serverCount.getStyleClass().add("info-label");
 
         Label slotCount = new Label("Slots: " + usedSlots + "/" + parent.getRack().getMaxSlotUnits() + " (" + parent.getRack().getAvailableSlotUnits() + " available)");
@@ -104,7 +104,7 @@ public class RackManagementUI {
         Label userCount = new Label("Active Users: 10");
         userCount.getStyleClass().add("info-label");
 
-        Button inventoryButton = UIUtils.createModernButton("VPS Inventory", "#3498db");
+        Button inventoryButton = UIUtils.createModernButton("Server Inventory", "#3498db");
         inventoryButton.getStyleClass().add("inventory-button");
         inventoryButton.setOnAction(e -> parent.openVPSInventory());
 

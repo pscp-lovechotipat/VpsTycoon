@@ -41,7 +41,7 @@ public class VPSInfoUI {
         String vpsId = parent.getVpsManager().getVPSMap().keySet().stream()
                 .filter(id -> parent.getVpsManager().getVPS(id) == vps).findFirst().orElse("Unknown");
 
-        Label titleLabel = new Label("VPS Details: " + vpsId);
+        Label titleLabel = new Label("Server Details: " + vpsId);
         titleLabel.setStyle("""
                             -fx-text-fill: white;
                             -fx-font-size: 24px;
@@ -122,7 +122,7 @@ public class VPSInfoUI {
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         buttonBox.setPadding(new Insets(10));
         
-        Button uninstallButton = UIUtils.createModernButton("Uninstall VPS", "#F44336");
+        Button uninstallButton = UIUtils.createModernButton("Uninstall Server", "#F44336");
         uninstallButton.setOnAction(e -> uninstallVPS(vps));
         
         Button createVMButton = UIUtils.createModernButton("Create VM", "#4CAF50");

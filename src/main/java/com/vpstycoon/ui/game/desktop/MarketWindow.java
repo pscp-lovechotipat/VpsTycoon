@@ -214,7 +214,7 @@ public class MarketWindow extends VBox {
 
         closeButton.setOnAction(e -> onClose.run());
 
-        Label titleLabel = new Label("VPS MARKET");
+        Label titleLabel = new Label("SERVER MARKET");
         titleLabel.setFont(Font.font("Courier New", FontWeight.BOLD, 32));
         titleLabel.setTextFill(Color.WHITE);
         titleLabel.setTextAlignment(TextAlignment.CENTER);
@@ -253,7 +253,7 @@ public class MarketWindow extends VBox {
                         "-fx-control-inner-background: rgb(20, 10, 30);"
         );
 
-        Label subtitleLabel = new Label("SELECT A VPS PACKAGE TO DEPLOY");
+        Label subtitleLabel = new Label("SELECT A SERVER PACKAGE TO DEPLOY");
         subtitleLabel.setFont(Font.font("Courier New", FontWeight.BOLD, 14));
         subtitleLabel.setTextFill(Color.LIGHTGRAY);
         subtitleLabel.setPadding(new Insets(10, 0, 10, 0));

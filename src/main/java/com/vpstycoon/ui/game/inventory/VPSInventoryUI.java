@@ -42,7 +42,7 @@ public class VPSInventoryUI {
         titleBar.setAlignment(Pos.CENTER_LEFT);
         titleBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
         
-        Label titleLabel = new Label("VPS Inventory");
+        Label titleLabel = new Label("Server Inventory");
         titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
         
         Button backButton = UIUtils.createModernButton("Back", "#F44336");
@@ -62,7 +62,7 @@ public class VPSInventoryUI {
         statsBox.setPadding(new Insets(10));
         statsBox.setStyle("-fx-background-color: #37474F; -fx-background-radius: 5px;");
         
-        Label inventoryCountLabel = new Label("VPS in Inventory: " + parent.getVpsInventory().getSize());
+        Label inventoryCountLabel = new Label("Server in Inventory: " + parent.getVpsInventory().getSize());
         inventoryCountLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
 
         Label rackStatsLabel = new Label("Rack Slots: " + parent.getRack().getOccupiedSlotUnits() + "/" + parent.getRack().getMaxSlotUnits());
@@ -102,7 +102,7 @@ public class VPSInventoryUI {
         Map<String, VPSOptimization> inventory = parent.getVpsInventory().getInventoryMap();
         
         if (inventory.isEmpty()) {
-            Label emptyLabel = new Label("Your inventory is empty. Purchase VPS servers from the market.");
+            Label emptyLabel = new Label("Your inventory is empty. Purchase Server servers from the market.");
             emptyLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
             inventoryList.getChildren().add(emptyLabel);
             return inventoryList;
@@ -113,7 +113,7 @@ public class VPSInventoryUI {
         header.setPadding(new Insets(5, 10, 5, 10));
         header.setStyle("-fx-background-color: #2c3e50; -fx-background-radius: 5px;");
         
-        Label idHeader = new Label("VPS ID");
+        Label idHeader = new Label("Server ID");
         idHeader.setMinWidth(150);
         idHeader.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
         
@@ -208,7 +208,7 @@ public class VPSInventoryUI {
         boolean success = parent.installVPSFromInventory(vpsId);
         
         if (success) {
-            parent.pushNotification("VPS Installed", 
+            parent.pushNotification("Server Installed", 
                     "Successfully installed " + vpsId + " into the rack.");
             
             // Refresh the inventory UI
@@ -231,7 +231,7 @@ public class VPSInventoryUI {
         detailsPane.setStyle("-fx-background-color: #2c3e50; -fx-padding: 20px; -fx-background-radius: 10px;");
         
         // Title
-        Label titleLabel = new Label("VPS Details: " + vpsId);
+        Label titleLabel = new Label("Server Details: " + vpsId);
         titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
         
         // Details

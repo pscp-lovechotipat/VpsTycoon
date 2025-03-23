@@ -227,19 +227,19 @@ public class GameplayContentPane extends BorderPane {
         invVps1.setRamInGB(2);
         invVps1.setDiskInGB(20);
         invVps1.setSize(VPSSize.SIZE_1U);
-        vpsInventory.addVPS("103.216.158.235-BasicVPS", invVps1);
+        vpsInventory.addVPS("103.216.158.235-BasicServer", invVps1);
 
         VPSOptimization invVps2 = new VPSOptimization();
         invVps2.setVCPUs(8);
         invVps2.setRamInGB(16);
         invVps2.setDiskInGB(200);
         invVps2.setSize(VPSSize.SIZE_3U);
-        vpsInventory.addVPS("103.216.158.236-EnterpriseVPS", invVps2);
+        vpsInventory.addVPS("103.216.158.236-EnterpriseServer", invVps2);
 
-        vpsManager.createVPS("103.216.158.235-BasicVPS");
-        vpsManager.getVPSMap().put("103.216.158.235-BasicVPS", invVps1);
-        vpsManager.createVPS("103.216.158.236-EnterpriseVPS");
-        vpsManager.getVPSMap().put("103.216.158.236-EnterpriseVPS", invVps2);
+        vpsManager.createVPS("103.216.158.235-BasicServer");
+        vpsManager.getVPSMap().put("103.216.158.235-BasicServer", invVps1);
+        vpsManager.createVPS("103.216.158.236-EnterpriseServer");
+        vpsManager.getVPSMap().put("103.216.158.236-EnterpriseServer", invVps2);
 
         VPSOptimization.VM vm1 = new VPSOptimization.VM("192.168.1.1", "Web Server", 1, "1 GB", "20 GB", "Running");
         VPSOptimization.VM vm2 = new VPSOptimization.VM("192.168.1.2", "Database", 1, "2 GB", "30 GB", "Running");
