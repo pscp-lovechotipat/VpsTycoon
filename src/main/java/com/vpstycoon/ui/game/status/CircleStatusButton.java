@@ -21,7 +21,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
-
+import com.vpstycoon.game.SkillPointsSystem;
 import java.util.HashMap;
 
 /**
@@ -33,10 +33,13 @@ public class CircleStatusButton {
     private VBox upgradeLayout;
 
     private Runnable onClickAction;
+    private SkillPointsSystem skillPointsSystem;
     private int skillLevel;
     private int skillPoints;
     private Label numberLabel;
     private String skillName;
+    private SkillPointsSystem.SkillType skillType;
+
 
     private final GameplayContentPane parent;
 
@@ -62,11 +65,28 @@ public class CircleStatusButton {
         skillPointsMap.put("Marketing", 1000);
     }
 
+    private SkillPointsSystem.SkillType resolveSkillType(String name) {
+        switch (name) {
+            case "Deploy":
+                return SkillPointsSystem.SkillType.SERVER_EFFICIENCY;
+            case "Network":
+                return SkillPointsSystem.SkillType.NETWORK_SPEED;
+            case "Security":
+                return SkillPointsSystem.SkillType.SECURITY;
+            case "Marketing":
+                return SkillPointsSystem.SkillType.MARKETING;
+            default:
+                return SkillPointsSystem.SkillType.MANAGEMENT; // fallback
+        }
+    }
+
     public CircleStatusButton(String labelText, int number, Color topColor, Color bottomColor, GameplayContentPane parent) {
         this.skillName = labelText;
         this.parent = parent;
-        this.skillLevel = skillLevels.getOrDefault(skillName, 1);
-        this.skillPoints = skillPointsMap.getOrDefault(skillName, number);
+        this.skillType = resolveSkillType(skillName);
+        this.skillPointsSystem = parent.getSkillPointsSystem();
+        this.skillLevel = skillPointsSystem.getSkillLevel(skillType);
+        this.skillPoints = skillPointsSystem.getAvailablePoints();
         this.container = createContainer(skillName, topColor, bottomColor);
 
         this.audioManager = AudioManager.getInstance();
@@ -477,7 +497,7 @@ public class CircleStatusButton {
                 return CYBER_PURPLE;
         }
     }
-    
+
     // Helper method to convert Color to CSS RGB string
     private String toRgbString(Color color) {
         return String.format("#%02X%02X%02X", 

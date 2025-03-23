@@ -3,13 +3,15 @@ package com.vpstycoon.game;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import com.vpstycoon.game.vps.enums.VPSProduct;
 
 /**
  * Manages the skill points system and unlockable features in the game
  */
 public class SkillPointsSystem implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
+
     // Skill types
     public enum SkillType {
         RACK_SLOTS("Rack Slots", "Increases the number of slots available in each rack", 3),
@@ -22,7 +24,7 @@ public class SkillPointsSystem implements Serializable {
         private final String name;
         private final String description;
         private final int maxLevel;
-        
+
         SkillType(String name, String description, int maxLevel) {
             this.name = name;
             this.description = description;
@@ -43,18 +45,17 @@ public class SkillPointsSystem implements Serializable {
     }
     
     private int availablePoints;
-    private final Map<SkillType, Integer> skillLevels;
-    
+    private static final Map<SkillType, Integer> skillLevels = new HashMap<>();
+
     public SkillPointsSystem() {
-        this.availablePoints = 0;
-        this.skillLevels = new HashMap<>();
-        
-        // Initialize all skills at level 0
+        this.availablePoints = 1000;
+
+        // Initialize all skills at level 1
         for (SkillType skill : SkillType.values()) {
-            skillLevels.put(skill, 0);
+            skillLevels.put(skill, 1); // กำหนดค่าเริ่มต้นเป็น Level 1
         }
     }
-    
+
     /**
      * Add skill points to the available pool
      * @param points Number of points to add
@@ -64,7 +65,7 @@ public class SkillPointsSystem implements Serializable {
             this.availablePoints += points;
         }
     }
-    
+
     /**
      * Get the current available skill points
      * @return Number of available skill points
@@ -89,25 +90,28 @@ public class SkillPointsSystem implements Serializable {
      */
     public boolean upgradeSkill(SkillType skillType) {
         int currentLevel = getSkillLevel(skillType);
-        
-        // Check if already at max level
+
+
+
         if (currentLevel >= skillType.getMaxLevel()) {
             return false;
         }
-        
-        // Calculate cost (increases with level)
+
         int cost = calculateUpgradeCost(currentLevel);
-        
-        // Check if enough points are available
         if (availablePoints >= cost) {
             availablePoints -= cost;
             skillLevels.put(skillType, currentLevel + 1);
+
+            // เพิ่มคะแนน Marketing เมื่ออัปเกรด
+            if (skillType == SkillType.MARKETING) {
+                addPoints(5);  // เพิ่ม 5 คะแนนให้ Marketing
+            }
             return true;
         }
-        
         return false;
     }
-    
+
+
     /**
      * Calculate the cost to upgrade a skill based on its current level
      * @param currentLevel Current level of the skill
@@ -180,7 +184,23 @@ public class SkillPointsSystem implements Serializable {
         // Firewall management is unlocked at SECURITY level 2
         return getSkillLevel(SkillType.SECURITY) >= 2;
     }
-    
+
+    public boolean canUnlockVPS(VPSProduct product) {
+        int marketingLevel = getSkillLevel(SkillType.MARKETING);
+        System.out.println("Current Marketing Level: " + marketingLevel);
+
+        if (product == VPSProduct.BASIC_VPS || product == VPSProduct.STANDARD_VPS || product == VPSProduct.PREMIUM_VPS) {
+            return marketingLevel >= 1;
+        } else if (product == VPSProduct.ENTERPRISE_VPS || product == VPSProduct.BLADE_SERVER || product == VPSProduct.TOWER_SERVER) {
+            return marketingLevel >= 2;
+        } else if (product == VPSProduct.ADVANCED_CLUSTER || product == VPSProduct.SUPERCOMPUTER_NODE || product == VPSProduct.AI_TRAINING_RIG) {
+            return marketingLevel >= 3;
+        } else if (product == VPSProduct.QUANTUM_VPS || product == VPSProduct.HYBRID_CLOUD_SERVER || product == VPSProduct.GLOBAL_DATA_CENTER) {
+            return marketingLevel >= 4;
+        }
+        return false;
+    }
+
     /**
      * Get a description of what each skill level unlocks
      * @param skillType The skill type
@@ -212,4 +232,6 @@ public class SkillPointsSystem implements Serializable {
                 return "Unknown skill";
         }
     }
+
+
 } 
