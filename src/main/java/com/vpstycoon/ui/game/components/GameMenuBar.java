@@ -23,6 +23,10 @@ public class GameMenuBar extends HBox {
     private static final Color CYBER_BLUE_DARK = Color.rgb(20, 100, 180);
     private static final Color CYBER_GREEN = Color.rgb(0, 255, 170);
     private static final Color CYBER_GREEN_DARK = Color.rgb(0, 180, 120);
+    private static final Color CYBER_YELLOW = Color.rgb(255, 200, 50);
+    private static final Color CYBER_YELLOW_DARK = Color.rgb(180, 140, 20);
+    private static final Color CYBER_LIGHT_GREEN = Color.rgb(100, 255, 100);
+    private static final Color CYBER_LIGHT_GREEN_DARK = Color.rgb(60, 180, 60);
 
     public GameMenuBar(GameplayContentPane parent) {
         super(20);
@@ -32,55 +36,60 @@ public class GameMenuBar extends HBox {
         setPrefHeight(50);
         setMaxHeight(50);
 
-
-    
-        
-        // Make the menu bar fully transparent
         setStyle("-fx-background-color: transparent;");
-        
+
         initializeStatusButtons();
     }
-    
+
     private void initializeStatusButtons() {
-        // 1. Deploy status - Pink theme
-        VBox deployStatus = createStatusButton(
-                "Deploy", 
-                12, 
-                CYBER_PINK,
-                CYBER_PINK_DARK
+        // 1. Rack Slots - Yellow theme
+        VBox rackSlotsStatus = createStatusButton(
+                "Rack Slots",
+                CYBER_YELLOW,
+                CYBER_YELLOW_DARK
         );
 
-        // 2. Network status - Blue theme
+        // 2. Network Speed - Blue theme
         VBox networkStatus = createStatusButton(
-                "Network", 
-                8, 
+                "Network",
                 CYBER_BLUE,
                 CYBER_BLUE_DARK
         );
 
-        // 3. Security status - Purple theme (main cyberpunk color)
-        VBox securityStatus = createStatusButton(
-                "Security", 
-                5, 
-                CYBER_PURPLE_BRIGHT,
-                CYBER_PURPLE_DARK
+        // 3. Server Efficiency - Pink theme
+        VBox deployStatus = createStatusButton(
+                "Deploy",
+                CYBER_PINK,
+                CYBER_PINK_DARK
         );
 
-        // 4. Marketing status - Green theme
+        // 4. Marketing - Green theme
         VBox marketingStatus = createStatusButton(
-                "Marketing", 
-                10, 
+                "Marketing",
                 CYBER_GREEN,
                 CYBER_GREEN_DARK
         );
 
-        // Add all status indicators to menu bar
-        getChildren().addAll(deployStatus, networkStatus, securityStatus, marketingStatus);
+        // 5. Security - Purple theme
+        VBox securityStatus = createStatusButton(
+                "Security",
+                CYBER_PURPLE_BRIGHT,
+                CYBER_PURPLE_DARK
+        );
+
+        // 6. Management - Light Green theme
+        VBox managementStatus = createStatusButton(
+                "Management",
+                CYBER_LIGHT_GREEN,
+                CYBER_LIGHT_GREEN_DARK
+        );
+
+        getChildren().addAll(rackSlotsStatus, networkStatus, deployStatus,
+                marketingStatus, securityStatus, managementStatus);
     }
-    
-    private VBox createStatusButton(String labelText, int number, Color topColor, Color bottomColor) {
-        // Create CircleStatusButton and wrap it in a VBox
-        CircleStatusButton statusButton = new CircleStatusButton(labelText, number, topColor, bottomColor, parent);
+
+    private VBox createStatusButton(String labelText, Color topColor, Color bottomColor) {
+        CircleStatusButton statusButton = new CircleStatusButton(labelText, topColor, bottomColor, parent);
         return statusButton.getContainer();
     }
 } 

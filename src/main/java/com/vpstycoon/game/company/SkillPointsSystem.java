@@ -110,7 +110,7 @@ public class SkillPointsSystem implements Serializable {
      * @param currentLevel Current level of the skill
      * @return Cost in skill points
      */
-    private int calculateUpgradeCost(int currentLevel) {
+    public int calculateUpgradeCost(int currentLevel) {
         // Base cost is 1, increases by 1 for each level
         return currentLevel + 1;
     }
@@ -201,8 +201,11 @@ public class SkillPointsSystem implements Serializable {
      * @return Description of what this level unlocks
      */
     public String getSkillLevelDescription(SkillType skillType, int level) {
-        if (level <= 0 || level > skillType.getMaxLevel()) {
-            return "Invalid level";
+        if (level < 0) {
+            return "Level " + level + ": Nothing. Cannot be upgraded further. HACKER";
+        }
+        if (level > skillType.getMaxLevel()) {
+            return "Max Level. Cannot be upgraded further. Coming Soon...";
         }
         
         switch (skillType) {
@@ -222,7 +225,7 @@ public class SkillPointsSystem implements Serializable {
             case MANAGEMENT:
                 return "Level " + level + ": +" + (level * 20) + "% management efficiency";
             default:
-                return "Unknown skill";
+                return "Unknown skill type. Cannot be upgraded further.";
         }
     }
 } 
