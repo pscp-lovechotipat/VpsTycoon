@@ -77,7 +77,7 @@ public class CircleStatusButton {
             case "Marketing":
                 return SkillPointsSystem.SkillType.MARKETING;
             default:
-                return SkillPointsSystem.SkillType.MANAGEMENT; // fallback
+                return SkillPointsSystem.SkillType.MANAGEMENT;
         }
     }
 
@@ -97,16 +97,12 @@ public class CircleStatusButton {
         VBox container = new VBox(12);
         container.setAlignment(Pos.CENTER);
 
-        // Create pixel-art style button
         StackPane buttonFrame = createCyberButton(topColor, bottomColor);
-        
-        // Add number with pixel-like font and make it BOLDER
+
         numberLabel = new Label("Lv" + skillLevel);
         numberLabel.setTextFill(Color.WHITE);
-        // numberLabel.setFont(Font.font("Monospace", FontWeight.EXTRA_BOLD, 24)); // Increased size and weight
         numberLabel.setFont(FontLoader.loadFont(42));
-        
-        // Add glow effect to number
+
         Glow textGlow = new Glow(0.8);
         numberLabel.setEffect(textGlow);
 
@@ -424,6 +420,14 @@ public class CircleStatusButton {
         // การกดปุ่มอัปเกรด
         upgradeButton.setOnAction(e -> {
             upgradeSkill(upgradeLayout, backgroundOverlay, titleLabel, pointsLabel);
+            boolean upgraded = skillPointsSystem.upgradeSkill(skillType);
+            if (upgraded) {
+                skillLevel = skillPointsSystem.getSkillLevel(skillType); // อัปเดต skill level ใหม่
+                numberLabel.setText("Lv" + skillLevel);
+            }
+            else {
+                parent.pushNotification("Upgrade Failed", "Not enough points to upgrade " + skillName);
+            }
         });
 
         // จัดวางเนื้อหาใน StackPane เพื่อให้ scanlines อยู่ด้านหลัง

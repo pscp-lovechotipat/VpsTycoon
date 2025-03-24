@@ -13,12 +13,12 @@ public class SkillPointsSystem implements Serializable {
 
     // Skill types
     public enum SkillType {
-        RACK_SLOTS("Rack Slots", "Increases the number of slots available in each rack", 3),
-        NETWORK_SPEED("Network Speed", "Increases the speed of your network connections", 5),
+        RACK_SLOTS("Rack Slots", "Increases the number of slots available in each rack", 4),
+        NETWORK_SPEED("Network Speed", "Increases the speed of your network connections", 4),
         SERVER_EFFICIENCY("Server Efficiency", "Improves server performance and reduces costs", 4),
-        MARKETING("Marketing", "Improves your company's visibility and attracts more customers", 3),
+        MARKETING("Marketing", "Improves your company's visibility and attracts more customers", 4),
         SECURITY("Security", "Enhances your security systems and reduces the risk of attacks", 4),
-        MANAGEMENT("Management", "Improves your ability to manage resources and staff", 3);
+        MANAGEMENT("Management", "Improves your ability to manage resources and staff", 4);
         
         private final String name;
         private final String description;
@@ -51,7 +51,7 @@ public class SkillPointsSystem implements Serializable {
 
         // Initialize all skills at level 1
         for (SkillType skill : SkillType.values()) {
-            skillLevels.put(skill, 1); // กำหนดค่าเริ่มต้นเป็น Level 1
+            skillLevels.put(skill, 1);
         }
     }
 
@@ -89,8 +89,6 @@ public class SkillPointsSystem implements Serializable {
      */
     public boolean upgradeSkill(SkillType skillType) {
         int currentLevel = getSkillLevel(skillType);
-
-
 
         if (currentLevel >= skillType.getMaxLevel()) {
             return false;
