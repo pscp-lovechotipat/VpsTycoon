@@ -22,7 +22,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
-import com.vpstycoon.game.SkillPointsSystem;
+import com.vpstycoon.game.company.SkillPointsSystem;
 import java.util.HashMap;
 
 /**
@@ -85,7 +85,7 @@ public class CircleStatusButton {
         this.skillName = labelText;
         this.parent = parent;
         this.skillType = resolveSkillType(skillName);
-        this.skillPointsSystem = parent.getSkillPointsSystem();
+        this.skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         this.skillLevel = skillPointsSystem.getSkillLevel(skillType);
         this.skillPoints = skillPointsSystem.getAvailablePoints();
         this.container = createContainer(skillName, topColor, bottomColor);

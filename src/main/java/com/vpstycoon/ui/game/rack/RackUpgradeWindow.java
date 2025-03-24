@@ -1,7 +1,8 @@
 package com.vpstycoon.ui.game.rack;
 
-import com.vpstycoon.game.SkillPointsSystem;
+import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -43,7 +44,7 @@ public class RackUpgradeWindow extends VBox {
         this.parent = parent;
         this.onClose = onClose;
         this.company = parent.getCompany();
-        this.skillPointsSystem = parent.getSkillPointsSystem();
+        this.skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         
         // Initialize current stats
         this.numberOfRacks = 1;

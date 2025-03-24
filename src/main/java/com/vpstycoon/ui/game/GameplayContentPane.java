@@ -2,7 +2,7 @@ package com.vpstycoon.ui.game;
 
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.SkillPointsSystem;
+import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
@@ -377,7 +377,7 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public void openSkillPointsWindow() {
-        SkillPointsWindow skillPointsWindow = new SkillPointsWindow(getSkillPointsSystem(), () -> {
+        SkillPointsWindow skillPointsWindow = new SkillPointsWindow(ResourceManager.getInstance().getSkillPointsSystem(), () -> {
             getGameArea().getChildren().remove(getGameArea().getChildren().size() - 1);
         });
 
@@ -572,13 +572,6 @@ public class GameplayContentPane extends BorderPane {
 
     public Navigator getNavigator() {
         return this.navigator;
-    }
-
-    public SkillPointsSystem getSkillPointsSystem() {
-        if (skillPointsSystem == null) {
-            skillPointsSystem = new SkillPointsSystem();
-        }
-        return skillPointsSystem;
     }
 
     // === Setter Methods ===

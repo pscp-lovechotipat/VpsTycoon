@@ -116,7 +116,7 @@ public class MarketWindow extends VBox {
 
         buyButton.setOnAction(e -> {
             // ตรวจสอบว่า Marketing Level เพียงพอหรือไม่ในการซื้อ VPS นี้
-            if (!parent.getSkillPointsSystem().canUnlockVPS(product)) {
+            if (!ResourceManager.getInstance().getSkillPointsSystem().canUnlockVPS(product)) {
                 parent.pushNotification("Purchase Failed", "Marketing level too low to unlock this VPS.");
                 return;
             }

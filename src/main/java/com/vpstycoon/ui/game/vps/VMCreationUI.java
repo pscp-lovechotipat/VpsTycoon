@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game.vps;
 
-import com.vpstycoon.game.SkillPointsSystem;
+import com.vpstycoon.game.company.SkillPointsSystem;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.utils.UIUtils;
@@ -100,7 +101,7 @@ public class VMCreationUI {
         VBox firewallSection = UIUtils.createSection("Firewall Settings");
         
         // Check if firewall management is unlocked
-        SkillPointsSystem skillPointsSystem = parent.getSkillPointsSystem();
+        SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         boolean firewallUnlocked = skillPointsSystem != null && 
                 skillPointsSystem.isFirewallManagementUnlocked();
         

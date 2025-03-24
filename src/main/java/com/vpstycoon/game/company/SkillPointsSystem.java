@@ -1,4 +1,4 @@
-package com.vpstycoon.game;
+package com.vpstycoon.game.company;
 
 import java.io.Serializable;
 import java.util.HashMap;

@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.market;
 
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.desktop.MarketWindow;
 import javafx.scene.layout.BorderPane;
@@ -39,7 +40,7 @@ public class MarketUI {
         productList.setStyle("-fx-background-color: rgba(30, 15, 40, 0.8);");
 
         for (VPSProduct product : VPSProduct.values()) {
-            if (parent.getSkillPointsSystem().canUnlockVPS(product)) {
+            if ( ResourceManager.getInstance().getSkillPointsSystem().canUnlockVPS(product)) {
                 productList.getChildren().add(createProductCard(product)); // เพิ่มเฉพาะ VPS ที่สามารถซื้อได้
             }
         }

@@ -4,6 +4,7 @@ import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.ui.game.rack.Rack;
@@ -39,11 +40,13 @@ public class ResourceManager implements Serializable {
     private RequestManager requestManager;
     private final AudioManager audioManager;
     private GameTimeManager gameTimeManager;
+    private SkillPointsSystem skillPointsSystem;
 
     private ResourceManager() {
         this.company = new Company();
         this.audioManager = new AudioManager();
         this.requestManager = new RequestManager(this.company);
+        this.skillPointsSystem = new SkillPointsSystem();
         this.rack = new Rack(10, 3); // สร้าง Rack เริ่มต้นใน ResourceManager
 
         this.gameTimeManager = new GameTimeManager(
@@ -148,6 +151,10 @@ public class ResourceManager implements Serializable {
 
     public void setRequestManager(RequestManager requestManager) {
         this.requestManager = requestManager;
+    }
+
+    public SkillPointsSystem getSkillPointsSystem() {
+        return skillPointsSystem;
     }
 
     public GameTimeManager getGameTimeManager() {
