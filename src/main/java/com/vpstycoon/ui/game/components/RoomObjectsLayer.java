@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game.components;
 
 import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -26,7 +27,7 @@ public class RoomObjectsLayer {
         this.serverLayer = createServerLayer();
         this.keroroLayer = createKeroroLayer();
         this.onKeroroClick = onKeroroClick;
-        this.audioManager = AudioManager.getInstance();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
     private synchronized Pane createKeroroLayer() {

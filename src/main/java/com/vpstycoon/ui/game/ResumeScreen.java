@@ -2,6 +2,7 @@ package com.vpstycoon.ui.game;
 
 import com.vpstycoon.FontLoader;
 import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
 import com.vpstycoon.ui.navigation.Navigator;
@@ -28,7 +29,7 @@ public class ResumeScreen extends StackPane {
     public ResumeScreen(Navigator navigator, Runnable onResumeGame) {
         this.navigator = navigator;
         this.onResumeGame = onResumeGame;
-        this.audioManager = AudioManager.getInstance();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
         setupUI();
     }
 

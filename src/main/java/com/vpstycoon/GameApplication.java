@@ -68,9 +68,7 @@ public class GameApplication extends Application implements Navigator {
         this.screenManager = new JavaFXScreenManager(gameConfig, primaryStage);
         this.gameManager = GameManager.getInstance();
 
-        this.audioManager = AudioManager.getInstance();
-
-        audioManager.playMusic("Untitled.mp3");
+        ResourceManager.getInstance().getAudioManager().playMusic("Buckshot_Roulette_OST.mp3");
         
         initializeGame();
         showMainMenu();

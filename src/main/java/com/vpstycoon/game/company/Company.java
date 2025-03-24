@@ -10,6 +10,8 @@ public class Company implements Serializable {
     private String name;
     private double rating;
     private int marketingPoints;
+    private int skillPoints;
+
     private long money;
     private long totalRevenue;
     private long totalExpenses;
@@ -19,7 +21,7 @@ public class Company implements Serializable {
     
     // Financial history for tracking
     private final List<FinancialRecord> financialHistory;
-    
+
     // Inner class for financial records
     public static class FinancialRecord implements Serializable {
         private static final long serialVersionUID = 1L;
@@ -183,6 +185,10 @@ public class Company implements Serializable {
 
     public double getRating() {
         return rating;
+    }
+
+    public int getSkillPoints() {
+        return skillPoints;
     }
 
     public void setRating(double rating) {

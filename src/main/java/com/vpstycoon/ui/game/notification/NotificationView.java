@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game.notification;
 
 import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
@@ -20,7 +21,7 @@ public class NotificationView extends VBox {
         // Ensure this doesn't block other UI elements
         setMouseTransparent(true);
 
-        this.audioManager = AudioManager.getInstance();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
     // เพิ่มการแจ้งเตือนใหม่เข้าไปใน View

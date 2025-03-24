@@ -2,6 +2,7 @@ package com.vpstycoon.ui.game.status;
 
 import com.vpstycoon.FontLoader;
 import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -89,7 +90,7 @@ public class CircleStatusButton {
         this.skillPoints = skillPointsSystem.getAvailablePoints();
         this.container = createContainer(skillName, topColor, bottomColor);
 
-        this.audioManager = AudioManager.getInstance();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
     private VBox createContainer(String skillName, Color topColor, Color bottomColor) {

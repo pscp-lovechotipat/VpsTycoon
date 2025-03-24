@@ -11,7 +11,6 @@ import java.net.URL;
 import java.util.*;
 
 public class AudioManager {
-    private static final AudioManager instance = new AudioManager();
     private final Map<String, Media> soundCache = new HashMap<>();
     private final List<MediaPlayer> activeSfxPlayers = new ArrayList<>();
     private MediaPlayer musicPlayer;
@@ -30,10 +29,6 @@ public class AudioManager {
         setSfxVolume(event.getNewConfig().getSfxVolume());
     }
 
-    public static AudioManager getInstance() {
-        return instance;
-    }
-
     public void playMusic(String musicFile) {
         Platform.runLater(() -> {
             try {
@@ -50,6 +45,7 @@ public class AudioManager {
                 musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
                 musicPlayer.setVolume(musicVolume);
                 musicPlayer.play();
+                System.out.println("Playing music " + music);
             } catch (Exception e) {
                 System.err.println("Failed to play music: " + e.getMessage());
             }

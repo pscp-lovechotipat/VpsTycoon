@@ -2,6 +2,7 @@ package com.vpstycoon.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.screen.ScreenResolution;
 
 public class DefaultGameConfig implements GameConfig {
@@ -93,8 +94,8 @@ public class DefaultGameConfig implements GameConfig {
                 this.sfxVolume = loaded.getSfxVolume();
                 this.vsyncEnabled = loaded.isVsyncEnabled();
 
-                AudioManager.getInstance().setMusicVolume(this.musicVolume);
-                AudioManager.getInstance().setSfxVolume(this.sfxVolume);
+                ResourceManager.getInstance().getAudioManager().setMusicVolume(this.musicVolume);
+                ResourceManager.getInstance().getAudioManager().setSfxVolume(this.sfxVolume);
             }
         } catch (Exception e) {
             System.err.println("Failed to load config: " + e.getMessage());

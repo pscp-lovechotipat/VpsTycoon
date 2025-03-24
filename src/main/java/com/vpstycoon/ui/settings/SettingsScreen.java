@@ -5,6 +5,7 @@ import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
 import com.vpstycoon.ui.base.GameScreen;
@@ -30,7 +31,7 @@ public class SettingsScreen extends GameScreen {
     public SettingsScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
         this.navigator = navigator;
-        this.audioManager = AudioManager.getInstance();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
     @Override

@@ -4,16 +4,17 @@ import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
 import com.vpstycoon.ui.navigation.Navigator;
 
 public class SettingScreenInGame extends SettingsScreen {
-    private AudioManager audioManager;
+    private final AudioManager audioManager;
     public SettingScreenInGame(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager, navigator);
-        this.audioManager = AudioManager.getInstance();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
     @Override

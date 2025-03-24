@@ -201,7 +201,7 @@ public class GameplayContentPane extends BorderPane {
         setCenter(rootStack);
         setupDebugFeatures();
 
-        this.audioManager = AudioManager.getInstance();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
     // === Initialization Methods ===

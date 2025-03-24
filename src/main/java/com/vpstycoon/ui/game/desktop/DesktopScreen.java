@@ -99,7 +99,7 @@ public class DesktopScreen extends StackPane {
     }
 
     private void openDashboardWindow() {
-        DashboardWindow dashboardWindow = new DashboardWindow(companyRating, marketingPoints, 5000.0, 0, company.getMoney(),
+        DashboardWindow dashboardWindow = new DashboardWindow(company, vpsManager, requestManager,
                 () -> getChildren().removeIf(node -> node instanceof DashboardWindow));
         StackPane.setAlignment(dashboardWindow, Pos.CENTER);
         getChildren().add(dashboardWindow);

@@ -11,7 +11,6 @@ import com.vpstycoon.game.vps.enums.VPSProduct;
 public class SkillPointsSystem implements Serializable {
     private static final long serialVersionUID = 1L;
 
-
     // Skill types
     public enum SkillType {
         RACK_SLOTS("Rack Slots", "Increases the number of slots available in each rack", 3),
@@ -232,6 +231,4 @@ public class SkillPointsSystem implements Serializable {
                 return "Unknown skill";
         }
     }
-
-
 } 

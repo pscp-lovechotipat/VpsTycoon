@@ -47,8 +47,6 @@ public class GameplayScreen extends GameScreen {
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
 
-        AudioManager.getInstance().playMusic("Pixel Paradise2.mp3");
-
         loadGame();
     }
 
@@ -64,8 +62,6 @@ public class GameplayScreen extends GameScreen {
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
-
-        AudioManager.getInstance().playMusic("Pixel Paradise2.mp3");
 
         loadGame(gameState);
     }

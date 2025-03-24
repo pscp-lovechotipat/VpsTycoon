@@ -49,7 +49,7 @@ public class MarketWindow extends VBox {
         this.onCloseAfterPurchase = onCloseAfterPurchase;
         this.vpsManager = vpsManager;
         this.parent = gameplayContentPane;
-        this.audioManager = AudioManager.getInstance();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
 
         setupUI();
         styleWindow();

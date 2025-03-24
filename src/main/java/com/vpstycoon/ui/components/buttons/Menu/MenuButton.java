@@ -21,7 +21,7 @@ public class MenuButton extends Button {
     private MenuButtonType type;
 
     public MenuButton(MenuButtonType type) {
-        this.audioManager = AudioManager.getInstance();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
         this.type = type;
         this.render();
     }

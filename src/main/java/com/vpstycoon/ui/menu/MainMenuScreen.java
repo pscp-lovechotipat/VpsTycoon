@@ -3,6 +3,7 @@ package com.vpstycoon.ui.menu;
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.game.GameSaveManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
@@ -30,7 +31,7 @@ public class MainMenuScreen extends GameScreen {
         super(config, screenManager);
         this.navigator = navigator;
         this.saveManager = new GameSaveManager();
-        this.audioManager = AudioManager.getInstance();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
     public void setSettingsScreen(SettingsScreen settingsScreen) {
