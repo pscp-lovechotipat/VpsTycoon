@@ -11,6 +11,9 @@ import com.vpstycoon.game.vps.enums.VPSProduct;
 public class SkillPointsSystem implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private int availablePoints;
+    private static final Map<SkillType, Integer> skillLevels = new HashMap<>();
+
     // Skill types
     public enum SkillType {
         RACK_SLOTS("Rack Slots", "Increases the number of slots available in each rack", 4),
@@ -43,9 +46,6 @@ public class SkillPointsSystem implements Serializable {
         }
     }
     
-    private int availablePoints;
-    private static final Map<SkillType, Integer> skillLevels = new HashMap<>();
-
     public SkillPointsSystem() {
         this.availablePoints = 1000;
 
