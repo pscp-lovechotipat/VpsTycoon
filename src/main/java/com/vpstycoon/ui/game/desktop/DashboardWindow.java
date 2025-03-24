@@ -96,7 +96,7 @@ public class DashboardWindow extends VBox {
         VBox revenueCard = createStatCard("Monthly Revenue", String.format("$%.2f", calculateMonthlyRevenue()), "#27ae60");
         statRevenueValue = (Label) revenueCard.getChildren().get(1);
 
-        VBox pointsCard = createStatCard("Skill Points", company.getSkillPoints() + " SP", "#3498db");
+        VBox pointsCard = createStatCard("Skill Points", company.getSkillPointsAvailable() + " SP", "#3498db");
         statPointsValue = (Label) pointsCard.getChildren().get(1);
 
         VBox moneyCard = createStatCard("Total Money", "$" + company.getMoney(), "#e74c3c");
@@ -269,7 +269,7 @@ public class DashboardWindow extends VBox {
             statMarketingValue.setText(company.getMarketingPoints() + " MP");
             double monthlyRevenue = calculateMonthlyRevenue();
             statRevenueValue.setText(String.format("$%.2f", monthlyRevenue));
-            statPointsValue.setText(company.getSkillPoints() + " SP");
+            statPointsValue.setText(company.getSkillPointsAvailable() + " SP");
             statMoneyValue.setText("$" + company.getMoney());
 
             // Update UI components - Additional stats

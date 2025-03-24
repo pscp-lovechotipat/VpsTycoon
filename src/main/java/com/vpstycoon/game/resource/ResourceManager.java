@@ -46,7 +46,7 @@ public class ResourceManager implements Serializable {
         this.company = new Company();
         this.audioManager = new AudioManager();
         this.requestManager = new RequestManager(this.company);
-        this.skillPointsSystem = new SkillPointsSystem();
+        this.skillPointsSystem = new SkillPointsSystem(this.company);
         this.rack = new Rack(10, 3); // สร้าง Rack เริ่มต้นใน ResourceManager
 
         this.gameTimeManager = new GameTimeManager(

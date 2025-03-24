@@ -10,7 +10,7 @@ public class Company implements Serializable {
     private String name;
     private double rating;
     private int marketingPoints;
-    private int skillPoints;
+    private int skillPointsAvailable;
 
     private long money;
     private long totalRevenue;
@@ -65,6 +65,7 @@ public class Company implements Serializable {
         this.name = "New Company";
         this.rating = 1.0;
         this.marketingPoints = 0;
+        this.skillPointsAvailable = 1000;
         this.money = 100_000; // Starting money: 100,000 THB
         this.totalRevenue = 0;
         this.totalExpenses = 0;
@@ -72,6 +73,20 @@ public class Company implements Serializable {
         this.completedRequests = 0;
         this.failedRequests = 0;
         this.financialHistory = new ArrayList<>();
+    }
+
+    public int getSkillPointsAvailable() {
+        return skillPointsAvailable;
+    }
+
+    public void setSkillPointsAvailable(int skillPointsAvailable) {
+        this.skillPointsAvailable = skillPointsAvailable;
+    }
+
+    public void addSkillPoints(int points) {
+        if (points > 0) {
+            this.skillPointsAvailable += points;
+        }
     }
     
     /**
@@ -185,10 +200,6 @@ public class Company implements Serializable {
 
     public double getRating() {
         return rating;
-    }
-
-    public int getSkillPoints() {
-        return skillPoints;
     }
 
     public void setRating(double rating) {

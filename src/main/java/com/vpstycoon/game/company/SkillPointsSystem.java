@@ -3,6 +3,8 @@ package com.vpstycoon.game.company;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.enums.VPSProduct;
 
 /**
@@ -11,8 +13,8 @@ import com.vpstycoon.game.vps.enums.VPSProduct;
 public class SkillPointsSystem implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private int availablePoints;
     private static final Map<SkillType, Integer> skillLevels = new HashMap<>();
+    private final Company company;
 
     // Skill types
     public enum SkillType {
@@ -45,9 +47,9 @@ public class SkillPointsSystem implements Serializable {
             return maxLevel;
         }
     }
-    
-    public SkillPointsSystem() {
-        this.availablePoints = 1000;
+
+    public SkillPointsSystem(Company company) {
+        this.company = company;
 
         // Initialize all skills at level 1
         for (SkillType skill : SkillType.values()) {
@@ -60,9 +62,7 @@ public class SkillPointsSystem implements Serializable {
      * @param points Number of points to add
      */
     public void addPoints(int points) {
-        if (points > 0) {
-            this.availablePoints += points;
-        }
+        this.company.addSkillPoints(points);
     }
 
     /**
@@ -70,7 +70,7 @@ public class SkillPointsSystem implements Serializable {
      * @return Number of available skill points
      */
     public int getAvailablePoints() {
-        return availablePoints;
+        return company.getSkillPointsAvailable();
     }
     
     /**
@@ -89,25 +89,21 @@ public class SkillPointsSystem implements Serializable {
      */
     public boolean upgradeSkill(SkillType skillType) {
         int currentLevel = getSkillLevel(skillType);
-
         if (currentLevel >= skillType.getMaxLevel()) {
             return false;
         }
 
         int cost = calculateUpgradeCost(currentLevel);
-        if (availablePoints >= cost) {
-            availablePoints -= cost;
+        if (company.getSkillPointsAvailable() >= cost) {
+            company.setSkillPointsAvailable(company.getSkillPointsAvailable() - cost);
             skillLevels.put(skillType, currentLevel + 1);
-
-            // เพิ่มคะแนน Marketing เมื่ออัปเกรด
             if (skillType == SkillType.MARKETING) {
-                addPoints(5);  // เพิ่ม 5 คะแนนให้ Marketing
+                addPoints(5);
             }
             return true;
         }
         return false;
     }
-
 
     /**
      * Calculate the cost to upgrade a skill based on its current level
