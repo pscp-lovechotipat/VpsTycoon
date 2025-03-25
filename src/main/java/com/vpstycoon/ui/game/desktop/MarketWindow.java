@@ -121,8 +121,6 @@ public class MarketWindow extends VBox {
                 return;
             }
 
-            audioManager.playSoundEffect("cash.mp3");
-
             Company company = ResourceManager.getInstance().getCompany();
 
             // ตรวจสอบเงินสำหรับราคาซื้อครั้งเดียว
@@ -131,6 +129,7 @@ public class MarketWindow extends VBox {
                 parent.pushNotification("Purchase Failed", "Not enough money to purchase this VPS.");
                 return;
             }
+            audioManager.playSoundEffect("cash.mp3");
             company.setMoney(company.getMoney() - product.getPrice());
 
             VPSOptimization newVPS = new VPSOptimization();
