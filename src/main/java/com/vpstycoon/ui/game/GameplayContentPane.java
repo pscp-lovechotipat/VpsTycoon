@@ -60,17 +60,6 @@ import java.util.List;
 public class GameplayContentPane extends BorderPane {
     private final StackPane rootStack;
 
-    private final NotificationModel notificationModel;
-    private final NotificationView notificationView;
-    private final NotificationController notificationController;
-
-    private final CenterNotificationView centerNotificationView;
-    private final CenterNotificationController centerNotificationController;
-
-    private final MouseNotificationModel mouseNotificationModel;
-    private final MouseNotificationView mouseNotificationView;
-    private final MouseNotificationController mouseNotificationController;
-
     private final DateView dateView;
     private final DateController dateController;
     private final DateModel dateModel;
@@ -123,6 +112,8 @@ public class GameplayContentPane extends BorderPane {
 
     private final GameTimeController gameTimeController;
 
+    private final ResourceManager resourceManager = ResourceManager.getInstance();
+
     // Constructor
     public GameplayContentPane(
             List<GameObject> gameObjects, Navigator navigator, ChatSystem chatSystem,
@@ -150,26 +141,6 @@ public class GameplayContentPane extends BorderPane {
         this.marketUI = new MarketUI(this);
         this.simulationDesktopUI = new SimulationDesktopUI(this);
         this.vpsInventoryUI = new VPSInventoryUI(this);
-
-        this.notificationModel = new NotificationModel();
-        this.notificationView = new NotificationView();
-        this.notificationController = new NotificationController(
-                notificationModel,
-                notificationView
-        );
-
-        this.mouseNotificationModel = new MouseNotificationModel();
-        this.mouseNotificationView = new MouseNotificationView();
-        this.mouseNotificationController = new MouseNotificationController(
-                mouseNotificationModel,
-                mouseNotificationView
-        );
-
-        this.centerNotificationView = new CenterNotificationView();
-        this.centerNotificationController = new CenterNotificationController(
-                new CenterNotificationModel(),
-                centerNotificationView
-        );
 
         this.moneyModel = new MoneyModel(ResourceManager.getInstance().getCompany().getMoney(),
                 ResourceManager.getInstance().getCompany().getRating());
@@ -258,7 +229,10 @@ public class GameplayContentPane extends BorderPane {
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
         rootStack.getChildren().addAll(gameArea,
                 moneyUI, menuBar,dateView,
-                inGameMarketMenuBar, mouseNotificationView, notificationView, centerNotificationView,
+                inGameMarketMenuBar,
+                resourceManager.getMouseNotificationView(),
+                resourceManager.getNotificationView(),
+                resourceManager.getCenterNotificationView(),
                 debugOverlay
         );
 
@@ -268,11 +242,11 @@ public class GameplayContentPane extends BorderPane {
         inGameMarketMenuBar.setVisible(true);
         inGameMarketMenuBar.setPickOnBounds(false);
 
-        notificationView.setMaxWidth(400);
-        notificationView.setPickOnBounds(false);
+        resourceManager.getNotificationView().setMaxWidth(400);
+        resourceManager.getNotificationView().setPickOnBounds(false);
 
-        centerNotificationView.setPickOnBounds(false);
-        StackPane.setAlignment(centerNotificationView, Pos.CENTER);
+        resourceManager.getCenterNotificationView().setPickOnBounds(false);
+        StackPane.setAlignment(resourceManager.getCenterNotificationView(), Pos.CENTER);
 
         moneyUI.setPickOnBounds(false);
         moneyUI.setVisible(true);
@@ -283,7 +257,7 @@ public class GameplayContentPane extends BorderPane {
 
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
         StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
-        StackPane.setAlignment(notificationView, Pos.TOP_RIGHT);
+        StackPane.setAlignment(resourceManager.getNotificationView(), Pos.TOP_RIGHT);
         StackPane.setAlignment(moneyUI, Pos.TOP_LEFT);
 
         debugOverlayManager.startTimer();
@@ -321,20 +295,19 @@ public class GameplayContentPane extends BorderPane {
 
     // === Notification Methods ===
     public void pushNotification(String title, String content) {
-        notificationModel.addNotification(new NotificationModel.Notification(title, content));
-        notificationView.addNotificationPane(title, content);
+        resourceManager.pushNotification(title, content);
     }
 
     public void pushMouseNotification(String content) {
-        mouseNotificationController.addNotification(content);
+        resourceManager.pushMouseNotification(content);
     }
 
     public void pushCenterNotification(String title, String content) {
-        centerNotificationController.push(title, content);
+        resourceManager.pushCenterNotification(title, content);
     }
 
-    public void pushCenterNotification(String title, String content, String image) {
-        centerNotificationController.push(title, content, image);
+    public void pushCenterNotification(String title, String content, Image image) {
+        resourceManager.pushCenterNotification(title, content, image);
     }
 
     // === UI Opening Methods ===

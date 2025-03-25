@@ -4,7 +4,7 @@ import java.awt.*;
 
 public class MouseNotificationController {
     private final MouseNotificationModel model;
-    private final MouseNotificationView view;
+    private MouseNotificationView view;
 
     public MouseNotificationController(MouseNotificationModel model, MouseNotificationView view) {
         this.model = model;
@@ -22,5 +22,9 @@ public class MouseNotificationController {
         MouseNotificationModel.Notification notification = new MouseNotificationModel.Notification(content);
         model.addNotification(notification); // เพิ่มเข้า model
         view.addNotificationPane(content, mouseX, mouseY); // แสดงใน view
+    }
+
+    public void setView(MouseNotificationView mouseNotificationView) {
+        this.view = mouseNotificationView;
     }
 }

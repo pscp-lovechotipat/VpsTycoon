@@ -20,8 +20,10 @@ public class NotificationView extends VBox {
         setPadding(new Insets(50)); // ขอบรอบนอก
         // Ensure this doesn't block other UI elements
         setMouseTransparent(true);
+    }
 
-        this.audioManager = ResourceManager.getInstance().getAudioManager();
+    public void setAudioManager(AudioManager audioManager) {
+        this.audioManager = audioManager;
     }
 
     // เพิ่มการแจ้งเตือนใหม่เข้าไปใน View

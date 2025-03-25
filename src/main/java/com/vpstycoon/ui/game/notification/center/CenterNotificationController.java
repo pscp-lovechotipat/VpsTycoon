@@ -4,7 +4,7 @@ import javafx.scene.image.Image;
 
 public class CenterNotificationController {
     private final CenterNotificationModel model;
-    private final CenterNotificationView view;
+    private CenterNotificationView view;
 
     public CenterNotificationController(CenterNotificationModel model, CenterNotificationView view) {
         this.model = model;
@@ -18,5 +18,9 @@ public class CenterNotificationController {
 
     public void push(String title, String content, String image) {
         view.addNotificationPane(title, content, image);
+    }
+
+    public void setView(CenterNotificationView centerNotificationView) {
+        this.view = centerNotificationView;
     }
 }

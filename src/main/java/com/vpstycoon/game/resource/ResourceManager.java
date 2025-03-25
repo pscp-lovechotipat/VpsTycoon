@@ -8,6 +8,15 @@ import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.thread.GameTimeManager;
+import com.vpstycoon.ui.game.notification.NotificationController;
+import com.vpstycoon.ui.game.notification.NotificationModel;
+import com.vpstycoon.ui.game.notification.NotificationView;
+import com.vpstycoon.ui.game.notification.center.CenterNotificationController;
+import com.vpstycoon.ui.game.notification.center.CenterNotificationModel;
+import com.vpstycoon.ui.game.notification.center.CenterNotificationView;
+import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationController;
+import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationModel;
+import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationView;
 import com.vpstycoon.ui.game.rack.Rack;
 import javafx.scene.image.Image;
 
@@ -46,6 +55,18 @@ public class ResourceManager implements Serializable {
 
     private SkillPointsSystem skillPointsSystem;
 
+    private NotificationModel notificationModel;
+    private NotificationView notificationView;
+    private NotificationController notificationController;
+
+    private CenterNotificationModel centerNotificationModel;
+    private CenterNotificationView centerNotificationView;
+    private CenterNotificationController centerNotificationController;
+
+    private MouseNotificationModel mouseNotificationModel;
+    private MouseNotificationView mouseNotificationView;
+    private MouseNotificationController mouseNotificationController;
+
     private boolean musicRunning = true;
 
     private ResourceManager() {
@@ -69,6 +90,26 @@ public class ResourceManager implements Serializable {
 
     public static ResourceManager getInstance() {
         return instance;
+    }
+
+    // Lazy initialization for notification components
+    private void initializeNotifications() {
+        if (notificationModel == null) {
+            this.notificationModel = new NotificationModel();
+            this.notificationView = new NotificationView();
+            this.notificationView.setAudioManager(this.audioManager);
+            this.notificationController = new NotificationController(notificationModel, notificationView);
+        }
+        if (centerNotificationModel == null) {
+            this.centerNotificationModel = new CenterNotificationModel();
+            this.centerNotificationView = new CenterNotificationView();
+            this.centerNotificationController = new CenterNotificationController(centerNotificationModel, centerNotificationView);
+        }
+        if (mouseNotificationModel == null) {
+            this.mouseNotificationModel = new MouseNotificationModel();
+            this.mouseNotificationView = new MouseNotificationView();
+            this.mouseNotificationController = new MouseNotificationController(mouseNotificationModel, mouseNotificationView);
+        }
     }
 
     // เมธอดสำหรับจัดการทรัพยากร (เช่น รูปภาพ เสียง) คงไว้เหมือนเดิม
@@ -138,6 +179,74 @@ public class ResourceManager implements Serializable {
             this.rack = new Rack(10, 3);
             return newState;
         }
+    }
+
+    // Notification methods
+    public void pushNotification(String title, String content) {
+        initializeNotifications();
+        notificationModel.addNotification(new NotificationModel.Notification(title, content));
+        notificationView.addNotificationPane(title, content);
+    }
+
+    public void pushMouseNotification(String content) {
+        initializeNotifications();
+        mouseNotificationController.addNotification(content);
+    }
+
+    public void pushCenterNotification(String title, String content) {
+        initializeNotifications();
+        centerNotificationController.push(title, content);
+    }
+
+    public void pushCenterNotification(String title, String content, Image image) {
+        initializeNotifications();
+        centerNotificationController.push(title, content, image);
+    }
+
+    // Notification getters
+    public NotificationModel getNotificationModel() {
+        initializeNotifications();
+        return notificationModel;
+    }
+
+    public NotificationView getNotificationView() {
+        initializeNotifications();
+        return notificationView;
+    }
+
+    public NotificationController getNotificationController() {
+        initializeNotifications();
+        return notificationController;
+    }
+
+    public CenterNotificationModel getCenterNotificationModel() {
+        initializeNotifications();
+        return centerNotificationModel;
+    }
+
+    public CenterNotificationView getCenterNotificationView() {
+        initializeNotifications();
+        return centerNotificationView;
+    }
+
+    public CenterNotificationController getCenterNotificationController() {
+        initializeNotifications();
+        return centerNotificationController;
+    }
+
+    public MouseNotificationModel getMouseNotificationModel() {
+        initializeNotifications();
+        return mouseNotificationModel;
+    }
+
+    public MouseNotificationView getMouseNotificationView() {
+        initializeNotifications();
+        return mouseNotificationView;
+    }
+
+    public MouseNotificationController getMouseNotificationController() {
+        initializeNotifications();
+        return mouseNotificationController;
     }
 
     // Getter และ Setter สำหรับ Rack
