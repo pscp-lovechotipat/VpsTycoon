@@ -32,11 +32,11 @@ public class CenterNotificationView extends StackPane {
         createAndShowNotification(title, content, null);
     }
 
-    public void addNotificationPane(String title, String content, Image image) {
+    public void addNotificationPane(String title, String content, String image) {
         createAndShowNotification(title, content, image);
     }
 
-    private void createAndShowNotification(String title, String content, Image image) {
+    private void createAndShowNotification(String title, String content, String image) {
         model.addNotification(new CenterNotificationModel.Notification(title, content, image));
         if (currentOverlay == null) {
             showNextNotification();

@@ -16,7 +16,7 @@ public class CenterNotificationController {
         view.addNotificationPane(title, content);
     }
 
-    public void push(String title, String content, Image image) {
+    public void push(String title, String content, String image) {
         view.addNotificationPane(title, content, image);
     }
 }

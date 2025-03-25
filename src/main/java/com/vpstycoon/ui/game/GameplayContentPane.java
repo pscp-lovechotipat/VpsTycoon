@@ -333,7 +333,7 @@ public class GameplayContentPane extends BorderPane {
         centerNotificationController.push(title, content);
     }
 
-    public void pushCenterNotification(String title, String content, Image image) {
+    public void pushCenterNotification(String title, String content, String image) {
         centerNotificationController.push(title, content, image);
     }
 
