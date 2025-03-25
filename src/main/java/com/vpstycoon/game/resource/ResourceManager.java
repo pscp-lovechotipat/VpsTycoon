@@ -92,6 +92,10 @@ public class ResourceManager implements Serializable {
         return instance;
     }
 
+    private void initiaizeSkillPointsSystem() {
+        this.skillPointsSystem = new SkillPointsSystem(this.company);
+    }
+
     // Lazy initialization for notification components
     private void initializeNotifications() {
         if (notificationModel == null) {
@@ -269,6 +273,7 @@ public class ResourceManager implements Serializable {
     }
 
     public SkillPointsSystem getSkillPointsSystem() {
+        initiaizeSkillPointsSystem();
         return skillPointsSystem;
     }
 
