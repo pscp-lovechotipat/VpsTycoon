@@ -23,7 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ResourceManager implements Serializable {
     private static final long serialVersionUID = 1L;
+
     private static final ResourceManager instance = new ResourceManager();
+
     private static final String IMAGES_PATH = "/images/";
     private static final String SOUNDS_PATH = "/sounds/";
     private static final String MUSIC_PATH = "/music/";
