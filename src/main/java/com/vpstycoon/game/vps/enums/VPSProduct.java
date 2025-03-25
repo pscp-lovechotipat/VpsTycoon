@@ -73,4 +73,13 @@ public enum VPSProduct {
     public String getKeepUpDisplay() {
         return "$" + keepUp + "/month";
     }
+
+    public boolean isUnlocked(int marketingLevel) {
+        // Basic VPS is always unlocked
+        if (this == BASIC_VPS) return true;
+        
+        // Each subsequent VPS requires 1 more marketing level
+        int requiredLevel = this.ordinal();
+        return marketingLevel >= requiredLevel;
+    }
 }

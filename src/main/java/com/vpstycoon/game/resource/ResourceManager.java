@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -72,7 +73,7 @@ public class ResourceManager implements Serializable {
     private ResourceManager() {
         this.company = new Company();
         this.audioManager = new AudioManager();
-        this.rack = new Rack(10, 3); // สร้าง Rack เริ่มต้นใน ResourceManager
+        this.rack = new Rack(); // สร้าง Rack เริ่มต้นใน ResourceManager
 
         createBackupDirectory();
         if (currentState == null) {
@@ -170,7 +171,7 @@ public class ResourceManager implements Serializable {
             this.currentState = newState;
             this.company = newState.getCompany();
             this.requestManager = new RequestManager(this.company);
-            this.rack = new Rack(10, 3); // รีเซ็ต Rack ถ้าไม่มี save
+            this.rack = new Rack(); // รีเซ็ต Rack ถ้าไม่มี save
             return newState;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(saveFile))) {
@@ -187,7 +188,7 @@ public class ResourceManager implements Serializable {
             gameTimeController.getGameTimeManager().getGameTimeMs();
             // หาก Rack ถูกเก็บใน GameState ด้วย จะต้องโหลดจาก state ด้วย
             // ถ้าไม่เก็บใน state จะใช้ค่าเริ่มต้น
-            this.rack = new Rack(10, 3); // หรือโหลดจาก state ถ้ามี
+            this.rack = new Rack(); // หรือโหลดจาก state ถ้ามี
             return state;
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Failed to load game: " + e.getMessage());
@@ -196,7 +197,7 @@ public class ResourceManager implements Serializable {
             GameState newState = new GameState();
             this.currentState = newState;
             this.company = newState.getCompany();
-            this.rack = new Rack(10, 3);
+            this.rack = new Rack();
             return newState;
         }
     }

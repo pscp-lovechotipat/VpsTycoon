@@ -22,7 +22,7 @@ import com.vpstycoon.ui.game.flow.GameFlowManager;
 import com.vpstycoon.ui.game.handlers.KeyEventHandler;
 import com.vpstycoon.ui.game.handlers.ZoomPanHandler;
 import com.vpstycoon.ui.game.inventory.VPSInventoryUI;
-import com.vpstycoon.ui.game.market.MarketUI;
+import com.vpstycoon.ui.game.desktop.MarketWindow;
 import com.vpstycoon.ui.game.notification.NotificationController;
 import com.vpstycoon.ui.game.notification.NotificationModel;
 import com.vpstycoon.ui.game.notification.NotificationView;
@@ -99,7 +99,6 @@ public class GameplayContentPane extends BorderPane {
     private final VMCreationUI vmCreationUI;
     private final VMInfoUI vmInfoUI;
     private final VMEditUI vmEditUI;
-    private final MarketUI marketUI;
     private final SimulationDesktopUI simulationDesktopUI;
 
     private SkillPointsSystem skillPointsSystem;
@@ -138,7 +137,6 @@ public class GameplayContentPane extends BorderPane {
         this.vmCreationUI = new VMCreationUI(this);
         this.vmInfoUI = new VMInfoUI(this);
         this.vmEditUI = new VMEditUI(this);
-        this.marketUI = new MarketUI(this);
         this.simulationDesktopUI = new SimulationDesktopUI(this);
         this.vpsInventoryUI = new VPSInventoryUI(this);
 
@@ -336,7 +334,25 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public void openMarket() {
-        marketUI.openMarket();
+        MarketWindow marketWindow = new MarketWindow(
+            () -> {
+                getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
+                getMenuBar().setVisible(true);
+                getInGameMarketMenuBar().setVisible(true);
+                getMoneyUI().setVisible(true);
+                getDateView().setVisible(true);
+            },
+            () -> {
+                getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
+                getMenuBar().setVisible(true);
+                getInGameMarketMenuBar().setVisible(true);
+                getMoneyUI().setVisible(true);
+                getDateView().setVisible(true);
+            },
+            vpsManager,
+            this
+        );
+        getGameArea().getChildren().add(marketWindow);
     }
 
     public void openSimulationDesktop() {
