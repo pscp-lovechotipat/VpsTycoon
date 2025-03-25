@@ -15,17 +15,20 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GameTimeManager {
-    public static final long GAME_DAY_MS = 30000;    // 30 วินาทีต่อวัน (900,000 ÷ 30)
-    public static final long GAME_WEEK_MS = GAME_DAY_MS * 7;    // 210,000 ms (3.5 นาที)
-    public static final long GAME_MONTH_MS = GAME_DAY_MS * 30;  // 900,000 ms (15 นาที)
-    public static final long GAME_YEAR_MS = GAME_MONTH_MS * 12; // 10,800,000 ms (180 นาที หรือ 3 ชั่วโมง)
-    public static final long TICK_INTERVAL_MS = 1000;  // ยังคง tick ทุก 1 วินาที
+    public static final long GAME_DAY_MS = 30000;    // 30 วินาทีจริง = 1 วันในเกม
+    public static final long GAME_WEEK_MS = GAME_DAY_MS * 7;
+    public static final long GAME_MONTH_MS = GAME_DAY_MS * 30;
+    public static final long GAME_YEAR_MS = GAME_MONTH_MS * 12;
+    public static final long TICK_INTERVAL_MS = 1000; // ใส่ประมาณนี้พอ เดี่ยว observer แตกกระจุย
+    private static final long OVERHEAD_INTERVAL = GAME_MONTH_MS;
+    private static final double SCALE_FACTOR = 86400000.0 / GAME_DAY_MS; // ใน 1 วัน มี 86,400,000 ms  / 30,000 ms
 
     private final Company company;
     private final RequestManager requestManager;
     private final Rack rack;
+    private final LocalDateTime startDateTime; // เพิ่มตัวแปรสำหรับจุดเริ่มต้น
     private LocalDateTime gameDateTime;
-    private final AtomicLong gameTimeMs = new AtomicLong(0);
+    private final AtomicLong realTimeMs = new AtomicLong(0); // มิลลิวินาทีจริงที่ผ่านไป
     private volatile boolean running = true;
     private int lastProcessedMonth = -1;
 
@@ -54,7 +57,8 @@ public class GameTimeManager {
         this.company = company;
         this.requestManager = requestManager;
         this.rack = rack;
-        this.gameDateTime = startTime != null ? startTime : LocalDateTime.of(2000, 1, 1, 0, 0, 0);
+        this.startDateTime = startTime != null ? startTime : LocalDateTime.of(2000, 1, 1, 0, 0, 0);
+        this.gameDateTime = this.startDateTime;
         this.lastProcessedMonth = gameDateTime.getMonthValue();
     }
 
@@ -63,8 +67,6 @@ public class GameTimeManager {
         long lastPaymentCheckTime = lastTickTime;
         long lastOverheadTime = lastTickTime;
         long lastRentalCheckTime = lastTickTime;
-        long accumulatedMs = 0;
-        final long overheadInterval = GAME_MONTH_MS;
 
         System.out.println("Thread TimeManager Initializing...");
 
@@ -74,36 +76,31 @@ public class GameTimeManager {
                 long elapsedMs = currentTime - lastTickTime;
                 lastTickTime = currentTime;
 
-                accumulatedMs += elapsedMs;
+                realTimeMs.addAndGet(elapsedMs);
 
-                // คำนวณจำนวนวันที่ผ่านไป
-                long daysElapsed = accumulatedMs / GAME_DAY_MS;
-                if (daysElapsed > 0) {
-                    LocalDateTime previousDateTime = gameDateTime;
-                    gameDateTime = gameDateTime.plusDays(daysElapsed);
-                    accumulatedMs -= daysElapsed * GAME_DAY_MS;
-                    gameTimeMs.addAndGet(daysElapsed * GAME_DAY_MS);
+                long gameMs = (long) (realTimeMs.get() * SCALE_FACTOR);
 
-                    if (gameDateTime.getMonthValue() != previousDateTime.getMonthValue()) {
-                        processMonthlyKeepUp();
-                        lastProcessedMonth = gameDateTime.getMonthValue();
-                    }
+                gameDateTime = startDateTime.plus(gameMs, ChronoUnit.MILLIS);
 
-                    notifyTimeListeners();
+                // ตรวจสอบการเปลี่ยนเดือน
+                if (gameDateTime.getMonthValue() != lastProcessedMonth) {
+                    processMonthlyKeepUp();
+                    lastProcessedMonth = gameDateTime.getMonthValue();
                 }
 
-                // การตรวจสอบอื่นๆ
+                notifyTimeListeners();
+
                 if (currentTime - lastPaymentCheckTime >= GAME_DAY_MS) {
-                    requestManager.processPayments(gameTimeMs.get());
+                    requestManager.processPayments(realTimeMs.get());
                     lastPaymentCheckTime = currentTime;
                 }
 
-                if (currentTime - lastOverheadTime >= overheadInterval) {
+                if (currentTime - lastOverheadTime >= OVERHEAD_INTERVAL) {
                     lastOverheadTime = currentTime;
                 }
 
                 if (currentTime - lastRentalCheckTime >= GAME_DAY_MS) {
-                    checkRentalExpirations(gameTimeMs.get());
+                    checkRentalExpirations(realTimeMs.get());
                     lastRentalCheckTime = currentTime;
                 }
 
@@ -169,18 +166,18 @@ public class GameTimeManager {
         }
     }
 
+    private void notifyTimeListeners() {
+        for (GameTimeListener listener : timeListeners) {
+            listener.onTimeChanged(gameDateTime, realTimeMs.get());
+        }
+    }
+
     public void addVPSServer(VPSOptimization vps) {
         rack.installVPS(vps);
     }
 
     public void removeVPSServer(VPSOptimization vps) {
         rack.uninstallVPS(vps);
-    }
-
-    private void notifyTimeListeners() {
-        for (GameTimeListener listener : timeListeners) {
-            listener.onTimeChanged(gameDateTime, gameTimeMs.get());
-        }
     }
 
     public void addTimeListener(GameTimeListener listener) {
@@ -196,7 +193,7 @@ public class GameTimeManager {
     }
 
     public long getGameTimeMs() {
-        return this.gameTimeMs.get();
+        return this.realTimeMs.get();
     }
 
     public void stop() {
