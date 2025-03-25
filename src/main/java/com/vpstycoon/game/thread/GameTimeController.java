@@ -12,7 +12,7 @@ public class GameTimeController {
     private Thread timeThread;
 
     public GameTimeController(Company company, RequestManager requestManager, Rack rack, LocalDateTime startTime) {
-        this.timeManager = ResourceManager.getInstance().getGameTimeManager();
+        this.timeManager = new GameTimeManager(company, requestManager, rack, startTime);
     }
 
     public void startTime() {

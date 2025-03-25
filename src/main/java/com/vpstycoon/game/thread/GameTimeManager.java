@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GameTimeManager {
-    public static final long GAME_DAY_MS = 30_000;    // 30 วินาทีต่อวันในเกม
-    public static final long GAME_WEEK_MS = GAME_DAY_MS * 7;
-    public static final long GAME_MONTH_MS = GAME_DAY_MS * 30;
-    public static final long GAME_YEAR_MS = GAME_MONTH_MS * 12;
-    public static final long TICK_INTERVAL_MS = 1000;
+    public static final long GAME_DAY_MS = 30000;    // 30 วินาทีต่อวัน (900,000 ÷ 30)
+    public static final long GAME_WEEK_MS = GAME_DAY_MS * 7;    // 210,000 ms (3.5 นาที)
+    public static final long GAME_MONTH_MS = GAME_DAY_MS * 30;  // 900,000 ms (15 นาที)
+    public static final long GAME_YEAR_MS = GAME_MONTH_MS * 12; // 10,800,000 ms (180 นาที หรือ 3 ชั่วโมง)
+    public static final long TICK_INTERVAL_MS = 1000;  // ยังคง tick ทุก 1 วินาที
 
     private final Company company;
     private final RequestManager requestManager;
@@ -63,7 +63,10 @@ public class GameTimeManager {
         long lastPaymentCheckTime = lastTickTime;
         long lastOverheadTime = lastTickTime;
         long lastRentalCheckTime = lastTickTime;
+        long accumulatedMs = 0;
         final long overheadInterval = GAME_MONTH_MS;
+
+        System.out.println("Thread TimeManager Initializing...");
 
         while (running) {
             try {
@@ -71,11 +74,15 @@ public class GameTimeManager {
                 long elapsedMs = currentTime - lastTickTime;
                 lastTickTime = currentTime;
 
-                long newGameTimeMs = gameTimeMs.addAndGet(elapsedMs);
-                long daysElapsed = (long) Math.floor((double) elapsedMs / GAME_DAY_MS);
+                accumulatedMs += elapsedMs;
+
+                // คำนวณจำนวนวันที่ผ่านไป
+                long daysElapsed = accumulatedMs / GAME_DAY_MS;
                 if (daysElapsed > 0) {
                     LocalDateTime previousDateTime = gameDateTime;
-                    gameDateTime = gameDateTime.plus(daysElapsed, ChronoUnit.DAYS);
+                    gameDateTime = gameDateTime.plusDays(daysElapsed);
+                    accumulatedMs -= daysElapsed * GAME_DAY_MS;
+                    gameTimeMs.addAndGet(daysElapsed * GAME_DAY_MS);
 
                     if (gameDateTime.getMonthValue() != previousDateTime.getMonthValue()) {
                         processMonthlyKeepUp();
@@ -85,8 +92,9 @@ public class GameTimeManager {
                     notifyTimeListeners();
                 }
 
+                // การตรวจสอบอื่นๆ
                 if (currentTime - lastPaymentCheckTime >= GAME_DAY_MS) {
-                    requestManager.processPayments(newGameTimeMs);
+                    requestManager.processPayments(gameTimeMs.get());
                     lastPaymentCheckTime = currentTime;
                 }
 
@@ -95,7 +103,7 @@ public class GameTimeManager {
                 }
 
                 if (currentTime - lastRentalCheckTime >= GAME_DAY_MS) {
-                    checkRentalExpirations(newGameTimeMs);
+                    checkRentalExpirations(gameTimeMs.get());
                     lastRentalCheckTime = currentTime;
                 }
 
@@ -115,17 +123,15 @@ public class GameTimeManager {
                     long durationMs = period.getDays() * GAME_DAY_MS;
                     long timeSinceLastPaymentMs = currentGameTimeMs - rentalStartTime;
 
-                    System.out.println("Checking request: " + request.getName() +
-                            " | Time since last payment: " + timeSinceLastPaymentMs +
-                            "ms | Payment interval: " + (period.getDays() * GAME_DAY_MS) + "ms");
                     // ตรวจสอบการชำระเงินตามรอบ
                     if (request.isPaymentDue(currentGameTimeMs)) {
                         double payment = request.getPaymentAmount();
-                        company.addMoney(payment); // เพิ่มเงินให้บริษัท
-                        request.recordPayment(currentGameTimeMs); // บันทึกเวลาชำระเงิน
+                        company.addMoney(payment);
+                        request.recordPayment(currentGameTimeMs);
                         System.out.println("Payment received from " + request.getName() + ": $" + payment +
                                 " | Game time: " + currentGameTimeMs);
                     }
+
                     // ตรวจสอบการหมดสัญญา
                     if (currentGameTimeMs >= rentalStartTime + durationMs) {
                         for (GameTimeListener listener : timeListeners) {
