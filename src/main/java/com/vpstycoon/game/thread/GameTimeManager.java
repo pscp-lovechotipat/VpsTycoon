@@ -34,20 +34,6 @@ public class GameTimeManager {
 
     private final List<GameTimeListener> timeListeners = new ArrayList<>();
 
-    private static GameTimeManager instance; // เพิ่ม instance ถ้าต้องการ getInstance()
-
-    public static GameTimeManager getInstance() {
-        if (instance == null) {
-            instance = new GameTimeManager(
-                    ResourceManager.getInstance().getCompany(),
-                    ResourceManager.getInstance().getRequestManager(),
-                    ResourceManager.getInstance().getRack(),
-                    ResourceManager.getInstance().getCurrentState().getLocalDateTime()
-            );
-        }
-        return instance;
-    }
-
     public interface GameTimeListener {
         void onTimeChanged(LocalDateTime newTime, long gameTimeMs);
         void onRentalPeriodCheck(CustomerRequest request, CustomerRequest.RentalPeriodType period);

@@ -2,14 +2,20 @@ package com.vpstycoon.ui.game.status.date;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+
+import java.time.Duration;
 
 import java.time.LocalDateTime;
 
 public class DateModel {
     private final ObjectProperty<LocalDateTime> date = new SimpleObjectProperty<>();
+    private final StringProperty timeRemaining = new SimpleStringProperty();
 
     public DateModel(LocalDateTime initialDate) {
         this.date.set(initialDate);
+        updateTimeRemaining();
     }
 
     public LocalDateTime getDate() {
@@ -17,10 +23,31 @@ public class DateModel {
     }
 
     public void setDate(LocalDateTime date) {
-        this.date.set(date); // Simply set the new date without reformatting
+        this.date.set(date);
+        updateTimeRemaining();
     }
 
     public ObjectProperty<LocalDateTime> dateProperty() {
         return date;
+    }
+
+    public StringProperty timeRemainingProperty() {
+        return timeRemaining;
+    }
+
+    private void updateTimeRemaining() {
+        // คำนวณวินาทีที่เหลือจากจุดสิ้นสุดของวันในเกม (30 วินาทีจริง = 1 วัน)
+        LocalDateTime currentDate = date.get();
+        LocalDateTime nextDay = currentDate.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        Duration durationSinceMidnight = Duration.between(currentDate.withHour(0).withMinute(0).withSecond(0).withNano(0), currentDate);
+        long secondsSinceMidnight = durationSinceMidnight.getSeconds(); // วินาทีที่ผ่านไปตั้งแต่เที่ยงคืนในเกม
+        long totalSecondsInGameDay = 86400; // 86,400 วินาที = 1 วันในเกม
+        long secondsRemainingInGame = totalSecondsInGameDay - secondsSinceMidnight;
+
+        // แปลงวินาทีในเกมให้สัมพันธ์กับ 30 วินาทีจริง
+        double scaleFactor = 30.0 / totalSecondsInGameDay; // 30 วินาทีจริง / 86,400 วินาทีในเกม
+        long secondsRemainingReal = (long) (secondsRemainingInGame * scaleFactor);
+
+        timeRemaining.set(secondsRemainingReal + "s");
     }
 }
