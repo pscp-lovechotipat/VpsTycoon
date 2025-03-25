@@ -208,11 +208,11 @@ public class RequestManager implements Serializable {
     
     /**
      * Process payments for all active customer requests
+     *
      * @param currentTime Current game time
-     * @return Total payment received
      */
-    public double processPayments(long currentTime) {
-        return vmProvisioningManager.processPayments(currentTime);
+    public void processPayments(long currentTime) {
+        vmProvisioningManager.processPayments(currentTime);
     }
     
     /**

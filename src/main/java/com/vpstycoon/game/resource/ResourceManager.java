@@ -74,12 +74,6 @@ public class ResourceManager implements Serializable {
         this.audioManager = new AudioManager();
         this.rack = new Rack(10, 3); // สร้าง Rack เริ่มต้นใน ResourceManager
 
-        this.gameTimeController = new GameTimeController(this.company,
-                this.requestManager,
-                this.rack,
-                LocalDateTime.of(2000, 1, 1, 0, 0, 0)
-        );
-
         createBackupDirectory();
         if (currentState == null) {
             currentState = new GameState(this.company);
@@ -91,11 +85,27 @@ public class ResourceManager implements Serializable {
     }
 
     private void initiaizeSkillPointsSystem() {
-        if (skillPointsSystem == null) { this.skillPointsSystem = new SkillPointsSystem(this.company);}
+        if (skillPointsSystem == null) {
+            this.skillPointsSystem = new SkillPointsSystem(this.company);
+        }
     }
 
     private void initiaizeRequestManager() {
-        if (requestManager == null) { this.requestManager = new RequestManager(this.company);}
+        if (requestManager == null) {
+            this.requestManager = new RequestManager(this.company);
+        }
+    }
+
+    private void initiaizeGameTimeController() {
+        initiaizeRequestManager();
+        if (gameTimeController == null) {
+            this.gameTimeController = new GameTimeController(this.company,
+                    this.requestManager,
+                    this.rack,
+                    currentState.getLocalDateTime()
+            );
+            gameTimeController.getGameTimeManager().getGameTimeMs();
+        }
     }
 
     // Lazy initialization for notification components
@@ -136,6 +146,7 @@ public class ResourceManager implements Serializable {
     }
 
     public void saveGameState(GameState state) {
+        initiaizeGameTimeController();
         state.setLocalDateTime(gameTimeController.getGameTimeManager().getGameDateTime());
         state.setGameTimeMs(gameTimeController.getGameTimeManager().getGameTimeMs());
 
@@ -286,6 +297,7 @@ public class ResourceManager implements Serializable {
     }
 
     public GameTimeController getGameTimeController() {
+        initiaizeGameTimeController();
         return gameTimeController;
     }
 

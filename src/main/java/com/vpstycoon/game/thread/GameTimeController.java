@@ -17,7 +17,7 @@ public class GameTimeController {
 
     public void startTime() {
         if (timeThread == null || !timeThread.isAlive()) {
-            timeThread = new Thread(() -> timeManager.start());
+            timeThread = new Thread(timeManager::start);
             timeThread.setDaemon(true);
             timeThread.setName("GameTimeThread");
             timeThread.start();
