@@ -262,6 +262,8 @@ public class GameplayContentPane extends BorderPane {
         zoomPanHandler = new ZoomPanHandler(worldGroup, gameArea, debugOverlayManager, showDebug);
         zoomPanHandler.setup();
 
+        resourceManager.initializeGameEvent(this);
+
         setStyle("-fx-background-color: #000000;");
     }
 

@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.notification.center;
 
+import javafx.application.Platform;
 import javafx.scene.image.Image;
 
 public class CenterNotificationController {
@@ -13,11 +14,11 @@ public class CenterNotificationController {
     }
 
     public void push(String title, String content) {
-        view.addNotificationPane(title, content);
+        Platform.runLater(() -> view.addNotificationPane(title, content));
     }
 
     public void push(String title, String content, String image) {
-        view.addNotificationPane(title, content, image);
+        Platform.runLater(() -> view.addNotificationPane(title, content, image));
     }
 
     public void setView(CenterNotificationView centerNotificationView) {
