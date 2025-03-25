@@ -85,7 +85,7 @@ public class Rack extends StackPane {
 
     public void addRack(int slots) {
         maxSlotUnits = slots;
-        unlockedSlotUnits = slots;
+        unlockedSlotUnits = 0;
         occupiedSlotUnits = 0;
         
         VBox newRack = new VBox(5);
