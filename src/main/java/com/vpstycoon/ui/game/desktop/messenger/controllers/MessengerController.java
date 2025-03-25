@@ -76,9 +76,8 @@ public class MessengerController {
         updateDashboard();
         loadSkillLevels();
 
-        // ตั้งค่า callback สำหรับ archive
         this.rentalManager.setOnArchiveRequest(() -> archiveRequest(requestListView.getSelectedRequest()));
-        this.rentalManager.setVMAssignment(vmAssignments); // ส่งข้อมูล VM assignments
+        this.rentalManager.setVMAssignment(vmAssignments);
     }
 
     private void setupListeners() {
@@ -138,6 +137,7 @@ public class MessengerController {
             }
         });
 
+        // ปรับปรุงการจัดการปุ่ม Assign VM
         chatAreaView.getAssignVMButton().setOnAction(e -> {
             CustomerRequest selected = requestListView.getSelectedRequest();
             if (selected != null && !selected.isActive()) {
@@ -147,10 +147,23 @@ public class MessengerController {
                             .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
                             .collect(Collectors.toList()));
                 }
+                if (allAvailableVMs.isEmpty()) {
+                    chatAreaView.addSystemMessage("No available VMs to assign.");
+                    return;
+                }
                 VMSelectionDialog dialog = new VMSelectionDialog(allAvailableVMs, rootStack);
                 dialog.setOnConfirm(() -> {
                     VPSOptimization.VM selectedVM = dialog.getSelectedVM();
                     if (selectedVM != null) {
+                        // Assign VM ทันทีเมื่อกด CONFIRM
+                        vmAssignments.put(selectedVM, selected); // ล็อก VM
+                        selected.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
+                        chatAreaView.addSystemMessage("VM selected and assigned to request.");
+                        chatAreaView.getAssignVMButton().setDisable(true); // ปิดปุ่ม Assign VM ทันที
+                        updateDashboard(); // อัพเดต UI เพื่อลดจำนวน VM ทันที
+                        updateRequestList(); // อัพเดตสถานะคำขอ
+
+                        // เริ่ม provisioning หลังจาก assign
                         vmProvisioningManager.startVMProvisioning(selected, selectedVM, () -> {
                             completeVMProvisioning(selected, selectedVM);
                         });
@@ -194,14 +207,12 @@ public class MessengerController {
     }
 
     private void completeVMProvisioning(CustomerRequest request, VPSOptimization.VM vm) {
-        vmAssignments.put(vm, request);
         rentalManager.setupRentalPeriod(request, vm);
-        request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
-        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM assigned successfully", new HashMap<>()));
-        chatAreaView.addSystemMessage("VM assigned successfully");
+        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed successfully", new HashMap<>()));
+        chatAreaView.addSystemMessage("VM provisioning completed successfully");
         skillPointsManager.awardSkillPoints(request, 0.2);
         updateRequestList();
-        updateDashboard();
+        updateDashboard(); // อัพเดต UI อีกครั้งหลัง provisioning เสร็จ
     }
 
     private void archiveRequest(CustomerRequest selected) {
@@ -216,7 +227,9 @@ public class MessengerController {
             }
             requestManager.getRequests().remove(selected);
             chatAreaView.clearMessages();
+            chatAreaView.getAssignVMButton().setDisable(false); // Enable ปุ่ม Assign VM ใหม่หลัง archive
             updateRequestList();
+            updateDashboard();
         }
     }
 
@@ -235,8 +248,8 @@ public class MessengerController {
                 chatAreaView.addSystemMessage("Contract expired and VM released");
             }
         }
-        vmAssignments.remove(vm);
-        updateDashboard();
+        vmAssignments.remove(vm); // ปล่อย VM ออกจากการล็อก
+        updateDashboard(); // อัพเดต UI เพื่อแสดงจำนวน VM ที่ว่างเพิ่มขึ้น
     }
 
     private void loadSkillLevels() {

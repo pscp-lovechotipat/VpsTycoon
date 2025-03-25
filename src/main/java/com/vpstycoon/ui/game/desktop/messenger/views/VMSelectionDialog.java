@@ -112,6 +112,7 @@ public class VMSelectionDialog extends VBox {
             }
             if (onConfirm != null) {
                 onConfirm.run();
+                onConfirm.run();
             }
             closeDialog();
         });
