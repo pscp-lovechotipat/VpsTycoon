@@ -252,8 +252,8 @@ public class GameplayContentPane extends BorderPane {
 
         this.rootStack.getChildren().clear();
 
-        roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo, this::openKeroro);
-        worldGroup = new Group(backgroundLayer, roomObjects.getServerLayer(), roomObjects.getMonitorLayer(), roomObjects.getKeroroLayer());
+        roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo, this::openKeroro, this::openMusicBox, this::openMusicStop);
+        worldGroup = new Group(backgroundLayer, roomObjects.getServerLayer(), roomObjects.getMonitorLayer(), roomObjects.getKeroroLayer(), roomObjects.getMusicBoxLayer(), roomObjects.getMusicStopLayer());
         gameArea.getChildren().add(worldGroup);
 
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
@@ -388,6 +388,26 @@ public class GameplayContentPane extends BorderPane {
         System.out.println("Open Keroro");
         audioManager.playSoundEffect("keroro_sound.mp3");
         pushMouseNotification("Keroro");
+    }
+
+    public void openMusicBox() {
+        if (roomObjects.getRun()) {
+            roomObjects.getMusicBoxLayer().setVisible(false);
+            roomObjects.getMusicStopLayer().setVisible(true);
+            audioManager.dispose();
+            roomObjects.setRun(false);
+        }
+        System.out.println("Stop");
+
+    }
+
+    public void openMusicStop(){
+        if (!roomObjects.getRun()) {
+            roomObjects.getMusicBoxLayer().setVisible(true);
+            roomObjects.getMusicStopLayer().setVisible(false);
+            audioManager.playMusic("Buckshot_Roulette_OST.mp3");
+            roomObjects.setRun(true);
+        }
     }
 
     // === Navigation Methods ===

@@ -2,6 +2,7 @@ package com.vpstycoon.ui.game.components;
 
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -14,12 +15,17 @@ public class RoomObjectsLayer {
     private final Pane tableLayer;
     private final Pane serverLayer;
     private final Pane keroroLayer;
+    private final Pane musicBoxLayer;
+    private final Pane musicStopLayer;
     private final Runnable onMonitorClick;
     private final Runnable onServerClick;
     private final Runnable onKeroroClick;
+    private final Runnable onMusicBoxClick;
+    private final Runnable onMusicStopClick;
+    private boolean run = true;
     private AudioManager audioManager;
 
-    public RoomObjectsLayer(Runnable onMonitorClick ,Runnable onServerClick, Runnable onKeroroClick) {
+    public RoomObjectsLayer(Runnable onMonitorClick ,Runnable onServerClick, Runnable onKeroroClick, Runnable onMusicBoxClick, Runnable onMusicStopClick) {
         this.onMonitorClick = onMonitorClick;
         this.onServerClick = onServerClick;
         this.monitorLayer = createMonitorLayer();
@@ -27,8 +33,90 @@ public class RoomObjectsLayer {
         this.serverLayer = createServerLayer();
         this.keroroLayer = createKeroroLayer();
         this.onKeroroClick = onKeroroClick;
+        this.onMusicBoxClick = onMusicBoxClick;
+        this.musicBoxLayer = createMusicBoxLayer();
+        this.musicStopLayer = createMusicStopLayer();
+        this.onMusicStopClick = onMusicStopClick;
         this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
+
+    private synchronized Pane createMusicBoxLayer() {
+        Pane musicBoxLayer = new Pane();
+        musicBoxLayer.setPrefWidth(28);
+        musicBoxLayer.setPrefHeight(28);
+        musicBoxLayer.setScaleX(3);
+        musicBoxLayer.setScaleY(3);
+        musicBoxLayer.setTranslateX(155);
+        musicBoxLayer.setTranslateY(249);
+
+        if (!run) {
+            musicBoxLayer.setVisible(false);
+        }
+
+        String normalStyle = ("""
+            -fx-background-image: url('/images/Object/Musicbox.gif');
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat;
+            -fx-background-position: center;
+        """);
+
+        String hoverStyle = ("""
+            -fx-background-image: url('/images/Object/Musicbox.gif');
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat;
+            -fx-background-position: center;
+            -fx-effect: dropshadow(gaussian, #07edf5, 10, 0.1, 0, 0);
+        """);
+
+        musicBoxLayer.setStyle(normalStyle);
+        musicBoxLayer.setOnMouseEntered(event -> {
+            musicBoxLayer.setStyle(hoverStyle);
+        });
+        musicBoxLayer.setOnMouseExited(event -> {musicBoxLayer.setStyle(normalStyle);});
+
+        musicBoxLayer.setOnMouseClicked((MouseEvent e) -> onMusicBoxClick.run());
+        return musicBoxLayer;
+
+    }
+
+    private synchronized Pane createMusicStopLayer() {
+        Pane musicStopLayer = new Pane();
+        musicStopLayer.setPrefWidth(28);
+        musicStopLayer.setPrefHeight(28);
+        musicStopLayer.setScaleX(3);
+        musicStopLayer.setScaleY(3);
+        musicStopLayer.setTranslateX(155);
+        musicStopLayer.setTranslateY(249);
+        if (run) {
+            musicStopLayer.setVisible(false);
+        }
+
+        String normalStyle = ("""
+            -fx-background-image: url('/images/Object/Musicbox.png');
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat;
+            -fx-background-position: center;
+        """);
+
+        String hoverStyle = ("""
+            -fx-background-image: url('/images/Object/Musicbox.png');
+            -fx-background-size: contain;
+            -fx-background-repeat: no-repeat;
+            -fx-background-position: center;
+            -fx-effect: dropshadow(gaussian, #07edf5, 10, 0.1, 0, 0);
+        """);
+
+        musicStopLayer.setStyle(normalStyle);
+        musicStopLayer.setOnMouseEntered(event -> {
+            musicStopLayer.setStyle(hoverStyle);
+        });
+        musicStopLayer.setOnMouseExited(event -> {musicStopLayer.setStyle(normalStyle);});
+
+        musicStopLayer.setOnMouseClicked((MouseEvent e) -> onMusicStopClick.run());
+        return musicStopLayer;
+
+    }
+
 
     private synchronized Pane createKeroroLayer() {
         Pane keroroLayer = new Pane();
@@ -175,4 +263,16 @@ public class RoomObjectsLayer {
     }
 
     public Pane getKeroroLayer() {return keroroLayer;}
+
+    public Pane getMusicBoxLayer() {return musicBoxLayer;}
+
+    public Pane getMusicStopLayer() {return musicStopLayer;}
+
+    public boolean getRun() {
+        return run;
+    }
+
+    public void setRun(boolean run) {
+        this.run = run;
+    }
 }
