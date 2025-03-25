@@ -72,8 +72,6 @@ public class ResourceManager implements Serializable {
     private ResourceManager() {
         this.company = new Company();
         this.audioManager = new AudioManager();
-        this.requestManager = new RequestManager(this.company);
-        this.skillPointsSystem = new SkillPointsSystem(this.company);
         this.rack = new Rack(10, 3); // สร้าง Rack เริ่มต้นใน ResourceManager
 
         this.gameTimeController = new GameTimeController(this.company,
@@ -93,7 +91,11 @@ public class ResourceManager implements Serializable {
     }
 
     private void initiaizeSkillPointsSystem() {
-        this.skillPointsSystem = new SkillPointsSystem(this.company);
+        if (skillPointsSystem == null) { this.skillPointsSystem = new SkillPointsSystem(this.company);}
+    }
+
+    private void initiaizeRequestManager() {
+        if (requestManager == null) { this.requestManager = new RequestManager(this.company);}
     }
 
     // Lazy initialization for notification components
@@ -110,6 +112,7 @@ public class ResourceManager implements Serializable {
             this.centerNotificationView.setAudioManager(this.audioManager);
             this.centerNotificationController = new CenterNotificationController(centerNotificationModel, centerNotificationView);
         }
+
         if (mouseNotificationModel == null) {
             this.mouseNotificationModel = new MouseNotificationModel();
             this.mouseNotificationView = new MouseNotificationView();
@@ -265,6 +268,7 @@ public class ResourceManager implements Serializable {
     }
 
     public RequestManager getRequestManager() {
+        initiaizeRequestManager();
         return requestManager;
     }
 
