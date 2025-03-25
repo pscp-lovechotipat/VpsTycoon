@@ -103,11 +103,13 @@ public class ResourceManager implements Serializable {
         if (centerNotificationModel == null) {
             this.centerNotificationModel = new CenterNotificationModel();
             this.centerNotificationView = new CenterNotificationView();
+            this.centerNotificationView.setAudioManager(this.audioManager);
             this.centerNotificationController = new CenterNotificationController(centerNotificationModel, centerNotificationView);
         }
         if (mouseNotificationModel == null) {
             this.mouseNotificationModel = new MouseNotificationModel();
             this.mouseNotificationView = new MouseNotificationView();
+            this.mouseNotificationView.setAudioManager(this.audioManager);
             this.mouseNotificationController = new MouseNotificationController(mouseNotificationModel, mouseNotificationView);
         }
     }

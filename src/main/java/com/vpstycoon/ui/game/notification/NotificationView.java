@@ -15,6 +15,7 @@ import javafx.util.Duration;
 
 public class NotificationView extends VBox {
     private AudioManager audioManager;
+
     public NotificationView() {
         setSpacing(10); // ระยะห่างระหว่างการแจ้งเตือน
         setPadding(new Insets(50)); // ขอบรอบนอก

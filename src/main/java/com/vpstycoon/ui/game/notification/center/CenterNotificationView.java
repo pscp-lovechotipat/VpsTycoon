@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game.notification.center;
 
 import com.vpstycoon.FontLoader;
+import com.vpstycoon.audio.AudioManager;
 import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,12 +16,17 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 public class CenterNotificationView extends StackPane {
+    private AudioManager audioManager;
     private CenterNotificationModel model;
     private StackPane currentOverlay;
 
     public CenterNotificationView() {
         setAlignment(Pos.CENTER);
         setPickOnBounds(false);
+    }
+
+    public void setAudioManager(AudioManager audioManager) {
+        this.audioManager = audioManager;
     }
 
     public void setModel(CenterNotificationModel model) {

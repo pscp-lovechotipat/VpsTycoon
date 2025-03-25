@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.game.notification.onMouse;
 
+import com.vpstycoon.audio.AudioManager;
 import javafx.animation.PauseTransition;
 import javafx.animation.TranslateTransition;
 import javafx.scene.control.Label;
@@ -9,8 +10,13 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 public class MouseNotificationView extends Pane {
+    private AudioManager audioManager;
     public MouseNotificationView() {
         setMouseTransparent(true);
+    }
+
+    public void setAudioManager(AudioManager audioManager) {
+        this.audioManager = audioManager;
     }
 
     public void addNotificationPane(String content, double mouseX, double mouseY) {
