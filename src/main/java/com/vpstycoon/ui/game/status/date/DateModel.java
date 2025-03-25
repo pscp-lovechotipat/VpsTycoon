@@ -1,5 +1,7 @@
 package com.vpstycoon.ui.game.status.date;
 
+import com.vpstycoon.ui.game.GameplayContentPane;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -10,11 +12,15 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class DateModel {
+    private final GameplayContentPane parent;
     private final ObjectProperty<LocalDateTime> date = new SimpleObjectProperty<>();
     private final StringProperty timeRemaining = new SimpleStringProperty();
+    private int lastMonth = -1; // เก็บเดือนก่อนหน้า
 
-    public DateModel(LocalDateTime initialDate) {
+    public DateModel(LocalDateTime initialDate, GameplayContentPane parent) {
+        this.parent = parent;
         this.date.set(initialDate);
+        this.lastMonth = initialDate.getMonthValue();
         updateTimeRemaining();
     }
 
@@ -23,6 +29,17 @@ public class DateModel {
     }
 
     public void setDate(LocalDateTime date) {
+        int currentMonth = date.getMonthValue();
+
+        // ตรวจสอบว่าเดือนในเกมมีการเปลี่ยนแปลง
+        if  (currentMonth != lastMonth && lastMonth != -1)  {
+            System.out.println("Next Month");
+            Platform.runLater(() ->
+                    parent.pushCenterNotification("NEXT MONTH", "Welcome to new month")
+            );
+            lastMonth = currentMonth; // อัปเดตเดือนก่อนหน้า
+        }
+
         this.date.set(date);
         updateTimeRemaining();
     }

@@ -176,7 +176,7 @@ public class GameplayContentPane extends BorderPane {
         this.moneyUI = new MoneyUI(this, moneyModel);
         this.moneyController = new MoneyController(moneyModel, moneyUI);
 
-        this.dateModel = new DateModel(ResourceManager.getInstance().getCurrentState().getLocalDateTime());
+        this.dateModel = new DateModel(ResourceManager.getInstance().getCurrentState().getLocalDateTime(), this);
         this.dateView = new DateView(this, dateModel);
         this.dateController = new DateController(dateModel, dateView);
 
