@@ -6,8 +6,10 @@ import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.game.thread.GameEvent;
 import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.thread.GameTimeManager;
+import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.notification.NotificationController;
 import com.vpstycoon.ui.game.notification.NotificationModel;
 import com.vpstycoon.ui.game.notification.NotificationView;
@@ -67,6 +69,9 @@ public class ResourceManager implements Serializable {
     private MouseNotificationView mouseNotificationView;
     private MouseNotificationController mouseNotificationController;
 
+    private GameEvent gameEvent;
+    private GameplayContentPane gameplayContentPane;
+
     private boolean musicRunning = true;
 
     private ResourceManager() {
@@ -82,6 +87,14 @@ public class ResourceManager implements Serializable {
 
     public static ResourceManager getInstance() {
         return instance;
+    }
+
+    public void initializeGameEvent(GameplayContentPane pane) {
+        this.gameplayContentPane = pane;
+        if (gameEvent == null || !gameEvent.isRunning()) {
+            gameEvent = new GameEvent(gameplayContentPane, currentState);
+            new Thread(gameEvent).start();
+        }
     }
 
     private void initiaizeSkillPointsSystem() {
@@ -170,7 +183,10 @@ public class ResourceManager implements Serializable {
             this.currentState = newState;
             this.company = newState.getCompany();
             this.requestManager = new RequestManager(this.company);
-            this.rack = new Rack(10, 3); // รีเซ็ต Rack ถ้าไม่มี save
+            this.rack = new Rack(10, 3);
+            if (gameplayContentPane != null) {
+                initializeGameEvent(gameplayContentPane); // Start events for new game
+            }
             return newState;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(saveFile))) {
@@ -185,9 +201,10 @@ public class ResourceManager implements Serializable {
                     state.getLocalDateTime()
             );
             gameTimeController.getGameTimeManager().getGameTimeMs();
-            // หาก Rack ถูกเก็บใน GameState ด้วย จะต้องโหลดจาก state ด้วย
-            // ถ้าไม่เก็บใน state จะใช้ค่าเริ่มต้น
-            this.rack = new Rack(10, 3); // หรือโหลดจาก state ถ้ามี
+            this.rack = new Rack(10, 3);
+            if (gameplayContentPane != null) {
+                initializeGameEvent(gameplayContentPane); // Restart events after load
+            }
             return state;
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Failed to load game: " + e.getMessage());
@@ -197,6 +214,9 @@ public class ResourceManager implements Serializable {
             this.currentState = newState;
             this.company = newState.getCompany();
             this.rack = new Rack(10, 3);
+            if (gameplayContentPane != null) {
+                initializeGameEvent(gameplayContentPane); // Start events for new game
+            }
             return newState;
         }
     }
@@ -267,6 +287,10 @@ public class ResourceManager implements Serializable {
     public MouseNotificationController getMouseNotificationController() {
         initializeNotifications();
         return mouseNotificationController;
+    }
+
+    public GameEvent getGameEvent() {
+        return gameEvent;
     }
 
     // Getter และ Setter สำหรับ Rack

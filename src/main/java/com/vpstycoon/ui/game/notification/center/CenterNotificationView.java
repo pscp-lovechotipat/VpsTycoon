@@ -130,7 +130,7 @@ public class CenterNotificationView extends StackPane {
         contentLabel.setAlignment(Pos.CENTER);
 
         // Add elements
-        if (image != null) {
+        if (image != null) { // Check for null image
             ImageView imageView = new ImageView(image);
             imageView.setFitWidth(100);
             imageView.setPreserveRatio(true);
