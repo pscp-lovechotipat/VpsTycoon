@@ -395,7 +395,6 @@ public class GameplayContentPane extends BorderPane {
             roomObjects.getMusicStopLayer().setVisible(true);
             audioManager.pauseMusic();
             roomObjects.setRun(false);
-        System.out.println("Music Stop");
         }
 
     }
@@ -406,7 +405,6 @@ public class GameplayContentPane extends BorderPane {
             roomObjects.getMusicStopLayer().setVisible(false);
             audioManager.resumeMusic();
             roomObjects.setRun(true);
-            System.out.println("Music Run");
         }
     }
 

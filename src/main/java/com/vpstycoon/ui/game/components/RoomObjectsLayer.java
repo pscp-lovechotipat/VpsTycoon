@@ -22,8 +22,9 @@ public class RoomObjectsLayer {
     private final Runnable onKeroroClick;
     private final Runnable onMusicBoxClick;
     private final Runnable onMusicStopClick;
-    private boolean run = true;
     private AudioManager audioManager;
+    private ResourceManager resourceManager = ResourceManager.getInstance();
+    private boolean run = resourceManager.isMusicRunning();
 
     public RoomObjectsLayer(Runnable onMonitorClick ,Runnable onServerClick, Runnable onKeroroClick, Runnable onMusicBoxClick, Runnable onMusicStopClick) {
         this.onMonitorClick = onMonitorClick;
@@ -51,6 +52,7 @@ public class RoomObjectsLayer {
 
         if (!run) {
             musicBoxLayer.setVisible(false);
+            this.setRun(false);
         }
 
         String normalStyle = ("""
@@ -89,6 +91,7 @@ public class RoomObjectsLayer {
         musicStopLayer.setTranslateY(249);
         if (run) {
             musicStopLayer.setVisible(false);
+            this.setRun(true);
         }
 
         String normalStyle = ("""
@@ -274,5 +277,7 @@ public class RoomObjectsLayer {
 
     public void setRun(boolean run) {
         this.run = run;
+        resourceManager.setMusicRunning(run);
+        System.out.println("Music Run State: " + run);
     }
 }

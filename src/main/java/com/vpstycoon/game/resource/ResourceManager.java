@@ -46,6 +46,8 @@ public class ResourceManager implements Serializable {
 
     private SkillPointsSystem skillPointsSystem;
 
+    private boolean musicRunning = true;
+
     private ResourceManager() {
         this.company = new Company();
         this.audioManager = new AudioManager();
@@ -266,5 +268,13 @@ public class ResourceManager implements Serializable {
 
     public GameObject createGameObject(String id, String type, int gridX, int gridY) {
         return new GameObject(id, type, gridX, gridY);
+    }
+
+    public boolean isMusicRunning() {
+        return musicRunning;
+    }
+
+    public void setMusicRunning(boolean running) {
+        this.musicRunning = running;
     }
 }
