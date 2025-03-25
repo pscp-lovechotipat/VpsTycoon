@@ -35,7 +35,7 @@ public class DateModel {
         if  (currentMonth != lastMonth && lastMonth != -1)  {
             System.out.println("Next Month");
             Platform.runLater(() ->
-                    parent.pushCenterNotification("NEXT MONTH", "Welcome to new month")
+                    parent.pushCenterNotification("NEXT MONTH", "Welcome to new month", "/images/others/keroro_meme1.jpg")
             );
             lastMonth = currentMonth; // อัปเดตเดือนก่อนหน้า
         }
