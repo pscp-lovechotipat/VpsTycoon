@@ -1,5 +1,7 @@
 package com.vpstycoon.ui.game.status.date;
 
+import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
@@ -16,11 +18,13 @@ public class DateModel {
     private final ObjectProperty<LocalDateTime> date = new SimpleObjectProperty<>();
     private final StringProperty timeRemaining = new SimpleStringProperty();
     private int lastMonth = -1; // เก็บเดือนก่อนหน้า
+    private AudioManager audioManager;
 
     public DateModel(LocalDateTime initialDate, GameplayContentPane parent) {
         this.parent = parent;
         this.date.set(initialDate);
         this.lastMonth = initialDate.getMonthValue();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
         updateTimeRemaining();
     }
 
@@ -33,9 +37,10 @@ public class DateModel {
 
         // ตรวจสอบว่าเดือนในเกมมีการเปลี่ยนแปลง
         if  (currentMonth != lastMonth && lastMonth != -1)  {
+            audioManager.playSoundEffect("month.mp3");
             System.out.println("Next Month");
             Platform.runLater(() ->
-                    parent.pushCenterNotification("NEXT MONTH", "Welcome to new month", "/images/others/keroro_meme1.jpg")
+                    parent.pushCenterNotification("NEW MONTH!!", "Welcome to new month!", "/images/others/meme.gif")
             );
             lastMonth = currentMonth; // อัปเดตเดือนก่อนหน้า
         }
