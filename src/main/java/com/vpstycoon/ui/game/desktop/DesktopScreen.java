@@ -62,7 +62,7 @@ public class DesktopScreen extends StackPane {
     private void openChatWindow() {
         if (chatWindow == null) {
             // สร้าง ChatHistoryManager
-            ChatHistoryManager chatHistoryManager = new ChatHistoryManager();
+            ChatHistoryManager chatHistoryManager = ChatHistoryManager.getInstance();
 
             // สร้าง MessengerController และส่ง ChatHistoryManager เข้าไป
             chatController = new MessengerController(requestManager, vpsManager, company, chatHistoryManager,
