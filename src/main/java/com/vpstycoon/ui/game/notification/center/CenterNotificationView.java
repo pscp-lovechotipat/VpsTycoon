@@ -132,7 +132,7 @@ public class CenterNotificationView extends StackPane {
         // Add elements
         if (image != null) { // Check for null image
             ImageView imageView = new ImageView(image);
-            imageView.setFitWidth(100);
+            imageView.setFitWidth(300);
             imageView.setPreserveRatio(true);
             pane.getChildren().addAll(closePane, titleLabel, contentLabel, imageView);
         } else {

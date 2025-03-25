@@ -93,7 +93,9 @@ public class ResourceManager implements Serializable {
         this.gameplayContentPane = pane;
         if (gameEvent == null || !gameEvent.isRunning()) {
             gameEvent = new GameEvent(gameplayContentPane, currentState);
-            new Thread(gameEvent).start();
+            Thread eventThread = new Thread(gameEvent);
+            eventThread.setDaemon(true); // Set as daemon thread
+            eventThread.start();
         }
     }
 

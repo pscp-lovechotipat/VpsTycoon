@@ -54,29 +54,34 @@ public class GameEvent implements Runnable {
         long cost = event.calculateCost(random);
 
         String result;
+        String financialImpact = "";
         if (event == EventType.SPECIAL_EVENT) {
             // Positive event
             long bonus = Math.round(company.getMoney() * 0.1); // 10% bonus
             company.setMoney(company.getMoney() + bonus);
             result = "Gained $" + bonus + " from a special event!";
+            financialImpact = "Money Gained: $" + bonus;
         } else {
             // Negative event
             if (company.getMoney() >= cost) {
                 company.setMoney(company.getMoney() - cost);
                 result = "Lost $" + cost + " due to " + event.getDisplayName();
+                financialImpact = "Money Deducted: $" + cost;
             } else {
                 // Reduce rating if company can't afford the cost
                 double newRating = Math.max(1.0, company.getRating() - 0.5);
                 company.setRating(newRating);
                 result = "Could not afford $" + cost + ". Rating dropped to " + String.format("%.1f", newRating);
+                financialImpact = "Attempted Deduction: $" + cost + "\nRating Dropped to: " + String.format("%.1f", newRating);
             }
         }
 
         // Show notification
+        System.out.println("/images/notification/" + event.getDisplayName() + ".png");
         resourceManager.pushCenterNotification(
                 event.getDisplayName(),
-                event.getSolution() + "\n\n" + result,
-                "/images/" + event.getDisplayName().toLowerCase().replace(" ", "_") + ".png"
+                event.getSolution() + "\n\n" + result + "\n" + financialImpact,
+                "/images/notification/" + event.getDisplayName() + ".png"
         );
     }
 

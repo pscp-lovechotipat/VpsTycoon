@@ -49,7 +49,7 @@ public class CenterNotificationModel {
 
         public Image getImage() {
             String imagePath = image;
-            ImageIcon imageUrl = new ImageIcon(Objects.requireNonNull(getClass().getResource(ResourceManager.getImagePath("/notification/default.png"))));
+            URL imageUrl = ResourceManager.getResource(imagePath);
             return (imageUrl != null) ? new Image(String.valueOf(imageUrl)) : null;
         }
     }
