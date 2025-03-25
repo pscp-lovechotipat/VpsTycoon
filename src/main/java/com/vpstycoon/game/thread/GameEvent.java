@@ -78,6 +78,9 @@ public class GameEvent implements Runnable {
 
         // Show notification
         System.out.println("/images/notification/" + event.getDisplayName() + ".png");
+
+        ResourceManager.getInstance().getAudioManager().playSoundEffect("chime-alert.mp3");
+
         resourceManager.pushCenterNotification(
                 event.getDisplayName(),
                 event.getSolution() + "\n\n" + result + "\n" + financialImpact,
