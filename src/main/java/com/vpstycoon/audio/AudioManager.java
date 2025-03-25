@@ -16,6 +16,7 @@ public class AudioManager {
     private MediaPlayer musicPlayer;
     private double musicVolume = 0.5;
     private double sfxVolume = 0.5;
+    private boolean isMusicPaused = false;
 
     public AudioManager() {
         GameEventBus.getInstance().subscribe(
@@ -33,21 +34,48 @@ public class AudioManager {
         Platform.runLater(() -> {
             try {
                 if (musicPlayer != null) {
+                    if (musicPlayer.getMedia().getSource().endsWith(musicFile)) {
+                        if (isMusicPaused) {
+                            resumeMusic();
+                        }
+                        return;
+                    }
                     musicPlayer.stop();
+                    musicPlayer.dispose();
                 }
+
                 String resourcePath = ResourceManager.getMusicPath(musicFile);
                 URL resourceUrl = ResourceManager.getResource(resourcePath);
                 if (resourceUrl == null) {
                     throw new RuntimeException("Music file not found: " + resourcePath);
                 }
+
                 Media music = new Media(resourceUrl.toExternalForm());
                 musicPlayer = new MediaPlayer(music);
                 musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
                 musicPlayer.setVolume(musicVolume);
                 musicPlayer.play();
-                System.out.println("Playing music " + music);
+                isMusicPaused = false;
             } catch (Exception e) {
                 System.err.println("Failed to play music: " + e.getMessage());
+            }
+        });
+    }
+
+    public void pauseMusic() {
+        Platform.runLater(() -> {
+            if (musicPlayer != null && musicPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+                musicPlayer.pause();
+                isMusicPaused = true;
+            }
+        });
+    }
+
+    public void resumeMusic() {
+        Platform.runLater(() -> {
+            if (musicPlayer != null && isMusicPaused) {
+                musicPlayer.play();
+                isMusicPaused = false;
             }
         });
     }
@@ -119,4 +147,4 @@ public class AudioManager {
         activeSfxPlayers.clear();
         soundCache.clear();
     }
-} 
+}

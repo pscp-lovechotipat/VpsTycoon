@@ -54,14 +54,14 @@ public class RoomObjectsLayer {
         }
 
         String normalStyle = ("""
-            -fx-background-image: url('/images/Object/Musicbox.gif');
+            -fx-background-image: url('/images/Object/MusicboxOn.gif');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
         """);
 
         String hoverStyle = ("""
-            -fx-background-image: url('/images/Object/Musicbox.gif');
+            -fx-background-image: url('/images/Object/MusicboxOn.gif');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
@@ -92,14 +92,14 @@ public class RoomObjectsLayer {
         }
 
         String normalStyle = ("""
-            -fx-background-image: url('/images/Object/Musicbox.png');
+            -fx-background-image: url('/images/Object/MusicboxOff.png');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
         """);
 
         String hoverStyle = ("""
-            -fx-background-image: url('/images/Object/Musicbox.png');
+            -fx-background-image: url('/images/Object/MusicboxOff.png');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;

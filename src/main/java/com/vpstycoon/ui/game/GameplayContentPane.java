@@ -393,10 +393,10 @@ public class GameplayContentPane extends BorderPane {
         if (roomObjects.getRun()) {
             roomObjects.getMusicBoxLayer().setVisible(false);
             roomObjects.getMusicStopLayer().setVisible(true);
-            audioManager.dispose();
+            audioManager.pauseMusic();
             roomObjects.setRun(false);
+        System.out.println("Music Stop");
         }
-        System.out.println("Stop");
 
     }
 
@@ -404,8 +404,9 @@ public class GameplayContentPane extends BorderPane {
         if (!roomObjects.getRun()) {
             roomObjects.getMusicBoxLayer().setVisible(true);
             roomObjects.getMusicStopLayer().setVisible(false);
-            audioManager.playMusic("Buckshot_Roulette_OST.mp3");
+            audioManager.resumeMusic();
             roomObjects.setRun(true);
+            System.out.println("Music Run");
         }
     }
 
