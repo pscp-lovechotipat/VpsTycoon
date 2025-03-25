@@ -198,7 +198,7 @@ public class ResourceManager implements Serializable {
         centerNotificationController.push(title, content);
     }
 
-    public void pushCenterNotification(String title, String content, Image image) {
+    public void pushCenterNotification(String title, String content, String image) {
         initializeNotifications();
         centerNotificationController.push(title, content, image);
     }

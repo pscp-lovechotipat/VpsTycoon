@@ -306,7 +306,7 @@ public class GameplayContentPane extends BorderPane {
         resourceManager.pushCenterNotification(title, content);
     }
 
-    public void pushCenterNotification(String title, String content, Image image) {
+    public void pushCenterNotification(String title, String content, String image) {
         resourceManager.pushCenterNotification(title, content, image);
     }
 
