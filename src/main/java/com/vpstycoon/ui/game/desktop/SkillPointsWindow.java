@@ -16,6 +16,9 @@ public class SkillPointsWindow extends VBox {
     private Label availablePointsLabel;
 
     public SkillPointsWindow(SkillPointsSystem skillPointsSystem, Runnable onClose) {
+        if (skillPointsSystem == null) {
+            throw new IllegalArgumentException("SkillPointsSystem cannot be null");
+        }
         this.skillPointsSystem = skillPointsSystem;
         this.onClose = onClose;
 
@@ -53,21 +56,24 @@ public class SkillPointsWindow extends VBox {
         Label pointsTitle = new Label("Available Skill Points: ");
         pointsTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
-        availablePointsLabel = new Label(String.valueOf(skillPointsSystem.getAvailablePoints()));
+        availablePointsLabel = new Label();
+        availablePointsLabel.setText(String.valueOf(skillPointsSystem.getAvailablePoints()));
         availablePointsLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2980b9;");
 
         pointsBox.getChildren().addAll(pointsTitle, availablePointsLabel);
 
         // Scrollable Content
-        ScrollPane scrollPane = new ScrollPane();
+        ScrollPane scrollPane = (ScrollPane) getChildren().get(2);
         scrollPane.setFitToWidth(true);  // Makes content stretch to window width
         scrollPane.setStyle("-fx-background: #f5f6fa; -fx-border-color: transparent;"); // Match window background
 
-        VBox scrollContent = new VBox(15);
+        VBox scrollContent = (VBox) scrollPane.getContent();
         scrollContent.setPadding(new Insets(0, 15, 15, 15)); // Match original padding
 
         // Skills Section
-        VBox skillsContainer = new VBox(15);
+        VBox skillsContainer = (VBox) scrollContent.getChildren().get(0);
+
+        skillsContainer.getChildren().clear();
 
         // Add each skill type
         for (SkillType skillType : SkillType.values()) {

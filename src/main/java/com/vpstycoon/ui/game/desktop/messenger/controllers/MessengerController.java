@@ -69,7 +69,7 @@ public class MessengerController {
 
         this.vmProvisioningManager = new VMProvisioningManager(chatHistoryManager, chatAreaView, provisioningProgressBars);
         this.rentalManager = new RentalManager(chatHistoryManager, chatAreaView, company, gameTimeManager);
-        this.skillPointsManager = new SkillPointsManager(chatHistoryManager, chatAreaView);
+        this.skillPointsManager = new SkillPointsManager(chatHistoryManager, chatAreaView, ResourceManager.getInstance().getSkillPointsSystem());
 
         setupListeners();
         updateRequestList();
@@ -199,9 +199,9 @@ public class MessengerController {
         request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM assigned successfully", new HashMap<>()));
         chatAreaView.addSystemMessage("VM assigned successfully");
+        skillPointsManager.awardSkillPoints(request, 0.2);
         updateRequestList();
         updateDashboard();
-        skillPointsManager.awardSkillPoints(request, 0.2);
     }
 
     private void archiveRequest(CustomerRequest selected) {

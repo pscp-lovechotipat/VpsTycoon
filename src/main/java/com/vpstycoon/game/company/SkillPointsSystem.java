@@ -1,5 +1,7 @@
 package com.vpstycoon.game.company;
 
+import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,11 +52,19 @@ public class SkillPointsSystem implements Serializable {
 
     public SkillPointsSystem(Company company) {
         this.company = company;
+        initializeSkillLevels(); // เรียกเมธอดแยกเพื่อกำหนดค่า
+    }
 
-        // Initialize all skills at level 1
+    private void initializeSkillLevels() {
         for (SkillType skill : SkillType.values()) {
-            skillLevels.put(skill, 1);
+            skillLevels.put(skill, 1); // Initialize all skills at level 1
         }
+    }
+
+    @Serial
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        initializeSkillLevels(); // กำหนดค่าใหม่หลังโหลดข้อมูล
     }
 
     /**
@@ -79,7 +89,7 @@ public class SkillPointsSystem implements Serializable {
      * @return Current level of the skill
      */
     public int getSkillLevel(SkillType skillType) {
-        return skillLevels.getOrDefault(skillType, 0);
+        return skillLevels.getOrDefault(skillType, 1); // ค่าเริ่มต้นเป็น 1 หากไม่มีข้อมูล
     }
     
     /**
