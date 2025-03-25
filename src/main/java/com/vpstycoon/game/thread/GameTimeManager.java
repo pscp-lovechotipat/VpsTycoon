@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GameTimeManager {
-    public static final long GAME_DAY_MS = 333;    // 30 วินาทีจริง = 1 วันในเกม
+    public static final long GAME_DAY_MS = 30_000;    // 30 วินาทีจริง = 1 วันในเกม
     public static final long GAME_WEEK_MS = GAME_DAY_MS * 7;
     public static final long GAME_MONTH_MS = GAME_DAY_MS * 30;
     public static final long GAME_YEAR_MS = GAME_MONTH_MS * 12;
