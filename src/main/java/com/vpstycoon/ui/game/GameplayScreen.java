@@ -122,14 +122,9 @@ public class GameplayScreen extends GameScreen {
         state.setGameObjects(gameObjects);
 
         RequestGenerator requestGenerator = new RequestGenerator(requestManager);
-        this.gameTimeController = new GameTimeController(
-                company,
-                requestManager,
-                ResourceManager.getInstance().getRack(), // ใช้ Rack จาก ResourceManager
-                ResourceManager.getInstance().getCurrentState().getLocalDateTime()
-        );
 
         requestGenerator.start();
+        gameTimeController = ResourceManager.getInstance().getGameTimeController();
         gameTimeController.startTime();
     }
 
@@ -144,8 +139,7 @@ public class GameplayScreen extends GameScreen {
                 this.gameFlowManager,
                 this.debugOverlayManager,
                 this.company,
-                ResourceManager.getInstance().getRack(),
-                gameTimeController
+                ResourceManager.getInstance().getRack()
         );
     }
 }

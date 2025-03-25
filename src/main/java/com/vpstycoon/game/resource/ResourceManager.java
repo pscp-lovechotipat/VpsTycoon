@@ -6,6 +6,7 @@ import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.ui.game.rack.Rack;
 import javafx.scene.image.Image;
@@ -22,7 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ResourceManager implements Serializable {
     private static final long serialVersionUID = 1L;
+
     private static final ResourceManager instance = new ResourceManager();
+
     private static final String IMAGES_PATH = "/images/";
     private static final String SOUNDS_PATH = "/sounds/";
     private static final String MUSIC_PATH = "/music/";
@@ -39,7 +42,8 @@ public class ResourceManager implements Serializable {
 
     private RequestManager requestManager;
     private final AudioManager audioManager;
-    private GameTimeManager gameTimeManager;
+    private GameTimeController gameTimeController;
+
     private SkillPointsSystem skillPointsSystem;
 
     private ResourceManager() {
@@ -49,8 +53,7 @@ public class ResourceManager implements Serializable {
         this.skillPointsSystem = new SkillPointsSystem(this.company);
         this.rack = new Rack(10, 3); // สร้าง Rack เริ่มต้นใน ResourceManager
 
-        this.gameTimeManager = new GameTimeManager(
-                this.company,
+        this.gameTimeController = new GameTimeController(this.company,
                 this.requestManager,
                 this.rack,
                 LocalDateTime.of(2000, 1, 1, 0, 0, 0)
@@ -81,8 +84,8 @@ public class ResourceManager implements Serializable {
     }
 
     public void saveGameState(GameState state) {
-        state.setLocalDateTime(gameTimeManager.getGameDateTime());
-        state.setGameTimeMs(gameTimeManager.getGameTimeMs());
+        state.setLocalDateTime(gameTimeController.getGameTimeManager().getGameDateTime());
+        state.setGameTimeMs(gameTimeController.getGameTimeManager().getGameTimeMs());
 
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
             oos.writeObject(state);
@@ -113,13 +116,12 @@ public class ResourceManager implements Serializable {
             this.currentState = state;
             this.company = state.getCompany();
             this.requestManager = new RequestManager(this.company);
-            this.gameTimeManager = new GameTimeManager(
-                    this.company,
+            this.gameTimeController = new GameTimeController(this.company,
                     this.requestManager,
                     this.rack,
                     state.getLocalDateTime()
             );
-            this.gameTimeManager.getGameTimeMs();
+            gameTimeController.getGameTimeManager().getGameTimeMs();
             // หาก Rack ถูกเก็บใน GameState ด้วย จะต้องโหลดจาก state ด้วย
             // ถ้าไม่เก็บใน state จะใช้ค่าเริ่มต้น
             this.rack = new Rack(10, 3); // หรือโหลดจาก state ถ้ามี
@@ -158,7 +160,11 @@ public class ResourceManager implements Serializable {
     }
 
     public GameTimeManager getGameTimeManager() {
-        return gameTimeManager;
+        return gameTimeController.getGameTimeManager();
+    }
+
+    public GameTimeController getGameTimeController() {
+        return gameTimeController;
     }
 
     // เมธอดอื่นๆ คงเดิม

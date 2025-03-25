@@ -127,8 +127,7 @@ public class GameplayContentPane extends BorderPane {
     public GameplayContentPane(
             List<GameObject> gameObjects, Navigator navigator, ChatSystem chatSystem,
             RequestManager requestManager, VPSManager vpsManager, GameFlowManager gameFlowManager,
-            DebugOverlayManager debugOverlayManager, Company company, Rack rack,
-            GameTimeController gameTimeController) {
+            DebugOverlayManager debugOverlayManager, Company company, Rack rack) {
         this.gameObjects = gameObjects;
         this.navigator = navigator;
         this.chatSystem = chatSystem;
@@ -140,7 +139,7 @@ public class GameplayContentPane extends BorderPane {
         this.debugOverlayManager = debugOverlayManager;
         this.company = company;
 
-        this.gameTimeController = gameTimeController;
+        this.gameTimeController = ResourceManager.getInstance().getGameTimeController();
 
         this.rackManagementUI = new RackManagementUI(this);
         this.vpsCreationUI = new VPSCreationUI(this);

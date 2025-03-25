@@ -45,7 +45,7 @@ public class DateView extends VBox {
         dateValue.setFont(font);
 
         // Format LocalDateTime to a string for display
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         dateValue.textProperty().bind(new StringBinding() {
             {
                 super.bind(model.dateProperty());
