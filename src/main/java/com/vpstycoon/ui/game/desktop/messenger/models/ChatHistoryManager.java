@@ -9,11 +9,19 @@ import java.util.List;
 import java.util.Map;
 
 public class ChatHistoryManager {
+    private static ChatHistoryManager instance;
     private Map<CustomerRequest, List<ChatMessage>> customerChatHistory;
     private static final String CHAT_HISTORY_FILE = "chat_history.dat";
 
     public ChatHistoryManager() {
         customerChatHistory = loadChatHistory();
+    }
+
+    public static ChatHistoryManager getInstance() {
+        if (instance == null) {
+            instance = new ChatHistoryManager();
+        }
+        return instance;
     }
 
     public List<ChatMessage> getChatHistory(CustomerRequest request) {
