@@ -103,7 +103,9 @@ public class ResumeScreen extends StackPane {
         MenuButton mainMenuButton = new MenuButton(MenuButtonType.MAIN_MENU);
         mainMenuButton.setOnAction(e ->{
             audioManager.playSoundEffect("click.wav");
+            audioManager.resumeMusic();
             navigator.showMainMenu();
+
         });
         styleButton(mainMenuButton);
 
