@@ -31,7 +31,7 @@ public class VPSInventoryUI {
         // Create main container
         BorderPane inventoryPane = new BorderPane();
         inventoryPane.setPrefSize(800, 600);
-        inventoryPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2E3B4E, #1A252F); -fx-padding: 20px;");
+        inventoryPane.setStyle("-fx-background-color: linear-gradient(to bottom, #1a0033, #000022); -fx-padding: 20px;");
         
         // Hide the menu bars
         parent.getMenuBar().setVisible(false);
@@ -40,10 +40,13 @@ public class VPSInventoryUI {
         // Create title bar
         HBox titleBar = new HBox(20);
         titleBar.setAlignment(Pos.CENTER_LEFT);
-        titleBar.setStyle("-fx-background-color: #37474F; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
+        titleBar.setStyle("-fx-background-color: #2a0a3a; -fx-padding: 10px; -fx-background-radius: 5px; " +
+                          "-fx-border-color: #8a2be2; -fx-border-width: 2px; " +
+                          "-fx-effect: dropshadow(gaussian, rgba(110,0,220,0.4), 10, 0, 0, 5);");
         
-        Label titleLabel = new Label("Server Inventory");
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;");
+        Label titleLabel = new Label("SERVER INVENTORY");
+        titleLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 28px; -fx-font-weight: bold; " +
+                           "-fx-effect: dropshadow(gaussian, #9370db, 2, 0.3, 0, 0);");
         
         Button backButton = UIUtils.createModernButton("Back", "#F44336");
         backButton.setOnAction(e -> {
@@ -59,14 +62,16 @@ public class VPSInventoryUI {
         // Inventory stats
         HBox statsBox = new HBox(20);
         statsBox.setAlignment(Pos.CENTER_LEFT);
-        statsBox.setPadding(new Insets(10));
-        statsBox.setStyle("-fx-background-color: #37474F; -fx-background-radius: 5px;");
+        statsBox.setPadding(new Insets(15));
+        statsBox.setStyle("-fx-background-color: #2a0a3a; -fx-background-radius: 5px; " +
+                         "-fx-border-color: #8a2be2; -fx-border-width: 1px; " +
+                         "-fx-effect: dropshadow(gaussian, rgba(110,0,220,0.3), 5, 0, 0, 2);");
         
-        Label inventoryCountLabel = new Label("Server in Inventory: " + parent.getVpsInventory().getSize());
-        inventoryCountLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        Label inventoryCountLabel = new Label("SERVERS IN INVENTORY: " + parent.getVpsInventory().getSize());
+        inventoryCountLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 16px; -fx-font-weight: bold;");
 
-        Label rackStatsLabel = new Label("Rack Slots: " + parent.getRack().getOccupiedSlotUnits() + "/" + parent.getRack().getMaxSlotUnits());
-        rackStatsLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+        Label rackStatsLabel = new Label("RACK SLOTS: " + parent.getRack().getOccupiedSlotUnits() + "/" + parent.getRack().getMaxSlotUnits());
+        rackStatsLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 16px; -fx-font-weight: bold;");
         
         statsBox.getChildren().addAll(inventoryCountLabel, rackStatsLabel);
         
@@ -76,7 +81,8 @@ public class VPSInventoryUI {
         // Add to scroll pane for large inventories
         ScrollPane scrollPane = new ScrollPane(inventoryList);
         scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; " +
+                           "-fx-control-inner-background: #1a0033; -fx-border-color: #8a2be2; -fx-border-width: 1px;");
         
         // Add components to content box
         contentBox.getChildren().addAll(statsBox, scrollPane);
@@ -102,32 +108,33 @@ public class VPSInventoryUI {
         Map<String, VPSOptimization> inventory = parent.getVpsInventory().getInventoryMap();
         
         if (inventory.isEmpty()) {
-            Label emptyLabel = new Label("Your inventory is empty. Purchase Server servers from the market.");
-            emptyLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
+            Label emptyLabel = new Label("YOUR INVENTORY IS EMPTY. PURCHASE SERVERS FROM THE MARKET.");
+            emptyLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 16px; -fx-font-style: italic;");
             inventoryList.getChildren().add(emptyLabel);
             return inventoryList;
         }
         
         // Add header
         HBox header = new HBox(20);
-        header.setPadding(new Insets(5, 10, 5, 10));
-        header.setStyle("-fx-background-color: #2c3e50; -fx-background-radius: 5px;");
+        header.setPadding(new Insets(10, 10, 10, 10));
+        header.setStyle("-fx-background-color: #3a1a4a; -fx-background-radius: 5px; " +
+                       "-fx-border-color: #b041ff; -fx-border-width: 1px;");
         
-        Label idHeader = new Label("Server ID");
+        Label idHeader = new Label("SERVER ID");
         idHeader.setMinWidth(150);
-        idHeader.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        idHeader.setStyle("-fx-text-fill: #f0d0ff; -fx-font-weight: bold; -fx-font-size: 14px;");
         
-        Label specsHeader = new Label("Specifications");
+        Label specsHeader = new Label("SPECIFICATIONS");
         specsHeader.setMinWidth(200);
-        specsHeader.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        specsHeader.setStyle("-fx-text-fill: #f0d0ff; -fx-font-weight: bold; -fx-font-size: 14px;");
         
-        Label sizeHeader = new Label("Size");
+        Label sizeHeader = new Label("SIZE");
         sizeHeader.setMinWidth(80);
-        sizeHeader.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        sizeHeader.setStyle("-fx-text-fill: #f0d0ff; -fx-font-weight: bold; -fx-font-size: 14px;");
         
-        Label actionsHeader = new Label("Actions");
+        Label actionsHeader = new Label("ACTIONS");
         actionsHeader.setMinWidth(150);
-        actionsHeader.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        actionsHeader.setStyle("-fx-text-fill: #f0d0ff; -fx-font-weight: bold; -fx-font-size: 14px;");
         
         header.getChildren().addAll(idHeader, specsHeader, sizeHeader, actionsHeader);
         inventoryList.getChildren().add(header);
@@ -153,12 +160,25 @@ public class VPSInventoryUI {
     private HBox createInventoryItemRow(String vpsId, VPSOptimization vps) {
         HBox itemRow = new HBox(20);
         itemRow.setPadding(new Insets(10));
-        itemRow.setStyle("-fx-background-color: #34495e; -fx-background-radius: 5px;");
+        itemRow.setStyle("-fx-background-color: #2a0a3a; -fx-background-radius: 5px; " +
+                        "-fx-border-color: #8a2be2; -fx-border-width: 1px;");
+        
+        // Add hover effect
+        itemRow.setOnMouseEntered(e -> 
+            itemRow.setStyle("-fx-background-color: #3a1a4a; -fx-background-radius: 5px; " +
+                           "-fx-border-color: #b041ff; -fx-border-width: 2px; " +
+                           "-fx-effect: dropshadow(gaussian, #b041ff, 10, 0.3, 0, 0);")
+        );
+        
+        itemRow.setOnMouseExited(e -> 
+            itemRow.setStyle("-fx-background-color: #2a0a3a; -fx-background-radius: 5px; " +
+                           "-fx-border-color: #8a2be2; -fx-border-width: 1px;")
+        );
         
         // VPS ID
         Label idLabel = new Label(vpsId);
         idLabel.setMinWidth(150);
-        idLabel.setStyle("-fx-text-fill: white;");
+        idLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-weight: bold;");
         
         // Specifications
         Label specsLabel = new Label(String.format(
@@ -166,12 +186,12 @@ public class VPSInventoryUI {
                 vps.getVCPUs(), vps.getRamInGB(), vps.getDiskInGB()
         ));
         specsLabel.setMinWidth(200);
-        specsLabel.setStyle("-fx-text-fill: white;");
+        specsLabel.setStyle("-fx-text-fill: #e0b0ff;");
         
         // Size
         Label sizeLabel = new Label(vps.getSize().getDisplayName() + " (" + vps.getSlotsRequired() + " slots)");
         sizeLabel.setMinWidth(80);
-        sizeLabel.setStyle("-fx-text-fill: white;");
+        sizeLabel.setStyle("-fx-text-fill: #e0b0ff;");
         
         // Actions
         HBox actionsBox = new HBox(10);
@@ -228,33 +248,38 @@ public class VPSInventoryUI {
         // Create a popup with VPS details
         BorderPane detailsPane = new BorderPane();
         detailsPane.setPrefSize(400, 300);
-        detailsPane.setStyle("-fx-background-color: #2c3e50; -fx-padding: 20px; -fx-background-radius: 10px;");
+        detailsPane.setStyle("-fx-background-color: linear-gradient(to bottom, #1a0033, #000022); " +
+                           "-fx-padding: 20px; -fx-background-radius: 10px; -fx-border-color: #8a2be2; " +
+                           "-fx-border-width: 2px; -fx-effect: dropshadow(gaussian, rgba(110,0,220,0.4), 10, 0, 0, 5);");
         
         // Title
-        Label titleLabel = new Label("Server Details: " + vpsId);
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+        Label titleLabel = new Label("SERVER DETAILS: " + vpsId);
+        titleLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 20px; -fx-font-weight: bold; " +
+                          "-fx-effect: dropshadow(gaussian, #9370db, 2, 0.3, 0, 0);");
         
         // Details
         VBox detailsBox = new VBox(10);
         detailsBox.setPadding(new Insets(20, 0, 20, 0));
+        detailsBox.setStyle("-fx-background-color: #2a0a3a; -fx-padding: 15px; -fx-background-radius: 5px; " +
+                          "-fx-border-color: #8a2be2; -fx-border-width: 1px;");
         
         Label vcpuLabel = new Label("vCPUs: " + vps.getVCPUs());
-        vcpuLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        vcpuLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 14px;");
         
         Label ramLabel = new Label("RAM: " + vps.getRamInGB() + " GB");
-        ramLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        ramLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 14px;");
         
         Label diskLabel = new Label("Disk: " + vps.getDiskInGB() + " GB");
-        diskLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        diskLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 14px;");
         
         Label sizeLabel = new Label("Size: " + vps.getSize().getDisplayName());
-        sizeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        sizeLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 14px;");
         
         Label slotsLabel = new Label("Slots Required: " + vps.getSlotsRequired());
-        slotsLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        slotsLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 14px;");
         
         Label statusLabel = new Label("Status: " + vps.getStatus());
-        statusLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        statusLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 14px;");
         
         detailsBox.getChildren().addAll(vcpuLabel, ramLabel, diskLabel, sizeLabel, slotsLabel, statusLabel);
         
@@ -267,6 +292,8 @@ public class VPSInventoryUI {
         detailsPane.setCenter(detailsBox);
         detailsPane.setBottom(closeButton);
         BorderPane.setAlignment(closeButton, Pos.CENTER);
+        BorderPane.setMargin(titleLabel, new Insets(0, 0, 10, 0));
+        BorderPane.setMargin(closeButton, new Insets(10, 0, 0, 0));
         
         // Add to game area
         parent.getGameArea().getChildren().clear();
