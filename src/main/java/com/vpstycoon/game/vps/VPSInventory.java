@@ -25,6 +25,7 @@ public class VPSInventory implements Serializable {
      * @param vps The VPS object
      */
     public void addVPS(String vpsId, VPSOptimization vps) {
+        vps.setVpsId(vpsId);  // Set the ID in the VPS object itself
         inventory.put(vpsId, vps);
     }
     

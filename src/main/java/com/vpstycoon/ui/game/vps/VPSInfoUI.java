@@ -11,6 +11,7 @@ import javafx.scene.control.Separator;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import java.util.Map;
 
 public class VPSInfoUI {
     private final GameplayContentPane parent;
@@ -50,8 +51,8 @@ public class VPSInfoUI {
                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);
                         """);
 
-        String vpsId = parent.getVpsManager().getVPSMap().keySet().stream()
-                .filter(id -> parent.getVpsManager().getVPS(id) == vps).findFirst().orElse("Unknown");
+        // Use the VPS ID directly from the VPS object
+        String vpsId = vps.getVpsId();
 
         Label titleLabel = new Label("Server Details: " + vpsId);
         titleLabel.setStyle("""

@@ -829,7 +829,7 @@ public class RackManagementUI extends VBox {
                 }
             });
             
-            Button marketButton = createPixelButton("PURCHASE SERVERS", "#6a00ff");
+            Button marketButton = createPixelButton("MARKET", "#6a00ff");
             marketButton.setMaxWidth(Double.MAX_VALUE);
             marketButton.setOnAction(e -> {
                 parent.returnToRoom();
@@ -1290,6 +1290,15 @@ public class RackManagementUI extends VBox {
             });
 
             infoPane.getChildren().addAll(infoTitle, statusPanel, inventoryButton, upgradeButton);
+
+            // Add Market button for all cases, not just empty racks
+            Button marketButton = createPixelButton("MARKET", "#6a00ff");
+            marketButton.setMaxWidth(Double.MAX_VALUE);
+            marketButton.setOnAction(e -> {
+                parent.returnToRoom();
+                parent.openMarket();
+            });
+            infoPane.getChildren().add(marketButton);
 
             // Add uninstalled servers section if there are any in inventory
             List<VPSOptimization> uninstalledServers = parent.getVpsInventory().getAllVPS();

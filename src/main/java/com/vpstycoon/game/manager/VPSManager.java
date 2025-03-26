@@ -12,6 +12,16 @@ public class VPSManager {
         // Placeholder for creation logic (e.g., validation)
         System.out.println("Server created with ID: " + id);
     }
+    
+    /**
+     * Add a VPS to the manager with the given ID
+     * @param id The ID to use for the VPS
+     * @param vps The VPS object to add
+     */
+    public void addVPS(String id, VPSOptimization vps) {
+        vps.setVpsId(id);  // Set the ID in the VPS object itself
+        vpsMap.put(id, vps);
+    }
 
     public VPSOptimization getVPS(String id) {
         return vpsMap.get(id);

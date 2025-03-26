@@ -35,12 +35,24 @@ public class VMCreationUI {
                 .filter(id -> parent.getVpsManager().getVPS(id) == vps)
                 .findFirst()
                 .orElse(null);
-        if (vpsId == null) return null;
+        if (vpsId == null) {
+            // Fallback: If VPS ID can't be found, generate a default IP
+            return "10.0.0.2";
+        }
 
         // Extract the base IP (before the name suffix)
-        String vpsIp = vpsId.split("-")[0];
+        String vpsIp;
+        if (vpsId.contains("-")) {
+            vpsIp = vpsId.split("-")[0];
+        } else {
+            vpsIp = vpsId; // No dash in the ID, use as is
+        }
+        
         String[] ipParts = vpsIp.split("\\.");
-        if (ipParts.length != 4) return null;
+        if (ipParts.length != 4) {
+            // Fallback: If IP format is invalid, generate a default IP
+            return "10.0.0.2";
+        }
 
         // Define the subnet range (e.g., 103.216.158.2 to 103.216.158.255)
         String baseSubnet = ipParts[0] + "." + ipParts[1] + "." + ipParts[2] + ".";
@@ -50,7 +62,7 @@ public class VMCreationUI {
         // Get existing VM IPs
         List<String> usedIps = vps.getVms().stream()
                 .map(VPSOptimization.VM::getIp)
-                .filter(ip -> ip.startsWith(baseSubnet))
+                .filter(ip -> ip != null && ip.startsWith(baseSubnet))
                 .collect(Collectors.toList());
 
         // Find the next available IP
@@ -60,7 +72,9 @@ public class VMCreationUI {
                 return candidateIp;
             }
         }
-        return null; // No available IPs in the range
+        
+        // If all IPs in the subnet are used, return a fallback IP from another subnet
+        return "192.168." + (ipParts[2].equals("0") ? "1" : "0") + ".2";
     }
 
     public void openCreateVMPage(VPSOptimization vps) {

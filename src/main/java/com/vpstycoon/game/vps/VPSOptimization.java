@@ -13,6 +13,9 @@ public class VPSOptimization extends GameObject implements Serializable {
     private static final long serialVersionUID = 1L;
     private final List<VM> vms;
     private VPSStatus status;
+    
+    // Add a vpsId field to store the server's unique identifier
+    private String vpsId;
 
     private int maxVMs;
     private double cpuUsage;
@@ -45,6 +48,7 @@ public class VPSOptimization extends GameObject implements Serializable {
         this.diskInGB = 20;
         this.size = VPSSize.SIZE_1U;
         this.installed = false;
+        this.vpsId = "Server-" + System.currentTimeMillis(); // Default ID with timestamp
     }
     
     /**
@@ -60,6 +64,18 @@ public class VPSOptimization extends GameObject implements Serializable {
         this.size = size;
         // Set a reasonable disk size based on RAM
         this.diskInGB = ramInGB * 10;
+    }
+    
+    /**
+     * Constructor with ID, vcpus, ram, and size
+     * @param id The VPS ID
+     * @param vcpus Number of virtual CPUs
+     * @param ramInGB Amount of RAM in GB
+     * @param size Physical size of the VPS
+     */
+    public VPSOptimization(String id, int vcpus, int ramInGB, VPSSize size) {
+        this(vcpus, ramInGB, size);
+        this.vpsId = id;
     }
 
     public void addVM(VM vm) {
@@ -380,5 +396,43 @@ public class VPSOptimization extends GameObject implements Serializable {
         public void setFirewallEnabled(boolean firewallEnabled) {
             this.firewallEnabled = firewallEnabled;
         }
+    }
+
+    /**
+     * Override equals method to properly compare VPS objects
+     * This will fix the "Unknown" server ID issue
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        
+        // For VPS objects, we should compare by reference identity since they're unique instances
+        // This change will fix the "Unknown" server ID issue
+        return this == obj;
+    }
+    
+    /**
+     * Override hashCode to be consistent with equals
+     */
+    @Override
+    public int hashCode() {
+        return System.identityHashCode(this);
+    }
+
+    /**
+     * Get the VPS ID
+     * @return The VPS ID
+     */
+    public String getVpsId() {
+        return vpsId;
+    }
+    
+    /**
+     * Set the VPS ID
+     * @param vpsId The new VPS ID
+     */
+    public void setVpsId(String vpsId) {
+        this.vpsId = vpsId;
     }
 }

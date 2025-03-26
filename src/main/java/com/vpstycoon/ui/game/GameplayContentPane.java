@@ -186,6 +186,7 @@ public class GameplayContentPane extends BorderPane {
         vps1.setSize(VPSSize.SIZE_1U);
         vps1.setInstalled(true);
         rack.installVPS(vps1);
+        vpsManager.addVPS("103.216.158.234-BasicRack", vps1);
 
         VPSOptimization vps2 = new VPSOptimization();
         vps2.setVCPUs(4);
@@ -194,6 +195,7 @@ public class GameplayContentPane extends BorderPane {
         vps2.setSize(VPSSize.SIZE_2U);
         vps2.setInstalled(true);
         rack.installVPS(vps2);
+        vpsManager.addVPS("103.216.158.237-MediumRack", vps2);
 
         VPSOptimization invVps1 = new VPSOptimization();
         invVps1.setVCPUs(1);
@@ -209,10 +211,9 @@ public class GameplayContentPane extends BorderPane {
         invVps2.setSize(VPSSize.SIZE_3U);
         vpsInventory.addVPS("103.216.158.236-EnterpriseServer", invVps2);
 
-        vpsManager.createVPS("103.216.158.235-BasicServer");
-        vpsManager.getVPSMap().put("103.216.158.235-BasicServer", invVps1);
-        vpsManager.createVPS("103.216.158.236-EnterpriseServer");
-        vpsManager.getVPSMap().put("103.216.158.236-EnterpriseServer", invVps2);
+        // Use the new addVPS method which also sets the ID in the VPS object
+        vpsManager.addVPS("103.216.158.235-BasicServer", invVps1);
+        vpsManager.addVPS("103.216.158.236-EnterpriseServer", invVps2);
 
         VPSOptimization.VM vm1 = new VPSOptimization.VM("192.168.1.1", "Web Server", 1, "1 GB", "20 GB", "Running");
         VPSOptimization.VM vm2 = new VPSOptimization.VM("192.168.1.2", "Database", 1, "2 GB", "30 GB", "Running");
@@ -457,17 +458,17 @@ public class GameplayContentPane extends BorderPane {
         }
         if (rack.installVPS(vps)) {
             vpsInventory.removeVPS(vpsId);
+            vpsManager.addVPS(vps.getVpsId(), vps);
             return true;
         }
         return false;
     }
 
     public boolean uninstallVPSToInventory(VPSOptimization vps) {
-        String vpsId = vpsManager.getVPSMap().keySet().stream()
-                .filter(id -> vpsManager.getVPS(id) == vps)
-                .findFirst()
-                .orElse(null);
-        if (vpsId == null || !rack.getInstalledVPS().contains(vps)) {
+        // Use the VPS ID directly from the VPS object
+        String vpsId = vps.getVpsId();
+        
+        if (!rack.getInstalledVPS().contains(vps)) {
             return false;
         }
         if (rack.uninstallVPS(vps)) {

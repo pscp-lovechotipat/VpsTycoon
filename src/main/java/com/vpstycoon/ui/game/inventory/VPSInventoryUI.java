@@ -211,8 +211,8 @@ public class VPSInventoryUI {
             parent.pushNotification("Server Installed", 
                     "Successfully installed " + vpsId + " into the rack.");
             
-            // Refresh the inventory UI
-            openInventory();
+            // Go directly to rack view instead of refreshing inventory
+            parent.openRackInfo();
         } else {
             parent.pushNotification("Installation Failed", 
                     "Failed to install " + vpsId + " into the rack.");
