@@ -15,12 +15,52 @@ import javafx.scene.layout.VBox;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class VMCreationUI {
     private final GameplayContentPane parent;
 
     public VMCreationUI(GameplayContentPane parent) {
         this.parent = parent;
+    }
+
+    /**
+     * Generate the next available IP in the subnet range based on the VPS IP.
+     * @param vps The VPS to base the IP on
+     * @return The next available IP or null if no IPs are available
+     */
+    private String getNextAvailableIP(VPSOptimization vps) {
+        // Get the VPS IP
+        String vpsId = parent.getVpsManager().getVPSMap().keySet().stream()
+                .filter(id -> parent.getVpsManager().getVPS(id) == vps)
+                .findFirst()
+                .orElse(null);
+        if (vpsId == null) return null;
+
+        // Extract the base IP (before the name suffix)
+        String vpsIp = vpsId.split("-")[0];
+        String[] ipParts = vpsIp.split("\\.");
+        if (ipParts.length != 4) return null;
+
+        // Define the subnet range (e.g., 103.216.158.2 to 103.216.158.255)
+        String baseSubnet = ipParts[0] + "." + ipParts[1] + "." + ipParts[2] + ".";
+        int minRange = 2;   // Start at .2
+        int maxRange = 255; // End at .255
+
+        // Get existing VM IPs
+        List<String> usedIps = vps.getVms().stream()
+                .map(VPSOptimization.VM::getIp)
+                .filter(ip -> ip.startsWith(baseSubnet))
+                .collect(Collectors.toList());
+
+        // Find the next available IP
+        for (int i = minRange; i <= maxRange; i++) {
+            String candidateIp = baseSubnet + i;
+            if (!usedIps.contains(candidateIp)) {
+                return candidateIp;
+            }
+        }
+        return null; // No available IPs in the range
     }
 
     public void openCreateVMPage(VPSOptimization vps) {
@@ -39,6 +79,14 @@ public class VMCreationUI {
         if (availableVCPUs < 1 || availableRamGB < 1 || availableDiskGB < 10) {
             parent.pushNotification("Insufficient Resources",
                     "No available resources to create a new VM. Please delete existing VMs to free up resources.");
+            parent.openVPSInfoPage(vps);
+            return;
+        }
+
+        String autoIp = getNextAvailableIP(vps);
+        if (autoIp == null) {
+            parent.pushNotification("IP Address Error",
+                    "No available IP addresses in the subnet range. Maximum VMs reached.");
             parent.openVPSInfoPage(vps);
             return;
         }
@@ -75,9 +123,11 @@ public class VMCreationUI {
         TextField nameField = new TextField();
         nameField.setPromptText("Enter VM Name");
         nameBox.getChildren().addAll(new Label("Name:"), nameField);
+
         HBox ipBox = new HBox(10);
-        TextField ipField = new TextField();
-        ipField.setPromptText("Enter IP (e.g., 192.168.1.10)");
+        TextField ipField = new TextField(autoIp);
+        ipField.setPromptText("Auto-assigned IP");
+        ipField.setDisable(true); // IP is auto-assigned and not editable
         ipBox.getChildren().addAll(new Label("IP:"), ipField);
         infoSection.getChildren().addAll(nameBox, ipBox);
 
