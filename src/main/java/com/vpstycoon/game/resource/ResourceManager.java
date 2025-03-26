@@ -6,8 +6,10 @@ import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.game.thread.GameEvent;
 import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.thread.GameTimeManager;
+import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.notification.NotificationController;
 import com.vpstycoon.ui.game.notification.NotificationModel;
 import com.vpstycoon.ui.game.notification.NotificationView;
@@ -27,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -67,20 +70,15 @@ public class ResourceManager implements Serializable {
     private MouseNotificationView mouseNotificationView;
     private MouseNotificationController mouseNotificationController;
 
+    private GameEvent gameEvent;
+    private GameplayContentPane gameplayContentPane;
+
     private boolean musicRunning = true;
 
     private ResourceManager() {
         this.company = new Company();
         this.audioManager = new AudioManager();
-        this.requestManager = new RequestManager(this.company);
-        this.skillPointsSystem = new SkillPointsSystem(this.company);
-        this.rack = new Rack(10, 3); // สร้าง Rack เริ่มต้นใน ResourceManager
-
-        this.gameTimeController = new GameTimeController(this.company,
-                this.requestManager,
-                this.rack,
-                LocalDateTime.of(2000, 1, 1, 0, 0, 0)
-        );
+        this.rack = new Rack(); // สร้าง Rack เริ่มต้นใน ResourceManager
 
         createBackupDirectory();
         if (currentState == null) {
@@ -90,6 +88,40 @@ public class ResourceManager implements Serializable {
 
     public static ResourceManager getInstance() {
         return instance;
+    }
+
+    public void initializeGameEvent(GameplayContentPane pane) {
+        this.gameplayContentPane = pane;
+        if (gameEvent == null || !gameEvent.isRunning()) {
+            gameEvent = new GameEvent(gameplayContentPane, currentState);
+            Thread eventThread = new Thread(gameEvent);
+            eventThread.setDaemon(true); // Set as daemon thread
+            eventThread.start();
+        }
+    }
+
+    private void initiaizeSkillPointsSystem() {
+        if (skillPointsSystem == null) {
+            this.skillPointsSystem = new SkillPointsSystem(this.company);
+        }
+    }
+
+    private void initiaizeRequestManager() {
+        if (requestManager == null) {
+            this.requestManager = new RequestManager(this.company);
+        }
+    }
+
+    private void initiaizeGameTimeController() {
+        initiaizeRequestManager();
+        if (gameTimeController == null) {
+            this.gameTimeController = new GameTimeController(this.company,
+                    this.requestManager,
+                    this.rack,
+                    currentState.getLocalDateTime()
+            );
+            gameTimeController.getGameTimeManager().getGameTimeMs();
+        }
     }
 
     // Lazy initialization for notification components
@@ -106,6 +138,7 @@ public class ResourceManager implements Serializable {
             this.centerNotificationView.setAudioManager(this.audioManager);
             this.centerNotificationController = new CenterNotificationController(centerNotificationModel, centerNotificationView);
         }
+
         if (mouseNotificationModel == null) {
             this.mouseNotificationModel = new MouseNotificationModel();
             this.mouseNotificationView = new MouseNotificationView();
@@ -129,6 +162,7 @@ public class ResourceManager implements Serializable {
     }
 
     public void saveGameState(GameState state) {
+        initiaizeGameTimeController();
         state.setLocalDateTime(gameTimeController.getGameTimeManager().getGameDateTime());
         state.setGameTimeMs(gameTimeController.getGameTimeManager().getGameTimeMs());
 
@@ -152,7 +186,10 @@ public class ResourceManager implements Serializable {
             this.currentState = newState;
             this.company = newState.getCompany();
             this.requestManager = new RequestManager(this.company);
-            this.rack = new Rack(10, 3); // รีเซ็ต Rack ถ้าไม่มี save
+            this.rack = new Rack(); // รีเซ็ต Rack ถ้าไม่มี save
+            if (gameplayContentPane != null) {
+                initializeGameEvent(gameplayContentPane); // Start events for new game
+            }
             return newState;
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(saveFile))) {
@@ -167,9 +204,10 @@ public class ResourceManager implements Serializable {
                     state.getLocalDateTime()
             );
             gameTimeController.getGameTimeManager().getGameTimeMs();
-            // หาก Rack ถูกเก็บใน GameState ด้วย จะต้องโหลดจาก state ด้วย
-            // ถ้าไม่เก็บใน state จะใช้ค่าเริ่มต้น
-            this.rack = new Rack(10, 3); // หรือโหลดจาก state ถ้ามี
+            this.rack = new Rack();
+            if (gameplayContentPane != null) {
+                initializeGameEvent(gameplayContentPane); // Restart events after load
+            }
             return state;
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Failed to load game: " + e.getMessage());
@@ -178,7 +216,10 @@ public class ResourceManager implements Serializable {
             GameState newState = new GameState();
             this.currentState = newState;
             this.company = newState.getCompany();
-            this.rack = new Rack(10, 3);
+            this.rack = new Rack();
+            if (gameplayContentPane != null) {
+                initializeGameEvent(gameplayContentPane); // Start events for new game
+            }
             return newState;
         }
     }
@@ -251,6 +292,10 @@ public class ResourceManager implements Serializable {
         return mouseNotificationController;
     }
 
+    public GameEvent getGameEvent() {
+        return gameEvent;
+    }
+
     // Getter และ Setter สำหรับ Rack
     public Rack getRack() {
         return rack;
@@ -261,6 +306,7 @@ public class ResourceManager implements Serializable {
     }
 
     public RequestManager getRequestManager() {
+        initiaizeRequestManager();
         return requestManager;
     }
 
@@ -269,6 +315,7 @@ public class ResourceManager implements Serializable {
     }
 
     public SkillPointsSystem getSkillPointsSystem() {
+        initiaizeSkillPointsSystem();
         return skillPointsSystem;
     }
 
@@ -277,6 +324,7 @@ public class ResourceManager implements Serializable {
     }
 
     public GameTimeController getGameTimeController() {
+        initiaizeGameTimeController();
         return gameTimeController;
     }
 

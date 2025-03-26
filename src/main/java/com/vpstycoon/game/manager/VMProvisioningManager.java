@@ -3,6 +3,8 @@ package com.vpstycoon.game.manager;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
+import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.game.company.SkillPointsSystem;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -27,13 +29,17 @@ public class VMProvisioningManager implements Serializable {
     
     // Random generator for VM creation time
     private final Random random = new Random();
-    
+
+    private final SkillPointsSystem skillPointsSystem;
+    private int deployLevel = 1;
+
     public VMProvisioningManager(Company company) {
         this.vmToRequestMap = new HashMap<>();
         this.activeRequests = new HashMap<>();
         this.company = company;
+        this.skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
     }
-    
+
     /**
      * Get the company associated with this VM provisioning manager
      * @return The company
@@ -60,10 +66,24 @@ public class VMProvisioningManager implements Serializable {
         
         // Create a CompletableFuture to represent the async VM creation
         CompletableFuture<VPSOptimization.VM> future = new CompletableFuture<>();
-        
-        // Calculate VM creation time (random between 5 seconds and 1 minute)
-        int creationTimeMs = 5000 + random.nextInt(55000);
-        
+
+        int baseTimeMs = 5000 + random.nextInt(55000);
+
+        // ดึงระดับ Deploy จาก SkillPointsSystem
+        SkillPointsSystem skillSystem = ResourceManager.getInstance().getSkillPointsSystem();
+        int deployLevel = skillSystem.getSkillLevel(SkillPointsSystem.SkillType.SERVER_EFFICIENCY);
+
+        // คำนวณอัตราลดเวลา
+        double reductionRate = switch (deployLevel) {
+            case 1 -> 1.00;
+            case 2 -> 0.20;
+            case 3 -> 0.30;
+            case 4 -> 0.50;
+            default -> 0.0;
+        };
+
+        int creationTimeMs = (int)(baseTimeMs * (1.0 - reductionRate));
+
         // Start a new thread to simulate VM creation time
         new Thread(() -> {
             try {

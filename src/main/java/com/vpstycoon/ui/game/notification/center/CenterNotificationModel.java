@@ -2,10 +2,11 @@ package com.vpstycoon.ui.game.notification.center;
 
 import com.vpstycoon.game.resource.ResourceManager;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 
+import javax.swing.*;
 import java.net.URL;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Queue;
 
 public class CenterNotificationModel {
@@ -49,8 +50,7 @@ public class CenterNotificationModel {
         public Image getImage() {
             String imagePath = image;
             URL imageUrl = ResourceManager.getResource(imagePath);
-            Image image = new Image(imageUrl.toExternalForm());
-            return image;
+            return (imageUrl != null) ? new Image(String.valueOf(imageUrl)) : null;
         }
     }
 }

@@ -12,6 +12,7 @@ import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.screen.JavaFXScreenManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.SceneController;
+import com.vpstycoon.ui.cutscene.CutsceneScreen;
 import com.vpstycoon.ui.game.GameplayScreen;
 import com.vpstycoon.ui.menu.MainMenuScreen;
 import com.vpstycoon.ui.navigation.Navigator;
@@ -71,7 +72,7 @@ public class GameApplication extends Application implements Navigator {
         ResourceManager.getInstance().getAudioManager().playMusic("Buckshot_Roulette_OST.mp3");
         
         initializeGame();
-        showMainMenu();
+        showCutscene();
 
         // Starting Window
         primaryStage.show();
@@ -197,6 +198,11 @@ public class GameApplication extends Application implements Navigator {
             System.err.println("Error during shutdown: " + e.getMessage());
             System.exit(1);
         }
+    }
+
+    private void showCutscene() {
+        CutsceneScreen cutsceneScreen = new CutsceneScreen(gameConfig, screenManager, this);
+        screenManager.switchScreen(cutsceneScreen);
     }
 
     public static void main(String[] args) {
