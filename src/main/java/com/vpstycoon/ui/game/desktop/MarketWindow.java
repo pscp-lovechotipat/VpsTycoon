@@ -3,6 +3,7 @@ package com.vpstycoon.ui.game.desktop;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.RackProduct;
 import com.vpstycoon.game.vps.enums.VPSProduct;
 import com.vpstycoon.ui.game.GameplayContentPane;
@@ -17,6 +18,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+
+import java.util.UUID;
 
 public class MarketWindow extends BorderPane {
     private final GameplayContentPane parent;
@@ -495,8 +498,24 @@ public class MarketWindow extends BorderPane {
             parent.getCompany().setMoney(parent.getCompany().getMoney() - product.getPrice());
             // Update money display after purchase
             updateMoneyDisplay();
-            parent.pushNotification("PURCHASE SUCCESSFUL", 
-                "ACQUIRED " + product.getName() + " FOR " + product.getPriceDisplay());
+
+            // สร้าง VPSOptimization instance จาก VPSProduct
+            VPSOptimization vps = new VPSOptimization();
+            vps.setName(UUID.randomUUID() +"-" + product.getName());
+            vps.setVCPUs(product.getCpu());
+            vps.setRamInGB(product.getRam());
+            vps.setDiskInGB(product.getStorage());
+            vps.setSize(product.getSize());
+
+            // เพิ่ม VPS เข้าไปใน inventory
+            parent.getVpsInventory().getInventoryMap().put(vps.getName(), vps);
+
+            // แสดง notification
+            parent.pushNotification("PURCHASE SUCCESSFUL",
+                    "ACQUIRED " + product.getName() + " FOR " + product.getPriceDisplay());
+
+            // ปิด market window และเปิด inventory
+            onClose.run();
         });
 
         card.getChildren().addAll(nameLabel, descLabel, priceLabel, buyButton);

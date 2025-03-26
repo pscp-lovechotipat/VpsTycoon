@@ -13,17 +13,21 @@ public class VPSOptimization extends GameObject implements Serializable {
     private static final long serialVersionUID = 1L;
     private final List<VM> vms;
     private VPSStatus status;
+
     private int maxVMs;
     private double cpuUsage;
     private double ramUsage;
     private double diskUsage;
     private double networkUsage;
+
     private int vcpus;
     private int ramInGB;
     private int diskInGB;
+
     private boolean backupSystemEnabled = false;
     private boolean monitoringSystemEnabled = false;
     private boolean autoScalingEnabled = false;
+
     private int optimizationLevel = 1; // 1-5 optimization level
     private VPSSize size = VPSSize.SIZE_1U; // Physical size of the VPS
     private boolean installed = false; // Whether the VPS is installed in a rack
