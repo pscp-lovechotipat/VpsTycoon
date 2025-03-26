@@ -8,6 +8,7 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
 import javafx.animation.SequentialTransition;
 import javafx.animation.TranslateTransition;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -16,6 +17,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 import com.vpstycoon.FontLoader;
+import javafx.geometry.Pos;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,6 +28,8 @@ public class CutsceneScreen extends StackPane {
     private Label logoLabel;
     private Label subtitleLabel;
     private VBox creditsBox;
+    private Button skipButton;
+    private SequentialTransition sequentialTransition;
     
     // รายชื่อผู้พัฒนา
     private final List<String> developers = Arrays.asList(
@@ -45,6 +49,7 @@ public class CutsceneScreen extends StackPane {
         this.navigator = navigator;
         
         setupUI();
+        setupSkipButton();
         playCutscene();
     }
 
@@ -103,6 +108,63 @@ public class CutsceneScreen extends StackPane {
         
         // Set background color
         setStyle("-fx-background-color: black;");
+    }
+    
+    private void setupSkipButton() {
+        // Create skip button for cutscene
+        skipButton = new Button("SKIP >");
+        skipButton.setFont(FontLoader.TITLE_FONT);
+        skipButton.setStyle("""
+                -fx-background-color: transparent;
+                -fx-text-fill: white;
+                -fx-font-size: 18px;
+                -fx-border-color: white;
+                -fx-border-width: 1px;
+                -fx-padding: 5px 10px;
+                """);
+        
+        // Position button at bottom right
+        StackPane.setAlignment(skipButton, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(skipButton, new javafx.geometry.Insets(0, 20, 20, 0));
+        
+        // Add hover effect
+        skipButton.setOnMouseEntered(e -> 
+            skipButton.setStyle("""
+                -fx-background-color: rgba(255, 255, 255, 0.2);
+                -fx-text-fill: white;
+                -fx-font-size: 18px;
+                -fx-border-color: white;
+                -fx-border-width: 1px;
+                -fx-padding: 5px 10px;
+                """)
+        );
+        
+        skipButton.setOnMouseExited(e -> 
+            skipButton.setStyle("""
+                -fx-background-color: transparent;
+                -fx-text-fill: white;
+                -fx-font-size: 18px;
+                -fx-border-color: white;
+                -fx-border-width: 1px;
+                -fx-padding: 5px 10px;
+                """)
+        );
+        
+        // Add click action to skip the cutscene
+        skipButton.setOnAction(e -> skipCutscene());
+        
+        // Add to the scene
+        getChildren().add(skipButton);
+    }
+    
+    private void skipCutscene() {
+        // Stop any ongoing animations
+        if (sequentialTransition != null) {
+            sequentialTransition.stop();
+        }
+        
+        // Skip directly to main menu
+        navigator.showMainMenu();
     }
 
     private void playCutscene() {
@@ -178,7 +240,7 @@ public class CutsceneScreen extends StackPane {
         finalFadeOut.setOnFinished(e -> navigator.showMainMenu());
 
         // Create entire sequential transition
-        SequentialTransition sequentialTransition = new SequentialTransition(
+        sequentialTransition = new SequentialTransition(
             firstSceneIn,
             new javafx.animation.PauseTransition(Duration.seconds(2.0)),
             firstSceneTransition,
