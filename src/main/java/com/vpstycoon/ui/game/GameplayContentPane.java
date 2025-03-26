@@ -191,6 +191,17 @@ public class GameplayContentPane extends BorderPane {
         setupDebugFeatures();
 
         this.audioManager = ResourceManager.getInstance().getAudioManager();
+        
+        // Make sure game time state matches music state at startup
+        if (roomObjects != null && !roomObjects.getRun()) {
+            // If music is off at startup, also stop the game time
+            gameTimeController.stopTime();
+            System.out.println("Game time stopped at startup (music off)");
+        } else {
+            // If music is on at startup, ensure game time is running
+            gameTimeController.startTime();
+            System.out.println("Game time started at startup (music on)");
+        }
     }
 
     /**
@@ -375,9 +386,12 @@ public class GameplayContentPane extends BorderPane {
             roomObjects.getMusicBoxLayer().setVisible(false);
             roomObjects.getMusicStopLayer().setVisible(true);
             audioManager.pauseMusic();
+            // Also stop the game time when music is paused
+            gameTimeController.stopTime();
+            System.out.println("Game time paused");
+            pushNotification("Game Paused", "Game time is paused. Click the music box to continue.");
             roomObjects.setRun(false);
         }
-
     }
 
     public void openMusicStop(){
@@ -385,6 +399,10 @@ public class GameplayContentPane extends BorderPane {
             roomObjects.getMusicBoxLayer().setVisible(true);
             roomObjects.getMusicStopLayer().setVisible(false);
             audioManager.resumeMusic();
+            // Resume the game time when music is resumed
+            gameTimeController.startTime();
+            System.out.println("Game time resumed");
+            pushNotification("Game Continued", "Game time is running again.");
             roomObjects.setRun(true);
         }
     }
