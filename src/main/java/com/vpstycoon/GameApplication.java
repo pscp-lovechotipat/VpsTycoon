@@ -183,8 +183,10 @@ public class GameApplication extends Application implements Navigator {
             
             // แน่ใจว่ามีการโหลดประวัติแชทล่าสุด
             System.out.println("กำลังโหลดประวัติแชท...");
+            // ไม่ต้องทำอะไรกับ ChatHistoryManager เพราะมันจะโหลดไฟล์เองตอน instantiate
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการโหลดประวัติแชท: " + e.getMessage());
+            e.printStackTrace();
         }
         
         // 2. ตรวจสอบไฟล์เซฟ
@@ -192,34 +194,66 @@ public class GameApplication extends Application implements Navigator {
             try {
                 System.out.println("พบไฟล์เซฟ กำลังโหลด...");
                 
-                // 3. โหลดข้อมูลเกมจากไฟล์เซฟ
+                // 2.1 เตรียม GameManager ให้พร้อมโหลดข้อมูล
+                if (gameManager == null) {
+                    gameManager = GameManager.getInstance();
+                }
+                
+                // 2.2 โหลดข้อมูลเกมจากไฟล์เซฟ
                 GameState savedState = ResourceManager.getInstance().loadGameState();
                 
-                // 4. ตรวจสอบว่าโหลดข้อมูลได้ถูกต้อง
+                // 2.3 ทำการโหลดข้อมูลทั้งหมดในฝั่ง GameManager ก่อน
                 if (savedState != null && savedState.getCompany() != null) {
-                    System.out.println("โหลดเกมสำเร็จ ข้อมูลบริษัท:");
-                    System.out.println("- เงิน: $" + savedState.getCompany().getMoney());
-                    System.out.println("- Rating: " + savedState.getCompany().getRating());
-                    System.out.println("- Free VM: " + savedState.getFreeVmCount());
+                    // โหลดข้อมูลทั้งหมดในระบบก่อนสร้างหน้าเกม
+                    System.out.println("กำลังโหลดข้อมูลทั้งหมดในระบบ...");
+                    gameManager.loadState();
                     
-                    // 5. สร้างและแสดงหน้าเกมด้วยข้อมูลที่โหลดมา
-                    gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, savedState);
-                    gameplayScreen.show();
+                    // 3. โหลดข้อมูลเกมจากไฟล์เซฟ อีกครั้งเพื่อนำไปสร้างหน้าเกม
+                    savedState = ResourceManager.getInstance().loadGameState();
                     
-                    // 6. ตรวจสอบว่า TimeThread เริ่มทำงานหรือไม่
-                    ResourceManager resourceManager = ResourceManager.getInstance();
-                    if (resourceManager.getGameTimeController() != null) {
-                        // เริ่ม TimeThread และ RequestGenerator อีกครั้ง
-                        System.out.println("เริ่มระบบเวลาเกมอีกครั้ง...");
-                        resourceManager.getGameTimeController().startTime();
+                    // 4. ตรวจสอบว่าโหลดข้อมูลได้ถูกต้อง
+                    if (savedState != null && savedState.getCompany() != null) {
+                        System.out.println("โหลดเกมสำเร็จ ข้อมูลบริษัท:");
+                        System.out.println("- เงิน: $" + savedState.getCompany().getMoney());
+                        System.out.println("- Rating: " + savedState.getCompany().getRating());
+                        System.out.println("- Free VM: " + savedState.getFreeVmCount());
                         
-                        // เริ่ม RequestGenerator ใหม่จาก GameManager (ถ้ามี)
-                        if (gameManager != null && gameManager.getRequestGenerator() != null) {
-                            System.out.println("เริ่ม RequestGenerator อีกครั้ง...");
-                            if (!gameManager.getRequestGenerator().isAlive()) {
-                                gameManager.getRequestGenerator().start();
+                        // ตรวจสอบข้อมูล rack
+                        if (savedState.getRackConfiguration() != null) {
+                            System.out.println("- พบข้อมูล Rack Configuration");
+                        } else {
+                            System.out.println("- ไม่พบข้อมูล Rack Configuration");
+                        }
+                        
+                        // แสดงข้อมูล VPS Inventory ถ้ามี
+                        if (savedState.getVpsInventoryData() != null) {
+                            System.out.println("- พบข้อมูล VPS Inventory");
+                        } else {
+                            System.out.println("- ไม่พบข้อมูล VPS Inventory");
+                        }
+                        
+                        // 5. สร้างและแสดงหน้าเกมด้วยข้อมูลที่โหลดมา
+                        gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, savedState);
+                        gameplayScreen.show();
+                        
+                        // 6. ตรวจสอบว่า TimeThread เริ่มทำงานหรือไม่
+                        ResourceManager resourceManager = ResourceManager.getInstance();
+                        if (resourceManager.getGameTimeController() != null) {
+                            // เริ่ม TimeThread และ RequestGenerator อีกครั้ง
+                            System.out.println("เริ่มระบบเวลาเกมอีกครั้ง...");
+                            resourceManager.getGameTimeController().startTime();
+                            
+                            // เริ่ม RequestGenerator ใหม่จาก GameManager (ถ้ามี)
+                            if (gameManager != null && gameManager.getRequestGenerator() != null) {
+                                System.out.println("เริ่ม RequestGenerator อีกครั้ง...");
+                                if (!gameManager.getRequestGenerator().isAlive()) {
+                                    gameManager.getRequestGenerator().start();
+                                }
                             }
                         }
+                    } else {
+                        showAlert("Error", "ไม่สามารถโหลดเกมได้: ข้อมูลเสียหาย");
+                        System.err.println("โหลดเกมล้มเหลว: ข้อมูลว่างหรือไม่ถูกต้อง");
                     }
                 } else {
                     showAlert("Error", "ไม่สามารถโหลดเกมได้: ข้อมูลเสียหาย");

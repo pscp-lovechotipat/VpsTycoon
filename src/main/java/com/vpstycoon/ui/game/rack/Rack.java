@@ -7,32 +7,49 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Rack extends StackPane {
-    private final List<VBox> racks;
+public class Rack extends StackPane implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    // UI components - mark as transient since JavaFX components are not serializable
+    private transient List<VBox> racks;
+    private transient Button prevButton;
+    private transient Button nextButton;
+    private transient VBox navigationButtons;
+    
+    // Serializable data
     private final List<List<VPSOptimization>> rackVPS; // Store VPS for each rack
     private final List<Integer> unlockedSlotUnitsList; // Store unlocked slots for each rack
     private final List<Integer> occupiedSlotUnitsList; // Store occupied slots for each rack
     private int currentRackIndex;
-    private final Button prevButton;
-    private final Button nextButton;
-    private final VBox navigationButtons;
     private int maxSlotUnits;
     private int unlockedSlotUnits;
     private int occupiedSlotUnits;
+    // Number of slots per rack (needed for reconstruction)
+    private List<Integer> slotsPerRack;
 
     public Rack() {
-        racks = new ArrayList<>();
+        initializeTransientFields();
         rackVPS = new ArrayList<>();
         unlockedSlotUnitsList = new ArrayList<>();
         occupiedSlotUnitsList = new ArrayList<>();
-
+        slotsPerRack = new ArrayList<>();
+        
         currentRackIndex = -1;
         maxSlotUnits = 0;
         unlockedSlotUnits = 0;
         occupiedSlotUnits = 0;
+    }
+    
+    // Initialize transient UI fields
+    private void initializeTransientFields() {
+        racks = new ArrayList<>();
         
         // Create navigation buttons
         prevButton = new Button("←");
@@ -87,9 +104,34 @@ public class Rack extends StackPane {
         // Add navigation buttons to the rack
         getChildren().add(navigationButtons);
     }
+    
+    // Custom serialization
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+    }
 
-    public void addRack(int slots) {
-        // Store each rack's properties separately instead of overwriting the class variables
+    // Custom deserialization to reconstruct the UI components
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        
+        // Recreate the transient UI components
+        initializeTransientFields();
+        
+        // Recreate all rack UI components based on saved data
+        for (int i = 0; i < slotsPerRack.size(); i++) {
+            // Create the rack UI without adding to the data structures (they're already loaded)
+            VBox newRack = createRackUI(slotsPerRack.get(i));
+            racks.add(newRack);
+        }
+        
+        // Show the current rack if any
+        if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
+            showCurrentRack();
+        }
+    }
+    
+    // Create rack UI component without modifying data structures
+    private VBox createRackUI(int slots) {
         VBox newRack = new VBox(5);
         newRack.setStyle("""
             -fx-background-color: #2a2a2a;
@@ -107,9 +149,20 @@ public class Rack extends StackPane {
             newRack.getChildren().add(slot);
         }
         
+        return newRack;
+    }
+
+    public void addRack(int slots) {
+        // Create new rack UI
+        VBox newRack = createRackUI(slots);
         racks.add(newRack);
+        
+        // Store the number of slots for this rack (for serialization)
+        slotsPerRack.add(slots);
+        
+        // Store rack data
         rackVPS.add(new ArrayList<>()); // Add empty VPS list for new rack
-        unlockedSlotUnitsList.add(1); // Start with 1 unlocked slot for the new rack so it's usable right away
+        unlockedSlotUnitsList.add(1); // Start with 1 unlocked slot for the new rack
         occupiedSlotUnitsList.add(0); // Initialize occupied slots to 0 for the new rack
         
         // Set the maxSlotUnits for the current rack
@@ -459,5 +512,40 @@ public class Rack extends StackPane {
             return true;
         }
         return false;
+    }
+
+    /**
+     * ดึงรายการ VPS ที่ติดตั้งทั้งหมดจากทุก Rack
+     * @return List รวมของ VPS ที่ติดตั้งในทุก Rack
+     */
+    public List<VPSOptimization> getAllInstalledVPS() {
+        List<VPSOptimization> allVPS = new ArrayList<>();
+        
+        // วนลูปทุก rack เพื่อรวบรวม VPS
+        for (List<VPSOptimization> rackVPSList : rackVPS) {
+            allVPS.addAll(rackVPSList);
+        }
+        
+        return allVPS;
+    }
+    
+    /**
+     * ดึงรายการของ unlocked slot units สำหรับทุก rack
+     * @return List ของ unlocked slot units สำหรับแต่ละ rack
+     */
+    public List<Integer> getUnlockedSlotUnitsList() {
+        return new ArrayList<>(unlockedSlotUnitsList);
+    }
+
+    /**
+     * ตั้งค่ารายการ slot unit ที่ปลดล็อคแล้ว
+     * @param unlockedList รายการ slot unit ที่ต้องการตั้งค่า
+     */
+    public void setUnlockedSlotUnitsList(List<Integer> unlockedList) {
+        if (unlockedList != null) {
+            this.unlockedSlotUnitsList.clear();
+            this.unlockedSlotUnitsList.addAll(unlockedList);
+            System.out.println("ตั้งค่า unlockedSlotUnitsList: " + this.unlockedSlotUnitsList);
+        }
     }
 }

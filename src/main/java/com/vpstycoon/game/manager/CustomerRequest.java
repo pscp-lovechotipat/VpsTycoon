@@ -5,9 +5,11 @@ import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.game.vps.enums.RequestType;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class CustomerRequest extends Customer {
+public class CustomerRequest extends Customer implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final RequestType requestType;
     private final int duration;
     private final int requiredVCPUs;

@@ -18,9 +18,12 @@ import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.flow.GameFlowManager;
 import com.vpstycoon.ui.navigation.Navigator;
+import javafx.application.Platform;
 import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
 
 public class GameplayScreen extends GameScreen {
     private GameState state;
@@ -133,11 +136,13 @@ public class GameplayScreen extends GameScreen {
                 
                 System.out.println("เริ่มเกมใหม่ ไม่ต้องบันทึกทันที");
                 // ไม่ต้องบันทึกทันที
-            } else {
-                // Save the loaded game state to ensure continuity
-                System.out.println("บันทึกเกมหลังจากโหลด เพื่อให้แน่ใจว่าข้อมูลต่อเนื่อง");
-                gameFlowManager.saveGame();
-            }
+            } 
+            // ลบหรือคอมเม้นท์ส่วนนี้เพื่อไม่ให้บันทึกทันทีหลังโหลด
+            // else {
+            //    // Save the loaded game state to ensure continuity
+            //    System.out.println("บันทึกเกมหลังจากโหลด เพื่อให้แน่ใจว่าข้อมูลต่อเนื่อง");
+            //    gameFlowManager.saveGame();
+            // }
         } else {
             System.out.println("Provided game state is null, initializing new game.");
             this.state = new GameState();
@@ -181,7 +186,8 @@ public class GameplayScreen extends GameScreen {
 
     @Override
     protected Region createContent() {
-        return new GameplayContentPane(
+        // สร้าง GameplayContentPane ซึ่งเป็นหน้าหลักของเกม
+        GameplayContentPane contentPane = new GameplayContentPane(
                 this.gameObjects,
                 this.navigator,
                 this.chatSystem,
@@ -192,5 +198,63 @@ public class GameplayScreen extends GameScreen {
                 this.company,
                 ResourceManager.getInstance().getRack()
         );
+        
+        // ตั้งเวลาบันทึกเกมหลังจากโหลดเสร็จสมบูรณ์ 5 วินาที
+        // จะได้มั่นใจว่าทุกอย่างโหลดเรียบร้อยแล้ว
+        Platform.runLater(() -> {
+            try {
+                // สร้าง timer task ที่จะทำงานหลังจาก delay 5 วินาที
+                new Timer().schedule(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            // ทำงานบน JavaFX thread
+                            Platform.runLater(() -> {
+                                // ยืนยันว่ายังอยู่ในหน้าเกม
+                                if (gameFlowManager != null) {
+                                    // ตรวจสอบว่าข้อมูล Rack โหลดสมบูรณ์แล้วหรือยัง
+                                    com.vpstycoon.ui.game.rack.Rack rack = com.vpstycoon.game.resource.ResourceManager.getInstance().getRack();
+                                    if (rack != null) {
+                                        System.out.println("กำลังตรวจสอบความพร้อมของข้อมูลก่อนบันทึกเกม...");
+                                        System.out.println("- จำนวน rack: " + rack.getMaxRacks());
+                                        System.out.println("- rack index ปัจจุบัน: " + rack.getCurrentRackIndex());
+                                        System.out.println("- จำนวน slot ที่ปลดล็อค: " + rack.getUnlockedSlotUnits());
+                                        
+                                        // แสดงข้อมูล VPS ที่ติดตั้งในทุก rack
+                                        List<com.vpstycoon.game.vps.VPSOptimization> allVPS = rack.getAllInstalledVPS();
+                                        System.out.println("- จำนวน VPS ทั้งหมดที่ติดตั้งในทุก rack: " + allVPS.size());
+                                        
+                                        // ตรวจสอบข้อมูลใน GameManager ว่าโหลดสมบูรณ์หรือไม่
+                                        com.vpstycoon.game.GameManager gameManager = com.vpstycoon.game.GameManager.getInstance();
+                                        System.out.println("- จำนวน VPS ที่ติดตั้งใน GameManager: " + gameManager.getInstalledServers().size());
+                                        System.out.println("- จำนวน VPS ใน Inventory: " + gameManager.getVpsInventory().getSize());
+                                        
+                                        // ยังไม่ต้องบันทึกทันที ให้ผู้เล่นบันทึกเองหลังจากเริ่มเล่นและสำรวจดูแล้ว
+                                        // หรือถ้าจำเป็นต้องบันทึก ให้ตรวจสอบเงื่อนไขให้ชัดเจนว่าข้อมูลพร้อมบันทึกจริงๆ แล้ว
+                                        System.out.println("ยกเลิกการบันทึกเกมอัตโนมัติหลังโหลด เพื่อป้องกันข้อมูลไม่สมบูรณ์");
+                                        System.out.println("กรุณาบันทึกเกมด้วยตนเองหลังจากเริ่มเล่นเกม");
+                                        
+                                        // อัปเดต UI สำหรับการแสดงผล Rack หากจำเป็น
+                                        if (contentPane != null) {
+                                            // ไม่ต้องเรียกใช้ refreshRackDisplay เพราะไม่มีเมธอดนี้
+                                        }
+                                        
+                                        // ปิดการบันทึกอัตโนมัติ
+                                        // gameFlowManager.saveGame(); // ปิดการบันทึกอัตโนมัติหลังจากโหลด
+                                    } else {
+                                        System.out.println("ไม่พบข้อมูล Rack ในระบบ - ยกเลิกการบันทึกอัตโนมัติ");
+                                    }
+                                }
+                            });
+                        }
+                    }, 
+                    500 // delay 5 วินาที
+                );
+            } catch (Exception e) {
+                System.err.println("เกิดข้อผิดพลาดในการตั้งเวลาบันทึกเกม: " + e.getMessage());
+            }
+        });
+        
+        return contentPane;
     }
 }
