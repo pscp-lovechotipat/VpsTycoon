@@ -26,6 +26,10 @@ public class MarketWindow extends BorderPane {
         this.parent = parent;
         this.vpsManager = vpsManager;
         this.onClose = onClose;
+
+        parent.getDateView().setVisible(false);
+        parent.getMoneyUI().setVisible(false);
+        parent.getMenuBar().setVisible(false);
         
         // Main container setup with Cyberpunk theme
         setStyle("""
