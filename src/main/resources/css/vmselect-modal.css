@@ -1,58 +1,140 @@
+/* VM Selection Dialog Cyberpunk Theme */
+
 /* สไตล์สำหรับ Dialog */
 .vm-selection-dialog {
-    -fx-background-color: #1a1a2e;
-    -fx-border-color: #00ffcc;
-    -fx-border-width: 3;
+    -fx-background-color: #263238;
+    -fx-border-color: #9e33ff;
+    -fx-border-width: 2;
     -fx-background-radius: 10;
     -fx-border-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(106, 0, 255, 0.6), 15, 0, 0, 0);
 }
 
 /* สไตล์สำหรับ Label */
 .select-vm-label {
-    -fx-text-fill: #ff00ff;
-    -fx-font-family: "Monospace";
-    -fx-font-size: 18;
-    -fx-effect: dropshadow(gaussian, #ff00ff, 10, 0.1, 0, 0);
+    -fx-text-fill: #00ffff;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 20;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, #a100ff, 5, 0.1, 0, 0);
 }
 
 /* สไตล์สำหรับ ComboBox */
 .vm-combobox {
-    -fx-background-color: #0f0f23;
-    -fx-text-fill: #00ffcc;
-    -fx-border-color: #ff00ff;
-    -fx-border-width: 2;
+    -fx-background-color: #37474F;
+    -fx-text-fill: #E0FFFF;
+    -fx-border-color: #9e33ff;
+    -fx-border-width: 1;
     -fx-background-radius: 5;
     -fx-border-radius: 5;
-    -fx-font-family: "Monospace";
+    -fx-font-family: "Monospace", "Courier New", monospace;
     -fx-font-size: 14;
+    -fx-padding: 8;
 }
 
-/* สไตล์สำหรับปุ่ม Confirm (สถานะปกติ) */
-.confirm-button {
-    -fx-background-color: linear-gradient(to bottom, #00ffcc, #00b894);
-    -fx-text-fill: #1a1a2e;
-    -fx-font-family: "Monospace";
+.vm-combobox .list-cell {
+    -fx-background-color: #37474F;
+    -fx-text-fill: #E0FFFF;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-padding: 8 5 8 5;
+    -fx-border-color: transparent transparent rgba(106, 0, 255, 0.3) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.vm-combobox .list-cell:hover {
+    -fx-background-color: #3a1f5d;
+    -fx-effect: dropshadow(gaussian, #00FFFF, 5, 0.3, 0, 0);
+}
+
+.vm-combobox .list-cell:selected {
+    -fx-background-color: #6a00ff;
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.5), 5, 0, 0, 0);
+}
+
+.vm-combobox .list-view {
+    -fx-background-color: #263238;
+    -fx-background-radius: 5;
+    -fx-border-color: #9900ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 5;
+}
+
+/* สไตล์สำหรับ Separator */
+.separator .line {
+    -fx-border-color: #9e33ff;
+    -fx-border-width: 1;
+    -fx-opacity: 0.5;
+}
+
+/* สไตล์สำหรับ VM Info Panel */
+.vm-info-panel {
+    -fx-background-color: rgba(58, 31, 93, 0.4);
+    -fx-background-radius: 5;
+    -fx-border-color: #9e33ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);
+}
+
+.vm-info-title {
+    -fx-font-family: "Monospace", "Courier New", monospace;
     -fx-font-size: 14;
-    -fx-background-radius: 8;
-    -fx-effect: dropshadow(gaussian, #00ffcc, 15, 0.1, 0, 0);
+    -fx-font-weight: bold;
+    -fx-text-fill: #00ffff;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.5), 2, 0, 0, 0);
+}
+
+.vm-info-value {
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 12;
+    -fx-text-fill: #E0FFFF;
+}
+
+/* สไตล์สำหรับปุ่ม Confirm */
+.confirm-button {
+    -fx-background-color: #00FFFF;
+    -fx-background-radius: 5;
+    -fx-text-fill: #000000;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 8 15;
+    -fx-effect: dropshadow(gaussian, #00FFFF, 10, 0.5, 0, 0);
 }
 
 /* สไตล์สำหรับปุ่ม Confirm (เมื่อ hover) */
 .confirm-button:hover {
-    -fx-background-color: linear-gradient(to bottom, #00ffcc, #00e6b8);
-    -fx-text-fill: #1a1a2e;
-    -fx-font-family: "Monospace";
-    -fx-font-size: 14;
-    -fx-background-radius: 8;
-    -fx-effect: dropshadow(gaussian, #00ffcc, 20, 0.1, 0, 0);
+    -fx-background-color: #66FFFF;
+    -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.7), 15, 0.5, 0, 0);
+}
+
+.confirm-button:pressed {
+    -fx-background-color: #0099CC;
 }
 
 /* สไตล์สำหรับปุ่ม Close */
 .close-button {
-    -fx-background-color: #ff0066;
-    -fx-text-fill: #1a1a2e;
-    -fx-font-family: "Monospace";
-    -fx-font-size: 14;
-    -fx-background-radius: 50%;
-    -fx-effect: dropshadow(gaussian, #ff0066, 10, 0.8, 0, 0);
+    -fx-background-color: #F44336;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(gaussian, #F44336, 10, 0.5, 0, 0);
+}
+
+.close-button:hover {
+    -fx-background-color: #EF5350;
+    -fx-effect: dropshadow(gaussian, rgba(255, 0, 128, 0.8), 10, 0, 0, 0);
+}
+
+/* Error label styling */
+.error-label {
+    -fx-text-fill: #ff5555;
+    -fx-font-family: "Monospace", "Courier New", monospace;
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
 }

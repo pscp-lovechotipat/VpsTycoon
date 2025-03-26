@@ -10,6 +10,7 @@ import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import javafx.application.Platform;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -20,6 +21,7 @@ public class RentalManager {
     private final Company company;
     private final GameTimeManager gameTimeManager;
     private final Random random = new Random();
+    private GameTimeManager.GameTimeListener timeListener;
     private Runnable onArchiveRequest; // Callback to archive request in MessengerController
     private Map<VPSOptimization.VM, CustomerRequest> vmAssignments; // Reference to VM assignments
     private Runnable onUpdateDashboard; // Callback to update dashboard in MessengerController
@@ -34,7 +36,7 @@ public class RentalManager {
     }
 
     private void setupTimeListener() {
-        gameTimeManager.addTimeListener(new GameTimeManager.GameTimeListener() {
+        timeListener = new GameTimeManager.GameTimeListener() {
             @Override
             public void onTimeChanged(LocalDateTime newTime, long gameTimeMs) {}
 
@@ -42,7 +44,8 @@ public class RentalManager {
             public void onRentalPeriodCheck(CustomerRequest request, CustomerRequest.RentalPeriodType period) {
                 handleRentalExpiration(request, period);
             }
-        });
+        };
+        gameTimeManager.addTimeListener(timeListener);
     }
 
     public void setupRentalPeriod(CustomerRequest request, VPSOptimization.VM vm) {
@@ -85,36 +88,19 @@ public class RentalManager {
                 }
             } else {
                 chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                        "Customer has decided not to renew their contract. Request will be archived.",
+                        "Customer has decided not to renew their contract.",
                         new HashMap<>()));
-                chatAreaView.addSystemMessage("Customer has decided not to renew their contract. Request will be archived.");
+                chatAreaView.addSystemMessage("Customer has decided not to renew their contract.");
                 
-                // Find and release the VM associated with this request 
-                if (vmAssignments != null) {
-                    VPSOptimization.VM vmToRelease = null;
-                    for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
-                        if (entry.getValue() == request) {
-                            vmToRelease = entry.getKey();
-                            break;
-                        }
-                    }
-                    
-                    if (vmToRelease != null) {
-                        // Release VM from assignment to make it available
-                        vmAssignments.remove(vmToRelease);
-                        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                                "VM has been released back to the available pool", new HashMap<>()));
-                        chatAreaView.addSystemMessage("VM has been released back to the available pool");
-                        
-                        // Update dashboard to reflect the newly available VM
-                        if (onUpdateDashboard != null) {
-                            onUpdateDashboard.run();
-                        }
-                    }
-                }
+                // VM จะถูกคืนโดยอัตโนมัติในเมธอด releaseExpiredVMs() ของ MessengerController
+                // ดังนั้นไม่จำเป็นต้องทำอะไรเพิ่มเติมที่นี่
                 
-                if (onArchiveRequest != null) {
-                    onArchiveRequest.run(); // เรียก callback เพื่อ archive
+                // โน้ต: ไม่ต้องเรียก onArchiveRequest ที่นี่อีกต่อไป 
+                // เพราะ MessengerController จะเป็นคนจัดการการ archive แทน
+                
+                // อัปเดต Dashboard เพื่อให้แน่ใจว่าข้อมูลเป็นปัจจุบัน
+                if (onUpdateDashboard != null) {
+                    onUpdateDashboard.run();
                 }
             }
         });
@@ -156,5 +142,13 @@ public class RentalManager {
     // Setter for update dashboard callback
     public void setOnUpdateDashboard(Runnable onUpdateDashboard) {
         this.onUpdateDashboard = onUpdateDashboard;
+    }
+    
+    // เมธอดสำหรับยกเลิกการดักฟังเหตุการณ์จาก GameTimeManager
+    public void detachFromTimeManager() {
+        if (gameTimeManager != null && timeListener != null) {
+            gameTimeManager.removeTimeListener(timeListener);
+            System.out.println("Removed RentalManager listener from GameTimeManager");
+        }
     }
 }

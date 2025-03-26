@@ -12,12 +12,24 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.paint.CycleMethod;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Glow;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.util.Duration;
 
 public class MessengerWindow extends VBox {
     private RequestListView requestListView;
     private ChatAreaView chatAreaView;
     private DashboardView dashboardView;
+    private Timeline glowAnimation;
 
     // Constructor ที่รับ ChatHistoryManager
     public MessengerWindow(ChatHistoryManager chatHistoryManager) {
@@ -54,19 +66,79 @@ public class MessengerWindow extends VBox {
         HBox titleBox = new HBox(10);
         titleBox.setAlignment(Pos.CENTER_LEFT);
 
-        Circle messengerIcon = new Circle(12);
-        messengerIcon.setFill(Color.WHITE);
+        // สร้าง Matrix-like icon แทน Circle
+        Rectangle iconBg = new Rectangle(24, 24);
+        iconBg.setArcWidth(5);
+        iconBg.setArcHeight(5);
+        
+        // สร้าง Gradient สำหรับไอคอน
+        Stop[] stops = new Stop[] {
+            new Stop(0, Color.web("#00c3ff")),
+            new Stop(1, Color.web("#9e33ff"))
+        };
+        LinearGradient gradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE, stops);
+        iconBg.setFill(gradient);
+        
+        // สร้าง Effect สำหรับไอคอน
+        DropShadow dropShadow = new DropShadow();
+        dropShadow.setColor(Color.web("#00c3ff"));
+        dropShadow.setRadius(10);
+        
+        Glow glow = new Glow(0.8);
+        iconBg.setEffect(glow);
+        
+        // สร้าง Animation สำหรับ Glow Effect
+        glowAnimation = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(glow.levelProperty(), 0.5)),
+            new KeyFrame(Duration.seconds(1.5), new KeyValue(glow.levelProperty(), 0.8))
+        );
+        glowAnimation.setAutoReverse(true);
+        glowAnimation.setCycleCount(Timeline.INDEFINITE);
+        glowAnimation.play();
+        
+        // Text ข้างในไอคอน
+        Text matrixText = new Text("M");
+        matrixText.setFill(Color.WHITE);
+        matrixText.setStyle("-fx-font-weight: bold;");
+        HBox iconContainer = new HBox(iconBg);
+        iconContainer.setAlignment(Pos.CENTER);
+        iconContainer.getChildren().add(matrixText);
+        iconContainer.setTranslateX(-12); // ปรับตำแหน่ง text ให้อยู่ตรงกลางไอคอน
 
-        Label titleLabel = new Label("VPS Tycoon Messenger");
+        // สร้าง Label สำหรับชื่อหน้าต่าง
+        Label titleLabel = new Label("VPS TYCOON MESSENGER");
         titleLabel.getStyleClass().add("title-text");
+        
+        // เพิ่ม cyber-style version label
+        Label versionLabel = new Label("v2.0");
+        versionLabel.setStyle("-fx-text-fill: #00ffff; -fx-font-size: 10px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
+        versionLabel.setTranslateY(4); // ปรับตำแหน่งเล็กน้อย
+        
+        // สร้าง HBox สำหรับ title และ version
+        VBox titleVersionBox = new VBox(0);
+        titleVersionBox.setAlignment(Pos.CENTER_LEFT);
+        titleVersionBox.getChildren().addAll(titleLabel, versionLabel);
 
-        titleBox.getChildren().addAll(messengerIcon, titleLabel);
+        titleBox.getChildren().addAll(iconContainer, titleVersionBox);
         HBox.setHgrow(titleBox, Priority.ALWAYS);
 
+        // สร้าง Status indicator
+        Circle statusIndicator = new Circle(6);
+        statusIndicator.setFill(Color.web("#00ff88"));
+        statusIndicator.setEffect(new Glow(0.8));
+        
+        Label statusLabel = new Label("ONLINE");
+        statusLabel.setStyle("-fx-text-fill: #00ff88; -fx-font-size: 10px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
+        
+        HBox statusBox = new HBox(5);
+        statusBox.setAlignment(Pos.CENTER);
+        statusBox.getChildren().addAll(statusIndicator, statusLabel);
+        
+        // ปรับ Close button ให้มีธีม Cyberpunk มากขึ้น
         Button closeButton = new Button("×");
         closeButton.getStyleClass().add("close-button");
 
-        titleBar.getChildren().addAll(titleBox, closeButton);
+        titleBar.getChildren().addAll(titleBox, statusBox, closeButton);
         return titleBar;
     }
 
@@ -75,6 +147,6 @@ public class MessengerWindow extends VBox {
     public DashboardView getDashboardView() { return dashboardView; }
     public Button getCloseButton() {
         HBox titleBar = (HBox) getChildren().get(0);
-        return (Button) titleBar.getChildren().get(1);
+        return (Button) titleBar.getChildren().get(2);
     }
 }

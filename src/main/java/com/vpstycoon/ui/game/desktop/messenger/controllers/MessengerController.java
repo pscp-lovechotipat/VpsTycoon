@@ -226,9 +226,34 @@ public class MessengerController {
             }
         }
         
-        // Release all expired VMs
+        // Release all expired VMs but don't remove the requests
         for (VPSOptimization.VM vm : vmsToRelease) {
-            releaseVM(vm, false);
+            CustomerRequest request = vmAssignments.get(vm);
+            if (request != null) {
+                // เพิ่มข้อความในแชทเพื่อแจ้งว่า VM ถูกปล่อยคืนแล้ว
+                chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
+                    "Contract expired and VM released. You can archive this request.", new HashMap<>()));
+                
+                // ถ้า request นี้ถูกเลือกอยู่ตอนนี้ ให้แสดงข้อความในแชท
+                CustomerRequest selectedRequest = requestListView.getSelectedRequest();
+                if (selectedRequest != null && selectedRequest.equals(request)) {
+                    chatAreaView.addSystemMessage("Contract expired and VM released. You can archive this request.");
+                }
+            }
+            
+            // ปล่อย VM ออกจาก assignments แต่ยังคงเก็บ request ไว้ในสถานะ expired
+            vmAssignments.remove(vm);
+        }
+        
+        // อัพเดต UI ถ้ามีการเปลี่ยนแปลง
+        if (!vmsToRelease.isEmpty()) {
+            updateRequestList();
+            // ตรวจสอบว่าปุ่ม Archive ควรเปิดหรือปิดสำหรับ request ที่เลือกในขณะนี้
+            CustomerRequest selectedRequest = requestListView.getSelectedRequest();
+            if (selectedRequest != null) {
+                boolean shouldEnableArchive = selectedRequest.isActive() || selectedRequest.isExpired();
+                chatAreaView.getArchiveButton().setDisable(!shouldEnableArchive);
+            }
         }
     }
 
@@ -242,8 +267,20 @@ public class MessengerController {
                         "• " + request.getRequiredDisk() + " Disk\n\n" +
                         "Can you help me set this up?";
                 chatHistoryManager.addMessage(request, new ChatMessage(MessageType.CUSTOMER, requestMessage, new HashMap<>()));
+
+                // เพิ่มข้อความเกี่ยวกับสถานะของ request
+                if (request.isExpired()) {
+                    chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, 
+                        "This contract has expired and is waiting to be archived.", new HashMap<>()));
+                }
             }
+            
             chatAreaView.loadChatHistory(request);
+            
+            // แสดงข้อความสถานะเพิ่มเติมสำหรับ request ที่หมดอายุแล้ว
+            if (request.isExpired() && !vmAssignments.containsValue(request)) {
+                chatAreaView.addSystemMessage("This request can be archived now to free up space in the request list.");
+            }
         } else {
             chatAreaView.clearMessages();
         }
@@ -293,6 +330,13 @@ public class MessengerController {
         }
         vmAssignments.remove(vm); // ปล่อย VM ออกจากการล็อก
         updateDashboard(); // อัพเดต UI เพื่อแสดงจำนวน VM ที่ว่างเพิ่มขึ้น
+        
+        // อัปเดตปุ่ม Archive หลังจากปล่อย VM
+        CustomerRequest selectedRequest = requestListView.getSelectedRequest();
+        if (selectedRequest != null) {
+            boolean shouldEnableArchive = selectedRequest.isActive() || selectedRequest.isExpired();
+            chatAreaView.getArchiveButton().setDisable(!shouldEnableArchive);
+        }
     }
 
     private void loadSkillLevels() {
@@ -311,6 +355,7 @@ public class MessengerController {
     }
 
     private void cleanup() {
+        // ปิด scheduler
         scheduler.shutdown();
         try {
             if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
@@ -319,6 +364,17 @@ public class MessengerController {
         } catch (InterruptedException e) {
             scheduler.shutdownNow();
         }
+        
+        // ยกเลิกการเชื่อมต่อของ RentalManager กับ GameTimeManager
+        if (rentalManager != null) {
+            rentalManager.detachFromTimeManager();
+        }
+        
+        // ล้าง collections ต่างๆ
+        vmAssignments.clear();
+        provisioningProgressBars.clear();
+        
+        System.out.println("MessengerController cleanup completed");
     }
 
     public void setOnClose(Runnable onClose) {
@@ -326,8 +382,24 @@ public class MessengerController {
     }
 
     public void close() {
-        chatHistoryManager.saveChatHistory();
-        cleanup();
+        try {
+            // บันทึกประวัติแชทก่อนปิด
+            if (chatHistoryManager != null) {
+                chatHistoryManager.saveChatHistory();
+                System.out.println("Chat history saved on close");
+            }
+            
+            // ทำความสะอาดทรัพยากร
+            cleanup();
+            
+            // เรียกฟังก์ชันเมื่อปิด
+            if (onClose != null) {
+                onClose.run();
+            }
+        } catch (Exception e) {
+            System.err.println("Error during MessengerController close: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public MessengerWindow getMessengerWindow() {

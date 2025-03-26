@@ -181,6 +181,22 @@ public class GameApplication extends Application implements Navigator {
                     // 4. สร้างและแสดงหน้าเกมด้วยข้อมูลที่โหลดมา
                     gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, savedState);
                     gameplayScreen.show();
+                    
+                    // 5. ตรวจสอบว่า TimeThread เริ่มทำงานหรือไม่
+                    ResourceManager resourceManager = ResourceManager.getInstance();
+                    if (resourceManager.getGameTimeController() != null) {
+                        // เริ่ม TimeThread และ RequestGenerator อีกครั้ง
+                        System.out.println("เริ่มระบบเวลาเกมอีกครั้ง...");
+                        resourceManager.getGameTimeController().startTime();
+                        
+                        // เริ่ม RequestGenerator ใหม่จาก GameManager (ถ้ามี)
+                        if (gameManager != null && gameManager.getRequestGenerator() != null) {
+                            System.out.println("เริ่ม RequestGenerator อีกครั้ง...");
+                            if (!gameManager.getRequestGenerator().isAlive()) {
+                                gameManager.getRequestGenerator().start();
+                            }
+                        }
+                    }
                 } else {
                     showAlert("Error", "ไม่สามารถโหลดเกมได้: ข้อมูลเสียหาย");
                     System.err.println("โหลดเกมล้มเหลว: ข้อมูลว่างหรือไม่ถูกต้อง");

@@ -35,20 +35,35 @@ public class ChatHistoryManager {
     public void saveChatHistory() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CHAT_HISTORY_FILE))) {
             oos.writeObject(customerChatHistory);
-            System.out.println("Chat history saved successfully");
+            System.out.println("Chat history saved successfully to " + new File(CHAT_HISTORY_FILE).getAbsolutePath());
         } catch (IOException e) {
             System.err.println("Error saving chat history: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     @SuppressWarnings("unchecked")
     private Map<CustomerRequest, List<ChatMessage>> loadChatHistory() {
         File file = new File(CHAT_HISTORY_FILE);
-        if (!file.exists()) return new HashMap<>();
+        if (!file.exists()) {
+            System.out.println("Chat history file does not exist at: " + file.getAbsolutePath());
+            return new HashMap<>();
+        }
+        
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<CustomerRequest, List<ChatMessage>>) ois.readObject();
+            Map<CustomerRequest, List<ChatMessage>> history = (Map<CustomerRequest, List<ChatMessage>>) ois.readObject();
+            System.out.println("Chat history loaded successfully from " + file.getAbsolutePath() + 
+                  " with " + history.size() + " conversations");
+            return history;
         } catch (IOException | ClassNotFoundException e) {
             System.err.println("Error loading chat history: " + e.getMessage());
+            e.printStackTrace();
+            // ถ้าโหลดไม่สำเร็จ ให้สำรองไฟล์เดิมและสร้างใหม่
+            if (file.exists()) {
+                File backupFile = new File(CHAT_HISTORY_FILE + ".bak");
+                file.renameTo(backupFile);
+                System.out.println("Renamed corrupt chat history file to " + backupFile.getAbsolutePath());
+            }
             return new HashMap<>();
         }
     }
