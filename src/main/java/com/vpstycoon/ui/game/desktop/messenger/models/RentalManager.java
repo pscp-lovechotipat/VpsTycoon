@@ -21,6 +21,8 @@ public class RentalManager {
     private final GameTimeManager gameTimeManager;
     private final Random random = new Random();
     private Runnable onArchiveRequest; // Callback to archive request in MessengerController
+    private Map<VPSOptimization.VM, CustomerRequest> vmAssignments; // Reference to VM assignments
+    private Runnable onUpdateDashboard; // Callback to update dashboard in MessengerController
 
     public RentalManager(ChatHistoryManager chatHistoryManager, ChatAreaView chatAreaView,
                          Company company, GameTimeManager gameTimeManager) {
@@ -86,6 +88,31 @@ public class RentalManager {
                         "Customer has decided not to renew their contract. Request will be archived.",
                         new HashMap<>()));
                 chatAreaView.addSystemMessage("Customer has decided not to renew their contract. Request will be archived.");
+                
+                // Find and release the VM associated with this request 
+                if (vmAssignments != null) {
+                    VPSOptimization.VM vmToRelease = null;
+                    for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
+                        if (entry.getValue() == request) {
+                            vmToRelease = entry.getKey();
+                            break;
+                        }
+                    }
+                    
+                    if (vmToRelease != null) {
+                        // Release VM from assignment to make it available
+                        vmAssignments.remove(vmToRelease);
+                        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
+                                "VM has been released back to the available pool", new HashMap<>()));
+                        chatAreaView.addSystemMessage("VM has been released back to the available pool");
+                        
+                        // Update dashboard to reflect the newly available VM
+                        if (onUpdateDashboard != null) {
+                            onUpdateDashboard.run();
+                        }
+                    }
+                }
+                
                 if (onArchiveRequest != null) {
                     onArchiveRequest.run(); // เรียก callback เพื่อ archive
                 }
@@ -104,11 +131,16 @@ public class RentalManager {
         return Math.max(0.1, Math.min(0.95, baseProbability + ratingFactor));
     }
 
-    // Method เพื่อหา VM ที่ถูก assign ให้ request (ต้องเชื่อมกับ VMProvisioningManager)
+    // Method เพื่อหา VM ที่ถูก assign ให้ request
     private VPSOptimization.VM getAssignedVM(CustomerRequest request) {
-        // ในที่นี้สมมติว่า MessengerController หรือ VMProvisioningManager จะจัดการ
-        // จะต้องส่งผ่านข้อมูลนี้มา
-        return null; // ต้อง implement โดยอิงจาก MessengerController
+        if (vmAssignments != null) {
+            for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
+                if (entry.getValue() == request) {
+                    return entry.getKey();
+                }
+            }
+        }
+        return null;
     }
 
     // Setter สำหรับ callback
@@ -118,6 +150,11 @@ public class RentalManager {
 
     // Getter เพื่อให้ MessengerController สามารถหา VM ได้
     public void setVMAssignment(Map<VPSOptimization.VM, CustomerRequest> vmAssignments) {
-        // จะต้องเพิ่ม logic เพื่อหา VM จาก vmAssignments
+        this.vmAssignments = vmAssignments;
+    }
+
+    // Setter for update dashboard callback
+    public void setOnUpdateDashboard(Runnable onUpdateDashboard) {
+        this.onUpdateDashboard = onUpdateDashboard;
     }
 }

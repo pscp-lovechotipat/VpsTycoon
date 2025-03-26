@@ -572,8 +572,15 @@ public class VMCreationUI {
                         }
                     }
 
+                    // Ensure VM is set to "Running" status so it's available for assignment
+                    newVM.setStatus("Running");
+                    
                     vps.addVM(newVM);
                     System.out.println("Success: VM created: " + ipField.getText() + " in VPS: " + vpsId);
+                    
+                    // Explicitly update the dashboard to refresh VM count
+                    parent.pushNotification("VM Created", "VM " + nameField.getText() + " has been created and is now available for assignment.");
+                    
                     parent.openVPSInfoPage(vps);
                 } catch (Exception ex) {
                     System.out.println("Error: " + ex.getMessage());

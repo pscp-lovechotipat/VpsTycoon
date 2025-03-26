@@ -117,11 +117,16 @@ public class GameTimeManager {
 
                     // ตรวจสอบการหมดสัญญา
                     if (currentGameTimeMs >= rentalStartTime + durationMs) {
+                        // Mark the request as expired BEFORE notifying listeners
+                        // This ensures that listeners can check the correct status
+                        request.markAsExpired();
+                        
+                        // Notify listeners to handle the contract expiration
+                        // For example, to decide whether to renew the contract
                         for (GameTimeListener listener : timeListeners) {
                             listener.onRentalPeriodCheck(request, period);
                             System.out.println("Rental period check completed for " + request.getName());
                         }
-                        request.markAsExpired();
                     }
                 }
             }

@@ -78,6 +78,7 @@ public class MessengerController {
 
         this.rentalManager.setOnArchiveRequest(() -> archiveRequest(requestListView.getSelectedRequest()));
         this.rentalManager.setVMAssignment(vmAssignments);
+        this.rentalManager.setOnUpdateDashboard(this::updateDashboard);
     }
 
     private void setupListeners() {
@@ -90,7 +91,18 @@ public class MessengerController {
 
         requestListView.getRequestView().getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             chatAreaView.updateChatHeader(newVal);
-            chatAreaView.getAssignVMButton().setDisable(newVal == null || newVal.isActive() || newVal.isExpired());
+            
+            // Only enable the assignVM button if there are running VMs available
+            boolean hasAvailableVMs = false;
+            if (newVal != null && !newVal.isActive() && !newVal.isExpired()) {
+                for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                    hasAvailableVMs = vps.getVms().stream()
+                            .anyMatch(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm));
+                    if (hasAvailableVMs) break;
+                }
+            }
+            
+            chatAreaView.getAssignVMButton().setDisable(newVal == null || newVal.isActive() || newVal.isExpired() || !hasAvailableVMs);
             chatAreaView.getArchiveButton().setDisable(newVal == null || (!newVal.isActive() && !newVal.isExpired()));
             if (newVal != null) {
                 updateChatWithRequestDetails(newVal);
@@ -148,7 +160,7 @@ public class MessengerController {
                             .collect(Collectors.toList()));
                 }
                 if (allAvailableVMs.isEmpty()) {
-                    chatAreaView.addSystemMessage("No available VMs to assign.");
+                    chatAreaView.addSystemMessage("No available VMs to assign. Please create new VMs first.");
                     return;
                 }
                 VMSelectionDialog dialog = new VMSelectionDialog(allAvailableVMs, rootStack);
@@ -169,6 +181,8 @@ public class MessengerController {
                         });
                     }
                 });
+                
+                // Dialog is automatically shown when created, no need to call show()
             }
         });
 
@@ -180,6 +194,10 @@ public class MessengerController {
     }
 
     private void updateDashboard() {
+        // First, check for any expired requests and release their VMs
+        releaseExpiredVMs();
+        
+        // Update dashboard with available VM count
         int availableVMs = 0;
         for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
             availableVMs += (int) vps.getVms().stream()
@@ -187,6 +205,31 @@ public class MessengerController {
                     .count();
         }
         dashboardView.updateDashboard(company.getRating(), requestManager.getRequests().size(), availableVMs, vpsManager.getVPSMap().size());
+        
+        // Update the AssignVMButton status for selected request
+        CustomerRequest selected = requestListView.getSelectedRequest();
+        if (selected != null && !selected.isActive() && !selected.isExpired()) {
+            chatAreaView.getAssignVMButton().setDisable(availableVMs <= 0);
+        }
+    }
+
+    /**
+     * Checks for expired requests and releases their VMs
+     */
+    private void releaseExpiredVMs() {
+        List<VPSOptimization.VM> vmsToRelease = new ArrayList<>();
+        
+        // Find all VMs with expired requests
+        for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
+            if (entry.getValue().isExpired()) {
+                vmsToRelease.add(entry.getKey());
+            }
+        }
+        
+        // Release all expired VMs
+        for (VPSOptimization.VM vm : vmsToRelease) {
+            releaseVM(vm, false);
+        }
     }
 
     private void updateChatWithRequestDetails(CustomerRequest request) {
