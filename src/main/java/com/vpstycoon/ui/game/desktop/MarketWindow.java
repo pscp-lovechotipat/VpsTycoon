@@ -529,8 +529,12 @@ public class MarketWindow extends BorderPane {
                     "ACQUIRED " + product.getName() + " FOR " + product.getPriceDisplay() + 
                     "\nVPS added to your inventory!");
 
-            // ปิด market window และเปิด inventory
+            // ปิด market window (ซึ่งจะทำให้ menubar กลับมาแสดง)
             onClose.run();
+            
+            // ซ่อน MenuBar ก่อนเปิดหน้า inventory
+            parent.getMenuBar().setVisible(false);
+            parent.getInGameMarketMenuBar().setVisible(false);
             
             // เปิดหน้า inventory ทันทีหลังซื้อ เพื่อให้ผู้เล่นเห็นว่าได้ VPS มาแล้ว
             parent.openVPSInventory();
@@ -644,6 +648,11 @@ public class MarketWindow extends BorderPane {
 
             // Close market window and open rack management
             onClose.run();
+            
+            // Hide menu bars before opening rack info
+            parent.getMenuBar().setVisible(false);
+            parent.getInGameMarketMenuBar().setVisible(false);
+            
             parent.openRackInfo();
         });
 

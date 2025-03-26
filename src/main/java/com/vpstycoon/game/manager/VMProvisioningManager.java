@@ -276,8 +276,26 @@ public class VMProvisioningManager implements Serializable {
      * @return The associated customer request, or null if not found
      */
     public CustomerRequest getRequestForVM(VPSOptimization.VM vm) {
+        if (vm == null) {
+            return null;
+        }
+        
+        // สร้าง key จาก IP และชื่อ VM
         String vmKey = vm.getIp() + ":" + vm.getName();
-        return vmToRequestMap.get(vmKey);
+        
+        // ค้นหาใน vmToRequestMap
+        CustomerRequest request = vmToRequestMap.get(vmKey);
+        
+        // ถ้าไม่พบในแมพ ให้ค้นหาใน activeRequests
+        if (request == null) {
+            for (Map.Entry<CustomerRequest, VPSOptimization.VM> entry : activeRequests.entrySet()) {
+                if (entry.getValue().equals(vm)) {
+                    return entry.getKey();
+                }
+            }
+        }
+        
+        return request;
     }
     
     /**

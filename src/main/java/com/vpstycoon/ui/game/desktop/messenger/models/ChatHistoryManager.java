@@ -23,6 +23,13 @@ public class ChatHistoryManager {
         }
         return instance;
     }
+    
+    /**
+     * ล้างข้อมูล instance และกำหนดให้เป็น null เพื่อให้สร้างใหม่ในครั้งต่อไป
+     */
+    public static void resetInstance() {
+        instance = null;
+    }
 
     public List<ChatMessage> getChatHistory(CustomerRequest request) {
         return customerChatHistory.getOrDefault(request, new ArrayList<>());
@@ -30,6 +37,34 @@ public class ChatHistoryManager {
 
     public void addMessage(CustomerRequest request, ChatMessage message) {
         customerChatHistory.computeIfAbsent(request, k -> new ArrayList<>()).add(message);
+    }
+    
+    /**
+     * ล้างข้อมูลประวัติแชททั้งหมดในหน่วยความจำ
+     */
+    public void clearChatHistory() {
+        customerChatHistory.clear();
+        System.out.println("Chat history cleared from memory");
+    }
+    
+    /**
+     * ลบไฟล์ chat_history.dat
+     * @return true ถ้าลบสำเร็จ, false ถ้าล้มเหลวหรือไม่พบไฟล์
+     */
+    public boolean deleteChatHistoryFile() {
+        File chatFile = new File(CHAT_HISTORY_FILE);
+        if (chatFile.exists()) {
+            boolean deleted = chatFile.delete();
+            if (deleted) {
+                System.out.println("Chat history file deleted: " + chatFile.getAbsolutePath());
+            } else {
+                System.err.println("Failed to delete chat history file: " + chatFile.getAbsolutePath());
+            }
+            return deleted;
+        } else {
+            System.out.println("Chat history file does not exist: " + chatFile.getAbsolutePath());
+            return true; // ถือว่าสำเร็จเนื่องจากไม่มีไฟล์อยู่แล้ว
+        }
     }
 
     public void saveChatHistory() {

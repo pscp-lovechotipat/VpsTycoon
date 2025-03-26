@@ -71,6 +71,14 @@ public class DesktopScreen extends StackPane {
             // ดึง MessengerWindow จาก MessengerController
             chatWindow = chatController.getMessengerWindow();
 
+            // อัพเดต dashboardView ด้วยค่า free VM ที่ได้จาก company
+            chatWindow.getDashboardView().updateDashboard(
+                company.getRating(),
+                requestManager.getRequests().size(),
+                company.getAvailableVMs(),  // ใช้ค่า availableVMs ที่เก็บไว้ใน company
+                vpsManager.getVPSMap().size()
+            );
+
             // ตั้งค่าปุ่มปิดให้ทำงานอย่างถูกต้อง
             chatWindow.getCloseButton().setOnAction(e -> {
                 chatController.close();
@@ -78,6 +86,14 @@ public class DesktopScreen extends StackPane {
             });
         }
         if (!getChildren().contains(chatWindow)) {
+            // ทุกครั้งที่เปิด chat window ให้อัพเดตข้อมูล free VM ล่าสุดจาก company
+            chatWindow.getDashboardView().updateDashboard(
+                company.getRating(),
+                requestManager.getRequests().size(),
+                company.getAvailableVMs(),
+                vpsManager.getVPSMap().size()
+            );
+            
             StackPane.setAlignment(chatWindow, Pos.CENTER);
             getChildren().add(chatWindow);
         }

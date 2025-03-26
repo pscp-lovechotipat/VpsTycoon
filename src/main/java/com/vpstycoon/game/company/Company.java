@@ -11,6 +11,7 @@ public class Company implements Serializable {
     private double rating;
     private int marketingPoints;
     private int skillPointsAvailable;
+    private int availableVMs;
 
     private long money;
     private long totalRevenue;
@@ -72,6 +73,7 @@ public class Company implements Serializable {
         this.customerSatisfaction = 50; // 0-100 scale
         this.completedRequests = 0;
         this.failedRequests = 0;
+        this.availableVMs = 0;
         this.financialHistory = new ArrayList<>();
     }
 
@@ -277,5 +279,13 @@ public class Company implements Serializable {
      */
     public int getStarRating() {
         return (int) Math.ceil(rating);
+    }
+
+    public int getAvailableVMs() {
+        return availableVMs;
+    }
+
+    public void setAvailableVMs(int availableVMs) {
+        this.availableVMs = availableVMs;
     }
 } 

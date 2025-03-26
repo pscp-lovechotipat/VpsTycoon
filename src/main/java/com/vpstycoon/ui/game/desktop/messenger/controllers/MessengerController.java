@@ -200,11 +200,20 @@ public class MessengerController {
         // Update dashboard with available VM count
         int availableVMs = 0;
         for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+            // นับ VM ที่มีสถานะ Running และยังไม่ถูกกำหนดให้ลูกค้า
             availableVMs += (int) vps.getVms().stream()
                     .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
                     .count();
         }
+        
+        // อัพเดต Dashboard ด้วยข้อมูลล่าสุด
         dashboardView.updateDashboard(company.getRating(), requestManager.getRequests().size(), availableVMs, vpsManager.getVPSMap().size());
+        
+        // บันทึกค่าลงใน Company เพื่อให้สามารถเรียกใช้ค่านี้ได้จากที่อื่น
+        company.setAvailableVMs(availableVMs);
+        
+        // บันทึกค่าลงใน GameState ผ่าน ResourceManager ด้วย
+        ResourceManager.getInstance().getCurrentState().setFreeVmCount(availableVMs);
         
         // Update the AssignVMButton status for selected request
         CustomerRequest selected = requestListView.getSelectedRequest();
@@ -287,12 +296,25 @@ public class MessengerController {
     }
 
     private void completeVMProvisioning(CustomerRequest request, VPSOptimization.VM vm) {
-        rentalManager.setupRentalPeriod(request, vm);
-        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed successfully", new HashMap<>()));
+        // Mark request as active
+        request.activate(gameTimeManager.getGameTimeMs());
+        chatAreaView.getArchiveButton().setDisable(false);
+        chatAreaView.getAssignVMButton().setDisable(true);
+        chatAreaView.updateChatHeader(request);
+        
+        // อัพเดต dashboard เพื่อแสดงสถานะล่าสุด
+        updateDashboard();
+        
+        // เพิ่มข้อความในแชท
+        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, 
+            "VM provisioning completed successfully", new HashMap<>()));
         chatAreaView.addSystemMessage("VM provisioning completed successfully");
+        
+        // ให้รางวัล skill points
         skillPointsManager.awardSkillPoints(request, 0.2);
+        
+        // อัพเดตรายการคำขอ
         updateRequestList();
-        updateDashboard(); // อัพเดต UI อีกครั้งหลัง provisioning เสร็จ
     }
 
     private void archiveRequest(CustomerRequest selected) {
@@ -314,28 +336,45 @@ public class MessengerController {
     }
 
     public void releaseVM(VPSOptimization.VM vm, boolean isArchiving) {
-        CustomerRequest request = vmAssignments.get(vm);
-        if (request != null) {
-            if (isArchiving) {
-                requestManager.getRequests().remove(request);
-                chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                        "Request archived and VM released", new HashMap<>()));
-                chatAreaView.addSystemMessage("Request archived and VM released");
-            } else {
-                request.markAsExpired();
-                chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
-                        "Contract expired and VM released", new HashMap<>()));
-                chatAreaView.addSystemMessage("Contract expired and VM released");
+        // หา request ที่ใช้ VM นี้
+        CustomerRequest requestToRelease = null;
+        for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
+            if (entry.getKey().equals(vm)) {
+                requestToRelease = entry.getValue();
+                break;
             }
         }
-        vmAssignments.remove(vm); // ปล่อย VM ออกจากการล็อก
-        updateDashboard(); // อัพเดต UI เพื่อแสดงจำนวน VM ที่ว่างเพิ่มขึ้น
         
-        // อัปเดตปุ่ม Archive หลังจากปล่อย VM
-        CustomerRequest selectedRequest = requestListView.getSelectedRequest();
-        if (selectedRequest != null) {
-            boolean shouldEnableArchive = selectedRequest.isActive() || selectedRequest.isExpired();
-            chatAreaView.getArchiveButton().setDisable(!shouldEnableArchive);
+        if (requestToRelease != null) {
+            if (isArchiving) {
+                // เพิ่มข้อความในแชทเพื่อแจ้งว่า VM ถูกปล่อยคืนแล้ว
+                chatHistoryManager.addMessage(requestToRelease, new ChatMessage(MessageType.SYSTEM,
+                    "Request archived and VM released.", new HashMap<>()));
+                chatAreaView.addSystemMessage("Request archived and VM released.");
+                
+                // ลบออกจาก pendingRequests
+                requestManager.getRequests().remove(requestToRelease);
+            } else {
+                // กรณีหมดอายุ
+                requestToRelease.markAsExpired();
+                chatHistoryManager.addMessage(requestToRelease, new ChatMessage(MessageType.SYSTEM,
+                    "Contract expired and VM released.", new HashMap<>()));
+                chatAreaView.addSystemMessage("Contract expired and VM released.");
+            }
+            
+            // ปล่อย VM
+            vmAssignments.remove(vm);
+            
+            // ปรับปรุง UI
+            updateDashboard();
+            updateRequestList();
+            
+            // อัปเดตปุ่ม Archive หลังจากปล่อย VM
+            CustomerRequest selectedRequest = requestListView.getSelectedRequest();
+            if (selectedRequest != null) {
+                boolean shouldEnableArchive = selectedRequest.isActive() || selectedRequest.isExpired();
+                chatAreaView.getArchiveButton().setDisable(!shouldEnableArchive);
+            }
         }
     }
 

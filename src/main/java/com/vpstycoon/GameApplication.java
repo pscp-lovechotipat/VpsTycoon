@@ -132,27 +132,39 @@ public class GameApplication extends Application implements Navigator {
     public void startNewGame() {
         System.out.println("=========== STARTING NEW GAME ===========");
         
-        // 1. ลบไฟล์เซฟเดิมก่อน
+        // 1. ลบและรีเซ็ตประวัติแชท
+        try {
+            com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager chatManager = 
+                com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager.getInstance();
+            chatManager.clearChatHistory();
+            chatManager.deleteChatHistoryFile();
+            com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager.resetInstance();
+            System.out.println("ล้างประวัติแชทเรียบร้อย");
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการลบประวัติแชท: " + e.getMessage());
+        }
+        
+        // 2. ลบไฟล์เซฟเดิมก่อน
         ResourceManager.getInstance().deleteSaveFile();
         System.out.println("ลบไฟล์เซฟเดิมเรียบร้อย");
         
-        // 2. สร้าง GameState ใหม่ (ไม่อ่านจากไฟล์)
+        // 3. สร้าง GameState ใหม่ (ไม่อ่านจากไฟล์)
         GameState newState = new GameState();
         
-        // 3. สร้าง Company ใหม่และตั้งค่าเริ่มต้น
+        // 4. สร้าง Company ใหม่และตั้งค่าเริ่มต้น
         Company newCompany = new Company();
         newCompany.setMoney(10000); // เงินตั้งต้น 10,000
         newCompany.setRating(3.0);  // Rating เริ่มต้น 3.0
         newState.setCompany(newCompany);
         
-        // 4. รีเซ็ตเวลากลับไปที่เริ่มเกม
+        // 5. รีเซ็ตเวลากลับไปที่เริ่มเกม
         newState.setLocalDateTime(LocalDateTime.of(2000, 1, 1, 0, 0, 0));
         
-        // 5. อัพเดท currentState ใน ResourceManager
+        // 6. อัพเดท currentState ใน ResourceManager
         ResourceManager.getInstance().setCurrentState(newState);
         System.out.println("อัพเดท GameState ใน ResourceManager แล้ว");
         
-        // 6. สร้างและแสดง gameplay screen
+        // 7. สร้างและแสดง gameplay screen
         gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, newState);
         gameplayScreen.show();
         
@@ -164,25 +176,37 @@ public class GameApplication extends Application implements Navigator {
     public void continueGame() {
         System.out.println("=========== CONTINUE GAME ===========");
         
-        // 1. ตรวจสอบไฟล์เซฟ
+        // 1. ตรวจสอบประวัติแชท
+        try {
+            com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager chatManager = 
+                com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager.getInstance();
+            
+            // แน่ใจว่ามีการโหลดประวัติแชทล่าสุด
+            System.out.println("กำลังโหลดประวัติแชท...");
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการโหลดประวัติแชท: " + e.getMessage());
+        }
+        
+        // 2. ตรวจสอบไฟล์เซฟ
         if (ResourceManager.getInstance().hasSaveFile()) {
             try {
                 System.out.println("พบไฟล์เซฟ กำลังโหลด...");
                 
-                // 2. โหลดข้อมูลเกมจากไฟล์เซฟ
+                // 3. โหลดข้อมูลเกมจากไฟล์เซฟ
                 GameState savedState = ResourceManager.getInstance().loadGameState();
                 
-                // 3. ตรวจสอบว่าโหลดข้อมูลได้ถูกต้อง
+                // 4. ตรวจสอบว่าโหลดข้อมูลได้ถูกต้อง
                 if (savedState != null && savedState.getCompany() != null) {
                     System.out.println("โหลดเกมสำเร็จ ข้อมูลบริษัท:");
                     System.out.println("- เงิน: $" + savedState.getCompany().getMoney());
                     System.out.println("- Rating: " + savedState.getCompany().getRating());
+                    System.out.println("- Free VM: " + savedState.getFreeVmCount());
                     
-                    // 4. สร้างและแสดงหน้าเกมด้วยข้อมูลที่โหลดมา
+                    // 5. สร้างและแสดงหน้าเกมด้วยข้อมูลที่โหลดมา
                     gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, savedState);
                     gameplayScreen.show();
                     
-                    // 5. ตรวจสอบว่า TimeThread เริ่มทำงานหรือไม่
+                    // 6. ตรวจสอบว่า TimeThread เริ่มทำงานหรือไม่
                     ResourceManager resourceManager = ResourceManager.getInstance();
                     if (resourceManager.getGameTimeController() != null) {
                         // เริ่ม TimeThread และ RequestGenerator อีกครั้ง

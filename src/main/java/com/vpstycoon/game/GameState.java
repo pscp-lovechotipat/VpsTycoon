@@ -35,6 +35,9 @@ public class GameState implements Serializable {
     private Map<String, Object> rackConfiguration; // เก็บข้อมูลการตั้งค่า Rack
     private Map<String, Object> vpsInventoryData; // เก็บข้อมูล VPS ที่ยังไม่ได้ติดตั้ง
     
+    // เพิ่มฟิลด์สำหรับเก็บจำนวน free VM
+    private int freeVmCount;
+    
     public GameState() {
         this.company = ResourceManager.getInstance().getCompany();
 
@@ -46,6 +49,7 @@ public class GameState implements Serializable {
         // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
         this.rackConfiguration = new HashMap<>();
         this.vpsInventoryData = new HashMap<>();
+        this.freeVmCount = 0;
 
         this.localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
@@ -64,6 +68,7 @@ public class GameState implements Serializable {
         // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
         this.rackConfiguration = new HashMap<>();
         this.vpsInventoryData = new HashMap<>();
+        this.freeVmCount = 0;
     }
 
     public GameState(Company company) {
@@ -74,6 +79,16 @@ public class GameState implements Serializable {
         // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
         this.rackConfiguration = new HashMap<>();
         this.vpsInventoryData = new HashMap<>();
+        this.freeVmCount = 0;
+    }
+
+    // Getter และ Setter สำหรับ freeVmCount
+    public int getFreeVmCount() {
+        return freeVmCount;
+    }
+    
+    public void setFreeVmCount(int freeVmCount) {
+        this.freeVmCount = freeVmCount;
     }
 
     // Getter และ Setter สำหรับ Rack Configuration

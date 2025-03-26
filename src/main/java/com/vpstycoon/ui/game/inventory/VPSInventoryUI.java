@@ -35,6 +35,7 @@ public class VPSInventoryUI {
         
         // Hide the menu bars
         parent.getMenuBar().setVisible(false);
+        parent.getMoneyUI().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
         
         // Create title bar
