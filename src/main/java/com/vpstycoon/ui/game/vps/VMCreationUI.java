@@ -36,6 +36,13 @@ public class VMCreationUI {
         int availableRamGB = vps.getRamInGB() - usedRamGB;
         int availableDiskGB = vps.getDiskInGB() - usedDiskGB;
 
+        if (availableVCPUs < 1 || availableRamGB < 1 || availableDiskGB < 10) {
+            parent.pushNotification("Insufficient Resources",
+                    "No available resources to create a new VM. Please delete existing VMs to free up resources.");
+            parent.openVPSInfoPage(vps);
+            return;
+        }
+
         // สร้างหน้าหลักสำหรับสร้าง VM
         BorderPane createVMPane = new BorderPane();
         createVMPane.setPrefSize(800, 600);
@@ -90,7 +97,7 @@ public class VMCreationUI {
         ComboBox<Integer> vcpuComboBox = new ComboBox<>(
                 FXCollections.observableArrayList(vcpuOptions)
         );
-        vcpuComboBox.setValue(1); // Default value
+        vcpuComboBox.setValue(vcpuOptions.getFirst()); // Default value
         vcpuBox.getChildren().addAll(vcpuLabel, vcpuComboBox);
         
         // RAM dropdown
@@ -108,7 +115,7 @@ public class VMCreationUI {
         ComboBox<String> ramComboBox = new ComboBox<>(
                 FXCollections.observableArrayList(ramOptions)
         );
-        ramComboBox.setValue("1 GB"); // Default value
+        ramComboBox.setValue(ramOptions.getFirst()); // Default value
         ramBox.getChildren().addAll(ramLabel, ramComboBox);
         
         // Disk dropdown
@@ -125,7 +132,7 @@ public class VMCreationUI {
         ComboBox<String> diskComboBox = new ComboBox<>(
                 FXCollections.observableArrayList(diskOptions)
         );
-        diskComboBox.setValue("10 GB"); // Default value
+        diskComboBox.setValue(diskOptions.getFirst()); // Default value
         diskBox.getChildren().addAll(diskLabel, diskComboBox);
         
         perfSection.getChildren().addAll(vcpuBox, ramBox, diskBox);
