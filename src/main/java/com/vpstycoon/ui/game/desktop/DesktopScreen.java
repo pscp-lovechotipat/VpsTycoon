@@ -45,11 +45,16 @@ public class DesktopScreen extends StackPane {
 
     private void setupUI() {
         setStyle("-fx-background-color: #1e1e1e; -fx-background-image: url(/images/wallpaper/desktop_wallpaper_bambam.png); -fx-background-size: cover; -fx-background-position: center; -fx-background-repeat: no-repeat;");
-        setPrefSize(800, 600);
-
-        FlowPane iconsContainer = new FlowPane(10, 10);
-        iconsContainer.setPadding(new Insets(20));
+        
+        // Set size to fill available space
+        setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        setPrefSize(1920, 1080); // Set a large preferred size
+        
+        FlowPane iconsContainer = new FlowPane(20, 20); // Increase spacing
+        iconsContainer.setPadding(new Insets(30)); // Increase padding
         iconsContainer.setAlignment(Pos.TOP_LEFT);
+        iconsContainer.setMaxWidth(Double.MAX_VALUE);
+        iconsContainer.setMaxHeight(Double.MAX_VALUE);
 
         DesktopIcon messengerIcon = new DesktopIcon(FontAwesomeSolid.COMMENTS.toString(), "Messenger", this::openChatWindow);
         iconsContainer.getChildren().addAll(messengerIcon,
@@ -94,6 +99,10 @@ public class DesktopScreen extends StackPane {
                 vpsManager.getVPSMap().size()
             );
             
+            // Make chat window larger
+            chatWindow.setPrefSize(900, 700);
+            chatWindow.setMaxSize(1200, 800);
+            
             StackPane.setAlignment(chatWindow, Pos.CENTER);
             getChildren().add(chatWindow);
         }
@@ -110,6 +119,11 @@ public class DesktopScreen extends StackPane {
     private void openMarketWindow() {
         MarketWindow marketWindow = new MarketWindow(() -> getChildren().removeIf(node -> node instanceof MarketWindow),
                 () -> getChildren().removeIf(node -> node instanceof MarketWindow), vpsManager, parent);
+        
+        // Make market window fill most of the screen
+        marketWindow.setPrefSize(1200, 800);
+        marketWindow.setMaxSize(1600, 900);
+        
         StackPane.setAlignment(marketWindow, Pos.CENTER);
         getChildren().add(marketWindow);
     }
@@ -117,6 +131,11 @@ public class DesktopScreen extends StackPane {
     private void openDashboardWindow() {
         DashboardWindow dashboardWindow = new DashboardWindow(company, vpsManager, requestManager,
                 () -> getChildren().removeIf(node -> node instanceof DashboardWindow));
+        
+        // Make dashboard window larger
+        dashboardWindow.setPrefSize(1200, 800);
+        dashboardWindow.setMaxSize(1600, 900);
+        
         StackPane.setAlignment(dashboardWindow, Pos.CENTER);
         getChildren().add(dashboardWindow);
     }

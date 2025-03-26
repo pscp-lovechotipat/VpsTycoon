@@ -27,6 +27,9 @@ public class MarketWindow extends BorderPane {
     private final VPSManager vpsManager;
     private final Runnable onClose;
     private Label moneyDisplay;
+    private VBox mainContent;
+    private ScrollPane contentArea;
+    private String currentFilter = "ALL"; // Default to show all products
 
     public MarketWindow(Runnable onClose, Runnable onClose2, VPSManager vpsManager, GameplayContentPane parent) {
         this.parent = parent;
@@ -47,15 +50,23 @@ public class MarketWindow extends BorderPane {
             -fx-border-width: 2px;
             -fx-border-style: solid;
             """);
-        setPadding(new Insets(20, 20, 20, 20));
+        
+        // Set maximum size to use full available space
+        setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        setPrefSize(1200, 800); // Set preferred size larger
+        
+        // Reduce padding to utilize more space
+        setPadding(new Insets(10, 10, 10, 10));
 
         // Left menu with Cyberpunk theme
         VBox leftMenu = createLeftMenu();
         setLeft(leftMenu);
 
         // Content area with Cyberpunk theme
-        ScrollPane contentArea = new ScrollPane();
+        contentArea = new ScrollPane();
         contentArea.setFitToWidth(true);
+        contentArea.setFitToHeight(true); // Make content area fit height
+        contentArea.setPrefViewportWidth(900); // Set preferred width larger
         contentArea.setStyle("""
             -fx-background: transparent;
             -fx-background-color: transparent;
@@ -66,72 +77,15 @@ public class MarketWindow extends BorderPane {
         contentArea.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         contentArea.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        // Main content
-        VBox mainContent = new VBox(20);
+        // Create main content container
+        mainContent = new VBox(20);
         mainContent.setAlignment(Pos.TOP_CENTER);
         mainContent.setPadding(new Insets(20, 20, 20, 20));
+        mainContent.setMaxWidth(Double.MAX_VALUE); // Allow content to expand horizontally
 
-        // VPS Products Section
-        Label vpsTitle = new Label("SERVER PRODUCTS");
-        vpsTitle.setStyle("""
-            -fx-text-fill: #9a30fa;
-            -fx-font-size: 28px;
-            -fx-font-family: 'monospace';
-            -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #9a30fa, 10, 0, 0, 0);
-            """);
-        mainContent.getChildren().add(vpsTitle);
-
-        // Products grid
-        GridPane productsGrid = new GridPane();
-        productsGrid.setHgap(20);
-        productsGrid.setVgap(20);
-        productsGrid.setAlignment(Pos.CENTER);
-
-        int column = 0;
-        int row = 0;
-        for (VPSProduct product : VPSProduct.values()) {
-            VBox productCard = createVPSProductCard(product);
-            productsGrid.add(productCard, column, row);
-            column++;
-            if (column > 2) {
-                column = 0;
-                row++;
-            }
-        }
-
-        mainContent.getChildren().add(productsGrid);
-
-        // Rack Products Section
-        Label rackTitle = new Label("RACK PRODUCTS");
-        rackTitle.setStyle("""
-            -fx-text-fill: #9a30fa;
-            -fx-font-size: 28px;
-            -fx-font-family: 'monospace';
-            -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #9a30fa, 10, 0, 0, 0);
-            """);
-        mainContent.getChildren().add(rackTitle);
-
-        // Rack Products grid
-        GridPane rackProductsGrid = new GridPane();
-        rackProductsGrid.setHgap(20);
-        rackProductsGrid.setVgap(20);
-        rackProductsGrid.setAlignment(Pos.CENTER);
-
-        column = 0;
-        row = 0;
-        for (RackProduct product : RackProduct.values()) {
-            VBox productCard = createRackProductCard(product);
-            rackProductsGrid.add(productCard, column, row);
-            column++;
-            if (column > 2) {
-                column = 0;
-                row++;
-            }
-        }
-
-        mainContent.getChildren().add(rackProductsGrid);
+        // Load all products initially
+        updateProductDisplay();
+        
         contentArea.setContent(mainContent);
         setCenter(contentArea);
     }
@@ -145,7 +99,7 @@ public class MarketWindow extends BorderPane {
             -fx-border-style: solid;
             """);
         menu.setPadding(new Insets(25));
-        menu.setPrefWidth(200);
+        menu.setPrefWidth(250); // Increase menu width slightly
         menu.setAlignment(Pos.TOP_CENTER);
 
         // Menu title
@@ -184,136 +138,222 @@ public class MarketWindow extends BorderPane {
         moneyContainer.getChildren().addAll(moneyLabel, moneyDisplay);
         menu.getChildren().add(moneyContainer);
 
-        // Menu items
-        Button vpsButton = new Button("SERVERS PRODUCTS");
-        vpsButton.setStyle("""
-            -fx-background-color: #2a2a2a;
-            -fx-text-fill: #9a30fa;
-            -fx-font-size: 14px;
-            -fx-font-family: 'monospace';
-            -fx-padding: 10px;
-            -fx-background-radius: 5px;
-            -fx-border-color: #9a30fa;
-            -fx-border-width: 1px;
-            -fx-border-style: solid;
-            -fx-min-width: 150px;
-            """);
-        vpsButton.setOnMouseEntered(e -> 
-            vpsButton.setStyle("""
-                -fx-background-color: #9a30fa;
-                -fx-text-fill: #000000;
-                -fx-font-size: 14px;
-                -fx-font-family: 'monospace';
-                -fx-padding: 10px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                -fx-min-width: 150px;
-                """)
-        );
-        vpsButton.setOnMouseExited(e -> 
-            vpsButton.setStyle("""
-                -fx-background-color: #2a2a2a;
-                -fx-text-fill: #9a30fa;
-                -fx-font-size: 14px;
-                -fx-font-family: 'monospace';
-                -fx-padding: 10px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                -fx-min-width: 150px;
-                """)
-        );
-
+        // Create all buttons first so they can reference each other
+        Button allButton = new Button("ALL PRODUCTS");
+        Button vpsButton = new Button("SERVER PRODUCTS");
         Button rackButton = new Button("RACK PRODUCTS");
-        rackButton.setStyle("""
-            -fx-background-color: #2a2a2a;
-            -fx-text-fill: #9a30fa;
-            -fx-font-size: 14px;
-            -fx-font-family: 'monospace';
-            -fx-padding: 10px;
-            -fx-background-radius: 5px;
-            -fx-border-color: #9a30fa;
-            -fx-border-width: 1px;
-            -fx-border-style: solid;
-            -fx-min-width: 150px;
-            """);
-        rackButton.setOnMouseEntered(e -> 
-            rackButton.setStyle("""
-                -fx-background-color: #9a30fa;
-                -fx-text-fill: #000000;
-                -fx-font-size: 14px;
-                -fx-font-family: 'monospace';
-                -fx-padding: 10px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                -fx-min-width: 150px;
-                """)
-        );
-        rackButton.setOnMouseExited(e -> 
-            rackButton.setStyle("""
-                -fx-background-color: #2a2a2a;
-                -fx-text-fill: #9a30fa;
-                -fx-font-size: 14px;
-                -fx-font-family: 'monospace';
-                -fx-padding: 10px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                -fx-min-width: 150px;
-                """)
-        );
-
         Button closeButton = new Button("CLOSE MARKET");
-        closeButton.setStyle("""
-            -fx-background-color: #2a2a2a;
-            -fx-text-fill: #9a30fa;
-            -fx-font-size: 14px;
-            -fx-font-family: 'monospace';
-            -fx-padding: 10px;
-            -fx-background-radius: 5px;
-            -fx-border-color: #9a30fa;
-            -fx-border-width: 1px;
-            -fx-border-style: solid;
-            -fx-min-width: 150px;
-            """);
-        closeButton.setOnMouseEntered(e -> 
-            closeButton.setStyle("""
-                -fx-background-color: #9a30fa;
-                -fx-text-fill: #000000;
-                -fx-font-size: 14px;
-                -fx-font-family: 'monospace';
-                -fx-padding: 10px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                -fx-min-width: 150px;
-                """)
-        );
-        closeButton.setOnMouseExited(e -> 
-            closeButton.setStyle("""
-                -fx-background-color: #2a2a2a;
-                -fx-text-fill: #9a30fa;
-                -fx-font-size: 14px;
-                -fx-font-family: 'monospace';
-                -fx-padding: 10px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                -fx-min-width: 150px;
-                """)
-        );
+        
+        // Style and configure buttons
+        styleButton(allButton);
+        allButton.setOnAction(e -> {
+            currentFilter = "ALL";
+            updateProductDisplay();
+            highlightActiveButton(allButton, vpsButton, rackButton);
+        });
+
+        styleButton(vpsButton);
+        vpsButton.setOnAction(e -> {
+            currentFilter = "SERVER";
+            updateProductDisplay();
+            highlightActiveButton(vpsButton, allButton, rackButton);
+        });
+
+        styleButton(rackButton);
+        rackButton.setOnAction(e -> {
+            currentFilter = "RACK";
+            updateProductDisplay();
+            highlightActiveButton(rackButton, allButton, vpsButton);
+        });
+
+        styleButton(closeButton);
         closeButton.setOnAction(e -> onClose.run());
 
-        menu.getChildren().addAll(vpsButton, rackButton, closeButton);
+        menu.getChildren().addAll(allButton, vpsButton, rackButton, closeButton);
+        
+        // Set the initial "ALL" button as active
+        highlightActiveButton(allButton, vpsButton, rackButton);
+        
         return menu;
+    }
+    
+    private void styleButton(Button button) {
+        button.setStyle("""
+            -fx-background-color: #2a2a2a;
+            -fx-text-fill: #9a30fa;
+            -fx-font-size: 14px;
+            -fx-font-family: 'monospace';
+            -fx-padding: 10px;
+            -fx-background-radius: 5px;
+            -fx-border-color: #9a30fa;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
+            -fx-min-width: 150px;
+            """);
+        button.setOnMouseEntered(e -> 
+            button.setStyle("""
+                -fx-background-color: #9a30fa;
+                -fx-text-fill: #000000;
+                -fx-font-size: 14px;
+                -fx-font-family: 'monospace';
+                -fx-padding: 10px;
+                -fx-background-radius: 5px;
+                -fx-border-color: #9a30fa;
+                -fx-border-width: 1px;
+                -fx-border-style: solid;
+                -fx-min-width: 150px;
+                """)
+        );
+        button.setOnMouseExited(e -> {
+            if (button.getUserData() == "active") {
+                button.setStyle("""
+                    -fx-background-color: #9a30fa;
+                    -fx-text-fill: #000000;
+                    -fx-font-size: 14px;
+                    -fx-font-family: 'monospace';
+                    -fx-padding: 10px;
+                    -fx-background-radius: 5px;
+                    -fx-border-color: #9a30fa;
+                    -fx-border-width: 1px;
+                    -fx-border-style: solid;
+                    -fx-min-width: 150px;
+                    """);
+            } else {
+                button.setStyle("""
+                    -fx-background-color: #2a2a2a;
+                    -fx-text-fill: #9a30fa;
+                    -fx-font-size: 14px;
+                    -fx-font-family: 'monospace';
+                    -fx-padding: 10px;
+                    -fx-background-radius: 5px;
+                    -fx-border-color: #9a30fa;
+                    -fx-border-width: 1px;
+                    -fx-border-style: solid;
+                    -fx-min-width: 150px;
+                    """);
+            }
+        });
+    }
+    
+    private void highlightActiveButton(Button activeButton, Button... otherButtons) {
+        activeButton.setUserData("active");
+        activeButton.setStyle("""
+            -fx-background-color: #9a30fa;
+            -fx-text-fill: #000000;
+            -fx-font-size: 14px;
+            -fx-font-family: 'monospace';
+            -fx-padding: 10px;
+            -fx-background-radius: 5px;
+            -fx-border-color: #9a30fa;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
+            -fx-min-width: 150px;
+            """);
+            
+        for (Button button : otherButtons) {
+            button.setUserData("inactive");
+            button.setStyle("""
+                -fx-background-color: #2a2a2a;
+                -fx-text-fill: #9a30fa;
+                -fx-font-size: 14px;
+                -fx-font-family: 'monospace';
+                -fx-padding: 10px;
+                -fx-background-radius: 5px;
+                -fx-border-color: #9a30fa;
+                -fx-border-width: 1px;
+                -fx-border-style: solid;
+                -fx-min-width: 150px;
+                """);
+        }
+    }
+    
+    private void updateProductDisplay() {
+        mainContent.getChildren().clear();
+        
+        if (currentFilter.equals("ALL") || currentFilter.equals("SERVER")) {
+            // VPS Products Section
+            Label vpsTitle = new Label("SERVER PRODUCTS");
+            vpsTitle.setStyle("""
+                -fx-text-fill: #9a30fa;
+                -fx-font-size: 28px;
+                -fx-font-family: 'monospace';
+                -fx-font-weight: bold;
+                -fx-effect: dropshadow(gaussian, #9a30fa, 10, 0, 0, 0);
+                """);
+            mainContent.getChildren().add(vpsTitle);
+
+            // Products grid
+            GridPane productsGrid = new GridPane();
+            productsGrid.setHgap(20);
+            productsGrid.setVgap(20);
+            productsGrid.setAlignment(Pos.CENTER);
+            productsGrid.setMaxWidth(Double.MAX_VALUE); // Allow grid to expand horizontally
+
+            int column = 0;
+            int row = 0;
+            int columnCount = 3; // Display 3 items per row by default
+            
+            // Check window width and adjust column count if needed
+            if (getWidth() > 1400) {
+                columnCount = 4; // Display 4 items per row on wider screens
+            }
+            
+            for (VPSProduct product : VPSProduct.values()) {
+                VBox productCard = createVPSProductCard(product);
+                productsGrid.add(productCard, column, row);
+                column++;
+                if (column >= columnCount) {
+                    column = 0;
+                    row++;
+                }
+            }
+
+            mainContent.getChildren().add(productsGrid);
+        }
+        
+        if (currentFilter.equals("ALL") || currentFilter.equals("RACK")) {
+            // Rack Products Section
+            Label rackTitle = new Label("RACK PRODUCTS");
+            rackTitle.setStyle("""
+                -fx-text-fill: #9a30fa;
+                -fx-font-size: 28px;
+                -fx-font-family: 'monospace';
+                -fx-font-weight: bold;
+                -fx-effect: dropshadow(gaussian, #9a30fa, 10, 0, 0, 0);
+                """);
+            mainContent.getChildren().add(rackTitle);
+
+            // Rack Products grid
+            GridPane rackProductsGrid = new GridPane();
+            rackProductsGrid.setHgap(20);
+            rackProductsGrid.setVgap(20);
+            rackProductsGrid.setAlignment(Pos.CENTER);
+            rackProductsGrid.setMaxWidth(Double.MAX_VALUE); // Allow grid to expand horizontally
+
+            int column = 0;
+            int row = 0;
+            int columnCount = 3; // Display 3 items per row by default
+            
+            // Check window width and adjust column count if needed
+            if (getWidth() > 1400) {
+                columnCount = 4; // Display 4 items per row on wider screens
+            }
+            
+            for (RackProduct product : RackProduct.values()) {
+                VBox productCard = createRackProductCard(product);
+                rackProductsGrid.add(productCard, column, row);
+                column++;
+                if (column >= columnCount) {
+                    column = 0;
+                    row++;
+                }
+            }
+
+            mainContent.getChildren().add(rackProductsGrid);
+        }
+        
+        // Scroll to top
+        contentArea.setVvalue(0);
     }
 
     private VBox createVPSSection() {

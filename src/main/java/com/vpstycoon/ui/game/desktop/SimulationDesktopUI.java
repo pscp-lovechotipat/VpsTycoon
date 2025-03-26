@@ -45,7 +45,10 @@ public class SimulationDesktopUI {
                 ResourceManager.getInstance().getGameTimeManager()
         );
         StackPane.setAlignment(desktop, Pos.CENTER);
-        desktop.setMaxSize(parent.getGameArea().getWidth() * 0.8, parent.getGameArea().getHeight() * 0.8);
+        
+        // Make desktop fill more of the available space (95% of parent container)
+        desktop.setMaxSize(parent.getGameArea().getWidth() * 0.95, parent.getGameArea().getHeight() * 0.95);
+        desktop.setPrefSize(parent.getGameArea().getWidth() * 0.95, parent.getGameArea().getHeight() * 0.95);
 
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(desktop);
