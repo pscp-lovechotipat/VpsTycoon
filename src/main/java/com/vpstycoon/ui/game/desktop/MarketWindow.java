@@ -28,6 +28,10 @@ public class MarketWindow extends BorderPane {
         this.parent = parent;
         this.vpsManager = vpsManager;
         this.onClose = onClose;
+
+        parent.getDateView().setVisible(false);
+        parent.getMoneyUI().setVisible(false);
+        parent.getMenuBar().setVisible(false);
         
         // Hide parent menus when opening the market window
         parent.hideMenus();
