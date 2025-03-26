@@ -7,11 +7,11 @@ import javafx.beans.property.SimpleLongProperty;
 
 public class MoneyModel {
     private final LongProperty money = new SimpleLongProperty();
-    private final DoubleProperty ratting = new SimpleDoubleProperty();
+    private final DoubleProperty rating = new SimpleDoubleProperty();
 
-    public MoneyModel(long initialMoney, double initialRatting) {
+    public MoneyModel(long initialMoney, double initialRating) {
         setMoney(initialMoney);
-        setRatting(initialRatting);
+        setRating(initialRating);
     }
 
     public long getMoney() {
@@ -26,15 +26,15 @@ public class MoneyModel {
         return money;
     }
 
-    public double getRatting() {
-        return ratting.get();
+    public double getRating() {
+        return rating.get();
     }
 
-    public void setRatting(double ratting) {
-        this.ratting.set(ratting);
+    public void setRating(double rating) {
+        this.rating.set(rating);
     }
 
-    public DoubleProperty rattingProperty() {
-        return ratting;
+    public DoubleProperty ratingProperty() {
+        return rating;
     }
 }

@@ -71,7 +71,7 @@ public class MarketWindow extends BorderPane {
         mainContent.setPadding(new Insets(20, 20, 20, 20));
 
         // VPS Products Section
-        Label vpsTitle = new Label("VPS PRODUCTS");
+        Label vpsTitle = new Label("SERVER PRODUCTS");
         vpsTitle.setStyle("""
             -fx-text-fill: #9a30fa;
             -fx-font-size: 28px;
@@ -184,7 +184,7 @@ public class MarketWindow extends BorderPane {
         menu.getChildren().add(moneyContainer);
 
         // Menu items
-        Button vpsButton = new Button("VPS PRODUCTS");
+        Button vpsButton = new Button("SERVERS PRODUCTS");
         vpsButton.setStyle("""
             -fx-background-color: #2a2a2a;
             -fx-text-fill: #9a30fa;
@@ -328,7 +328,7 @@ public class MarketWindow extends BorderPane {
             """);
 
         // Section title
-        Label title = new Label("VPS Products");
+        Label title = new Label("Server Products");
         title.setStyle("""
             -fx-text-fill: #9a30fa;
             -fx-font-size: 28px;
@@ -617,13 +617,11 @@ public class MarketWindow extends BorderPane {
             // Add new rack to the list
             parent.getRack().addRack(product.getSlots());
             
-            // If this is the first rack, set it as current
-            if (parent.getRack().getMaxRacks() == 1) {
-                parent.getRack().setRackIndex(0);
-            }
+            // Navigate to the newest rack (the one we just purchased)
+            parent.getRack().goToLatestRack();
 
             parent.pushNotification("PURCHASE SUCCESSFUL", 
-                "ACQUIRED " + product.getName() + ". RACK UPGRADED TO " + 
+                "ACQUIRED " + product.getName() + ". NEW RACK INSTALLED WITH " + 
                 product.getSlots() + " SLOTS.");
 
             // Close market window and open rack management

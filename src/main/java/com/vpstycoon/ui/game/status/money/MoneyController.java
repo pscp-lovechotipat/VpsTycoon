@@ -26,6 +26,6 @@ public class MoneyController {
     private void update() {
         Company company = resourceManager.getCompany();
         moneyModel.setMoney(company.getMoney());
-        moneyModel.setRatting(company.getRating());
+        moneyModel.setRating(company.getRating());
     }
 }

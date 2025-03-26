@@ -178,13 +178,15 @@ public class RackManagementUI extends VBox {
         // Set up button actions with animations
         prevRackButton.setOnAction(e -> {
             if (rack.prevRack()) {
-                animateRackTransition(false);
+                // Update UI immediately without animation
+                updateUI();
             }
         });
 
         nextRackButton.setOnAction(e -> {
             if (rack.nextRack()) {
-                animateRackTransition(true);
+                // Update UI immediately without animation
+                updateUI();
             }
         });
 
@@ -303,7 +305,7 @@ public class RackManagementUI extends VBox {
                     -fx-effect: dropshadow(gaussian, #00ffff, 3, 0, 0, 0);
                     """);
 
-                    Label nameLabel = new Label("VPS " + vps.getVCPUs() + "vCPU");
+                    Label nameLabel = new Label("SERVER " + vps.getVCPUs() + "vCPU");
                     nameLabel.setStyle("""
                         -fx-text-fill: #ff00ff; 
                         -fx-font-weight: bold;
@@ -452,27 +454,9 @@ public class RackManagementUI extends VBox {
         // Add animation to rack navigation
         prevRackButton.setOnAction(e -> {
             if (parent.getRack().prevRack()) {
-                // Animation for previous rack
-                Timeline slideAnimation = new Timeline();
-                slideAnimation.getKeyFrames().add(
-                    new KeyFrame(Duration.millis(300),
-                        new KeyValue(rackIndexLabel.translateXProperty(), -30),
-                        new KeyValue(rackIndexLabel.opacityProperty(), 0.2)
-                    )
-                );
-                slideAnimation.setOnFinished(event -> {
-                    rackIndexLabel.setText("RACK_" + (parent.getRack().getRackIndex() + 1));
-                    Timeline resetAnimation = new Timeline();
-                    resetAnimation.getKeyFrames().add(
-                        new KeyFrame(Duration.millis(300),
-                            new KeyValue(rackIndexLabel.translateXProperty(), 0),
-                            new KeyValue(rackIndexLabel.opacityProperty(), 1.0)
-                        )
-                    );
-                    resetAnimation.setOnFinished(resetEvent -> openRackInfo());
-                    resetAnimation.play();
-                });
-                slideAnimation.play();
+                // Update immediately without animation
+                rackIndexLabel.setText("RACK_" + (parent.getRack().getRackIndex() + 1));
+                openRackInfo();
             } else {
                 parent.pushNotification("Navigation", "You are at the first rack.");
             }
@@ -480,27 +464,9 @@ public class RackManagementUI extends VBox {
 
         nextRackButton.setOnAction(e -> {
             if (parent.getRack().nextRack()) {
-                // Animation for next rack
-                Timeline slideAnimation = new Timeline();
-                slideAnimation.getKeyFrames().add(
-                    new KeyFrame(Duration.millis(300),
-                        new KeyValue(rackIndexLabel.translateXProperty(), 30),
-                        new KeyValue(rackIndexLabel.opacityProperty(), 0.2)
-                    )
-                );
-                slideAnimation.setOnFinished(event -> {
-                    rackIndexLabel.setText("RACK_" + (parent.getRack().getRackIndex() + 1));
-                    Timeline resetAnimation = new Timeline();
-                    resetAnimation.getKeyFrames().add(
-                        new KeyFrame(Duration.millis(300),
-                            new KeyValue(rackIndexLabel.translateXProperty(), 0),
-                            new KeyValue(rackIndexLabel.opacityProperty(), 1.0)
-                        )
-                    );
-                    resetAnimation.setOnFinished(resetEvent -> openRackInfo());
-                    resetAnimation.play();
-                });
-                slideAnimation.play();
+                // Update immediately without animation
+                rackIndexLabel.setText("RACK_" + (parent.getRack().getRackIndex() + 1));
+                openRackInfo();
             } else {
                 parent.pushNotification("Navigation", "You are at the last rack.");
             }
@@ -556,77 +522,333 @@ public class RackManagementUI extends VBox {
             noRackMessage.getChildren().addAll(messageLabel, descriptionLabel, marketButton);
             contentBox.setCenter(noRackMessage);
         } else if (parent.getVpsList().isEmpty()) {
-            // Rack exists but no servers are installed
-            VBox noServerMessage = new VBox(20);
-            noServerMessage.setAlignment(Pos.CENTER);
-            noServerMessage.setSpacing(20);
+            // Display empty rack visualization with rack info instead of just a message
+            HBox mainLayout = new HBox(20);
+            mainLayout.setAlignment(Pos.CENTER_LEFT);
             
-            Label messageLabel = new Label("//-- NO SERVER INSTALLED --//");
-            messageLabel.setStyle("""
+            // Rack cabinet with pixel art style - full height and wider
+            VBox rackCabinet = new VBox(0);
+            rackCabinet.setPadding(new Insets(0));
+            rackCabinet.setPrefWidth(500);
+            rackCabinet.setMinHeight(500);
+            rackCabinet.setMaxHeight(Double.MAX_VALUE);
+            
+            // Rack frame with dark metal texture and glowing edges
+            BorderPane rackFrame = new BorderPane();
+            rackFrame.setPrefWidth(500);
+            rackFrame.setMaxHeight(Double.MAX_VALUE);
+            rackFrame.setStyle("""
+                -fx-background-color: #191919;
+                -fx-border-color: #00ffff;
+                -fx-border-width: 2;
+                -fx-border-style: solid;
+                -fx-effect: dropshadow(gaussian, #00ffff, 5, 0, 0, 0);
+                """);
+            
+            // Add rack unit markings on the left side
+            VBox unitMarkings = new VBox(0);
+            unitMarkings.setPrefWidth(30);
+            unitMarkings.setStyle("""
+                -fx-background-color: #111111;
+                -fx-border-color: #333333;
+                -fx-border-width: 0 1 0 0;
+                """);
+            
+            // Full-height rack slots container with grid for servers
+            ScrollPane slotContainer = new ScrollPane();
+            slotContainer.setFitToWidth(true);
+            slotContainer.setFitToHeight(true);
+            slotContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            slotContainer.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            slotContainer.setStyle("""
+                -fx-background-color: transparent;
+                -fx-background: transparent;
+                -fx-background-insets: 0;
+                -fx-padding: 0;
+                """);
+            
+            // Rack slots grid - empty server display
+            GridPane rackSlots = new GridPane();
+            rackSlots.setVgap(2);
+            rackSlots.setHgap(0);
+            rackSlots.setPadding(new Insets(0));
+            rackSlots.setStyle("""
+                -fx-background-color: #141414;
+                """);
+            
+            ColumnConstraints col1 = new ColumnConstraints();
+            col1.setPrefWidth(450);
+            col1.setHgrow(Priority.ALWAYS);
+            
+            ColumnConstraints col2 = new ColumnConstraints();
+            col2.setPrefWidth(50);
+            
+            rackSlots.getColumnConstraints().addAll(col1, col2);
+
+            // Setting up slot height for better visualization
+            int slotUnitHeight = 40; // taller slots for better visibility
+
+            for (int i = 0; i < parent.getRack().getMaxSlotUnits(); i++) {
+                RowConstraints row = new RowConstraints();
+                row.setPrefHeight(slotUnitHeight);
+                row.setMinHeight(slotUnitHeight);
+                rackSlots.getRowConstraints().add(row);
+                
+                // Add unit numbers on the right side
+                Label unitLabel = new Label(String.format("U%02d", i + 1));
+                unitLabel.setStyle("""
                 -fx-font-family: 'Courier New';
-                -fx-font-size: 24px;
-                -fx-text-fill: #00ffff;
-                -fx-font-weight: bold;
-                -fx-effect: dropshadow(gaussian, #00ffff, 10, 0, 0, 0);
-            """);
-            
-            Label descriptionLabel = new Label("EMPTY RACK DETECTED. INSTALL SERVERS TO BEGIN OPERATIONS");
-            descriptionLabel.setStyle("""
-                -fx-font-family: 'Courier New';
-                -fx-font-size: 16px;
-                -fx-text-fill: #ff00ff;
-            """);
-            
-            // Create a blinking empty rack visualization
-            Pane emptyRackVisual = new Pane();
-            emptyRackVisual.setPrefSize(200, 200);
-            emptyRackVisual.setMaxSize(200, 200);
-            
-            Rectangle rackOutline = new Rectangle(180, 180);
-            rackOutline.setFill(Color.TRANSPARENT);
-            rackOutline.setStroke(Color.web("#8a2be2"));
-            rackOutline.setStrokeWidth(2);
-            rackOutline.setX(10);
-            rackOutline.setY(10);
-            
-            // Add blinking effect to rack outline
-            Timeline blinkTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO, 
-                    new KeyValue(rackOutline.strokeProperty(), Color.web("#8a2be2"))),
-                new KeyFrame(Duration.seconds(0.7), 
-                    new KeyValue(rackOutline.strokeProperty(), Color.web("#00ffff"))),
-                new KeyFrame(Duration.seconds(1.4), 
-                    new KeyValue(rackOutline.strokeProperty(), Color.web("#8a2be2")))
-            );
-            blinkTimeline.setCycleCount(Timeline.INDEFINITE);
-            blinkTimeline.play();
-            
-            // Add empty slots
-            for (int i = 0; i < 5; i++) {
-                Rectangle emptySlot = new Rectangle(160, 25);
-                emptySlot.setFill(Color.web("#111111"));
-                emptySlot.setStroke(Color.web("#333333"));
-                emptySlot.setStrokeWidth(1);
-                emptySlot.setX(20);
-                emptySlot.setY(25 + (i * 30));
-                emptyRackVisual.getChildren().add(emptySlot);
+                    -fx-font-size: 10px;
+                    -fx-text-fill: #666666;
+                    """);
+                StackPane unitLabelBox = new StackPane(unitLabel);
+                unitLabelBox.setPrefHeight(slotUnitHeight);
+                unitLabelBox.setAlignment(Pos.CENTER);
+                rackSlots.add(unitLabelBox, 1, i);
+                
+                // Add empty server slots
+                Pane slot = createEnhancedRackSlot(i, null, i < parent.getRack().getUnlockedSlotUnits(), slotUnitHeight);
+                rackSlots.add(slot, 0, i);
+                slotPanes.add(slot);
             }
             
-            emptyRackVisual.getChildren().add(rackOutline);
+            slotContainer.setContent(rackSlots);
             
-            // Check if there are any uninstalled servers in inventory
+            // Add decorative rack elements - top cooling vents
+            GridPane topVents = new GridPane();
+            topVents.setPrefHeight(15);
+            topVents.setHgap(4);
+            topVents.setVgap(2);
+            topVents.setAlignment(Pos.CENTER);
+            topVents.setStyle("-fx-background-color: #222222;");
+            
+            for (int i = 0; i < 20; i++) {
+                Rectangle vent = new Rectangle(15, 3);
+                vent.setFill(Color.web("#111111"));
+                vent.setArcWidth(1);
+                vent.setArcHeight(1);
+                topVents.add(vent, i % 10, i / 10);
+            }
+            
+            // Add decorative rack elements - bottom power supply
+            HBox powerSupply = new HBox(10);
+            powerSupply.setPrefHeight(20);
+            powerSupply.setStyle("-fx-background-color: #222222;");
+            powerSupply.setAlignment(Pos.CENTER_RIGHT);
+            
+            // Power button with pulsing effect
+            Rectangle powerButton = new Rectangle(8, 8);
+            powerButton.setFill(Color.web("#00ff00"));
+            
+            // Add pulsing effect to power button
+            Timeline pulseTimeline = new Timeline(
+                new KeyFrame(Duration.ZERO, 
+                    new KeyValue(powerButton.opacityProperty(), 1.0)),
+                new KeyFrame(Duration.seconds(1.5), 
+                    new KeyValue(powerButton.opacityProperty(), 0.5)),
+                new KeyFrame(Duration.seconds(3), 
+                    new KeyValue(powerButton.opacityProperty(), 1.0))
+            );
+            pulseTimeline.setCycleCount(Timeline.INDEFINITE);
+            pulseTimeline.play();
+            
+            // Small power meter
+            Rectangle powerMeter1 = new Rectangle(4, 6);
+            powerMeter1.setFill(Color.web("#ff0000"));
+            Rectangle powerMeter2 = new Rectangle(4, 6);
+            powerMeter2.setFill(Color.web("#ffff00"));
+            Rectangle powerMeter3 = new Rectangle(4, 6);
+            powerMeter3.setFill(Color.web("#00ff00"));
+            
+            powerSupply.getChildren().addAll(powerMeter1, powerMeter2, powerMeter3, powerButton);
+            powerSupply.setPadding(new Insets(0, 20, 0, 0));
+            
+            // Assemble the rack cabinet
+            rackFrame.setCenter(slotContainer);
+            rackCabinet.getChildren().addAll(topVents, rackFrame, powerSupply);
+            
+            // Create a container to position the rack
+            VBox rackContainerWithSpacer = new VBox();
+            rackContainerWithSpacer.setAlignment(Pos.BOTTOM_CENTER);
+            rackContainerWithSpacer.setPrefWidth(500);
+            
+            // Add a flexible spacer to push rack to the bottom
+            Region spacer = new Region();
+            VBox.setVgrow(spacer, Priority.ALWAYS);
+            
+            rackContainerWithSpacer.getChildren().addAll(spacer, rackCabinet);
+            
+            // Info Pane with cyber theme - right side
+            VBox infoPane = new VBox(15);
+            infoPane.setPrefWidth(250);
+            infoPane.setMinHeight(550);
+            infoPane.setPrefHeight(600);
+            infoPane.setMaxHeight(Double.MAX_VALUE);
+            VBox.setVgrow(infoPane, Priority.ALWAYS);
+            infoPane.setStyle("""
+                -fx-background-color: #280042;
+                -fx-padding: 15px;
+                -fx-border-color: #8a2be2;
+                -fx-border-width: 2px;
+                -fx-border-style: solid;
+                -fx-background-radius: 0px;
+                -fx-effect: dropshadow(gaussian, #8a2be2, 5, 0, 0, 0);
+                """);
+
+            Label infoTitle = new Label("RACK INFO");
+            infoTitle.setMaxWidth(Double.MAX_VALUE);
+            infoTitle.setAlignment(Pos.CENTER);
+            infoTitle.setStyle("""
+                -fx-font-family: 'Courier New';
+                -fx-font-size: 18px;
+                -fx-font-weight: bold;
+                -fx-text-fill: #ff00ff;
+                -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
+                -fx-padding: 5px;
+                -fx-background-color: #12071e;
+                -fx-background-radius: 0px;
+                -fx-border-color: #ff00ff;
+                -fx-border-width: 1px;
+                -fx-border-style: solid;
+            """);
+            
+            // Add status message about empty rack
+            Label emptyRackMessage = new Label("//-- NO SERVER INSTALLED --//");
+            emptyRackMessage.setStyle("""
+                -fx-font-family: 'Courier New';
+                -fx-font-size: 16px;
+                -fx-text-fill: #00ffff;
+                -fx-font-weight: bold;
+                -fx-effect: dropshadow(gaussian, #00ffff, 5, 0, 0, 0);
+                -fx-padding: 10px;
+                -fx-background-color: #1a0033;
+                -fx-background-radius: 0px;
+                -fx-border-color: #00ffff;
+                -fx-border-width: 1px;
+                -fx-border-style: solid;
+                -fx-alignment: center;
+            """);
+            emptyRackMessage.setMaxWidth(Double.MAX_VALUE);
+            emptyRackMessage.setAlignment(Pos.CENTER);
+
+            // Create a status panel with rack statistics
+            VBox statusPanel = new VBox(8);
+            statusPanel.setMaxWidth(Double.MAX_VALUE);
+            statusPanel.setStyle("""
+                -fx-background-color: #1a0033;
+                -fx-padding: 10px;
+                -fx-background-radius: 0px;
+                -fx-border-color: #00ffff;
+                -fx-border-width: 1px;
+                -fx-border-style: solid;
+                """);
+
+            GridPane statusGrid = new GridPane();
+            statusGrid.setMaxWidth(Double.MAX_VALUE);
+            statusGrid.setHgap(10);
+            statusGrid.setVgap(8);
+            
+            int usedSlots = parent.getRack().getOccupiedSlotUnits();
+            int availableSlots = parent.getRack().getMaxSlotUnits() - usedSlots;
+            
+            // Status rows
+            Label serversLabel = new Label("SERVERS:");
+            serversLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
+            Label serversValue = new Label("0");
+            serversValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
+            
+            Label slotsLabel = new Label("SLOTS:");
+            slotsLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
+            Label slotsValue = new Label(usedSlots + "/" + parent.getRack().getMaxSlotUnits() + 
+                            " (" + parent.getRack().getAvailableSlotUnits() + " AVAILABLE)");
+            slotsValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
+            
+            Label networkLabel = new Label("NETWORK:");
+            networkLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
+            Label networkValue = new Label("10 Gbps");
+            networkValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
+            
+            Label usersLabel = new Label("ACTIVE USERS:");
+            usersLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
+            Label usersValue = new Label("0");
+            usersValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
+            
+            // Add labels to grid
+            statusGrid.add(serversLabel, 0, 0);
+            statusGrid.add(serversValue, 1, 0);
+            statusGrid.add(slotsLabel, 0, 1);
+            statusGrid.add(slotsValue, 1, 1);
+            statusGrid.add(networkLabel, 0, 2);
+            statusGrid.add(networkValue, 1, 2);
+            statusGrid.add(usersLabel, 0, 3);
+            statusGrid.add(usersValue, 1, 3);
+            
+            // Set column constraints
+            ColumnConstraints column1 = new ColumnConstraints();
+            column1.setHgrow(Priority.NEVER);
+            ColumnConstraints column2 = new ColumnConstraints();
+            column2.setHgrow(Priority.ALWAYS);
+            statusGrid.getColumnConstraints().addAll(column1, column2);
+            
+            statusPanel.getChildren().add(statusGrid);
+            
+            // Action buttons
+            Button inventoryButton = createPixelButton("SERVER INVENTORY", "#3498db");
+            inventoryButton.setMaxWidth(Double.MAX_VALUE);
+            inventoryButton.setOnAction(e -> parent.openVPSInventory());
+            
+            Button upgradeButton = createPixelButton("UPGRADE RACK", "#4CAF50");
+            upgradeButton.setMaxWidth(Double.MAX_VALUE);
+            upgradeButton.setOnAction(e -> {
+                if (parent.getRack().upgrade()) {
+                    Timeline pulseAnimation = new Timeline();
+                    pulseAnimation.getKeyFrames().addAll(
+                new KeyFrame(Duration.ZERO, 
+                            new KeyValue(upgradeButton.scaleXProperty(), 1.0),
+                            new KeyValue(upgradeButton.scaleYProperty(), 1.0)
+                        ),
+                        new KeyFrame(Duration.millis(200), 
+                            new KeyValue(upgradeButton.scaleXProperty(), 1.05),
+                            new KeyValue(upgradeButton.scaleYProperty(), 1.05)
+                        ),
+                        new KeyFrame(Duration.millis(400), 
+                            new KeyValue(upgradeButton.scaleXProperty(), 1.0),
+                            new KeyValue(upgradeButton.scaleYProperty(), 1.0)
+                        )
+            );
+                    
+                    pulseAnimation.setOnFinished(event -> {
+                        parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " + 
+                                              parent.getRack().getUnlockedSlotUnits() + " SLOTS");
+                        openRackInfo();
+                    });
+                    
+                    pulseAnimation.play();
+                } else {
+                    parent.pushNotification("UPGRADE FAILED", "MAXIMUM CAPACITY REACHED");
+                }
+            });
+            
+            Button marketButton = createPixelButton("PURCHASE SERVERS", "#6a00ff");
+            marketButton.setMaxWidth(Double.MAX_VALUE);
+            marketButton.setOnAction(e -> {
+                parent.returnToRoom();
+                parent.openMarket();
+            });
+
+            // Add elements to info pane
+            infoPane.getChildren().addAll(infoTitle, emptyRackMessage, statusPanel, inventoryButton, upgradeButton, marketButton);
+            
+            // Uninstalled servers section if there are any in inventory
             List<VPSOptimization> uninstalledServers = parent.getVpsInventory().getAllVPS();
-            
             if (!uninstalledServers.isEmpty()) {
-                // Create inventory section to display uninstalled servers
-                VBox inventorySection = new VBox(10);
-                inventorySection.setAlignment(Pos.CENTER);
-                inventorySection.setPadding(new Insets(10, 0, 0, 0));
-                VBox.setVgrow(inventorySection, Priority.ALWAYS); // Let it expand vertically
+                VBox uninstalledSection = new VBox(10);
+                uninstalledSection.setPadding(new Insets(10, 0, 0, 0));
+                VBox.setVgrow(uninstalledSection, Priority.ALWAYS);
                 
                 Label uninstalledLabel = new Label("AVAILABLE SERVERS");
-                uninstalledLabel.setMaxWidth(Double.MAX_VALUE); // Make label span full width
-                uninstalledLabel.setAlignment(Pos.CENTER); // Center the text
+                uninstalledLabel.setMaxWidth(Double.MAX_VALUE);
+                uninstalledLabel.setAlignment(Pos.CENTER);
                 uninstalledLabel.setStyle("""
                     -fx-font-family: 'Courier New';
                     -fx-font-size: 16px;
@@ -641,19 +863,17 @@ public class RackManagementUI extends VBox {
                     -fx-border-style: solid;
                 """);
                 
-                // List of servers in inventory - wrap in scroll pane for better display
-                ScrollPane serverScrollPane = new ScrollPane();
-                serverScrollPane.setStyle("""
+                ScrollPane uninstalledScrollPane = new ScrollPane();
+                uninstalledScrollPane.setStyle("""
                     -fx-background-color: transparent;
                     -fx-background: transparent; 
-                    -fx-border-color: transparent;
-                    -fx-focus-color: transparent;
-                    -fx-faint-focus-color: transparent;
+                    -fx-background-insets: 0;
+                    -fx-padding: 0;
                 """);
-                serverScrollPane.setFitToWidth(true);
-                serverScrollPane.setPrefHeight(250); // Taller scroll pane
-                serverScrollPane.setMinHeight(200); // Minimum height
-                VBox.setVgrow(serverScrollPane, Priority.ALWAYS); // Let it expand to fill space
+                uninstalledScrollPane.setFitToWidth(true);
+                uninstalledScrollPane.setPrefHeight(200);
+                uninstalledScrollPane.setMinHeight(200);
+                VBox.setVgrow(uninstalledScrollPane, Priority.ALWAYS);
                 
                 VBox serverList = new VBox(8);
                 serverList.setPadding(new Insets(5));
@@ -670,9 +890,8 @@ public class RackManagementUI extends VBox {
                     
                     final String finalServerId = serverId;
                     
-                    HBox serverRow = new HBox(10);
+                    HBox serverRow = new HBox(5);
                     serverRow.setAlignment(Pos.CENTER_LEFT);
-                    serverRow.setPadding(new Insets(5));
                     
                     // Server info
                     VBox serverInfo = new VBox(2);
@@ -686,7 +905,7 @@ public class RackManagementUI extends VBox {
                         -fx-border-style: solid;
                     """);
                     
-                    Label nameLabel = new Label("VPS " + server.getVCPUs() + "vCPU");
+                    Label nameLabel = new Label("SERVER " + server.getVCPUs() + "vCPU");
                     nameLabel.setStyle("""
                         -fx-text-fill: #ff00ff; 
                         -fx-font-weight: bold;
@@ -704,7 +923,7 @@ public class RackManagementUI extends VBox {
                     // Install button
                     Button installButton = createPixelButton("INSTALL", "#4CAF50");
                     
-                    // Add click animation for better feedback
+                    // Add click animations
                     installButton.setOnMousePressed(e -> {
                         installButton.setStyle(
                             "-fx-background-color: #388E3C;" +
@@ -735,12 +954,10 @@ public class RackManagementUI extends VBox {
                         );
                     });
                     
-                    // Use a cleaner event handler implementation
                     installButton.setOnAction(event -> {
                         try {
                             if (parent.installVPSFromInventory(finalServerId)) {
                                 parent.pushNotification("SUCCESS", "Server installed successfully");
-                                // Animate success and reload
                                 installButton.setDisable(true);
                                 Timeline successAnimation = new Timeline(
                                     new KeyFrame(Duration.ZERO, 
@@ -764,71 +981,22 @@ public class RackManagementUI extends VBox {
                     serverList.getChildren().add(serverRow);
                 }
                 
-                serverScrollPane.setContent(serverList);
-                inventorySection.getChildren().addAll(uninstalledLabel, serverScrollPane);
+                uninstalledScrollPane.setContent(serverList);
+                uninstalledSection.getChildren().addAll(uninstalledLabel, uninstalledScrollPane);
                 
-                // Add buttons at the bottom
-                Button marketButton = createPixelButton("PURCHASE MORE SERVERS", "#6a00ff");
-                marketButton.setOnAction(e -> {
-                    parent.returnToRoom();
-                    parent.openMarket();
-                });
-                
-                // Add components in proper order
-                noServerMessage.getChildren().addAll(messageLabel, emptyRackVisual, descriptionLabel, inventorySection, marketButton);
-            } else {
-                Button marketButton = createPixelButton("PURCHASE SERVERS", "#6a00ff");
-                marketButton.setPrefWidth(200);
-                marketButton.setOnAction(e -> {
-                    parent.returnToRoom();
-                    parent.openMarket();
-                });
-                
-                Button inventoryButton = createPixelButton("ACCESS SERVER INVENTORY", "#6a00ff");
-                inventoryButton.setMaxWidth(Double.MAX_VALUE); // Make button fill width
-                inventoryButton.setOnAction(e -> parent.openVPSInventory());
-                
-                Button upgradeButton = createPixelButton("UPGRADE RACK", "#4CAF50");
-                upgradeButton.setMaxWidth(Double.MAX_VALUE); // Make button fill width
-                upgradeButton.setOnAction(e -> {
-                    if (parent.getRack().upgrade()) {
-                        // Add upgrade animation without infoPane references
-                        Timeline pulseAnimation = new Timeline();
-                        pulseAnimation.getKeyFrames().addAll(
-                            new KeyFrame(Duration.ZERO, 
-                                new KeyValue(upgradeButton.scaleXProperty(), 1.0),
-                                new KeyValue(upgradeButton.scaleYProperty(), 1.0)
-                            ),
-                            new KeyFrame(Duration.millis(200), 
-                                new KeyValue(upgradeButton.scaleXProperty(), 1.05),
-                                new KeyValue(upgradeButton.scaleYProperty(), 1.05)
-                            ),
-                            new KeyFrame(Duration.millis(400), 
-                                new KeyValue(upgradeButton.scaleXProperty(), 1.0),
-                                new KeyValue(upgradeButton.scaleYProperty(), 1.0)
-                            )
-                        );
-                        
-                        pulseAnimation.setOnFinished(event -> {
-                            parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " + 
-                                                  parent.getRack().getUnlockedSlotUnits() + " SLOTS");
-                            openRackInfo();
-                        });
-                        
-                        pulseAnimation.play();
-                    } else {
-                        parent.pushNotification("UPGRADE FAILED", "MAXIMUM CAPACITY REACHED");
-                    }
-                });
-                
-                HBox buttonRow = new HBox(20);
-                buttonRow.setAlignment(Pos.CENTER);
-                buttonRow.getChildren().addAll(marketButton, inventoryButton, upgradeButton);
-                
-                noServerMessage.getChildren().addAll(messageLabel, emptyRackVisual, descriptionLabel, buttonRow);
+                infoPane.getChildren().add(uninstalledSection);
             }
-            
-            contentBox.setCenter(noServerMessage);
+
+            // Add a spacer at the bottom to push everything to the top of the panel
+            Region bottomSpacer = new Region();
+            VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
+            infoPane.getChildren().add(bottomSpacer);
+
+            // Assemble the main content layout
+            mainLayout.getChildren().addAll(rackContainerWithSpacer, infoPane);
+            HBox.setHgrow(infoPane, Priority.ALWAYS); // Allow info pane to grow horizontally
+            mainLayout.setAlignment(Pos.CENTER);
+            contentBox.setCenter(mainLayout);
         } else {
             // Main layout with rack on left and info on right
             HBox mainLayout = new HBox(20);
@@ -1189,7 +1357,7 @@ public class RackManagementUI extends VBox {
                         -fx-border-style: solid;
                     """);
                     
-                    Label nameLabel = new Label("VPS " + server.getVCPUs() + "vCPU");
+                    Label nameLabel = new Label("SERVER " + server.getVCPUs() + "vCPU");
                     nameLabel.setStyle("""
                         -fx-text-fill: #ff00ff; 
                         -fx-font-weight: bold;
@@ -1266,11 +1434,6 @@ public class RackManagementUI extends VBox {
                     serverRow.getChildren().addAll(serverInfo, installButton);
                     serverList.getChildren().add(serverRow);
                 }
-                
-                uninstalledScrollPane.setContent(serverList);
-                uninstalledSection.getChildren().addAll(uninstalledLabel, uninstalledScrollPane);
-                
-                infoPane.getChildren().add(uninstalledSection);
             }
 
             // Add a spacer at the bottom to push everything to the top of the panel

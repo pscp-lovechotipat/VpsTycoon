@@ -18,8 +18,8 @@ public class MoneyUI extends VBox {
 
     private Text moneyText;
     private Text moneyValue;
-    private Text rattingText;
-    private Text rattingValue;
+    private Text ratingText;
+    private Text ratingValue;
 
     public MoneyUI(GameplayContentPane parent, MoneyModel model) {
         this.parent = parent;
@@ -30,23 +30,23 @@ public class MoneyUI extends VBox {
         moneyValue = new Text();
         moneyValue.textProperty().bind(model.moneyProperty().asString("%d"));
 
-        // สร้าง Text สำหรับ "Ratting:" และค่าเรตติ้ง
-        rattingText = new Text("Ratting: ");
-        rattingValue = new Text();
-        rattingValue.textProperty().bind(model.rattingProperty().asString("%.1f"));
+        // สร้าง Text สำหรับ "Rating:" และค่าเรตติ้ง
+        ratingText = new Text("Rating: ");
+        ratingValue = new Text();
+        ratingValue.textProperty().bind(model.ratingProperty().asString("%.1f"));
 
         // ตั้งค่าสี
         moneyText.setFill(Color.web("#00FFFF")); // สีฟ้านีออน
         moneyValue.setFill(Color.web("#FFD700")); // สีทอง
-        rattingText.setFill(Color.web("#00FFFF")); // สีฟ้านีออน
-        rattingValue.setFill(Color.web("#FFD700")); // สีทอง
+        ratingText.setFill(Color.web("#00FFFF")); // สีฟ้านีออน
+        ratingValue.setFill(Color.web("#FFD700")); // สีทอง
 
         // ตั้งค่าฟอนต์
         Font font = FontLoader.SECTION_FONT;
         moneyText.setFont(font);
         moneyValue.setFont(font);
-        rattingText.setFont(font);
-        rattingValue.setFont(font);
+        ratingText.setFont(font);
+        ratingValue.setFont(font);
 
         // เพิ่มเอฟเฟกต์เงา
         DropShadow dropShadow = new DropShadow();
@@ -59,13 +59,13 @@ public class MoneyUI extends VBox {
         moneyBox.setAlignment(Pos.CENTER_LEFT);
         moneyBox.setSpacing(5);
 
-        // สร้าง HBox สำหรับแถว Ratting
-        HBox rattingBox = new HBox(rattingText, rattingValue);
-        rattingBox.setAlignment(Pos.CENTER_LEFT);
-        rattingBox.setSpacing(5);
+        // สร้าง HBox สำหรับแถว Rating
+        HBox ratingBox = new HBox(ratingText, ratingValue);
+        ratingBox.setAlignment(Pos.CENTER_LEFT);
+        ratingBox.setSpacing(5);
 
         // เพิ่ม HBox เข้าไปใน VBox
-        this.getChildren().addAll(moneyBox, rattingBox);
+        this.getChildren().addAll(moneyBox, ratingBox);
         this.setAlignment(Pos.TOP_LEFT);
         this.setSpacing(10);
         this.setPadding(new Insets(10)); // Padding น้อยๆ เพื่อความสวยงาม

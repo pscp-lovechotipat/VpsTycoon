@@ -14,6 +14,7 @@ public class Rack extends StackPane {
     private final List<VBox> racks;
     private final List<List<VPSOptimization>> rackVPS; // Store VPS for each rack
     private final List<Integer> unlockedSlotUnitsList; // Store unlocked slots for each rack
+    private final List<Integer> occupiedSlotUnitsList; // Store occupied slots for each rack
     private int currentRackIndex;
     private final Button prevButton;
     private final Button nextButton;
@@ -26,6 +27,7 @@ public class Rack extends StackPane {
         racks = new ArrayList<>();
         rackVPS = new ArrayList<>();
         unlockedSlotUnitsList = new ArrayList<>();
+        occupiedSlotUnitsList = new ArrayList<>();
 
         currentRackIndex = -1;
         maxSlotUnits = 0;
@@ -87,10 +89,7 @@ public class Rack extends StackPane {
     }
 
     public void addRack(int slots) {
-        maxSlotUnits = slots;
-        unlockedSlotUnits = 0;
-        occupiedSlotUnits = 0;
-        
+        // Store each rack's properties separately instead of overwriting the class variables
         VBox newRack = new VBox(5);
         newRack.setStyle("""
             -fx-background-color: #2a2a2a;
@@ -110,7 +109,12 @@ public class Rack extends StackPane {
         
         racks.add(newRack);
         rackVPS.add(new ArrayList<>()); // Add empty VPS list for new rack
-        unlockedSlotUnitsList.add(0);
+        unlockedSlotUnitsList.add(1); // Start with 1 unlocked slot for the new rack so it's usable right away
+        occupiedSlotUnitsList.add(0); // Initialize occupied slots to 0 for the new rack
+        
+        // Set the maxSlotUnits for the current rack
+        maxSlotUnits = slots;
+        unlockedSlotUnits = 1; // Start with 1 unlocked slot
         
         // If this is the first rack, set it as current
         if (currentRackIndex == -1) {
@@ -156,7 +160,7 @@ public class Rack extends StackPane {
                 vpsVisual.setAlignment(Pos.CENTER);
                 
                 // Add VPS information
-                Label nameLabel = new Label("VPS " + vps.getVCPUs() + "vCPU");
+                Label nameLabel = new Label("Server " + vps.getVCPUs() + "vCPU");
                 nameLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-weight: bold;");
                 
                 Label specsLabel = new Label(vps.getRamInGB() + "GB RAM");
@@ -212,6 +216,22 @@ public class Rack extends StackPane {
             VBox currentRack = racks.get(currentRackIndex);
             getChildren().add(currentRack);
             
+            // Update the class variables to reflect the current rack's properties
+            unlockedSlotUnits = unlockedSlotUnitsList.get(currentRackIndex);
+            
+            // Update occupied slots from the list
+            occupiedSlotUnits = occupiedSlotUnitsList.get(currentRackIndex);
+            
+            // No need to calculate this now as we track per rack
+            // Calculate occupied slots for the current rack
+            //occupiedSlotUnits = 0;
+            //for (VPSOptimization vps : rackVPS.get(currentRackIndex)) {
+            //    occupiedSlotUnits += vps.getSlotsRequired();
+            //}
+            
+            // Update maxSlotUnits based on the number of slots in the current rack
+            maxSlotUnits = currentRack.getChildren().size();
+            
             // Update VPS display in the current rack
             updateVPSDisplay(currentRack);
         }
@@ -245,7 +265,7 @@ public class Rack extends StackPane {
                     """);
                 vpsVisual.setAlignment(Pos.CENTER);
 
-                Label nameLabel = new Label("VPS " + vps.getVCPUs() + "vCPU");
+                Label nameLabel = new Label("Server " + vps.getVCPUs() + "vCPU");
                 nameLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-weight: bold;");
 
                 Label specsLabel = new Label(vps.getRamInGB() + "GB RAM");
@@ -309,6 +329,16 @@ public class Rack extends StackPane {
         return false;
     }
 
+    // Navigate to the latest rack (newest purchase)
+    public boolean goToLatestRack() {
+        if (!racks.isEmpty()) {
+            currentRackIndex = racks.size() - 1;
+            showCurrentRack();
+            return true;
+        }
+        return false;
+    }
+
     public VBox getCurrentRack() {
         if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
             return racks.get(currentRackIndex);
@@ -319,17 +349,34 @@ public class Rack extends StackPane {
     // New methods for VPS management
     public boolean installVPS(VPSOptimization vps) {
         if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
+            System.out.println("DEBUG: Cannot install VPS, no rack selected");
             return false; // ไม่สามารถติดตั้งได้ถ้ายังไม่มี rack
         }
         
-        // Check if we have enough available slots
-        if (getAvailableSlotUnits() < vps.getSlotsRequired()) {
+        // Check if we have enough available slots in the current rack
+        int availableSlots = getAvailableSlotUnits();
+        int requiredSlots = vps.getSlotsRequired();
+        
+        System.out.println("DEBUG: Rack " + (currentRackIndex+1) + " - Available slots: " + availableSlots + 
+                           ", Required slots: " + requiredSlots + 
+                           ", Unlocked slots: " + unlockedSlotUnitsList.get(currentRackIndex) + 
+                           ", Occupied slots: " + occupiedSlotUnitsList.get(currentRackIndex));
+        
+        if (availableSlots < requiredSlots) {
+            System.out.println("DEBUG: Not enough slots available in rack " + (currentRackIndex+1));
             return false; // Not enough available slots
         }
         
         // Install the VPS
         rackVPS.get(currentRackIndex).add(vps);
-        occupiedSlotUnits += vps.getSlotsRequired();
+        
+        // Update the occupied slots for the current rack
+        int currentOccupied = occupiedSlotUnitsList.get(currentRackIndex);
+        occupiedSlotUnitsList.set(currentRackIndex, currentOccupied + vps.getSlotsRequired());
+        
+        // Update class variable
+        occupiedSlotUnits = occupiedSlotUnitsList.get(currentRackIndex);
+        
         vps.setInstalled(true);
 
         // Update the visual display
@@ -345,7 +392,13 @@ public class Rack extends StackPane {
         }
         List<VPSOptimization> currentRackVPS = rackVPS.get(currentRackIndex);
         if (currentRackVPS.remove(vps)) {
-            occupiedSlotUnits -= vps.getSlotsRequired();
+            // Update the occupied slots for the current rack
+            int currentOccupied = occupiedSlotUnitsList.get(currentRackIndex);
+            occupiedSlotUnitsList.set(currentRackIndex, currentOccupied - vps.getSlotsRequired());
+            
+            // Update class variable
+            occupiedSlotUnits = occupiedSlotUnitsList.get(currentRackIndex);
+            
             vps.setInstalled(false);
 
             if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
@@ -382,16 +435,26 @@ public class Rack extends StackPane {
         if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
             return 0; // คืนค่า 0 ถ้ายังไม่มี rack
         }
-        return unlockedSlotUnitsList.get(currentRackIndex) - occupiedSlotUnits;
+        int unlockedSlots = unlockedSlotUnitsList.get(currentRackIndex);
+        int occupiedSlots = occupiedSlotUnitsList.get(currentRackIndex);
+        return unlockedSlots - occupiedSlots;
     }
 
     public boolean upgrade() {
         if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
             return false; // ไม่สามารถ upgrade ได้ถ้ายังไม่มี rack
         }
+        
         int currentUnlockedSlots = unlockedSlotUnitsList.get(currentRackIndex);
-        if (currentUnlockedSlots < maxSlotUnits) {
+        
+        // Check if the current rack's unlocked slots are less than the maximum slots for this rack
+        if (currentUnlockedSlots < racks.get(currentRackIndex).getChildren().size()) {
+            // Increment unlocked slots for the current rack only
             unlockedSlotUnitsList.set(currentRackIndex, currentUnlockedSlots + 1);
+            
+            // Update the class variable to match
+            unlockedSlotUnits = unlockedSlotUnitsList.get(currentRackIndex);
+            
             showCurrentRack();
             return true;
         }

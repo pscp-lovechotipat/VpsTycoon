@@ -202,7 +202,7 @@ public class RackStatus extends VBox {
                     -fx-border-style: solid;
                     """);
                 
-                Label nameLabel = new Label("VPS " + vps.getVCPUs() + "vCPU");
+                Label nameLabel = new Label("Server " + vps.getVCPUs() + "vCPU");
                 nameLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-weight: bold;");
                 
                 Label specsLabel = new Label(vps.getRamInGB() + "GB RAM");

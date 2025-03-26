@@ -10,7 +10,7 @@ public class VPSManager {
 
     public void createVPS(String id) {
         // Placeholder for creation logic (e.g., validation)
-        System.out.println("VPS created with ID: " + id);
+        System.out.println("Server created with ID: " + id);
     }
 
     public VPSOptimization getVPS(String id) {

@@ -71,7 +71,7 @@ public class VPSInfoUI {
         // ข้อมูล VPS
         HBox infoBox = UIUtils.createCard();
         infoBox.setPadding(new Insets(15));
-        VBox vpsSection = UIUtils.createSection("VPS Information");
+        VBox vpsSection = UIUtils.createSection("SERVER Information");
         Label vpsDetail = new Label(
                 "vCPUs: " + vps.getVCPUs() + " (Available: " + availableVCPUs + ")" +
                         "\nRAM: " + vps.getRamInGB() + " GB (Available: " + availableRamGB + " GB)" +
@@ -166,7 +166,7 @@ public class VPSInfoUI {
         boolean success = parent.uninstallVPSToInventory(vps);
         
         if (success) {
-            parent.pushNotification("VPS Uninstalled", 
+            parent.pushNotification("SERVER Uninstalled", 
                     "Successfully uninstalled VPS. It has been moved to your inventory.");
             
             // Return to rack management
