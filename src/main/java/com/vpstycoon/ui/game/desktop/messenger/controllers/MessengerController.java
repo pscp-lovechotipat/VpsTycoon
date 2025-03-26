@@ -14,6 +14,8 @@ import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import com.vpstycoon.ui.game.desktop.messenger.views.DashboardView;
 import com.vpstycoon.ui.game.desktop.messenger.views.RequestListView;
 import com.vpstycoon.ui.game.desktop.messenger.views.VMSelectionDialog;
+import com.vpstycoon.game.GameState;
+import com.vpstycoon.ui.game.rack.Rack;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.scene.control.ProgressBar;
@@ -27,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.Random;
 
 public class MessengerController {
     private final RequestManager requestManager;
@@ -71,14 +74,36 @@ public class MessengerController {
         this.rentalManager = new RentalManager(chatHistoryManager, chatAreaView, company, gameTimeManager);
         this.skillPointsManager = new SkillPointsManager(chatHistoryManager, chatAreaView, ResourceManager.getInstance().getSkillPointsSystem());
 
+        // Load saved VM data from the ResourceManager's GameState
+        GameState currentState = ResourceManager.getInstance().getCurrentState();
+        if (currentState != null) {
+            int savedFreeVmCount = currentState.getFreeVmCount();
+            if (savedFreeVmCount > 0) {
+                // Set the company's available VMs based on the saved count
+                company.setAvailableVMs(savedFreeVmCount);
+                System.out.println("Loaded Free VM count from GameState: " + savedFreeVmCount);
+            }
+        }
+        
+        // โหลด VPS จาก GameState ก่อน
+        loadVPSFromGameState();
+
         setupListeners();
         updateRequestList();
-        updateDashboard();
-        loadSkillLevels();
-
+        
+        // ตั้งค่า RentalManager ก่อนอัพเดต UI
         this.rentalManager.setOnArchiveRequest(() -> archiveRequest(requestListView.getSelectedRequest()));
         this.rentalManager.setVMAssignment(vmAssignments);
         this.rentalManager.setOnUpdateDashboard(this::updateDashboard);
+        
+        loadSkillLevels();
+        
+        // อัพเดต Dashboard ที่หลังที่สุด (หลังจากตั้งค่าทุกอย่างเรียบร้อยแล้ว)
+        // เพื่อให้ข้อมูล rack และอื่นๆ ถูกโหลดมาพร้อมใช้งานก่อน
+        Platform.runLater(() -> {
+            System.out.println("อัพเดต Dashboard หลังจากตั้งค่าทั้งหมดเรียบร้อยแล้ว");
+            updateDashboard();
+        });
     }
 
     private void setupListeners() {
@@ -153,16 +178,44 @@ public class MessengerController {
         chatAreaView.getAssignVMButton().setOnAction(e -> {
             CustomerRequest selected = requestListView.getSelectedRequest();
             if (selected != null && !selected.isActive()) {
+                // ตรวจสอบว่ามี VM ในระบบหรือไม่
+                boolean hasAnyVMs = false;
+                int totalServerCount = vpsManager.getVPSMap().size();
+                
+                for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                    if (!vps.getVms().isEmpty()) {
+                        hasAnyVMs = true;
+                        break;
+                    }
+                }
+                
+                // ถ้าไม่มี VM จริงในระบบ แต่มีค่า availableVMs บอกว่ามี และมีเซิร์ฟเวอร์อยู่ในระบบ
+                if (!hasAnyVMs && company.getAvailableVMs() > 0 && totalServerCount > 0) {
+                    System.out.println("สร้าง VM objects ในขณะที่กดปุ่ม Assign VM");
+                    
+                    // สร้าง VM ตามจำนวนที่ควรมี
+                    createVirtualMachines(company.getAvailableVMs(), totalServerCount);
+                }
+                
+                // รวบรวม VM ที่มีสถานะ Running และยังไม่ถูกใช้งาน
                 List<VPSOptimization.VM> allAvailableVMs = new ArrayList<>();
                 for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                     allAvailableVMs.addAll(vps.getVms().stream()
                             .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
                             .collect(Collectors.toList()));
                 }
+                
                 if (allAvailableVMs.isEmpty()) {
-                    chatAreaView.addSystemMessage("No available VMs to assign. Please create new VMs first.");
+                    if (company.getAvailableVMs() > 0) {
+                        chatAreaView.addSystemMessage("แม้ว่าระบบจะรายงานว่ามี " + company.getAvailableVMs() + 
+                            " VM ที่ว่าง แต่ไม่สามารถหา VM จริงในระบบได้ โปรดสร้าง VM ใหม่ก่อน");
+                    } else {
+                        chatAreaView.addSystemMessage("ไม่มี VM ที่พร้อมใช้งาน โปรดสร้าง VM ใหม่ก่อน");
+                    }
                     return;
                 }
+                
+                // สร้าง Dialog สำหรับเลือก VM
                 VMSelectionDialog dialog = new VMSelectionDialog(allAvailableVMs, rootStack);
                 dialog.setOnConfirm(() -> {
                     VPSOptimization.VM selectedVM = dialog.getSelectedVM();
@@ -197,17 +250,84 @@ public class MessengerController {
         // First, check for any expired requests and release their VMs
         releaseExpiredVMs();
         
-        // Update dashboard with available VM count
+        // Update dashboard with available VM count and total servers
         int availableVMs = 0;
+        int totalServers = 0;
+        
+        // ขั้นตอนการนับ VM และ servers:
+        // 1. ตรวจสอบข้อมูลที่บันทึกใน GameState ก่อน (ค่าที่บันทึกไว้)
+        // 2. ตรวจสอบจาก VPSManager (ค่าจากออบเจ็คต์จริงในเกม)
+        // 3. ตรวจสอบจาก Rack (ค่าจากส่วนแสดงผลที่ผู้เล่นเห็น)
+        // 4. สร้าง VM objects ถ้าจำเป็น
+        
+        // ขั้นตอนที่ 1: ตรวจสอบค่าที่บันทึกไว้ก่อน
+        GameState currentState = ResourceManager.getInstance().getCurrentState();
+        if (currentState != null && currentState.getFreeVmCount() > 0) {
+            availableVMs = currentState.getFreeVmCount();
+            System.out.println("1. ใช้ค่า VM ที่บันทึกใน GameState: " + availableVMs);
+        }
+        
+        // ขั้นตอนที่ 2: ตรวจสอบจำนวน servers และ VMs จาก VPSManager
+        int vpsMgrServerCount = vpsManager.getVPSMap().size();
+        int vpsMgrVMCount = 0;
+        
+        if (vpsMgrServerCount > 0) {
+            totalServers = vpsMgrServerCount;
+            
+            // นับ VM ที่มีอยู่ในระบบและสถานะ Running
+            for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                vpsMgrVMCount += (int) vps.getVms().stream()
+                        .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
+                        .count();
+            }
+            
+            // ถ้ามี VM จริงในระบบ ให้ใช้ค่านี้แทนค่าที่บันทึกไว้ใน GameState
+            if (vpsMgrVMCount > 0) {
+                availableVMs = vpsMgrVMCount;
+                System.out.println("2. ใช้ค่า VM จริงจาก VPSManager: " + availableVMs);
+            }
+            
+            System.out.println("   จำนวนเซิร์ฟเวอร์จาก VPSManager: " + totalServers);
+        } else {
+            // ถ้าไม่มีเซิร์ฟเวอร์ใน VPSManager ให้ลองโหลดจาก GameState อีกครั้ง
+            loadVPSFromGameState();
+            
+            // ตรวจสอบอีกครั้งหลังจากโหลด
+            vpsMgrServerCount = vpsManager.getVPSMap().size();
+            if (vpsMgrServerCount > 0) {
+                totalServers = vpsMgrServerCount;
+                System.out.println("   จำนวนเซิร์ฟเวอร์จาก VPSManager หลังจากโหลดอีกครั้ง: " + totalServers);
+            }
+        }
+        
+        // ขั้นตอนที่ 3: ตรวจสอบจาก Rack (โหลดข้อมูลนี้ท้ายสุด)
+        boolean hasRackData = checkAndUpdateFromRack();
+        
+        // ขั้นตอนที่ 4: ถ้าไม่มี VM objects จริงในระบบแต่มีค่า availableVMs > 0 ให้สร้าง VM objects
+        boolean hasAnyVMs = false;
         for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
-            // นับ VM ที่มีสถานะ Running และยังไม่ถูกกำหนดให้ลูกค้า
-            availableVMs += (int) vps.getVms().stream()
-                    .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
-                    .count();
+            if (!vps.getVms().isEmpty()) {
+                hasAnyVMs = true;
+                break;
+            }
+        }
+        
+        if (!hasAnyVMs && availableVMs > 0 && totalServers > 0) {
+            System.out.println("4. สร้าง VM objects เนื่องจากมีค่า availableVMs=" + availableVMs + 
+                               " แต่ไม่มี VM objects จริงในระบบ");
+            
+            createVirtualMachines(availableVMs, totalServers);
+        }
+        
+        // Check if we need to adjust for customer assignments
+        if (availableVMs > 0 && !vmAssignments.isEmpty()) {
+            // Reduce free VM count by the number of VMs assigned to customers
+            availableVMs = Math.max(0, availableVMs - vmAssignments.size());
+            System.out.println("ปรับค่า VM ที่ว่างหลังจากหักลูกค้าที่ใช้งานอยู่: " + availableVMs);
         }
         
         // อัพเดต Dashboard ด้วยข้อมูลล่าสุด
-        dashboardView.updateDashboard(company.getRating(), requestManager.getRequests().size(), availableVMs, vpsManager.getVPSMap().size());
+        dashboardView.updateDashboard(company.getRating(), requestManager.getRequests().size(), availableVMs, totalServers);
         
         // บันทึกค่าลงใน Company เพื่อให้สามารถเรียกใช้ค่านี้ได้จากที่อื่น
         company.setAvailableVMs(availableVMs);
@@ -219,6 +339,83 @@ public class MessengerController {
         CustomerRequest selected = requestListView.getSelectedRequest();
         if (selected != null && !selected.isActive() && !selected.isExpired()) {
             chatAreaView.getAssignVMButton().setDisable(availableVMs <= 0);
+        }
+    }
+    
+    /**
+     * ตรวจสอบและปรับปรุงข้อมูลจาก Rack
+     * @return true ถ้ามีข้อมูลจาก Rack
+     */
+    private boolean checkAndUpdateFromRack() {
+        ResourceManager resourceManager = ResourceManager.getInstance();
+        Rack rack = resourceManager.getRack();
+        
+        if (rack != null) {
+            // นับเซิร์ฟเวอร์ที่ติดตั้งในแร็ค
+            List<VPSOptimization> installedServers = rack.getInstalledVPS();
+            if (installedServers != null && !installedServers.isEmpty()) {
+                int rackServers = installedServers.size();
+                int rackVMs = 0;
+                
+                System.out.println("3. พบเซิร์ฟเวอร์ในแร็ค: " + rackServers + " เครื่อง");
+                
+                // ตรวจสอบว่าเซิร์ฟเวอร์เหล่านี้มีอยู่ในระบบ VPSManager หรือไม่ ถ้าไม่มีให้เพิ่ม
+                for (VPSOptimization vps : installedServers) {
+                    String vpsId = vps.getVpsId();
+                    if (!vpsManager.getVPSMap().containsKey(vpsId)) {
+                        vpsManager.addVPS(vpsId, vps);
+                        System.out.println("   เพิ่มเซิร์ฟเวอร์ " + vpsId + " จากแร็คเข้าสู่ VPSManager");
+                    }
+                    
+                    // นับ VM ที่มีสถานะ Running และยังไม่ถูกใช้งาน
+                    rackVMs += (int) vps.getVms().stream()
+                            .filter(vm -> "Running".equals(vm.getStatus()) && !vmAssignments.containsKey(vm))
+                            .count();
+                }
+                
+                System.out.println("   VM ในแร็คที่พร้อมใช้งาน: " + rackVMs + " VM");
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * สร้าง VM objects ในระบบตามจำนวนที่ต้องการ
+     * @param vmCount จำนวน VM ที่ต้องการสร้าง
+     * @param serverCount จำนวนเซิร์ฟเวอร์ที่มี
+     */
+    private void createVirtualMachines(int vmCount, int serverCount) {
+        // กระจาย VM ให้กับเซิร์ฟเวอร์ที่มีอยู่
+        int remainingVMs = vmCount;
+        
+        // ถ้ามีเซิร์ฟเวอร์ คำนวณว่าแต่ละเซิร์ฟเวอร์ควรมี VM กี่ตัว
+        if (serverCount > 0) {
+            int vmsPerServer = (int) Math.ceil((double) vmCount / serverCount);
+            
+            for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                // ไม่สร้างเกินจำนวน VM ที่เหลือ
+                int vmsToCreate = Math.min(remainingVMs, vmsPerServer);
+                
+                for (int i = 0; i < vmsToCreate; i++) {
+                    // สร้าง VM ตามวิธีที่ถูกต้อง
+                    String vmName = "vm-" + System.currentTimeMillis() + "-" + i;
+                    String vmIp = generateRandomIp();
+                    VPSOptimization.VM newVM = new VPSOptimization.VM(
+                        vmIp,
+                        vmName,
+                        vps.getVCPUs(),
+                        vps.getRamInGB() + " GB",
+                        vps.getDiskInGB() + " GB",
+                        "Running"
+                    );
+                    vps.addVM(newVM);
+                    System.out.println("สร้าง VM ใหม่ใน server " + vps.getVpsId() + ": " + vmName);
+                    remainingVMs--;
+                }
+                
+                if (remainingVMs <= 0) break;
+            }
         }
     }
 
@@ -443,5 +640,39 @@ public class MessengerController {
 
     public MessengerWindow getMessengerWindow() {
         return messengerWindow;
+    }
+
+    private String generateRandomIp() {
+        // สร้าง IP แบบสุ่มในรูปแบบ 10.x.y.z สำหรับ private network
+        Random random = new Random();
+        return "10." + 
+               random.nextInt(255) + "." + 
+               random.nextInt(255) + "." + 
+               (random.nextInt(254) + 1); // หลีกเลี่ยงค่า 0
+    }
+
+    /**
+     * โหลดข้อมูล VPS จาก GameState โดยตรง
+     */
+    private void loadVPSFromGameState() {
+        GameState currentState = ResourceManager.getInstance().getCurrentState();
+        if (currentState != null && currentState.getGameObjects() != null) {
+            int vpsCount = 0;
+            
+            for (Object obj : currentState.getGameObjects()) {
+                if (obj instanceof VPSOptimization) {
+                    VPSOptimization vps = (VPSOptimization) obj;
+                    String vpsId = vps.getVpsId();
+                    
+                    // ถ้ายังไม่มีใน VPSManager ให้เพิ่มเข้าไป
+                    if (!vpsManager.getVPSMap().containsKey(vpsId)) {
+                        vpsManager.addVPS(vpsId, vps);
+                        vpsCount++;
+                    }
+                }
+            }
+            
+            System.out.println("โหลด VPS จาก GameState จำนวน " + vpsCount + " เครื่อง");
+        }
     }
 }

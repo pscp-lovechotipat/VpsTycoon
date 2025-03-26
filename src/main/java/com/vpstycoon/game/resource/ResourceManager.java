@@ -318,6 +318,29 @@ public class ResourceManager implements Serializable {
                 System.out.println("โหลดข้อมูล Free VM Count: " + state.getFreeVmCount());
                 if (this.company != null) {
                     this.company.setAvailableVMs(state.getFreeVmCount());
+                    System.out.println("อัปเดตข้อมูล Free VM Count ใน Company แล้ว: " + this.company.getAvailableVMs());
+                }
+            } else {
+                // ถ้าไม่มีข้อมูล Free VM Count ให้นับจาก VPS ที่ติดตั้งแล้วใน Rack
+                int freeVmCount = 0;
+                if (state.getGameObjects() != null) {
+                    for (Object obj : state.getGameObjects()) {
+                        if (obj instanceof com.vpstycoon.game.vps.VPSOptimization) {
+                            com.vpstycoon.game.vps.VPSOptimization vps = (com.vpstycoon.game.vps.VPSOptimization) obj;
+                            if (vps.isInstalled()) {
+                                freeVmCount += vps.getVms().stream()
+                                    .filter(vm -> "Running".equals(vm.getStatus()))
+                                    .count();
+                            }
+                        }
+                    }
+                    if (freeVmCount > 0) {
+                        state.setFreeVmCount(freeVmCount);
+                        if (this.company != null) {
+                            this.company.setAvailableVMs(freeVmCount);
+                        }
+                        System.out.println("คำนวณ Free VM Count จาก GameObjects: " + freeVmCount);
+                    }
                 }
             }
             
@@ -327,6 +350,9 @@ public class ResourceManager implements Serializable {
             e.printStackTrace();
             return new GameState();
         }
+        
+        // Update the current state
+        this.currentState = state;
         
         return state;
     }
