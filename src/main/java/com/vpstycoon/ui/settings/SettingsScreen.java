@@ -67,14 +67,8 @@ public class SettingsScreen extends StackPane {
         background.widthProperty().bind(widthProperty());
         background.heightProperty().bind(heightProperty());
         
-        // Dark purple cyberpunk gradient - Matching exactly with ResumeScreen
-        LinearGradient gradient = new LinearGradient(
-            0, 0, 1, 1, true, null,
-            new Stop(0, Color.rgb(25, 10, 41, 0.9)),  // Dark purple
-            new Stop(0.5, Color.rgb(45, 20, 80, 0.9)), // Medium purple
-            new Stop(1, Color.rgb(20, 5, 30, 0.9))    // Very dark purple
-        );
-        background.setFill(gradient);
+        // Replace gradient with solid color to eliminate shaking
+        background.setFill(Color.rgb(30, 15, 50, 0.9));  // Dark purple solid color
         
         // Add some pixel-like noise effect to the background
         background.setStroke(Color.rgb(180, 50, 255, 0.2));
@@ -108,7 +102,7 @@ public class SettingsScreen extends StackPane {
             "-fx-border-width: 2, 1;" +
             "-fx-border-radius: 2;" +
             "-fx-border-insets: 0, 3;" +
-            "-fx-effect: dropshadow(gaussian, #ff00ff, 15, 0.2, 0, 0);"
+            "-fx-effect: dropshadow(gaussian, #ff00ff, 5, 0.2, 0, 0);"
         );
         
         contentBox.getChildren().addAll(titleLabel, settingsContainer, buttonsRow);
@@ -132,14 +126,14 @@ public class SettingsScreen extends StackPane {
         label.setFont(FontLoader.SUBTITLE_FONT);
         label.setStyle("""
             -fx-text-fill: white;
-            -fx-effect: dropshadow(gaussian, #ff00ff, 8, 0.4, 0, 0);
+            -fx-effect: dropshadow(gaussian, #ff00ff, 4, 0.3, 0, 0);
             """);
 
         // Add glow effect to the title
-        Glow glow = new Glow(1.0);
+        Glow glow = new Glow(0.8);
         DropShadow shadow = new DropShadow();
         shadow.setColor(Color.rgb(255, 0, 255, 0.7));
-        shadow.setRadius(10);
+        shadow.setRadius(5);
         label.setEffect(shadow);
 
         return label;
@@ -155,7 +149,7 @@ public class SettingsScreen extends StackPane {
             -fx-border-width: 2, 1;
             -fx-border-radius: 2;
             -fx-border-insets: 0, 3;
-            -fx-effect: dropshadow(gaussian, #800fd1, 15, 0.3, 0, 0);
+            -fx-effect: dropshadow(gaussian, #800fd1, 5, 0.3, 0, 0);
             """);
 
         // Volume controls
@@ -242,7 +236,7 @@ public class SettingsScreen extends StackPane {
         label.setFont(FontLoader.SECTION_FONT);
         label.setStyle("""
             -fx-text-fill: #00ffff;
-            -fx-effect: dropshadow(gaussian, #00ffff, 5, 0.2, 0, 0);
+            -fx-effect: dropshadow(gaussian, #00ffff, 3, 0.2, 0, 0);
             """);
         return label;
     }
@@ -357,7 +351,7 @@ public class SettingsScreen extends StackPane {
         // Add glow effect to buttons - Match styling with ResumeScreen
         DropShadow buttonGlow = new DropShadow();
         buttonGlow.setColor(Color.rgb(180, 50, 255, 0.7));
-        buttonGlow.setRadius(15);
+        buttonGlow.setRadius(5);
         button.setEffect(buttonGlow);
         
         // Make buttons slightly larger to match ResumeScreen

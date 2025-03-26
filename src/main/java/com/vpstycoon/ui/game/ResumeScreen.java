@@ -57,14 +57,8 @@ public class ResumeScreen extends StackPane {
         background.widthProperty().bind(widthProperty());
         background.heightProperty().bind(heightProperty());
         
-        // Dark purple cyberpunk gradient
-        LinearGradient gradient = new LinearGradient(
-            0, 0, 1, 1, true, null,
-            new Stop(0, Color.rgb(25, 10, 41, 0.9)),  // Dark purple
-            new Stop(0.5, Color.rgb(45, 20, 80, 0.9)), // Medium purple
-            new Stop(1, Color.rgb(20, 5, 30, 0.9))    // Very dark purple
-        );
-        background.setFill(gradient);
+        // Replace gradient with solid color to eliminate shaking
+        background.setFill(Color.rgb(30, 15, 50, 0.9));  // Dark purple solid color
         
         // Add some pixel-like noise effect to the background (optional)
         background.setStroke(Color.rgb(180, 50, 255, 0.2));
@@ -85,7 +79,7 @@ public class ResumeScreen extends StackPane {
             "-fx-border-width: 2, 1;" +
             "-fx-border-radius: 2;" +
             "-fx-border-insets: 0, 3;" +
-            "-fx-effect: dropshadow(gaussian, #ff00ff, 15, 0.2, 0, 0);"
+            "-fx-effect: dropshadow(gaussian, #ff00ff, 5, 0.2, 0, 0);"
         );
         
         // Add a title to the menu
@@ -95,10 +89,10 @@ public class ResumeScreen extends StackPane {
         titleText.setFill(Color.WHITE);
         
         // Add glow effect to the title
-        Glow glow = new Glow(1.0);
+        Glow glow = new Glow(0.8);
         DropShadow shadow = new DropShadow();
         shadow.setColor(Color.rgb(255, 0, 255, 0.7));
-        shadow.setRadius(10);
+        shadow.setRadius(5);
         titleText.setEffect(shadow);
         
         // ปุ่ม Resume (กลับไปเล่นเกม)
@@ -184,7 +178,7 @@ public class ResumeScreen extends StackPane {
         // Add glow effect to buttons
         DropShadow buttonGlow = new DropShadow();
         buttonGlow.setColor(Color.rgb(180, 50, 255, 0.7));
-        buttonGlow.setRadius(15);
+        buttonGlow.setRadius(5);
         button.setEffect(buttonGlow);
         
         // Make buttons slightly larger

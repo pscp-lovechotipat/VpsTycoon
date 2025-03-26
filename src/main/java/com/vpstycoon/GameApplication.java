@@ -153,8 +153,8 @@ public class GameApplication extends Application implements Navigator {
         
         // 4. สร้าง Company ใหม่และตั้งค่าเริ่มต้น
         Company newCompany = new Company();
-        newCompany.setMoney(10000); // เงินตั้งต้น 10,000
-        newCompany.setRating(3.0);  // Rating เริ่มต้น 3.0
+        newCompany.setMoney(50_000);
+        newCompany.setRating(1.0);
         newState.setCompany(newCompany);
         
         // 5. รีเซ็ตเวลากลับไปที่เริ่มเกม
