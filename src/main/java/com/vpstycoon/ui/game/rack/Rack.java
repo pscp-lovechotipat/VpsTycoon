@@ -13,6 +13,7 @@ import java.util.List;
 public class Rack extends StackPane {
     private final List<VBox> racks;
     private final List<List<VPSOptimization>> rackVPS; // Store VPS for each rack
+    private final List<Integer> unlockedSlotUnitsList; // Store unlocked slots for each rack
     private int currentRackIndex;
     private final Button prevButton;
     private final Button nextButton;
@@ -24,6 +25,8 @@ public class Rack extends StackPane {
     public Rack() {
         racks = new ArrayList<>();
         rackVPS = new ArrayList<>();
+        unlockedSlotUnitsList = new ArrayList<>();
+
         currentRackIndex = -1;
         maxSlotUnits = 0;
         unlockedSlotUnits = 0;
@@ -107,6 +110,7 @@ public class Rack extends StackPane {
         
         racks.add(newRack);
         rackVPS.add(new ArrayList<>()); // Add empty VPS list for new rack
+        unlockedSlotUnitsList.add(0);
         
         // If this is the first rack, set it as current
         if (currentRackIndex == -1) {
@@ -224,11 +228,12 @@ public class Rack extends StackPane {
         // Add VPS to slots
         int currentSlot = 0;
         List<VPSOptimization> currentRackVPS = rackVPS.get(currentRackIndex);
+        int currentUnlockedSlots = unlockedSlotUnitsList.get(currentRackIndex);
+
         for (VPSOptimization vps : currentRackVPS) {
-            if (currentSlot < rack.getChildren().size()) {
+            if (currentSlot < currentUnlockedSlots && currentSlot < rack.getChildren().size()) {
                 VBox slot = (VBox) rack.getChildren().get(currentSlot);
-                
-                // Create a visual representation of the VPS
+
                 VBox vpsVisual = new VBox(5);
                 vpsVisual.setStyle("""
                     -fx-background-color: #2a2a2a;
@@ -239,22 +244,36 @@ public class Rack extends StackPane {
                     -fx-border-style: solid;
                     """);
                 vpsVisual.setAlignment(Pos.CENTER);
-                
-                // Add VPS information
+
                 Label nameLabel = new Label("VPS " + vps.getVCPUs() + "vCPU");
                 nameLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-weight: bold;");
-                
+
                 Label specsLabel = new Label(vps.getRamInGB() + "GB RAM");
                 specsLabel.setStyle("-fx-text-fill: #00ff00;");
-                
+
                 Label sizeLabel = new Label(vps.getSize().getDisplayName());
                 sizeLabel.setStyle("-fx-text-fill: #00ff00;");
-                
+
                 vpsVisual.getChildren().addAll(nameLabel, specsLabel, sizeLabel);
                 slot.getChildren().add(vpsVisual);
-                
+
                 currentSlot += vps.getSlotsRequired();
             }
+        }
+
+        for (int i = currentSlot; i < rack.getChildren().size(); i++) {
+            VBox slot = (VBox) rack.getChildren().get(i);
+            Label statusLabel;
+
+            if (i < currentUnlockedSlots) {
+                statusLabel = new Label("AVAILABLE");
+                statusLabel.setStyle("-fx-text-fill: #00ff00;");
+            } else {
+                statusLabel = new Label("LOCKED");
+                statusLabel.setStyle("-fx-text-fill: #ff0000;");
+            }
+
+            slot.getChildren().add(statusLabel);
         }
     }
 
@@ -299,12 +318,15 @@ public class Rack extends StackPane {
 
     // New methods for VPS management
     public boolean installVPS(VPSOptimization vps) {
+        if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
+            return false; // ไม่สามารถติดตั้งได้ถ้ายังไม่มี rack
+        }
+        int currentUnlockedSlots = unlockedSlotUnitsList.get(currentRackIndex);
         if (getAvailableSlotUnits() >= vps.getSlotsRequired()) {
             rackVPS.get(currentRackIndex).add(vps);
             occupiedSlotUnits += vps.getSlotsRequired();
             vps.setInstalled(true);
-            
-            // Update VPS display in current rack
+
             if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
                 updateVPSDisplay(racks.get(currentRackIndex));
             }
@@ -314,12 +336,14 @@ public class Rack extends StackPane {
     }
 
     public boolean uninstallVPS(VPSOptimization vps) {
+        if (currentRackIndex < 0 || currentRackIndex >= rackVPS.size()) {
+            return false; // ไม่สามารถถอนการติดตั้งได้ถ้ายังไม่มี rack
+        }
         List<VPSOptimization> currentRackVPS = rackVPS.get(currentRackIndex);
         if (currentRackVPS.remove(vps)) {
             occupiedSlotUnits -= vps.getSlotsRequired();
             vps.setInstalled(false);
-            
-            // Update VPS display in current rack
+
             if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
                 updateVPSDisplay(racks.get(currentRackIndex));
             }
@@ -329,10 +353,10 @@ public class Rack extends StackPane {
     }
 
     public List<VPSOptimization> getInstalledVPS() {
-        if (currentRackIndex >= 0 && currentRackIndex < rackVPS.size()) {
-            return new ArrayList<>(rackVPS.get(currentRackIndex));
+        if (currentRackIndex < 0 || currentRackIndex >= rackVPS.size()) {
+            return new ArrayList<>(); // คืนค่ารายการว่างถ้ายังไม่มี rack
         }
-        return new ArrayList<>();
+        return new ArrayList<>(rackVPS.get(currentRackIndex));
     }
 
     public int getMaxSlotUnits() {
@@ -340,7 +364,10 @@ public class Rack extends StackPane {
     }
 
     public int getUnlockedSlotUnits() {
-        return unlockedSlotUnits;
+        if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
+            return 0; // คืนค่า 0 ถ้ายังไม่มี rack
+        }
+        return unlockedSlotUnitsList.get(currentRackIndex);
     }
 
     public int getOccupiedSlotUnits() {
@@ -348,12 +375,20 @@ public class Rack extends StackPane {
     }
 
     public int getAvailableSlotUnits() {
-        return unlockedSlotUnits - occupiedSlotUnits;
+        if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
+            return 0; // คืนค่า 0 ถ้ายังไม่มี rack
+        }
+        return unlockedSlotUnitsList.get(currentRackIndex) - occupiedSlotUnits;
     }
 
     public boolean upgrade() {
-        if (unlockedSlotUnits < maxSlotUnits) {
-            unlockedSlotUnits++;
+        if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
+            return false; // ไม่สามารถ upgrade ได้ถ้ายังไม่มี rack
+        }
+        int currentUnlockedSlots = unlockedSlotUnitsList.get(currentRackIndex);
+        if (currentUnlockedSlots < maxSlotUnits) {
+            unlockedSlotUnitsList.set(currentRackIndex, currentUnlockedSlots + 1);
+            showCurrentRack();
             return true;
         }
         return false;

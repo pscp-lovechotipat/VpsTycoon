@@ -160,21 +160,32 @@ public class RackManagementUI extends VBox {
     }
 
     private void updateUI() {
-        // Update rack info
-        rackInfoLabel.setText(String.format("RACK %d/%d", rack.getRackIndex() + 1, rack.getMaxRacks()));
-        
-        // Update VPS list
-        vpsList.getChildren().clear();
-        List<VPSOptimization> installedVPS = rack.getInstalledVPS();
-        
-        if (installedVPS.isEmpty()) {
-            Label emptyLabel = new Label("NO VPS INSTALLED");
+        if (rack.getMaxRacks() == 0) { // ตรวจสอบว่ามี rack หรือไม่
+            rackInfoLabel.setText("NO RACKS AVAILABLE");
+            vpsList.getChildren().clear();
+            Label emptyLabel = new Label("NO RACK PURCHASED");
             emptyLabel.setStyle("-fx-text-fill: #00ff00;");
             vpsList.getChildren().add(emptyLabel);
+            upgradeInfoLabel.setText("PLEASE PURCHASE A RACK FROM MARKET");
+            upgradeButton.setDisable(true);
+            upgradeCostLabel.setText("UPGRADE COST: N/A");
+            prevRackButton.setDisable(true);
+            nextRackButton.setDisable(true);
         } else {
-            for (VPSOptimization vps : installedVPS) {
-                VBox vpsBox = new VBox(5);
-                vpsBox.setStyle("""
+            // อัพเดท UI ปกติเมื่อมี rack
+            rackInfoLabel.setText(String.format("RACK %d/%d", rack.getRackIndex() + 1, rack.getMaxRacks()));
+
+            vpsList.getChildren().clear();
+            List<VPSOptimization> installedVPS = rack.getInstalledVPS();
+
+            if (installedVPS.isEmpty()) {
+                Label emptyLabel = new Label("NO VPS INSTALLED");
+                emptyLabel.setStyle("-fx-text-fill: #00ff00;");
+                vpsList.getChildren().add(emptyLabel);
+            } else {
+                for (VPSOptimization vps : installedVPS) {
+                    VBox vpsBox = new VBox(5);
+                    vpsBox.setStyle("""
                     -fx-background-color: #1a1a1a;
                     -fx-padding: 10px;
                     -fx-background-radius: 5px;
@@ -182,32 +193,35 @@ public class RackManagementUI extends VBox {
                     -fx-border-width: 1px;
                     -fx-border-style: solid;
                     """);
-                
-                Label nameLabel = new Label("VPS " + vps.getVCPUs() + "vCPU");
-                nameLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-weight: bold;");
-                
-                Label specsLabel = new Label(vps.getRamInGB() + "GB RAM");
-                specsLabel.setStyle("-fx-text-fill: #00ff00;");
-                
-                Label sizeLabel = new Label(vps.getSize().getDisplayName());
-                sizeLabel.setStyle("-fx-text-fill: #00ff00;");
-                
-                vpsBox.getChildren().addAll(nameLabel, specsLabel, sizeLabel);
-                vpsList.getChildren().add(vpsBox);
+
+                    Label nameLabel = new Label("VPS " + vps.getVCPUs() + "vCPU");
+                    nameLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-weight: bold;");
+
+                    Label specsLabel = new Label(vps.getRamInGB() + "GB RAM");
+                    specsLabel.setStyle("-fx-text-fill: #00ff00;");
+
+                    Label sizeLabel = new Label(vps.getSize().getDisplayName());
+                    sizeLabel.setStyle("-fx-text-fill: #00ff00;");
+
+                    vpsBox.getChildren().addAll(nameLabel, specsLabel, sizeLabel);
+                    vpsList.getChildren().add(vpsBox);
+                }
             }
+
+            int availableSlots = rack.getMaxSlotUnits() - rack.getUnlockedSlotUnits();
+            upgradeInfoLabel.setText(String.format("SERVER: %d\nSLOTS: %d/%d (%d available)",
+                    rack.getRackIndex() + 1,
+                    rack.getUnlockedSlotUnits(),
+                    rack.getMaxSlotUnits(),
+                    availableSlots));
+
+            upgradeButton.setDisable(rack.getUnlockedSlotUnits() >= rack.getMaxSlotUnits());
+            prevRackButton.setDisable(rack.getMaxRacks() <= 1);
+            nextRackButton.setDisable(rack.getMaxRacks() <= 1);
+
+            int upgradeCost = calculateUpgradeCost();
+            upgradeCostLabel.setText(String.format("UPGRADE COST: $%d", upgradeCost));
         }
-        
-        // Update upgrade info
-        int availableSlots = rack.getAvailableSlotUnits();
-        int totalSlots = rack.getMaxSlotUnits();
-        upgradeInfoLabel.setText(String.format("AVAILABLE SLOTS: %d/%d", availableSlots, totalSlots));
-        
-        // Update upgrade button state
-        upgradeButton.setDisable(rack.getUnlockedSlotUnits() >= rack.getMaxSlotUnits());
-        
-        // Update upgrade cost
-        int upgradeCost = calculateUpgradeCost();
-        upgradeCostLabel.setText(String.format("UPGRADE COST: $%d", upgradeCost));
     }
 
     private int calculateUpgradeCost() {
