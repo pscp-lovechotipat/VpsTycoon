@@ -308,6 +308,9 @@ public class VPSOptimization extends GameObject implements Serializable {
         private String status;
         private List<String> firewallRules;
         private boolean firewallEnabled;
+        private String customerId;
+        private String customerName;
+        private long assignedTime;
 
         public VM(String ip, String name, int vcpu, String ram, String disk, String status) {
             this.ip = ip;
@@ -318,6 +321,37 @@ public class VPSOptimization extends GameObject implements Serializable {
             this.status = status;
             this.firewallRules = new ArrayList<>();
             this.firewallEnabled = true;
+            this.customerId = null;
+            this.customerName = null;
+            this.assignedTime = 0;
+        }
+
+        public void assignToCustomer(String customerId, String customerName, long assignedTime) {
+            this.customerId = customerId;
+            this.customerName = customerName;
+            this.assignedTime = assignedTime;
+        }
+        
+        public void releaseFromCustomer() {
+            this.customerId = null;
+            this.customerName = null;
+            this.assignedTime = 0;
+        }
+        
+        public boolean isAssignedToCustomer() {
+            return customerId != null && !customerId.isEmpty();
+        }
+        
+        public String getCustomerId() {
+            return customerId;
+        }
+        
+        public String getCustomerName() {
+            return customerName;
+        }
+        
+        public long getAssignedTime() {
+            return assignedTime;
         }
 
         public String getIp() {
