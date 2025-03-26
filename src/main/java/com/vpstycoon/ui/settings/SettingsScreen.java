@@ -8,19 +8,25 @@ import com.vpstycoon.event.SettingsChangedEvent;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
-import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Glow;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.shape.Rectangle;
 
-public class SettingsScreen extends GameScreen {
-    public final Navigator navigator;
+public class SettingsScreen extends StackPane {
+    private final Navigator navigator;
+    private final GameConfig config;
+    private final ScreenManager screenManager;
+    private final Runnable onCloseSettings;
     private Slider musicVolumeSlider;
     private Slider sfxVolumeSlider;
     private ComboBox<ScreenResolution> resolutionComboBox;
@@ -28,38 +34,97 @@ public class SettingsScreen extends GameScreen {
     private CheckBox vsyncCheckBox;
     private AudioManager audioManager;
 
-    public SettingsScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
-        super(config, screenManager);
+    public SettingsScreen(GameConfig config, ScreenManager screenManager, Navigator navigator, Runnable onCloseSettings) {
         this.navigator = navigator;
+        this.config = config;
+        this.screenManager = screenManager;
+        this.onCloseSettings = onCloseSettings;
         this.audioManager = ResourceManager.getInstance().getAudioManager();
+        
+        // Set a high z-index to ensure this screen is displayed on top
+        setViewOrder(-1000);
+        
+        setupUI();
+    }
+    
+    // Alternative constructor for when ScreenManager is not available
+    public SettingsScreen(GameConfig config, Navigator navigator, Runnable onCloseSettings) {
+        this.navigator = navigator;
+        this.config = config;
+        this.screenManager = null; // Not used in popup mode
+        this.onCloseSettings = onCloseSettings;
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
+        
+        // Set a high z-index to ensure this screen is displayed on top
+        setViewOrder(-1000);
+        
+        setupUI();
     }
 
-    @Override
-    protected Region createContent() {
-        VBox root = new VBox(20);
-        root.setAlignment(Pos.CENTER);
-        root.setPadding(new Insets(40));
+    private void setupUI() {
+        // Cyberpunk gradient background
+        Rectangle background = new Rectangle();
+        background.widthProperty().bind(widthProperty());
+        background.heightProperty().bind(heightProperty());
         
-        // Updated background to dark cyberpunk gradient
-        root.setStyle("""
-            -fx-background-color: linear-gradient(to bottom right, #1a0933, #2e0966, #1a0933);
-            """);
+        // Dark purple cyberpunk gradient
+        LinearGradient gradient = new LinearGradient(
+            0, 0, 1, 1, true, null,
+            new Stop(0, Color.rgb(25, 10, 41, 0.9)),  // Dark purple
+            new Stop(0.5, Color.rgb(45, 20, 80, 0.9)), // Medium purple
+            new Stop(1, Color.rgb(20, 5, 30, 0.9))    // Very dark purple
+        );
+        background.setFill(gradient);
+        
+        // Add some pixel-like noise effect to the background
+        background.setStroke(Color.rgb(180, 50, 255, 0.2));
+        background.setStrokeWidth(1);
 
         // Title with cyber styling
         Label titleLabel = createTitleLabel("Settings");
 
-        // Settings container
+        // Create settings container
         VBox settingsContainer = createSettingsContainer();
-
+        settingsContainer.setMaxWidth(550);
+        settingsContainer.setMaxHeight(500);
+        
+        // Add buttons at the bottom
         HBox buttonsRow = new HBox(20);
         buttonsRow.setAlignment(Pos.CENTER);
+        buttonsRow.getChildren().addAll(createBackButton(), createApplyButton());
+        
+        // Main container for all content
+        VBox contentBox = new VBox(20);
+        contentBox.setAlignment(Pos.CENTER);
+        contentBox.setPadding(new Insets(30));
+        contentBox.setMaxWidth(600);
+        contentBox.setMaxHeight(600);
+        
+        // Cyberpunk styled container background with pixel-like border
+        contentBox.setStyle(
+            "-fx-background-color: rgba(30, 15, 50, 0.8);" +
+            "-fx-background-radius: 2;" +
+            "-fx-border-color: #ff00ff, #00ffff;" +
+            "-fx-border-width: 2, 1;" +
+            "-fx-border-radius: 2;" +
+            "-fx-border-insets: 0, 3;" +
+            "-fx-effect: dropshadow(gaussian, #ff00ff, 15, 0.2, 0, 0);"
+        );
+        
+        contentBox.getChildren().addAll(titleLabel, settingsContainer, buttonsRow);
 
-        buttonsRow.getChildren().addAll(this.createBackButton(), this.createApplyButton());
+        // Add a border pane to center the content box
+        BorderPane centerPane = new BorderPane();
+        centerPane.setCenter(contentBox);
 
-        root.getChildren().addAll(titleLabel, settingsContainer, buttonsRow);
-        enforceResolution(root);
+        getChildren().addAll(background, centerPane);
 
-        return root;
+        // Click outside to close
+        background.setOnMouseClicked(e -> {
+            if (e.getTarget() == background) {
+                onCloseSettings.run();
+            }
+        });
     }
 
     private Label createTitleLabel(String text) {
@@ -69,6 +134,13 @@ public class SettingsScreen extends GameScreen {
             -fx-text-fill: white;
             -fx-effect: dropshadow(gaussian, #ff00ff, 8, 0.4, 0, 0);
             """);
+
+        // Add glow effect to the title
+        Glow glow = new Glow(1.0);
+        DropShadow shadow = new DropShadow();
+        shadow.setColor(Color.rgb(255, 0, 255, 0.7));
+        shadow.setRadius(10);
+        label.setEffect(shadow);
 
         return label;
     }
@@ -85,7 +157,6 @@ public class SettingsScreen extends GameScreen {
             -fx-border-insets: 0, 3;
             -fx-effect: dropshadow(gaussian, #800fd1, 15, 0.3, 0, 0);
             """);
-        container.setMaxWidth(500);
 
         // Volume controls
         container.getChildren().addAll(
@@ -102,7 +173,6 @@ public class SettingsScreen extends GameScreen {
     private VBox createVolumeControls() {
         VBox controls = new VBox(10);
         
-        // Add a pixel-art decorative border for audio controls
         controls.setStyle("""
             -fx-border-color: #800fd1;
             -fx-border-width: 2;
@@ -132,7 +202,6 @@ public class SettingsScreen extends GameScreen {
     private VBox createDisplayControls() {
         VBox controls = new VBox(10);
 
-        // Add a pixel-art decorative border for display controls
         controls.setStyle("""
             -fx-border-color: #800fd1;
             -fx-border-width: 2;
@@ -147,7 +216,6 @@ public class SettingsScreen extends GameScreen {
         resolutionComboBox.setValue(config.getResolution());
         resolutionComboBox.setOnAction(e -> {
             config.setResolution(resolutionComboBox.getValue());
-            GameEventBus.getInstance().publish(new SettingsChangedEvent(config));
         });
 
         // Checkboxes with cyber styling
@@ -259,59 +327,55 @@ public class SettingsScreen extends GameScreen {
         return checkBox;
     }
 
-    protected MenuButton createBackButton() {
+    private MenuButton createBackButton() {
         MenuButton backButton = new MenuButton(MenuButtonType.BACK);
         backButton.setOnAction(e -> {
-            navigator.showMainMenu();
             audioManager.playSoundEffect("click.wav");
+            onCloseSettings.run();
         });
         
-        // Add additional cyberpunk styling
         styleMenuButton(backButton);
         
         return backButton;
     }
 
-    protected MenuButton createApplyButton() {
+    private MenuButton createApplyButton() {
         MenuButton applyButton = new MenuButton(MenuButtonType.APPLY);
         applyButton.setOnAction(e -> {
             audioManager.playSoundEffect("click.wav");
             config.save();
             GameEventBus.getInstance().publish(new SettingsChangedEvent(config));
-            
-            // Force UI refresh after resolution change to prevent white borders
-            if (config.getResolution() != null) {
-                // Let's use a simple approach - navigate back to main menu and then to settings again
-                // This ensures the screen is completely rebuilt with the new resolution
-                navigator.showMainMenu();
-                
-                // Use runLater to ensure navigation completes before returning to settings
-                javafx.application.Platform.runLater(() -> {
-                    navigator.showSettings();
-                });
-            }
+            onCloseSettings.run();
         });
         
-        // Add additional cyberpunk styling
         styleMenuButton(applyButton);
         
         return applyButton;
     }
     
-    // Helper method to add additional cyberpunk styling to buttons
     private void styleMenuButton(MenuButton button) {
         // Add glow effect to buttons
-        javafx.scene.effect.DropShadow buttonGlow = new javafx.scene.effect.DropShadow();
-        buttonGlow.setColor(javafx.scene.paint.Color.rgb(180, 50, 255, 0.7));
+        DropShadow buttonGlow = new DropShadow();
+        buttonGlow.setColor(Color.rgb(180, 50, 255, 0.7));
         buttonGlow.setRadius(15);
         button.setEffect(buttonGlow);
         
-        // Make buttons stand out more
         button.setPrefWidth(200);
     }
 
     @FunctionalInterface
     private interface SliderInitializer {
         void initialize(Slider slider);
+    }
+
+    public void show() {
+        // If screenManager is not available, we can't show as standalone screen
+        if (screenManager == null) {
+            System.err.println("Cannot show SettingsScreen as standalone: screenManager is null");
+            return;
+        }
+        
+        // Using screenManager to directly switch to this StackPane
+        screenManager.switchScreen(this);
     }
 } 

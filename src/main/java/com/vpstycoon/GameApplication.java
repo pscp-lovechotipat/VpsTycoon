@@ -17,7 +17,6 @@ import com.vpstycoon.ui.game.GameplayScreen;
 import com.vpstycoon.ui.menu.MainMenuScreen;
 import com.vpstycoon.ui.navigation.Navigator;
 import com.vpstycoon.ui.screen.GameScreen;
-import com.vpstycoon.ui.settings.SettingScreenInGame;
 import com.vpstycoon.ui.settings.SettingsScreen;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -30,7 +29,6 @@ public class GameApplication extends Application implements Navigator {
     private ScreenManager screenManager;
     private MainMenuScreen mainMenuScreen;
     private SettingsScreen settingsScreen;
-    private SettingScreenInGame inGameSettingScreen;
     private GameplayScreen gameplayScreen;
     private GameSaveManager saveManager;
     private GameManager gameManager;
@@ -111,8 +109,7 @@ public class GameApplication extends Application implements Navigator {
 
     private void createScreens() {
         mainMenuScreen = new MainMenuScreen(gameConfig, screenManager, this);
-        settingsScreen = new SettingsScreen(gameConfig, screenManager, this);
-        inGameSettingScreen = new SettingScreenInGame(gameConfig, screenManager, this);
+        settingsScreen = new SettingsScreen(gameConfig, screenManager, this, this::showMainMenu);
     }
 
     @Override
@@ -171,7 +168,9 @@ public class GameApplication extends Application implements Navigator {
 
     @Override
     public void showInGameSettings() {
-        inGameSettingScreen.show();
+        // This method is kept for compatibility with the Navigator interface,
+        // but its functionality is now handled by the GameplayScreen directly
+        // No implementation needed as the settings popup is shown from the game screen
     }
 
     private void showAlert(String title, String content) {

@@ -24,12 +24,30 @@ import javafx.scene.text.Text;
 public class ResumeScreen extends StackPane {
     private final Navigator navigator;
     private final Runnable onResumeGame;
+    private final Runnable onOpenSettings;
     private AudioManager audioManager;
 
     public ResumeScreen(Navigator navigator, Runnable onResumeGame) {
         this.navigator = navigator;
         this.onResumeGame = onResumeGame;
+        this.onOpenSettings = null;
         this.audioManager = ResourceManager.getInstance().getAudioManager();
+        
+        // Set a high z-index to ensure this screen is displayed on top
+        setViewOrder(-1000);
+        
+        setupUI();
+    }
+    
+    public ResumeScreen(Navigator navigator, Runnable onResumeGame, Runnable onOpenSettings) {
+        this.navigator = navigator;
+        this.onResumeGame = onResumeGame;
+        this.onOpenSettings = onOpenSettings;
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
+        
+        // Set a high z-index to ensure this screen is displayed on top
+        setViewOrder(-1000);
+        
         setupUI();
     }
 
@@ -95,7 +113,14 @@ public class ResumeScreen extends StackPane {
         MenuButton settingsButton = new MenuButton(MenuButtonType.SETTINGS);
         settingsButton.setOnAction(e -> {
             audioManager.playSoundEffect("click.wav");
-            navigator.showInGameSettings();
+            // Close resume screen first
+            onResumeGame.run();
+            // Then open settings
+            if (onOpenSettings != null) {
+                onOpenSettings.run();
+            } else {
+                navigator.showInGameSettings();
+            }
         });
         styleButton(settingsButton);
 
