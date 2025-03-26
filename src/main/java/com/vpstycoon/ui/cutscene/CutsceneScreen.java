@@ -19,7 +19,7 @@ public class CutsceneScreen extends StackPane {
     private final GameConfig gameConfig;
     private final ScreenManager screenManager;
     private final Navigator navigator;
-    private Label titleLabel;
+    private Label logoLabel;
     private Label subtitleLabel;
 
     public CutsceneScreen(GameConfig gameConfig, ScreenManager screenManager, Navigator navigator) {
@@ -32,14 +32,19 @@ public class CutsceneScreen extends StackPane {
     }
 
     private void setupUI() {
-        // Create title label
-        titleLabel = new Label("VPS Tycoon");
-        titleLabel.setFont(FontLoader.TITLE_FONT);
-        titleLabel.setTextFill(Color.WHITE);
-        titleLabel.setStyle("-fx-font-size: 48px;");
-        titleLabel.setTextAlignment(TextAlignment.CENTER);
-        titleLabel.setTranslateY(-50);
-        titleLabel.setOpacity(0);
+        // Create logo label instead of text title
+        logoLabel = new Label();
+        logoLabel.setStyle("""
+                            -fx-background-image: url("/images/logo/vps_tycoon_logo.png");
+                            -fx-background-position: center;
+                            -fx-background-size: contain;
+                            -fx-background-repeat: no-repeat;
+                            -fx-alignment: center;
+                            -fx-pref-width: 300px;
+                            -fx-pref-height: 200px;
+                            """);
+        logoLabel.setTranslateY(-50);
+        logoLabel.setOpacity(0);
 
         // Create subtitle label
         subtitleLabel = new Label("Your Journey Begins...");
@@ -47,29 +52,30 @@ public class CutsceneScreen extends StackPane {
         subtitleLabel.setTextFill(Color.WHITE);
         subtitleLabel.setStyle("-fx-font-size: 24px;");
         subtitleLabel.setTextAlignment(TextAlignment.CENTER);
-        subtitleLabel.setTranslateY(50);
+        subtitleLabel.setTranslateY(120);
         subtitleLabel.setOpacity(0);
 
         // Add labels to the scene
-        getChildren().addAll(titleLabel, subtitleLabel);
+        getChildren().addAll(logoLabel, subtitleLabel);
         
         // Set background color
         setStyle("-fx-background-color: black;");
     }
 
     private void playCutscene() {
-        // Create fade in for title
-        FadeTransition titleFadeIn = new FadeTransition(Duration.seconds(1), titleLabel);
-        titleFadeIn.setFromValue(0);
-        titleFadeIn.setToValue(1);
+        // Create fade in for logo
+        FadeTransition logoFadeIn = new FadeTransition(Duration.seconds(1.5), logoLabel);
+        logoFadeIn.setFromValue(0);
+        logoFadeIn.setToValue(1);
 
         // Create fade in for subtitle
         FadeTransition subtitleFadeIn = new FadeTransition(Duration.seconds(1), subtitleLabel);
         subtitleFadeIn.setFromValue(0);
         subtitleFadeIn.setToValue(1);
+        subtitleFadeIn.setDelay(Duration.seconds(0.5));
 
-        // Create parallel transition for both labels
-        ParallelTransition parallelTransition = new ParallelTransition(titleFadeIn, subtitleFadeIn);
+        // Create parallel transition for both elements
+        ParallelTransition parallelTransition = new ParallelTransition(logoFadeIn, subtitleFadeIn);
 
         // Create fade out transition
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(1), this);
@@ -80,7 +86,7 @@ public class CutsceneScreen extends StackPane {
         // Create sequential transition
         SequentialTransition sequentialTransition = new SequentialTransition(
             parallelTransition,
-            new javafx.animation.PauseTransition(Duration.seconds(2)),
+            new javafx.animation.PauseTransition(Duration.seconds(2.5)),
             fadeOut
         );
 
