@@ -42,6 +42,21 @@ public class VPSOptimization extends GameObject implements Serializable {
         this.size = VPSSize.SIZE_1U;
         this.installed = false;
     }
+    
+    /**
+     * Constructor with vcpus, ram, and size
+     * @param vcpus Number of virtual CPUs
+     * @param ramInGB Amount of RAM in GB
+     * @param size Physical size of the VPS
+     */
+    public VPSOptimization(int vcpus, int ramInGB, VPSSize size) {
+        this();  // Call the default constructor first
+        this.vcpus = vcpus;
+        this.ramInGB = ramInGB;
+        this.size = size;
+        // Set a reasonable disk size based on RAM
+        this.diskInGB = ramInGB * 10;
+    }
 
     public void addVM(VM vm) {
         if (vms.size() < maxVMs) {

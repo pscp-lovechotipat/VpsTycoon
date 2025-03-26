@@ -321,18 +321,22 @@ public class Rack extends StackPane {
         if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
             return false; // ไม่สามารถติดตั้งได้ถ้ายังไม่มี rack
         }
-        int currentUnlockedSlots = unlockedSlotUnitsList.get(currentRackIndex);
-        if (getAvailableSlotUnits() >= vps.getSlotsRequired()) {
-            rackVPS.get(currentRackIndex).add(vps);
-            occupiedSlotUnits += vps.getSlotsRequired();
-            vps.setInstalled(true);
-
-            if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
-                updateVPSDisplay(racks.get(currentRackIndex));
-            }
-            return true;
+        
+        // Check if we have enough available slots
+        if (getAvailableSlotUnits() < vps.getSlotsRequired()) {
+            return false; // Not enough available slots
         }
-        return false;
+        
+        // Install the VPS
+        rackVPS.get(currentRackIndex).add(vps);
+        occupiedSlotUnits += vps.getSlotsRequired();
+        vps.setInstalled(true);
+
+        // Update the visual display
+        if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
+            updateVPSDisplay(racks.get(currentRackIndex));
+        }
+        return true;
     }
 
     public boolean uninstallVPS(VPSOptimization vps) {

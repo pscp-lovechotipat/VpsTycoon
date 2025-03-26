@@ -121,13 +121,28 @@ public class GameplayContentPane extends BorderPane {
         this.gameObjects = gameObjects;
         this.navigator = navigator;
         this.chatSystem = chatSystem;
-
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
-        this.rack = rack;
         this.gameFlowManager = gameFlowManager;
         this.debugOverlayManager = debugOverlayManager;
         this.company = company;
+        this.rack = rack;
+
+        // Initialize UI Components
+        rootStack = new StackPane();
+        rootStack.setPrefSize(800, 600);
+        rootStack.setMinSize(800, 600);
+        
+        gameArea = new StackPane();
+        gameArea.setPrefSize(800, 600);
+        gameArea.setMinSize(800, 600);
+        rootStack.getChildren().add(gameArea);
+
+        // เริ่มต้นสร้าง VPS เพื่อทดสอบ
+        initializeSampleVPS();
+
+        // Add test VPS to inventory for debugging
+        addTestServersToInventory();
 
         this.gameTimeController = ResourceManager.getInstance().getGameTimeController();
 
@@ -149,19 +164,9 @@ public class GameplayContentPane extends BorderPane {
         this.dateView = new DateView(this, dateModel);
         this.dateController = new DateController(dateModel, dateView);
 
-        this.rootStack = new StackPane();
-        rootStack.setPrefSize(800, 600);
-        rootStack.setMinSize(800, 600);
-
-        this.gameArea = new StackPane();
-        gameArea.setPrefSize(800, 600);
-        gameArea.setMinSize(800, 600);
-
         this.menuBar = new GameMenuBar(this);
 
         this.inGameMarketMenuBar = new InGameMarketMenuBar(this, vpsManager);
-
-        initializeSampleVPS();
 
         setupUI();
         this.keyEventHandler = new KeyEventHandler(this, debugOverlayManager);
@@ -213,6 +218,32 @@ public class GameplayContentPane extends BorderPane {
         VPSOptimization.VM vm2 = new VPSOptimization.VM("192.168.1.2", "Database", 1, "2 GB", "30 GB", "Running");
         vps1.addVM(vm1);
         vps1.addVM(vm2);
+    }
+
+    /**
+     * Add some test servers to inventory for debugging
+     */
+    private void addTestServersToInventory() {
+        // Make sure we have a rack to use
+        if (rack.getMaxRacks() == 0) {
+            rack.addRack(10);  // Add a rack with 10 slots
+            rack.upgrade();    // Unlock the first slot
+            rack.upgrade();    // Unlock the second slot
+            rack.upgrade();    // Unlock the third slot
+            System.out.println("Added test rack with 3 unlocked slots");
+        }
+        
+        // Create servers with different sizes using the new constructor
+        VPSOptimization smallVPS = new VPSOptimization(1, 2, VPSSize.SIZE_1U);
+        vpsInventory.addVPS("test-small-1", smallVPS);
+        
+        VPSOptimization mediumVPS = new VPSOptimization(2, 4, VPSSize.SIZE_2U);
+        vpsInventory.addVPS("test-medium-1", mediumVPS);
+        
+        VPSOptimization largeVPS = new VPSOptimization(4, 8, VPSSize.SIZE_3U);
+        vpsInventory.addVPS("test-large-1", largeVPS);
+        
+        System.out.println("Added test servers to inventory: " + vpsInventory.getSize() + " servers");
     }
 
     private synchronized void setupUI() {
