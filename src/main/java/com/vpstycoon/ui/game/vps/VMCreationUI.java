@@ -24,6 +24,18 @@ public class VMCreationUI {
     }
 
     public void openCreateVMPage(VPSOptimization vps) {
+        // Calculate currently used resources
+        int usedVCPUs = vps.getVms().stream().mapToInt(VPSOptimization.VM::getVcpu).sum();
+        int usedRamGB = vps.getVms().stream()
+                .mapToInt(vm -> Integer.parseInt(vm.getRam().replace(" GB", ""))).sum();
+        int usedDiskGB = vps.getVms().stream()
+                .mapToInt(vm -> Integer.parseInt(vm.getDisk().replace(" GB", ""))).sum();
+
+        // Calculate available resources
+        int availableVCPUs = vps.getVCPUs() - usedVCPUs;
+        int availableRamGB = vps.getRamInGB() - usedRamGB;
+        int availableDiskGB = vps.getDiskInGB() - usedDiskGB;
+
         // สร้างหน้าหลักสำหรับสร้าง VM
         BorderPane createVMPane = new BorderPane();
         createVMPane.setPrefSize(800, 600);
@@ -69,8 +81,14 @@ public class VMCreationUI {
         HBox vcpuBox = new HBox(10);
         vcpuBox.setAlignment(Pos.CENTER_LEFT);
         Label vcpuLabel = new Label("vCPUs:");
+        List<Integer> vcpuOptions = new ArrayList<>();
+        for (int i = 1; i <= availableVCPUs && i <= 16; i *= 2) {
+            vcpuOptions.add(i);
+        }
+        if (vcpuOptions.isEmpty()) vcpuOptions.add(1);
+
         ComboBox<Integer> vcpuComboBox = new ComboBox<>(
-                FXCollections.observableArrayList(1, 2, 4, 8, 16)
+                FXCollections.observableArrayList(vcpuOptions)
         );
         vcpuComboBox.setValue(1); // Default value
         vcpuBox.getChildren().addAll(vcpuLabel, vcpuComboBox);
@@ -79,8 +97,16 @@ public class VMCreationUI {
         HBox ramBox = new HBox(10);
         ramBox.setAlignment(Pos.CENTER_LEFT);
         Label ramLabel = new Label("RAM:");
+        List<String> ramOptions = new ArrayList<>();
+        for (int ram : new int[]{1, 2, 4, 8, 16, 32}) {
+            if (ram <= availableRamGB) {
+                ramOptions.add(ram + " GB");
+            }
+        }
+        if (ramOptions.isEmpty()) ramOptions.add("1 GB");
+
         ComboBox<String> ramComboBox = new ComboBox<>(
-                FXCollections.observableArrayList("1 GB", "2 GB", "4 GB", "8 GB", "16 GB", "32 GB")
+                FXCollections.observableArrayList(ramOptions)
         );
         ramComboBox.setValue("1 GB"); // Default value
         ramBox.getChildren().addAll(ramLabel, ramComboBox);
@@ -89,10 +115,17 @@ public class VMCreationUI {
         HBox diskBox = new HBox(10);
         diskBox.setAlignment(Pos.CENTER_LEFT);
         Label diskLabel = new Label("Disk:");
+        List<String> diskOptions = new ArrayList<>();
+        for (int disk : new int[]{10, 20, 50, 100, 200, 500, 1024}) {
+            if (disk <= availableDiskGB) {
+                diskOptions.add(disk + " GB");
+            }
+        }
+        if (diskOptions.isEmpty()) diskOptions.add("10 GB");
         ComboBox<String> diskComboBox = new ComboBox<>(
-                FXCollections.observableArrayList("10 GB", "20 GB", "50 GB", "100 GB", "200 GB", "500 GB", "1 TB")
+                FXCollections.observableArrayList(diskOptions)
         );
-        diskComboBox.setValue("20 GB"); // Default value
+        diskComboBox.setValue("10 GB"); // Default value
         diskBox.getChildren().addAll(diskLabel, diskComboBox);
         
         perfSection.getChildren().addAll(vcpuBox, ramBox, diskBox);
@@ -104,32 +137,30 @@ public class VMCreationUI {
         SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         boolean firewallUnlocked = skillPointsSystem != null && 
                 skillPointsSystem.isFirewallManagementUnlocked();
-        
+
         if (firewallUnlocked) {
-            // Allowed ports
             HBox portsBox = new HBox(10);
             portsBox.setAlignment(Pos.CENTER_LEFT);
             Label portsLabel = new Label("Open Ports:");
-            TextField portsField = new TextField("22, 80, 443"); // Default common ports
+            TextField portsField = new TextField("22, 80, 443");
             portsField.setPromptText("Comma-separated list of ports (e.g., 22, 80, 443)");
             portsBox.getChildren().addAll(portsLabel, portsField);
-            
-            // Firewall rules
+
             VBox rulesBox = new VBox(10);
             rulesBox.setAlignment(Pos.CENTER_LEFT);
             Label rulesLabel = new Label("Firewall Rules:");
-            
+
             ListView<String> rulesList = new ListView<>();
             rulesList.setPrefHeight(100);
-            
+
             List<String> defaultRules = new ArrayList<>();
             defaultRules.add("Allow SSH (Port 22)");
             defaultRules.add("Allow HTTP (Port 80)");
             defaultRules.add("Allow HTTPS (Port 443)");
             defaultRules.add("Block all other incoming traffic");
-            
+
             rulesList.setItems(FXCollections.observableArrayList(defaultRules));
-            
+
             HBox ruleActionBox = new HBox(10);
             TextField newRuleField = new TextField();
             newRuleField.setPromptText("Enter new rule");
@@ -140,18 +171,18 @@ public class VMCreationUI {
                     newRuleField.clear();
                 }
             });
-            
+
             ruleActionBox.getChildren().addAll(newRuleField, addRuleButton);
             rulesBox.getChildren().addAll(rulesLabel, rulesList, ruleActionBox);
-            
+
             firewallSection.getChildren().addAll(portsBox, rulesBox);
         } else {
             Label lockedLabel = new Label("Firewall management is locked. Upgrade Security skill to unlock.");
             lockedLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
-            
+
             Button upgradeButton = UIUtils.createModernButton("Go to Skills", "#3498db");
             upgradeButton.setOnAction(e -> parent.openSkillPointsWindow());
-            
+
             firewallSection.getChildren().addAll(lockedLabel, upgradeButton);
         }
 
@@ -165,33 +196,30 @@ public class VMCreationUI {
         resetButton.setOnAction(e -> {
             nameField.clear();
             ipField.clear();
-            vcpuComboBox.setValue(1);
-            ramComboBox.setValue("1 GB");
-            diskComboBox.setValue("20 GB");
+            vcpuComboBox.setValue(vcpuOptions.get(0));
+            ramComboBox.setValue(ramOptions.get(0));
+            diskComboBox.setValue(diskOptions.get(0));
         });
         Button createButton = UIUtils.createModernButton("Create", "#2196F3");
         createButton.setOnAction(e -> {
-            // ตรวจสอบข้อมูล
             if (nameField.getText().isEmpty() || ipField.getText().isEmpty()) {
                 System.out.println("Validation Error: Name and IP fields are required.");
             } else {
                 try {
-                    // สร้าง VM ใหม่ด้วยค่าเริ่มต้น
                     VPSOptimization.VM newVM = new VPSOptimization.VM(
                             ipField.getText(), nameField.getText(),
-                            vcpuComboBox.getValue(), ramComboBox.getValue(), 
+                            vcpuComboBox.getValue(), ramComboBox.getValue(),
                             diskComboBox.getValue(), "Running"
                     );
-                    
-                    // Add firewall rules if available
+
                     if (firewallUnlocked) {
                         @SuppressWarnings("unchecked")
-                        ListView<String> rulesList = (ListView<String>) 
+                        ListView<String> rulesList = (ListView<String>)
                                 ((VBox) ((HBox) firewallSection.getChildren().get(1)).getChildren().get(1)).getChildren().get(1);
                         List<String> rules = new ArrayList<>(rulesList.getItems());
                         newVM.setFirewallRules(rules);
                     }
-                    
+
                     vps.addVM(newVM);
                     System.out.println("Success: VM created: " + ipField.getText() + " in VPS: " + vpsId);
                     parent.openVPSInfoPage(vps);
