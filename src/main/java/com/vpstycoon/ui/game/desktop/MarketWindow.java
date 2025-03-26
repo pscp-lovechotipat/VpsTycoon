@@ -15,26 +15,31 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 public class MarketWindow extends BorderPane {
     private final GameplayContentPane parent;
     private final VPSManager vpsManager;
     private final Runnable onClose;
+    private Label moneyDisplay;
 
     public MarketWindow(Runnable onClose, Runnable onClose2, VPSManager vpsManager, GameplayContentPane parent) {
         this.parent = parent;
         this.vpsManager = vpsManager;
         this.onClose = onClose;
         
-        // Main container setup with Cyberpunk theme
+        // Hide parent menus when opening the market window
+        parent.hideMenus();
+        
+        // Main container setup with enhanced Cyberpunk theme
         setStyle("""
             -fx-background-color: #0a0a0a;
-            -fx-border-color: #00ff00;
+            -fx-border-color: #9a30fa;
             -fx-border-width: 2px;
             -fx-border-style: solid;
             """);
-        setPadding(new Insets(20));
+        setPadding(new Insets(20, 20, 20, 20));
 
         // Left menu with Cyberpunk theme
         VBox leftMenu = createLeftMenu();
@@ -46,7 +51,7 @@ public class MarketWindow extends BorderPane {
         contentArea.setStyle("""
             -fx-background: transparent;
             -fx-background-color: transparent;
-            -fx-border-color: #00ff00;
+            -fx-border-color: #9a30fa;
             -fx-border-width: 1px;
             -fx-border-style: solid;
             """);
@@ -56,14 +61,16 @@ public class MarketWindow extends BorderPane {
         // Main content
         VBox mainContent = new VBox(20);
         mainContent.setAlignment(Pos.TOP_CENTER);
+        mainContent.setPadding(new Insets(20, 20, 20, 20));
 
         // VPS Products Section
         Label vpsTitle = new Label("VPS PRODUCTS");
         vpsTitle.setStyle("""
-            -fx-text-fill: #00ff00;
-            -fx-font-size: 24px;
+            -fx-text-fill: #9a30fa;
+            -fx-font-size: 28px;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #00ff00, 10, 0, 0, 0);
+            -fx-effect: dropshadow(gaussian, #9a30fa, 10, 0, 0, 0);
             """);
         mainContent.getChildren().add(vpsTitle);
 
@@ -90,10 +97,11 @@ public class MarketWindow extends BorderPane {
         // Rack Products Section
         Label rackTitle = new Label("RACK PRODUCTS");
         rackTitle.setStyle("""
-            -fx-text-fill: #00ff00;
-            -fx-font-size: 24px;
+            -fx-text-fill: #9a30fa;
+            -fx-font-size: 28px;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #00ff00, 10, 0, 0, 0);
+            -fx-effect: dropshadow(gaussian, #9a30fa, 10, 0, 0, 0);
             """);
         mainContent.getChildren().add(rackTitle);
 
@@ -124,45 +132,73 @@ public class MarketWindow extends BorderPane {
         VBox menu = new VBox(10);
         menu.setStyle("""
             -fx-background-color: #1a1a1a;
-            -fx-border-color: #00ff00;
+            -fx-border-color: #9a30fa;
             -fx-border-width: 1px;
             -fx-border-style: solid;
             """);
-        menu.setPadding(new Insets(15));
+        menu.setPadding(new Insets(25));
         menu.setPrefWidth(200);
         menu.setAlignment(Pos.TOP_CENTER);
 
         // Menu title
         Label menuTitle = new Label("MARKET MENU");
         menuTitle.setStyle("""
-            -fx-text-fill: #00ff00;
+            -fx-text-fill: #9a30fa;
             -fx-font-size: 18px;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #00ff00, 5, 0, 0, 0);
+            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
         menu.getChildren().add(menuTitle);
+        
+        // Money display
+        HBox moneyContainer = new HBox(5);
+        moneyContainer.setAlignment(Pos.CENTER);
+        moneyContainer.setPadding(new Insets(10, 0, 15, 0));
+        
+        Label moneyLabel = new Label("BALANCE:");
+        moneyLabel.setStyle("""
+            -fx-text-fill: #9a30fa;
+            -fx-font-size: 14px;
+            -fx-font-family: 'monospace';
+            -fx-font-weight: bold;
+            """);
+            
+        moneyDisplay = new Label("$" + parent.getCompany().getMoney());
+        moneyDisplay.setStyle("""
+            -fx-text-fill: #00ff00;
+            -fx-font-size: 14px;
+            -fx-font-family: 'monospace';
+            -fx-font-weight: bold;
+            -fx-effect: dropshadow(gaussian, #00ff00, 3, 0, 0, 0);
+            """);
+            
+        moneyContainer.getChildren().addAll(moneyLabel, moneyDisplay);
+        menu.getChildren().add(moneyContainer);
 
         // Menu items
         Button vpsButton = new Button("VPS PRODUCTS");
         vpsButton.setStyle("""
             -fx-background-color: #2a2a2a;
-            -fx-text-fill: #00ff00;
+            -fx-text-fill: #9a30fa;
             -fx-font-size: 14px;
+            -fx-font-family: 'monospace';
             -fx-padding: 10px;
             -fx-background-radius: 5px;
-            -fx-border-color: #00ff00;
+            -fx-border-color: #9a30fa;
             -fx-border-width: 1px;
             -fx-border-style: solid;
             -fx-min-width: 150px;
             """);
         vpsButton.setOnMouseEntered(e -> 
             vpsButton.setStyle("""
-                -fx-background-color: #00ff00;
+                -fx-background-color: #9a30fa;
                 -fx-text-fill: #000000;
                 -fx-font-size: 14px;
+                -fx-font-family: 'monospace';
                 -fx-padding: 10px;
                 -fx-background-radius: 5px;
-                -fx-border-color: #00ff00;
+                -fx-border-color: #9a30fa;
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
                 -fx-min-width: 150px;
@@ -171,11 +207,12 @@ public class MarketWindow extends BorderPane {
         vpsButton.setOnMouseExited(e -> 
             vpsButton.setStyle("""
                 -fx-background-color: #2a2a2a;
-                -fx-text-fill: #00ff00;
+                -fx-text-fill: #9a30fa;
                 -fx-font-size: 14px;
+                -fx-font-family: 'monospace';
                 -fx-padding: 10px;
                 -fx-background-radius: 5px;
-                -fx-border-color: #00ff00;
+                -fx-border-color: #9a30fa;
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
                 -fx-min-width: 150px;
@@ -185,23 +222,25 @@ public class MarketWindow extends BorderPane {
         Button rackButton = new Button("RACK PRODUCTS");
         rackButton.setStyle("""
             -fx-background-color: #2a2a2a;
-            -fx-text-fill: #00ff00;
+            -fx-text-fill: #9a30fa;
             -fx-font-size: 14px;
+            -fx-font-family: 'monospace';
             -fx-padding: 10px;
             -fx-background-radius: 5px;
-            -fx-border-color: #00ff00;
+            -fx-border-color: #9a30fa;
             -fx-border-width: 1px;
             -fx-border-style: solid;
             -fx-min-width: 150px;
             """);
         rackButton.setOnMouseEntered(e -> 
             rackButton.setStyle("""
-                -fx-background-color: #00ff00;
+                -fx-background-color: #9a30fa;
                 -fx-text-fill: #000000;
                 -fx-font-size: 14px;
+                -fx-font-family: 'monospace';
                 -fx-padding: 10px;
                 -fx-background-radius: 5px;
-                -fx-border-color: #00ff00;
+                -fx-border-color: #9a30fa;
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
                 -fx-min-width: 150px;
@@ -210,11 +249,12 @@ public class MarketWindow extends BorderPane {
         rackButton.setOnMouseExited(e -> 
             rackButton.setStyle("""
                 -fx-background-color: #2a2a2a;
-                -fx-text-fill: #00ff00;
+                -fx-text-fill: #9a30fa;
                 -fx-font-size: 14px;
+                -fx-font-family: 'monospace';
                 -fx-padding: 10px;
                 -fx-background-radius: 5px;
-                -fx-border-color: #00ff00;
+                -fx-border-color: #9a30fa;
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
                 -fx-min-width: 150px;
@@ -224,23 +264,25 @@ public class MarketWindow extends BorderPane {
         Button closeButton = new Button("CLOSE MARKET");
         closeButton.setStyle("""
             -fx-background-color: #2a2a2a;
-            -fx-text-fill: #00ff00;
+            -fx-text-fill: #9a30fa;
             -fx-font-size: 14px;
+            -fx-font-family: 'monospace';
             -fx-padding: 10px;
             -fx-background-radius: 5px;
-            -fx-border-color: #00ff00;
+            -fx-border-color: #9a30fa;
             -fx-border-width: 1px;
             -fx-border-style: solid;
             -fx-min-width: 150px;
             """);
         closeButton.setOnMouseEntered(e -> 
             closeButton.setStyle("""
-                -fx-background-color: #00ff00;
+                -fx-background-color: #9a30fa;
                 -fx-text-fill: #000000;
                 -fx-font-size: 14px;
+                -fx-font-family: 'monospace';
                 -fx-padding: 10px;
                 -fx-background-radius: 5px;
-                -fx-border-color: #00ff00;
+                -fx-border-color: #9a30fa;
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
                 -fx-min-width: 150px;
@@ -249,11 +291,12 @@ public class MarketWindow extends BorderPane {
         closeButton.setOnMouseExited(e -> 
             closeButton.setStyle("""
                 -fx-background-color: #2a2a2a;
-                -fx-text-fill: #00ff00;
+                -fx-text-fill: #9a30fa;
                 -fx-font-size: 14px;
+                -fx-font-family: 'monospace';
                 -fx-padding: 10px;
                 -fx-background-radius: 5px;
-                -fx-border-color: #00ff00;
+                -fx-border-color: #9a30fa;
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
                 -fx-min-width: 150px;
@@ -272,14 +315,19 @@ public class MarketWindow extends BorderPane {
         vpsSection.setStyle("""
             -fx-background-color: #2a2a2a;
             -fx-background-radius: 10px;
+            -fx-border-color: #9a30fa;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
             """);
 
         // Section title
         Label title = new Label("VPS Products");
         title.setStyle("""
-            -fx-text-fill: white;
-            -fx-font-size: 24px;
+            -fx-text-fill: #9a30fa;
+            -fx-font-size: 28px;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
+            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
         vpsSection.getChildren().add(title);
 
@@ -314,14 +362,19 @@ public class MarketWindow extends BorderPane {
         rackSection.setStyle("""
             -fx-background-color: #2a2a2a;
             -fx-background-radius: 10px;
+            -fx-border-color: #9a30fa;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
             """);
 
         // Section title
         Label title = new Label("Rack Products");
         title.setStyle("""
-            -fx-text-fill: white;
-            -fx-font-size: 24px;
+            -fx-text-fill: #9a30fa;
+            -fx-font-size: 28px;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
+            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
         rackSection.getChildren().add(title);
 
@@ -353,58 +406,64 @@ public class MarketWindow extends BorderPane {
             -fx-background-color: #1a1a1a;
             -fx-padding: 15px;
             -fx-background-radius: 5px;
-            -fx-border-color: #00ff00;
+            -fx-border-color: #9a30fa;
             -fx-border-width: 1px;
             -fx-border-style: solid;
             -fx-min-width: 250px;
+            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
 
         // Product name
         Label nameLabel = new Label(product.getName());
         nameLabel.setStyle("""
-            -fx-text-fill: #00ff00;
+            -fx-text-fill: #9a30fa;
             -fx-font-size: 18px;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #00ff00, 5, 0, 0, 0);
+            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
 
         // Product description
         Label descLabel = new Label(product.getDescription());
         descLabel.setStyle("""
-            -fx-text-fill: #00ff00;
-            -fx-opacity: 0.8;
+            -fx-text-fill: #b19cd9;
+            -fx-font-family: 'monospace';
+            -fx-opacity: 0.9;
             """);
         descLabel.setWrapText(true);
 
         // Price
         Label priceLabel = new Label(product.getPriceDisplay());
         priceLabel.setStyle("""
-            -fx-text-fill: #00ff00;
+            -fx-text-fill: #ff00ff;
             -fx-font-size: 16px;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #00ff00, 3, 0, 0, 0);
+            -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
             """);
 
         // Buy button
         Button buyButton = new Button("BUY NOW");
         buyButton.setStyle("""
             -fx-background-color: #1a1a1a;
-            -fx-text-fill: #00ff00;
+            -fx-text-fill: #9a30fa;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
             -fx-padding: 8px 16px;
             -fx-background-radius: 5px;
-            -fx-border-color: #00ff00;
+            -fx-border-color: #9a30fa;
             -fx-border-width: 1px;
             -fx-border-style: solid;
             """);
         buyButton.setOnMouseEntered(e -> 
             buyButton.setStyle("""
-                -fx-background-color: #00ff00;
+                -fx-background-color: #9a30fa;
                 -fx-text-fill: #000000;
+                -fx-font-family: 'monospace';
                 -fx-font-weight: bold;
                 -fx-padding: 8px 16px;
                 -fx-background-radius: 5px;
-                -fx-border-color: #00ff00;
+                -fx-border-color: #9a30fa;
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
                 """)
@@ -412,11 +471,12 @@ public class MarketWindow extends BorderPane {
         buyButton.setOnMouseExited(e -> 
             buyButton.setStyle("""
                 -fx-background-color: #1a1a1a;
-                -fx-text-fill: #00ff00;
+                -fx-text-fill: #9a30fa;
+                -fx-font-family: 'monospace';
                 -fx-font-weight: bold;
                 -fx-padding: 8px 16px;
                 -fx-background-radius: 5px;
-                -fx-border-color: #00ff00;
+                -fx-border-color: #9a30fa;
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
                 """)
@@ -429,6 +489,8 @@ public class MarketWindow extends BorderPane {
             }
 
             parent.getCompany().setMoney(parent.getCompany().getMoney() - product.getPrice());
+            // Update money display after purchase
+            updateMoneyDisplay();
             parent.pushNotification("PURCHASE SUCCESSFUL", 
                 "ACQUIRED " + product.getName() + " FOR " + product.getPriceDisplay());
         });
@@ -443,58 +505,64 @@ public class MarketWindow extends BorderPane {
             -fx-background-color: #1a1a1a;
             -fx-padding: 15px;
             -fx-background-radius: 5px;
-            -fx-border-color: #00ff00;
+            -fx-border-color: #9a30fa;
             -fx-border-width: 1px;
             -fx-border-style: solid;
             -fx-min-width: 250px;
+            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
 
         // Product name
         Label nameLabel = new Label(product.getName());
         nameLabel.setStyle("""
-            -fx-text-fill: #00ff00;
+            -fx-text-fill: #9a30fa;
             -fx-font-size: 18px;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #00ff00, 5, 0, 0, 0);
+            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
 
         // Product description
         Label descLabel = new Label(product.getDescription());
         descLabel.setStyle("""
-            -fx-text-fill: #00ff00;
-            -fx-opacity: 0.8;
+            -fx-text-fill: #b19cd9;
+            -fx-font-family: 'monospace';
+            -fx-opacity: 0.9;
             """);
         descLabel.setWrapText(true);
 
         // Price
         Label priceLabel = new Label(product.getPriceDisplay());
         priceLabel.setStyle("""
-            -fx-text-fill: #00ff00;
+            -fx-text-fill: #ff00ff;
             -fx-font-size: 16px;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #00ff00, 3, 0, 0, 0);
+            -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
             """);
 
         // Buy button
         Button buyButton = new Button("BUY NOW");
         buyButton.setStyle("""
             -fx-background-color: #1a1a1a;
-            -fx-text-fill: #00ff00;
+            -fx-text-fill: #9a30fa;
+            -fx-font-family: 'monospace';
             -fx-font-weight: bold;
             -fx-padding: 8px 16px;
             -fx-background-radius: 5px;
-            -fx-border-color: #00ff00;
+            -fx-border-color: #9a30fa;
             -fx-border-width: 1px;
             -fx-border-style: solid;
             """);
         buyButton.setOnMouseEntered(e -> 
             buyButton.setStyle("""
-                -fx-background-color: #00ff00;
+                -fx-background-color: #9a30fa;
                 -fx-text-fill: #000000;
+                -fx-font-family: 'monospace';
                 -fx-font-weight: bold;
                 -fx-padding: 8px 16px;
                 -fx-background-radius: 5px;
-                -fx-border-color: #00ff00;
+                -fx-border-color: #9a30fa;
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
                 """)
@@ -502,11 +570,12 @@ public class MarketWindow extends BorderPane {
         buyButton.setOnMouseExited(e -> 
             buyButton.setStyle("""
                 -fx-background-color: #1a1a1a;
-                -fx-text-fill: #00ff00;
+                -fx-text-fill: #9a30fa;
+                -fx-font-family: 'monospace';
                 -fx-font-weight: bold;
                 -fx-padding: 8px 16px;
                 -fx-background-radius: 5px;
-                -fx-border-color: #00ff00;
+                -fx-border-color: #9a30fa;
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
                 """)
@@ -519,6 +588,8 @@ public class MarketWindow extends BorderPane {
             }
 
             parent.getCompany().setMoney(parent.getCompany().getMoney() - product.getPrice());
+            // Update money display after purchase
+            updateMoneyDisplay();
             
             // Add new rack to the list
             parent.getRack().addRack(product.getSlots());
@@ -539,5 +610,10 @@ public class MarketWindow extends BorderPane {
 
         card.getChildren().addAll(nameLabel, descLabel, priceLabel, buyButton);
         return card;
+    }
+    
+    // Helper method to update money display
+    private void updateMoneyDisplay() {
+        moneyDisplay.setText("$" + parent.getCompany().getMoney());
     }
 }

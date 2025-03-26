@@ -339,17 +339,17 @@ public class GameplayContentPane extends BorderPane {
         MarketWindow marketWindow = new MarketWindow(
             () -> {
                 getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
-                getMenuBar().setVisible(true);
-                getInGameMarketMenuBar().setVisible(true);
-                getMoneyUI().setVisible(true);
-                getDateView().setVisible(true);
+                menuBar.setVisible(true);
+                inGameMarketMenuBar.setVisible(true);
+                moneyUI.setVisible(true);
+                dateView.setVisible(true);
             },
             () -> {
                 getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
-                getMenuBar().setVisible(true);
-                getInGameMarketMenuBar().setVisible(true);
-                getMoneyUI().setVisible(true);
-                getDateView().setVisible(true);
+                menuBar.setVisible(true);
+                inGameMarketMenuBar.setVisible(true);
+                moneyUI.setVisible(true);
+                dateView.setVisible(true);
             },
             vpsManager,
             this
@@ -397,6 +397,16 @@ public class GameplayContentPane extends BorderPane {
             audioManager.resumeMusic();
             roomObjects.setRun(true);
         }
+    }
+
+    /**
+     * Hide all menu elements (used when opening other windows)
+     */
+    public void hideMenus() {
+        menuBar.setVisible(false);
+        inGameMarketMenuBar.setVisible(false);
+        moneyUI.setVisible(false);
+        dateView.setVisible(false);
     }
 
     // === Navigation Methods ===
