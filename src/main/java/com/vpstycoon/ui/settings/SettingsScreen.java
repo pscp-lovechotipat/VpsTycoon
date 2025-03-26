@@ -67,7 +67,7 @@ public class SettingsScreen extends StackPane {
         background.widthProperty().bind(widthProperty());
         background.heightProperty().bind(heightProperty());
         
-        // Dark purple cyberpunk gradient
+        // Dark purple cyberpunk gradient - Matching exactly with ResumeScreen
         LinearGradient gradient = new LinearGradient(
             0, 0, 1, 1, true, null,
             new Stop(0, Color.rgb(25, 10, 41, 0.9)),  // Dark purple
@@ -85,8 +85,8 @@ public class SettingsScreen extends StackPane {
 
         // Create settings container
         VBox settingsContainer = createSettingsContainer();
-        settingsContainer.setMaxWidth(550);
-        settingsContainer.setMaxHeight(500);
+        settingsContainer.setMaxWidth(500);
+        settingsContainer.setMaxHeight(450);
         
         // Add buttons at the bottom
         HBox buttonsRow = new HBox(20);
@@ -97,10 +97,10 @@ public class SettingsScreen extends StackPane {
         VBox contentBox = new VBox(20);
         contentBox.setAlignment(Pos.CENTER);
         contentBox.setPadding(new Insets(30));
-        contentBox.setMaxWidth(600);
-        contentBox.setMaxHeight(600);
+        contentBox.setMaxWidth(450);
+        contentBox.setMaxHeight(550);
         
-        // Cyberpunk styled container background with pixel-like border
+        // Cyberpunk styled container background with pixel-like border - Matching exactly with ResumeScreen
         contentBox.setStyle(
             "-fx-background-color: rgba(30, 15, 50, 0.8);" +
             "-fx-background-radius: 2;" +
@@ -129,7 +129,7 @@ public class SettingsScreen extends StackPane {
 
     private Label createTitleLabel(String text) {
         Label label = new Label(text);
-        label.setFont(FontLoader.TITLE_FONT);
+        label.setFont(FontLoader.SUBTITLE_FONT);
         label.setStyle("""
             -fx-text-fill: white;
             -fx-effect: dropshadow(gaussian, #ff00ff, 8, 0.4, 0, 0);
@@ -354,13 +354,14 @@ public class SettingsScreen extends StackPane {
     }
     
     private void styleMenuButton(MenuButton button) {
-        // Add glow effect to buttons
+        // Add glow effect to buttons - Match styling with ResumeScreen
         DropShadow buttonGlow = new DropShadow();
         buttonGlow.setColor(Color.rgb(180, 50, 255, 0.7));
         buttonGlow.setRadius(15);
         button.setEffect(buttonGlow);
         
-        button.setPrefWidth(200);
+        // Make buttons slightly larger to match ResumeScreen
+        button.setPrefWidth(250);
     }
 
     @FunctionalInterface
