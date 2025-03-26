@@ -2,6 +2,8 @@ package com.vpstycoon.game;
 
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.game.vps.VPSInventory;
+import com.vpstycoon.ui.game.rack.Rack;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -29,6 +31,10 @@ public class GameState implements Serializable {
     private long lastSaveTime;
     private List<GameObject> gameObjects;
     
+    // เพิ่มฟิลด์สำหรับเก็บข้อมูล Rack และ VPS Inventory
+    private Map<String, Object> rackConfiguration; // เก็บข้อมูลการตั้งค่า Rack
+    private Map<String, Object> vpsInventoryData; // เก็บข้อมูล VPS ที่ยังไม่ได้ติดตั้ง
+    
     public GameState() {
         this.company = ResourceManager.getInstance().getCompany();
 
@@ -36,6 +42,10 @@ public class GameState implements Serializable {
         this.upgrades = new HashMap<>();
         this.lastSaveTime = System.currentTimeMillis();
         this.gameObjects = new ArrayList<>();
+        
+        // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
+        this.rackConfiguration = new HashMap<>();
+        this.vpsInventoryData = new HashMap<>();
 
         this.localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
@@ -50,14 +60,40 @@ public class GameState implements Serializable {
         this.resources = new HashMap<>();
         this.upgrades = new HashMap<>();
         this.gameObjects = new ArrayList<>(gameObjects);
+        
+        // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
+        this.rackConfiguration = new HashMap<>();
+        this.vpsInventoryData = new HashMap<>();
     }
 
     public GameState(Company company) {
         this.company = company;
         this.resources = new HashMap<>();
         this.upgrades = new HashMap<>();
+        
+        // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
+        this.rackConfiguration = new HashMap<>();
+        this.vpsInventoryData = new HashMap<>();
     }
 
+    // Getter และ Setter สำหรับ Rack Configuration
+    public Map<String, Object> getRackConfiguration() {
+        return rackConfiguration;
+    }
+    
+    public void setRackConfiguration(Map<String, Object> rackConfiguration) {
+        this.rackConfiguration = rackConfiguration;
+    }
+    
+    // Getter และ Setter สำหรับ VPS Inventory Data
+    public Map<String, Object> getVpsInventoryData() {
+        return vpsInventoryData;
+    }
+    
+    public void setVpsInventoryData(Map<String, Object> vpsInventoryData) {
+        this.vpsInventoryData = vpsInventoryData;
+    }
+    
     public void addGameObject(GameObject obj) {
         if (gameObjects == null) {
             gameObjects = new ArrayList<>();

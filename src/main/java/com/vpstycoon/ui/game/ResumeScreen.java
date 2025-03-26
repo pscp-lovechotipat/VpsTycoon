@@ -128,9 +128,30 @@ public class ResumeScreen extends StackPane {
         MenuButton mainMenuButton = new MenuButton(MenuButtonType.MAIN_MENU);
         mainMenuButton.setOnAction(e ->{
             audioManager.playSoundEffect("click.wav");
+            
+            // บันทึกเกมก่อนออกไปเมนูหลัก
+            try {
+                System.out.println("กำลังบันทึกเกมก่อนออกไปเมนูหลัก...");
+                ResourceManager.getInstance().pushNotification("บันทึกเกม", "กำลังบันทึกความก้าวหน้าของคุณ...");
+                
+                // สร้าง GameState จากข้อมูลปัจจุบัน
+                com.vpstycoon.game.company.Company company = ResourceManager.getInstance().getCompany();
+                java.util.List<com.vpstycoon.game.GameObject> gameObjects = 
+                    ResourceManager.getInstance().getCurrentState().getGameObjects();
+                
+                com.vpstycoon.game.GameState state = new com.vpstycoon.game.GameState(company, gameObjects);
+                state.setLocalDateTime(ResourceManager.getInstance().getGameTimeController().getGameTimeManager().getGameDateTime());
+                
+                // บันทึกเกม
+                ResourceManager.getInstance().saveGameState(state);
+                System.out.println("บันทึกเกมเรียบร้อยแล้ว");
+            } catch (Exception ex) {
+                System.err.println("เกิดข้อผิดพลาดในการบันทึกเกม: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+            
             audioManager.resumeMusic();
             navigator.showMainMenu();
-
         });
         styleButton(mainMenuButton);
 

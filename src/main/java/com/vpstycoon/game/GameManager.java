@@ -7,9 +7,12 @@ import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.game.thread.RequestGenerator;
 import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
+import com.vpstycoon.game.vps.enums.VPSSize;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GameManager {
     private static GameManager instance;
@@ -56,26 +59,13 @@ public class GameManager {
         // Create installed servers list
         installedServers = new ArrayList<>();
         
-        // Add initial server to inventory
-        VPSOptimization initialServer = createInitialServer();
-        vpsInventory.addVPS("initial-server", initialServer);
+        // เริ่มต้นด้วยค่าว่าง ไม่สร้าง VPS ตัวอย่าง
+        // ผู้เล่นต้องซื้อ server ด้วยตัวเอง
         
         // Save initial state
         saveState();
     }
     
-    /**
-     * Create the initial server for a new game
-     * @return The initial VPS server
-     */
-    private VPSOptimization createInitialServer() {
-        VPSOptimization server = new VPSOptimization();
-        server.setVCPUs(4);
-        server.setRamInGB(16);
-        server.setDiskInGB(500);
-        return server;
-    }
-
     /**
      * Save the current game state
      */
@@ -92,10 +82,58 @@ public class GameManager {
             currentState.setLocalDateTime(timeManager.getGameDateTime());
         }
         
-        // Add all game objects
+        // Add all installed servers to gameObjects
         for (VPSOptimization server : installedServers) {
             // Since VPSOptimization now extends GameObject, we can add it directly
             currentState.addGameObject(server);
+        }
+        
+        // บันทึกข้อมูล VPS ที่อยู่ใน inventory
+        if (vpsInventory != null && !vpsInventory.isEmpty()) {
+            System.out.println("บันทึก VPS ใน inventory: " + vpsInventory.getSize() + " รายการ");
+            
+            // เพิ่ม VPS จาก inventory เข้าไปใน gameObjects
+            for (VPSOptimization vps : vpsInventory.getAllVPS()) {
+                // ตรวจสอบว่า VPS นี้ถูกบันทึกไปแล้วหรือไม่
+                boolean isDuplicate = false;
+                for (GameObject obj : currentState.getGameObjects()) {
+                    if (obj instanceof VPSOptimization && 
+                        ((VPSOptimization) obj).getVpsId() != null && 
+                        ((VPSOptimization) obj).getVpsId().equals(vps.getVpsId())) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+                
+                // ถ้ายังไม่ถูกบันทึก ให้เพิ่มเข้าไป
+                if (!isDuplicate) {
+                    vps.setInstalled(false); // ต้องแน่ใจว่า VPS ที่อยู่ใน inventory มีสถานะเป็น "ไม่ได้ติดตั้ง"
+                    currentState.addGameObject(vps);
+                    System.out.println("เพิ่ม VPS จาก inventory ไปยัง GameState: " + vps.getVpsId());
+                }
+            }
+            
+            // สร้างข้อมูลเพิ่มเติมเกี่ยวกับ VPSInventory
+            Map<String, Object> inventoryData = new HashMap<>();
+            List<String> vpsIds = vpsInventory.getAllVPSIds();
+            inventoryData.put("vpsIds", vpsIds);
+            
+            // บันทึกข้อมูลละเอียดของแต่ละ VPS
+            Map<String, Map<String, Object>> vpsDetails = new HashMap<>();
+            for (String vpsId : vpsIds) {
+                VPSOptimization vps = vpsInventory.getVPS(vpsId);
+                Map<String, Object> details = new HashMap<>();
+                details.put("vCPUs", vps.getVCPUs());
+                details.put("ramInGB", vps.getRamInGB());
+                details.put("diskInGB", vps.getDiskInGB());
+                details.put("size", vps.getSize().toString());
+                details.put("name", vps.getName());
+                vpsDetails.put(vpsId, details);
+            }
+            inventoryData.put("vpsDetails", vpsDetails);
+            
+            // บันทึกข้อมูล VPSInventory ลงใน GameState
+            currentState.setVpsInventoryData(inventoryData);
         }
         
         ResourceManager.getInstance().saveGameState(currentState);
@@ -119,19 +157,98 @@ public class GameManager {
                 timeManager = ResourceManager.getInstance().getGameTimeManager();
             }
             
-            // Load installed servers
+            // ล้างข้อมูล servers และ inventory เดิม
             installedServers.clear();
-            for (GameObject obj : savedState.getGameObjects()) {
-                if (obj instanceof VPSOptimization) {
-                    VPSOptimization server = (VPSOptimization) obj;
-                    if (server.isInstalled()) {
-                        installedServers.add(server);
-                        timeManager.addVPSServer(server);
-                    } else {
-                        vpsInventory.addVPS("server-" + installedServers.size(), server);
+            vpsInventory.clear();
+            
+            // โหลดข้อมูล VPS และ server จาก gameObjects
+            if (savedState.getGameObjects() != null) {
+                System.out.println("โหลด GameObjects: " + savedState.getGameObjects().size() + " รายการ");
+                
+                for (GameObject obj : savedState.getGameObjects()) {
+                    if (obj instanceof VPSOptimization) {
+                        VPSOptimization server = (VPSOptimization) obj;
+                        
+                        // ตรวจสอบว่า VPS นี้ได้รับการติดตั้งแล้วหรือไม่
+                        if (server.isInstalled()) {
+                            // เพิ่มเข้า installed servers
+                            installedServers.add(server);
+                            timeManager.addVPSServer(server);
+                            System.out.println("โหลด installed VPS: " + server.getVpsId());
+                        } else {
+                            // เพิ่มเข้า inventory
+                            if (server.getVpsId() != null && !server.getVpsId().isEmpty()) {
+                                vpsInventory.addVPS(server.getVpsId(), server);
+                                System.out.println("โหลด VPS เข้า inventory: " + server.getVpsId());
+                            } else {
+                                // ถ้าไม่มี ID ให้สร้าง ID ใหม่
+                                String newId = "server-" + System.currentTimeMillis() + "-" + vpsInventory.getSize();
+                                server.setVpsId(newId);
+                                vpsInventory.addVPS(newId, server);
+                                System.out.println("โหลด VPS ที่ไม่มี ID เข้า inventory, สร้าง ID ใหม่: " + newId);
+                            }
+                        }
                     }
                 }
             }
+            
+            // โหลดข้อมูล VPSInventory เพิ่มเติม (ถ้ามี)
+            Map<String, Object> inventoryData = savedState.getVpsInventoryData();
+            if (inventoryData != null && !inventoryData.isEmpty()) {
+                System.out.println("พบข้อมูล VPSInventory เพิ่มเติม");
+                
+                if (inventoryData.containsKey("vpsIds") && inventoryData.containsKey("vpsDetails")) {
+                    List<String> vpsIds = (List<String>) inventoryData.get("vpsIds");
+                    Map<String, Map<String, Object>> vpsDetails = (Map<String, Map<String, Object>>) inventoryData.get("vpsDetails");
+                    
+                    // ตรวจสอบแต่ละ VPS ID ว่ามีใน inventory แล้วหรือไม่
+                    for (String vpsId : vpsIds) {
+                        if (!vpsInventory.getAllVPSIds().contains(vpsId) && vpsDetails.containsKey(vpsId)) {
+                            // ถ้ายังไม่มี ให้สร้าง VPS ใหม่จากข้อมูลใน vpsDetails
+                            Map<String, Object> details = vpsDetails.get(vpsId);
+                            
+                            VPSOptimization newVPS = new VPSOptimization();
+                            newVPS.setVpsId(vpsId);
+                            
+                            // ตั้งค่าตาม details
+                            if (details.containsKey("vCPUs")) {
+                                newVPS.setVCPUs((Integer) details.get("vCPUs"));
+                            }
+                            
+                            if (details.containsKey("ramInGB")) {
+                                newVPS.setRamInGB((Integer) details.get("ramInGB"));
+                            }
+                            
+                            if (details.containsKey("diskInGB")) {
+                                newVPS.setDiskInGB((Integer) details.get("diskInGB"));
+                            }
+                            
+                            if (details.containsKey("name") && details.get("name") != null) {
+                                newVPS.setName((String) details.get("name"));
+                            } else {
+                                newVPS.setName("VPS-" + vpsId);
+                            }
+                            
+                            if (details.containsKey("size") && details.get("size") != null) {
+                                try {
+                                    newVPS.setSize(VPSSize.valueOf((String) details.get("size")));
+                                } catch (Exception e) {
+                                    newVPS.setSize(VPSSize.SIZE_1U); // ค่าเริ่มต้น
+                                }
+                            }
+                            
+                            // เพิ่มเข้า inventory
+                            newVPS.setInstalled(false);
+                            vpsInventory.addVPS(vpsId, newVPS);
+                            System.out.println("สร้าง VPS ใหม่จากข้อมูลเพิ่มเติม: " + vpsId);
+                        }
+                    }
+                }
+            }
+            
+            System.out.println("โหลดข้อมูลเสร็จสิ้น:");
+            System.out.println("- Installed VPS: " + installedServers.size() + " เครื่อง");
+            System.out.println("- VPS ใน inventory: " + vpsInventory.getSize() + " เครื่อง");
         }
     }
 

@@ -2,6 +2,7 @@ package com.vpstycoon.ui.game;
 
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.GameObject;
+import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
@@ -56,6 +57,7 @@ import javafx.stage.Stage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
 
 public class GameplayContentPane extends BorderPane {
     private final StackPane rootStack;
@@ -138,11 +140,8 @@ public class GameplayContentPane extends BorderPane {
         gameArea.setMinSize(800, 600);
         rootStack.getChildren().add(gameArea);
 
-        // เริ่มต้นสร้าง VPS เพื่อทดสอบ
-        initializeSampleVPS();
-
-        // Add test VPS to inventory for debugging
-        addTestServersToInventory();
+        // เตรียม rack เริ่มต้น (ถ้ายังไม่มี)
+        initializeBasicRack();
 
         this.gameTimeController = ResourceManager.getInstance().getGameTimeController();
 
@@ -160,13 +159,30 @@ public class GameplayContentPane extends BorderPane {
         this.moneyUI = new MoneyUI(this, moneyModel);
         this.moneyController = new MoneyController(moneyModel, moneyUI);
 
-        this.dateModel = new DateModel(ResourceManager.getInstance().getCurrentState().getLocalDateTime(), this);
+        // ตรวจสอบค่า LocalDateTime ก่อนสร้าง DateModel
+        LocalDateTime initialDate = null;
+        if (ResourceManager.getInstance().getCurrentState() != null) {
+            initialDate = ResourceManager.getInstance().getCurrentState().getLocalDateTime();
+        }
+        
+        if (initialDate == null) {
+            // ถ้าเป็น null ให้ใช้ค่าเริ่มต้น
+            initialDate = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
+            System.out.println("วันที่เริ่มต้นเป็น null กำหนดเป็น: " + initialDate);
+        } else {
+            System.out.println("ใช้วันที่จาก ResourceManager: " + initialDate);
+        }
+        
+        this.dateModel = new DateModel(initialDate, this);
         this.dateView = new DateView(this, dateModel);
         this.dateController = new DateController(dateModel, dateView);
 
         this.menuBar = new GameMenuBar(this);
 
         this.inGameMarketMenuBar = new InGameMarketMenuBar(this, vpsManager);
+
+        // ซิงค์ข้อมูลกับ GameManager
+        syncWithGameManager();
 
         setupUI();
         this.keyEventHandler = new KeyEventHandler(this, debugOverlayManager);
@@ -177,74 +193,16 @@ public class GameplayContentPane extends BorderPane {
         this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
-    // === Initialization Methods ===
-    private void initializeSampleVPS() {
-        VPSOptimization vps1 = new VPSOptimization();
-        vps1.setVCPUs(2);
-        vps1.setRamInGB(4);
-        vps1.setDiskInGB(50);
-        vps1.setSize(VPSSize.SIZE_1U);
-        vps1.setInstalled(true);
-        rack.installVPS(vps1);
-        vpsManager.addVPS("103.216.158.234-BasicRack", vps1);
-
-        VPSOptimization vps2 = new VPSOptimization();
-        vps2.setVCPUs(4);
-        vps2.setRamInGB(8);
-        vps2.setDiskInGB(100);
-        vps2.setSize(VPSSize.SIZE_2U);
-        vps2.setInstalled(true);
-        rack.installVPS(vps2);
-        vpsManager.addVPS("103.216.158.237-MediumRack", vps2);
-
-        VPSOptimization invVps1 = new VPSOptimization();
-        invVps1.setVCPUs(1);
-        invVps1.setRamInGB(2);
-        invVps1.setDiskInGB(20);
-        invVps1.setSize(VPSSize.SIZE_1U);
-        vpsInventory.addVPS("103.216.158.235-BasicServer", invVps1);
-
-        VPSOptimization invVps2 = new VPSOptimization();
-        invVps2.setVCPUs(8);
-        invVps2.setRamInGB(16);
-        invVps2.setDiskInGB(200);
-        invVps2.setSize(VPSSize.SIZE_3U);
-        vpsInventory.addVPS("103.216.158.236-EnterpriseServer", invVps2);
-
-        // Use the new addVPS method which also sets the ID in the VPS object
-        vpsManager.addVPS("103.216.158.235-BasicServer", invVps1);
-        vpsManager.addVPS("103.216.158.236-EnterpriseServer", invVps2);
-
-        VPSOptimization.VM vm1 = new VPSOptimization.VM("192.168.1.1", "Web Server", 1, "1 GB", "20 GB", "Running");
-        VPSOptimization.VM vm2 = new VPSOptimization.VM("192.168.1.2", "Database", 1, "2 GB", "30 GB", "Running");
-        vps1.addVM(vm1);
-        vps1.addVM(vm2);
-    }
-
     /**
-     * Add some test servers to inventory for debugging
+     * เตรียม rack เริ่มต้นสำหรับผู้เล่นใหม่
      */
-    private void addTestServersToInventory() {
-        // Make sure we have a rack to use
+    private void initializeBasicRack() {
+        // สร้าง rack เริ่มต้นเท่านั้น ถ้ายังไม่มี
         if (rack.getMaxRacks() == 0) {
             rack.addRack(10);  // Add a rack with 10 slots
             rack.upgrade();    // Unlock the first slot
-            rack.upgrade();    // Unlock the second slot
-            rack.upgrade();    // Unlock the third slot
-            System.out.println("Added test rack with 3 unlocked slots");
+            System.out.println("เพิ่ม rack เริ่มต้นพร้อม 1 slot ปลดล็อคแล้ว");
         }
-        
-        // Create servers with different sizes using the new constructor
-        VPSOptimization smallVPS = new VPSOptimization(1, 2, VPSSize.SIZE_1U);
-        vpsInventory.addVPS("test-small-1", smallVPS);
-        
-        VPSOptimization mediumVPS = new VPSOptimization(2, 4, VPSSize.SIZE_2U);
-        vpsInventory.addVPS("test-medium-1", mediumVPS);
-        
-        VPSOptimization largeVPS = new VPSOptimization(4, 8, VPSSize.SIZE_3U);
-        vpsInventory.addVPS("test-large-1", largeVPS);
-        
-        System.out.println("Added test servers to inventory: " + vpsInventory.getSize() + " servers");
     }
 
     private synchronized void setupUI() {
@@ -457,8 +415,29 @@ public class GameplayContentPane extends BorderPane {
             return false;
         }
         if (rack.installVPS(vps)) {
+            // ลบ VPS จาก GameplayContentPane inventory
             vpsInventory.removeVPS(vpsId);
+            
+            // เพิ่ม VPS เข้า VPSManager
             vpsManager.addVPS(vps.getVpsId(), vps);
+            
+            // ซิงค์กับ GameManager
+            GameManager gameManager = GameManager.getInstance();
+            
+            // ลบ VPS จาก inventory ของ GameManager
+            if (gameManager.getVpsInventory().getVPS(vpsId) != null) {
+                gameManager.getVpsInventory().removeVPS(vpsId);
+                System.out.println("ลบ VPS จาก GameManager inventory: " + vpsId);
+            }
+            
+            // เพิ่ม VPS เข้า installed servers ของ GameManager
+            gameManager.installServer(vpsId);
+            System.out.println("เพิ่ม VPS เข้า installed servers ของ GameManager: " + vpsId);
+            
+            // บันทึกเกมทันที
+            gameManager.saveState();
+            System.out.println("บันทึกเกมหลังติดตั้ง VPS เรียบร้อย");
+            
             return true;
         }
         return false;
@@ -472,7 +451,26 @@ public class GameplayContentPane extends BorderPane {
             return false;
         }
         if (rack.uninstallVPS(vps)) {
+            // เพิ่ม VPS เข้า GameplayContentPane inventory
             vpsInventory.addVPS(vpsId, vps);
+            
+            // ซิงค์กับ GameManager
+            GameManager gameManager = GameManager.getInstance();
+            
+            // ลบ VPS จาก installed servers ของ GameManager
+            gameManager.uninstallServer(vps);
+            System.out.println("ลบ VPS จาก installed servers ของ GameManager: " + vpsId);
+            
+            // เพิ่ม VPS เข้า inventory ของ GameManager (แม้ว่า uninstallServer จะทำให้แล้ว แต่เราทำอีกครั้งเพื่อความมั่นใจ)
+            if (gameManager.getVpsInventory().getVPS(vpsId) == null) {
+                gameManager.getVpsInventory().addVPS(vpsId, vps);
+                System.out.println("เพิ่ม VPS เข้า GameManager inventory: " + vpsId);
+            }
+            
+            // บันทึกเกมทันที
+            gameManager.saveState();
+            System.out.println("บันทึกเกมหลังถอด VPS เรียบร้อย");
+            
             return true;
         }
         return false;
@@ -632,5 +630,81 @@ public class GameplayContentPane extends BorderPane {
 
     public void setSkillPointsSystem(SkillPointsSystem skillPointsSystem) {
         this.skillPointsSystem = skillPointsSystem;
+    }
+
+    /**
+     * ซิงค์ข้อมูล VPS Inventory กับ GameManager
+     * เพื่อให้แน่ใจว่าข้อมูลระหว่าง GameplayContentPane และ GameManager ตรงกัน
+     */
+    private void syncWithGameManager() {
+        System.out.println("กำลังซิงค์ข้อมูลกับ GameManager...");
+        
+        GameManager gameManager = GameManager.getInstance();
+        VPSInventory gameManagerInventory = gameManager.getVpsInventory();
+        
+        // ถ้า inventory ของ GameManager มีข้อมูล แต่ของเราไม่มี ให้ใช้ข้อมูลจาก GameManager
+        if (gameManagerInventory != null && !gameManagerInventory.isEmpty() && vpsInventory.isEmpty()) {
+            System.out.println("พบข้อมูล VPS ใน GameManager inventory: " + gameManagerInventory.getSize() + " รายการ");
+            
+            // คัดลอกข้อมูลจาก GameManager มาใส่ใน inventory ของเรา
+            for (String vpsId : gameManagerInventory.getAllVPSIds()) {
+                VPSOptimization vps = gameManagerInventory.getVPS(vpsId);
+                if (vps != null) {
+                    vpsInventory.addVPS(vpsId, vps);
+                    System.out.println("โหลด VPS จาก GameManager: " + vpsId);
+                }
+            }
+            
+            System.out.println("ซิงค์ข้อมูลเสร็จสิ้น, VPS ใน inventory: " + vpsInventory.getSize() + " รายการ");
+        }
+        // ถ้า inventory ของเรามีข้อมูล แต่ของ GameManager ไม่มี ให้ใช้ข้อมูลของเรา
+        else if (!vpsInventory.isEmpty() && (gameManagerInventory == null || gameManagerInventory.isEmpty())) {
+            System.out.println("พบข้อมูล VPS ใน GameplayContentPane inventory: " + vpsInventory.getSize() + " รายการ");
+            
+            // คัดลอกข้อมูลจาก inventory ของเราไปใส่ใน GameManager
+            for (String vpsId : vpsInventory.getAllVPSIds()) {
+                VPSOptimization vps = vpsInventory.getVPS(vpsId);
+                if (vps != null) {
+                    gameManagerInventory.addVPS(vpsId, vps);
+                    System.out.println("เพิ่ม VPS เข้า GameManager: " + vpsId);
+                }
+            }
+            
+            // บันทึกเกมเพื่ออัปเดตข้อมูล
+            gameManager.saveState();
+            System.out.println("บันทึกเกมหลังซิงค์ข้อมูลเรียบร้อย");
+        }
+        // ถ้าทั้งสองฝั่งมีข้อมูล ให้รวมข้อมูลเข้าด้วยกัน
+        else if (!vpsInventory.isEmpty() && !gameManagerInventory.isEmpty()) {
+            System.out.println("พบข้อมูล VPS ทั้งสองฝั่ง - กำลังรวมข้อมูล");
+            System.out.println("- GameplayContentPane: " + vpsInventory.getSize() + " รายการ");
+            System.out.println("- GameManager: " + gameManagerInventory.getSize() + " รายการ");
+            
+            // ตรวจสอบว่า VPS ใน GameManager มีอยู่ใน inventory ของเราหรือไม่
+            for (String vpsId : gameManagerInventory.getAllVPSIds()) {
+                if (!vpsInventory.getAllVPSIds().contains(vpsId)) {
+                    VPSOptimization vps = gameManagerInventory.getVPS(vpsId);
+                    if (vps != null) {
+                        vpsInventory.addVPS(vpsId, vps);
+                        System.out.println("เพิ่ม VPS จาก GameManager เข้า inventory: " + vpsId);
+                    }
+                }
+            }
+            
+            // ตรวจสอบว่า VPS ใน inventory ของเรามีอยู่ใน GameManager หรือไม่
+            for (String vpsId : vpsInventory.getAllVPSIds()) {
+                if (!gameManagerInventory.getAllVPSIds().contains(vpsId)) {
+                    VPSOptimization vps = vpsInventory.getVPS(vpsId);
+                    if (vps != null) {
+                        gameManagerInventory.addVPS(vpsId, vps);
+                        System.out.println("เพิ่ม VPS จาก inventory เข้า GameManager: " + vpsId);
+                    }
+                }
+            }
+            
+            // บันทึกเกมเพื่ออัปเดตข้อมูล
+            gameManager.saveState();
+            System.out.println("บันทึกเกมหลังซิงค์ข้อมูลเรียบร้อย");
+        }
     }
 }

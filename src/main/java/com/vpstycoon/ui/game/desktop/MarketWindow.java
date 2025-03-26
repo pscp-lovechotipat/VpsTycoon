@@ -8,6 +8,7 @@ import com.vpstycoon.game.vps.enums.RackProduct;
 import com.vpstycoon.game.vps.enums.VPSProduct;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.game.GameManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -501,21 +502,38 @@ public class MarketWindow extends BorderPane {
 
             // สร้าง VPSOptimization instance จาก VPSProduct
             VPSOptimization vps = new VPSOptimization();
-            vps.setName(UUID.randomUUID() +"-" + product.getName());
+            // ใช้ ID ที่มีรูปแบบที่แน่นอนมากขึ้น ไม่ใช้ name เป็น ID
+            String vpsId = "vps-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
+            vps.setVpsId(vpsId);
+            vps.setName(product.getName());
             vps.setVCPUs(product.getCpu());
             vps.setRamInGB(product.getRam());
             vps.setDiskInGB(product.getStorage());
             vps.setSize(product.getSize());
+            vps.setInstalled(false); // ยืนยันว่าเป็น VPS ที่ยังไม่ติดตั้ง
 
-            // เพิ่ม VPS เข้าไปใน inventory
-            parent.getVpsInventory().getInventoryMap().put(vps.getName(), vps);
+            // เพิ่ม VPS เข้าไปใน inventory ของ GameplayContentPane
+            parent.getVpsInventory().addVPS(vpsId, vps);
+            System.out.println("เพิ่ม VPS เข้า GameplayContentPane inventory: " + vpsId);
+            
+            // อัปเดต GameManager ด้วย (เพื่อให้ข้อมูลถูกบันทึกไว้)
+            GameManager.getInstance().getVpsInventory().addVPS(vpsId, vps);
+            System.out.println("เพิ่ม VPS เข้า GameManager inventory: " + vpsId);
+            
+            // บันทึกสถานะเกมทันที เพื่อให้แน่ใจว่าข้อมูลจะไม่หาย
+            GameManager.getInstance().saveState();
+            System.out.println("บันทึกเกมหลังซื้อ VPS เรียบร้อย");
 
             // แสดง notification
             parent.pushNotification("PURCHASE SUCCESSFUL",
-                    "ACQUIRED " + product.getName() + " FOR " + product.getPriceDisplay());
+                    "ACQUIRED " + product.getName() + " FOR " + product.getPriceDisplay() + 
+                    "\nVPS added to your inventory!");
 
             // ปิด market window และเปิด inventory
             onClose.run();
+            
+            // เปิดหน้า inventory ทันทีหลังซื้อ เพื่อให้ผู้เล่นเห็นว่าได้ VPS มาแล้ว
+            parent.openVPSInventory();
         });
 
         card.getChildren().addAll(nameLabel, descLabel, priceLabel, buyButton);

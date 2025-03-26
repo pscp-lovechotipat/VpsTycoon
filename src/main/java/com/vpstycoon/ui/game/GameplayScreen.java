@@ -54,15 +54,39 @@ public class GameplayScreen extends GameScreen {
         super(config, screenManager);
         this.navigator = navigator;
         this.saveManager = new GameSaveManager();
+        
+        // บันทึก state ที่ได้รับมา
         this.state = gameState;
-        this.gameObjects = new ArrayList<>(gameState.getGameObjects());
-        this.company = ResourceManager.getInstance().getCompany(); // ใช้ company จาก ResourceManager
+        
+        // ตรวจสอบว่า state มี gameObjects หรือไม่
+        if (gameState.getGameObjects() != null) {
+            this.gameObjects = new ArrayList<>(gameState.getGameObjects());
+            
+            // แสดง log จำนวน gameObjects เพื่อตรวจสอบ
+            System.out.println("จำนวน GameObjects ที่ได้รับ: " + gameState.getGameObjects().size());
+        } else {
+            this.gameObjects = new ArrayList<>();
+            System.out.println("ไม่มี GameObjects ใน GameState ที่ได้รับ");
+        }
+        
+        // ใช้ company จาก GameState ไม่ใช่ ResourceManager
+        if (gameState.getCompany() != null) {
+            this.company = gameState.getCompany();
+            // อัพเดต company ใน ResourceManager ด้วย
+            ResourceManager.getInstance().setCompany(this.company);
+            System.out.println("ตั้งค่า Company จาก GameState: Money = $" + this.company.getMoney());
+        } else {
+            this.company = ResourceManager.getInstance().getCompany();
+            System.out.println("ใช้ค่า Company จาก ResourceManager: Money = $" + this.company.getMoney());
+        }
+        
         this.chatSystem = new ChatSystem();
         this.requestManager = ResourceManager.getInstance().getRequestManager();
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
 
+        // โหลดเกมโดยใช้ GameState ที่ได้รับมา
         loadGame(gameState);
     }
 
@@ -71,6 +95,7 @@ public class GameplayScreen extends GameScreen {
             state = saveManager.loadGame();
             if (state != null && state.getGameObjects() != null && !state.getGameObjects().isEmpty()) {
                 this.gameObjects = new ArrayList<>(state.getGameObjects());
+                System.out.println("โหลดเกมสำเร็จ มี GameObjects จำนวน: " + state.getGameObjects().size());
             } else {
                 System.out.println("Load failed or no objects found, initializing new game.");
                 initializeGameObjects();
@@ -83,12 +108,38 @@ public class GameplayScreen extends GameScreen {
     }
 
     private void loadGame(GameState gameState) {
-        if (gameState != null && gameState.getGameObjects() != null && !gameState.getGameObjects().isEmpty()) {
+        if (gameState != null) {
             this.state = gameState;
-            this.gameObjects = new ArrayList<>(gameState.getGameObjects());
-            System.out.println("Loaded game state: " + gameState.toString());
+            
+            if (gameState.getGameObjects() != null && !gameState.getGameObjects().isEmpty()) {
+                this.gameObjects = new ArrayList<>(gameState.getGameObjects());
+                System.out.println("โหลดเกมสำเร็จจาก GameState ที่ได้รับ มี GameObjects จำนวน: " + gameState.getGameObjects().size());
+                
+                // ตรวจสอบและปริ้นท์ข้อมูลเงินเพื่อเช็คว่าโหลดถูกต้อง
+                if (gameState.getCompany() != null) {
+                    System.out.println("โหลด Company พร้อมเงิน: $" + gameState.getCompany().getMoney());
+                }
+            } else {
+                System.out.println("GameState ไม่มี GameObjects, เริ่มเกมใหม่");
+                initializeGameObjects();
+            }
+            
+            // ถ้านี่เป็นการเริ่มเกมใหม่ (New Game) และไม่ใช่การ Continue
+            if (gameState.getCompany() != null && gameState.getCompany().getMoney() == 10000 && 
+                gameState.getLocalDateTime() != null && 
+                gameState.getLocalDateTime().getYear() == 2000 &&
+                gameState.getLocalDateTime().getMonthValue() == 1 &&
+                gameState.getLocalDateTime().getDayOfMonth() == 1) {
+                
+                System.out.println("เริ่มเกมใหม่ ไม่ต้องบันทึกทันที");
+                // ไม่ต้องบันทึกทันที
+            } else {
+                // Save the loaded game state to ensure continuity
+                System.out.println("บันทึกเกมหลังจากโหลด เพื่อให้แน่ใจว่าข้อมูลต่อเนื่อง");
+                gameFlowManager.saveGame();
+            }
         } else {
-            System.out.println("Provided game state is invalid, initializing new game.");
+            System.out.println("Provided game state is null, initializing new game.");
             this.state = new GameState();
             initializeGameObjects();
         }
