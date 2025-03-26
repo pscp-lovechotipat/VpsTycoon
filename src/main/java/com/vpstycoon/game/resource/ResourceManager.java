@@ -185,32 +185,77 @@ public class ResourceManager implements Serializable {
                 Map<String, Object> rackConfig = new HashMap<>();
                 rackConfig.put("maxRacks", rack.getMaxRacks());
                 rackConfig.put("currentRackIndex", rack.getCurrentRackIndex());
-                rackConfig.put("maxSlotUnits", rack.getMaxSlotUnits());
-                rackConfig.put("unlockedSlotUnits", rack.getUnlockedSlotUnits());
-                rackConfig.put("occupiedSlotUnits", rack.getOccupiedSlotUnits());
                 
-                // เก็บ VPS ที่ถูกติดตั้งใน Rack
-                List<String> installedVpsIds = new ArrayList<>();
-                for (VPSOptimization vps : rack.getInstalledVPS()) {
-                    installedVpsIds.add(vps.getVpsId());
-                    // ตรวจสอบว่า VPS นี้อยู่ใน gameObjects หรือไม่
-                    boolean found = false;
-                    for (GameObject obj : state.getGameObjects()) {
-                        if (obj instanceof VPSOptimization && ((VPSOptimization) obj).getVpsId().equals(vps.getVpsId())) {
-                            found = true;
-                            break;
+                // บันทึกรายละเอียดของแต่ละ rack
+                List<Map<String, Object>> allRacksData = new ArrayList<>();
+                
+                // จำนวน Rack ทั้งหมด
+                int totalRacks = rack.getMaxRacks();
+                
+                // เก็บข้อมูล slot ของแต่ละ rack
+                List<Integer> slotCounts = new ArrayList<>();
+                for (int i = 0; i < totalRacks; i++) {
+                    // สร้าง index ปัจจุบันไว้
+                    int currentIndex = rack.getCurrentRackIndex();
+                    
+                    // เปลี่ยน rack ไปที่ index ที่ต้องการเพื่อดึงข้อมูล
+                    rack.setRackIndex(i);
+                    
+                    Map<String, Object> rackData = new HashMap<>();
+                    rackData.put("rackIndex", i);
+                    rackData.put("maxSlotUnits", rack.getMaxSlotUnits());
+                    rackData.put("unlockedSlotUnits", rack.getUnlockedSlotUnits());
+                    rackData.put("occupiedSlotUnits", rack.getOccupiedSlotUnits());
+                    rackData.put("availableSlotUnits", rack.getAvailableSlotUnits());
+                    
+                    // เก็บข้อมูล VPS ที่ติดตั้งในแต่ละ rack
+                    List<String> rackInstalledVpsIds = new ArrayList<>();
+                    for (VPSOptimization vps : rack.getInstalledVPS()) {
+                        rackInstalledVpsIds.add(vps.getVpsId());
+                        
+                        // ตรวจสอบว่า VPS นี้อยู่ใน gameObjects หรือไม่
+                        boolean found = false;
+                        for (GameObject obj : state.getGameObjects()) {
+                            if (obj instanceof VPSOptimization && ((VPSOptimization) obj).getVpsId().equals(vps.getVpsId())) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        // ถ้าไม่พบ VPS นี้ใน gameObjects ให้เพิ่มเข้าไป
+                        if (!found) {
+                            state.addGameObject(vps);
                         }
                     }
-                    // ถ้าไม่พบ VPS นี้ใน gameObjects ให้เพิ่มเข้าไป
-                    if (!found) {
-                        state.addGameObject(vps);
-                    }
+                    rackData.put("installedVpsIds", rackInstalledVpsIds);
+                    
+                    // เพิ่มข้อมูล rack นี้เข้าไปในรายการ
+                    allRacksData.add(rackData);
+                    
+                    // เก็บจำนวน slot ของ rack นี้
+                    slotCounts.add(rack.getMaxSlotUnits());
+                    
+                    // เปลี่ยนกลับไปที่ rack เดิม
+                    rack.setRackIndex(currentIndex);
                 }
-                rackConfig.put("installedVpsIds", installedVpsIds);
+                
+                // บันทึกข้อมูลทุก rack
+                rackConfig.put("allRacksData", allRacksData);
+                rackConfig.put("slotCounts", slotCounts);
+                
+                // บันทึกรายการ unlockedSlotUnits สำหรับทุก rack
+                rackConfig.put("unlockedSlotUnitsList", rack.getUnlockedSlotUnitsList());
+                
+                // รวบรวม VPS ที่ติดตั้งในทุก rack
+                List<String> allInstalledVpsIds = new ArrayList<>();
+                for (VPSOptimization vps : rack.getAllInstalledVPS()) {
+                    allInstalledVpsIds.add(vps.getVpsId());
+                }
+                rackConfig.put("installedVpsIds", allInstalledVpsIds);
                 
                 // บันทึกข้อมูล Rack ลงใน GameState
                 state.setRackConfiguration(rackConfig);
-                System.out.println("บันทึกข้อมูล Rack สำเร็จ: " + rack.getInstalledVPS().size() + " VPS ถูกติดตั้ง");
+                System.out.println("บันทึกข้อมูล Rack สำเร็จ: " + totalRacks + " racks, " + 
+                                  allInstalledVpsIds.size() + " VPS ที่ติดตั้ง");
             } catch (Exception e) {
                 System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูล Rack: " + e.getMessage());
                 e.printStackTrace();
@@ -344,6 +389,9 @@ public class ResourceManager implements Serializable {
                 }
             }
             
+            // โหลดข้อมูล Rack
+            loadRackDataFromGameState(state);
+            
             System.out.println("โหลดข้อมูลเกมสำเร็จ จาก: " + saveFile.getAbsolutePath());
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการโหลดข้อมูลเกม: " + e.getMessage());
@@ -355,6 +403,173 @@ public class ResourceManager implements Serializable {
         this.currentState = state;
         
         return state;
+    }
+    
+    /**
+     * โหลดข้อมูล Rack จาก GameState ที่โหลดมา
+     * @param state GameState ที่ต้องการโหลดข้อมูล Rack จาก
+     * @return true หากโหลดข้อมูลสำเร็จ, false หากมีข้อผิดพลาด
+     */
+    public boolean loadRackDataFromGameState(GameState state) {
+        if (state == null) {
+            System.out.println("ไม่สามารถโหลดข้อมูล Rack ได้: GameState เป็น null");
+            return false;
+        }
+        
+        // รับข้อมูลการตั้งค่า Rack จาก GameState
+        Map<String, Object> rackConfig = state.getRackConfiguration();
+        if (rackConfig == null || rackConfig.isEmpty()) {
+            System.out.println("ไม่พบข้อมูลการตั้งค่า Rack ใน GameState");
+            
+            // ถ้าไม่มีข้อมูล Rack ให้สร้าง Rack เริ่มต้น
+            if (this.rack == null) {
+                this.rack = new com.vpstycoon.ui.game.rack.Rack();
+                this.rack.addRack(10); // สร้าง rack พร้อม 10 slots
+                System.out.println("สร้าง Rack เริ่มต้นเรียบร้อยแล้ว");
+            }
+            return false;
+        }
+        
+        // สร้าง VPSInventory ถ้ายังไม่มี
+        VPSInventory inventory = new VPSInventory();
+        
+        // สร้าง Rack ใหม่
+        if (this.rack == null) {
+            this.rack = new com.vpstycoon.ui.game.rack.Rack();
+        } else {
+            // ล้างข้อมูล Rack เดิม เพื่อเตรียมโหลดข้อมูลใหม่
+            this.rack = new com.vpstycoon.ui.game.rack.Rack();
+        }
+        
+        try {
+            // ข้อมูลพื้นฐานของ Rack
+            int maxRacks = rackConfig.containsKey("maxRacks") ? (Integer) rackConfig.get("maxRacks") : 0;
+            int currentRackIndex = rackConfig.containsKey("currentRackIndex") ? (Integer) rackConfig.get("currentRackIndex") : 0;
+            
+            // ตรวจสอบว่ามีข้อมูลรายละเอียดของแต่ละ rack หรือไม่
+            List<Map<String, Object>> allRacksData = null;
+            if (rackConfig.containsKey("allRacksData")) {
+                allRacksData = (List<Map<String, Object>>) rackConfig.get("allRacksData");
+                System.out.println("พบข้อมูลรายละเอียดของ Rack: " + allRacksData.size() + " racks");
+            }
+            
+            // ดึงข้อมูลขนาดของแต่ละ rack (จำนวน slot)
+            List<Integer> slotCounts = null;
+            if (rackConfig.containsKey("slotCounts")) {
+                slotCounts = (List<Integer>) rackConfig.get("slotCounts");
+                System.out.println("พบข้อมูลขนาด slot ของ Rack: " + slotCounts);
+            }
+            
+            // สร้าง rack ในจำนวนที่บันทึกไว้
+            for (int i = 0; i < maxRacks; i++) {
+                int slotCount = 10; // ค่าเริ่มต้น
+                if (slotCounts != null && i < slotCounts.size()) {
+                    slotCount = slotCounts.get(i);
+                }
+                // สร้าง rack ใหม่
+                this.rack.addRack(slotCount);
+                System.out.println("สร้าง Rack #" + (i+1) + " พร้อม " + slotCount + " slots");
+            }
+            
+            // ถ้ามีข้อมูล unlockedSlotUnitsList ให้ตั้งค่า
+            if (rackConfig.containsKey("unlockedSlotUnitsList")) {
+                List<Integer> unlockedList = (List<Integer>) rackConfig.get("unlockedSlotUnitsList");
+                if (unlockedList != null && !unlockedList.isEmpty()) {
+                    this.rack.setUnlockedSlotUnitsList(unlockedList);
+                    System.out.println("ตั้งค่า unlockedSlotUnitsList: " + unlockedList);
+                }
+            }
+            
+            // โหลดข้อมูล VPS ที่ติดตั้งใน Rack
+            if (allRacksData != null && !allRacksData.isEmpty()) {
+                // โหลดข้อมูลรายละเอียดของแต่ละ rack
+                for (Map<String, Object> rackData : allRacksData) {
+                    int rackIndex = (Integer) rackData.get("rackIndex");
+                    List<String> rackInstalledVpsIds = (List<String>) rackData.get("installedVpsIds");
+                    
+                    if (rackInstalledVpsIds != null && !rackInstalledVpsIds.isEmpty()) {
+                        // เปลี่ยนไปที่ rack ที่ต้องการ
+                        this.rack.setRackIndex(rackIndex);
+                        
+                        // ติดตั้ง VPS ใน rack นี้
+                        for (String vpsId : rackInstalledVpsIds) {
+                            boolean found = false;
+                            // ค้นหา VPS จาก gameObjects
+                            for (GameObject obj : state.getGameObjects()) {
+                                if (obj instanceof VPSOptimization) {
+                                    VPSOptimization vps = (VPSOptimization) obj;
+                                    if (vps.getVpsId().equals(vpsId)) {
+                                        // ติดตั้ง VPS ใน Rack
+                                        if (this.rack.installVPS(vps)) {
+                                            found = true;
+                                            System.out.println("ติดตั้ง VPS " + vpsId + " ใน Rack #" + (rackIndex + 1));
+                                        } else {
+                                            System.out.println("ไม่สามารถติดตั้ง VPS " + vpsId + " ใน Rack #" + (rackIndex + 1) + " ได้");
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (!found) {
+                                System.out.println("ไม่พบ VPS " + vpsId + " ใน GameObjects");
+                            }
+                        }
+                    }
+                }
+            } else if (rackConfig.containsKey("installedVpsIds")) {
+                // ใช้ข้อมูลเก่า (ถ้าไม่มีข้อมูลรายละเอียดของแต่ละ rack)
+                List<String> installedVpsIds = (List<String>) rackConfig.get("installedVpsIds");
+                
+                if (installedVpsIds != null && !installedVpsIds.isEmpty()) {
+                    // ติดตั้ง VPS ใน rack แรก (ค่าเริ่มต้น)
+                    this.rack.setRackIndex(0);
+                    
+                    for (String vpsId : installedVpsIds) {
+                        boolean found = false;
+                        // ค้นหา VPS จาก gameObjects
+                        for (GameObject obj : state.getGameObjects()) {
+                            if (obj instanceof VPSOptimization) {
+                                VPSOptimization vps = (VPSOptimization) obj;
+                                if (vps.getVpsId().equals(vpsId)) {
+                                    // ติดตั้ง VPS ใน Rack
+                                    if (this.rack.installVPS(vps)) {
+                                        found = true;
+                                        System.out.println("ติดตั้ง VPS " + vpsId + " ใน Rack ตามข้อมูลเก่า");
+                                    } else {
+                                        System.out.println("ไม่สามารถติดตั้ง VPS " + vpsId + " ใน Rack ตามข้อมูลเก่าได้");
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (!found) {
+                            System.out.println("ไม่พบ VPS " + vpsId + " ใน GameObjects");
+                        }
+                    }
+                }
+            }
+            
+            // กลับไปที่ index ที่ถูกต้อง
+            if (currentRackIndex >= 0 && currentRackIndex < maxRacks) {
+                this.rack.setRackIndex(currentRackIndex);
+                System.out.println("ตั้งค่า currentRackIndex เป็น " + currentRackIndex);
+            }
+            
+            System.out.println("โหลดข้อมูล Rack สำเร็จ: " + this.rack.getMaxRacks() + " racks, " + 
+                              this.rack.getAllInstalledVPS().size() + " VPS ที่ติดตั้ง");
+            return true;
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการโหลดข้อมูล Rack: " + e.getMessage());
+            e.printStackTrace();
+            
+            // กรณีเกิดข้อผิดพลาด ให้สร้าง Rack เริ่มต้น
+            this.rack = new com.vpstycoon.ui.game.rack.Rack();
+            this.rack.addRack(10); // สร้าง rack พร้อม 10 slots
+            System.out.println("เกิดข้อผิดพลาด สร้าง Rack เริ่มต้นแทน");
+            return false;
+        }
     }
 
     // Notification methods

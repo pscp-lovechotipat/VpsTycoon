@@ -1,5 +1,8 @@
 package com.vpstycoon.ui.game.rack;
 
+import com.vpstycoon.game.GameObject;
+import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.utils.UIUtils;
@@ -286,70 +289,171 @@ public class RackManagementUI extends VBox {
             // อัพเดท UI ปกติเมื่อมี rack
             rackInfoLabel.setText(String.format("RACK %d/%d", rack.getRackIndex() + 1, rack.getMaxRacks()));
 
-            vpsList.getChildren().clear();
-            List<VPSOptimization> installedVPS = rack.getInstalledVPS();
+            // โหลดข้อมูล VPS ที่ติดตั้งจาก GameState
+            boolean dataLoaded = false;
+            GameState currentState = ResourceManager.getInstance().getCurrentState();
+            if (currentState != null && currentState.getGameObjects() != null) {
+                // แสดงรายการ VPS ที่ติดตั้งอยู่ในแต่ละ Rack
+                vpsList.getChildren().clear();
+                List<VPSOptimization> installedVPS = rack.getInstalledVPS();
 
-            if (installedVPS.isEmpty()) {
-                Label emptyLabel = createCyberLabel("NO VPS INSTALLED");
-                vpsList.getChildren().add(emptyLabel);
-            } else {
-                for (VPSOptimization vps : installedVPS) {
-                    VBox vpsBox = new VBox(5);
-                    vpsBox.setStyle("""
-                    -fx-background-color: #2d0052;
-                    -fx-padding: 10px;
-                    -fx-background-radius: 0px;
-                    -fx-border-color: #00ffff;
-                    -fx-border-width: 2px;
-                    -fx-border-style: solid;
-                    -fx-effect: dropshadow(gaussian, #00ffff, 3, 0, 0, 0);
-                    """);
-
-                    Label nameLabel = new Label("SERVER " + vps.getVCPUs() + "vCPU");
-                    nameLabel.setStyle("""
-                        -fx-text-fill: #ff00ff; 
-                        -fx-font-weight: bold;
-                        -fx-font-family: 'Courier New';
-                        """);
-
-                    Label specsLabel = new Label(vps.getRamInGB() + "GB RAM");
-                    specsLabel.setStyle("""
-                        -fx-text-fill: #00ffff;
-                        -fx-font-family: 'Courier New';
-                        """);
-
-                    Label sizeLabel = new Label(vps.getSize().getDisplayName());
-                    sizeLabel.setStyle("""
-                        -fx-text-fill: #00ffff;
-                        -fx-font-family: 'Courier New';
-                        """);
-
-                    vpsBox.getChildren().addAll(nameLabel, specsLabel, sizeLabel);
-                    
-                    // Add pixel-style animated border on hover
-                    vpsBox.setOnMouseEntered(e -> {
-                        DropShadow glow = new DropShadow();
-                        glow.setColor(Color.web("#00ffff"));
-                        glow.setWidth(20);
-                        glow.setHeight(20);
-                        vpsBox.setEffect(glow);
-                        vpsBox.setStyle(vpsBox.getStyle() + "-fx-border-color: #ff00ff;");
-                    });
-                    
-                    vpsBox.setOnMouseExited(e -> {
-                        vpsBox.setEffect(null);
+                if (installedVPS.isEmpty()) {
+                    Label emptyLabel = createCyberLabel("NO VPS INSTALLED");
+                    vpsList.getChildren().add(emptyLabel);
+                } else {
+                    for (VPSOptimization vps : installedVPS) {
+                        // ตรวจสอบว่า VPS นี้อยู่ใน GameState หรือไม่
+                        boolean vpsFoundInState = false;
+                        for (GameObject obj : currentState.getGameObjects()) {
+                            if (obj instanceof VPSOptimization) {
+                                VPSOptimization stateVps = (VPSOptimization) obj;
+                                if (stateVps.getVpsId().equals(vps.getVpsId())) {
+                                    vpsFoundInState = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        VBox vpsBox = new VBox(5);
                         vpsBox.setStyle("""
-                            -fx-background-color: #2d0052;
-                            -fx-padding: 10px;
-                            -fx-background-radius: 0px;
-                            -fx-border-color: #00ffff;
-                            -fx-border-width: 2px;
-                            -fx-border-style: solid;
-                            -fx-effect: dropshadow(gaussian, #00ffff, 3, 0, 0, 0);
+                        -fx-background-color: #2d0052;
+                        -fx-padding: 10px;
+                        -fx-background-radius: 0px;
+                        -fx-border-color: #00ffff;
+                        -fx-border-width: 2px;
+                        -fx-border-style: solid;
+                        -fx-effect: dropshadow(gaussian, #00ffff, 3, 0, 0, 0);
+                        """);
+
+                        Label nameLabel = new Label("SERVER " + vps.getVCPUs() + "vCPU" + (vpsFoundInState ? "" : " [SYNCING]"));
+                        nameLabel.setStyle("""
+                            -fx-text-fill: #ff00ff; 
+                            -fx-font-weight: bold;
+                            -fx-font-family: 'Courier New';
                             """);
-                    });
-                    
-                    vpsList.getChildren().add(vpsBox);
+
+                        Label specsLabel = new Label(vps.getRamInGB() + "GB RAM");
+                        specsLabel.setStyle("""
+                            -fx-text-fill: #00ffff;
+                            -fx-font-family: 'Courier New';
+                            """);
+
+                        Label sizeLabel = new Label(vps.getSize().getDisplayName());
+                        sizeLabel.setStyle("""
+                            -fx-text-fill: #00ffff;
+                            -fx-font-family: 'Courier New';
+                            """);
+                            
+                        Label statusLabel = new Label("STATUS: " + vps.getStatus());
+                        statusLabel.setStyle("""
+                            -fx-text-fill: #00ffff;
+                            -fx-font-family: 'Courier New';
+                            """);
+                            
+                        Label vmsLabel = new Label("VMs: " + vps.getVms().size() + "/" + vps.getMaxVMs());
+                        vmsLabel.setStyle("""
+                            -fx-text-fill: #00ffff;
+                            -fx-font-family: 'Courier New';
+                            """);
+
+                        vpsBox.getChildren().addAll(nameLabel, specsLabel, sizeLabel, statusLabel, vmsLabel);
+                        
+                        // Add pixel-style animated border on hover
+                        vpsBox.setOnMouseEntered(e -> {
+                            DropShadow glow = new DropShadow();
+                            glow.setColor(Color.web("#00ffff"));
+                            glow.setWidth(20);
+                            glow.setHeight(20);
+                            vpsBox.setEffect(glow);
+                            vpsBox.setStyle(vpsBox.getStyle() + "-fx-border-color: #ff00ff;");
+                        });
+                        
+                        vpsBox.setOnMouseExited(e -> {
+                            vpsBox.setEffect(null);
+                            vpsBox.setStyle("""
+                                -fx-background-color: #2d0052;
+                                -fx-padding: 10px;
+                                -fx-background-radius: 0px;
+                                -fx-border-color: #00ffff;
+                                -fx-border-width: 2px;
+                                -fx-border-style: solid;
+                                -fx-effect: dropshadow(gaussian, #00ffff, 3, 0, 0, 0);
+                                """);
+                        });
+                        
+                        vpsList.getChildren().add(vpsBox);
+                    }
+                }
+                dataLoaded = true;
+            }
+            
+            // ถ้าไม่สามารถโหลดข้อมูลจาก GameState ได้ ให้แสดงข้อมูลดั้งเดิม
+            if (!dataLoaded) {
+                vpsList.getChildren().clear();
+                List<VPSOptimization> installedVPS = rack.getInstalledVPS();
+
+                if (installedVPS.isEmpty()) {
+                    Label emptyLabel = createCyberLabel("NO VPS INSTALLED");
+                    vpsList.getChildren().add(emptyLabel);
+                } else {
+                    for (VPSOptimization vps : installedVPS) {
+                        VBox vpsBox = new VBox(5);
+                        vpsBox.setStyle("""
+                        -fx-background-color: #2d0052;
+                        -fx-padding: 10px;
+                        -fx-background-radius: 0px;
+                        -fx-border-color: #00ffff;
+                        -fx-border-width: 2px;
+                        -fx-border-style: solid;
+                        -fx-effect: dropshadow(gaussian, #00ffff, 3, 0, 0, 0);
+                        """);
+
+                        Label nameLabel = new Label("SERVER " + vps.getVCPUs() + "vCPU");
+                        nameLabel.setStyle("""
+                            -fx-text-fill: #ff00ff; 
+                            -fx-font-weight: bold;
+                            -fx-font-family: 'Courier New';
+                            """);
+
+                        Label specsLabel = new Label(vps.getRamInGB() + "GB RAM");
+                        specsLabel.setStyle("""
+                            -fx-text-fill: #00ffff;
+                            -fx-font-family: 'Courier New';
+                            """);
+
+                        Label sizeLabel = new Label(vps.getSize().getDisplayName());
+                        sizeLabel.setStyle("""
+                            -fx-text-fill: #00ffff;
+                            -fx-font-family: 'Courier New';
+                            """);
+
+                        vpsBox.getChildren().addAll(nameLabel, specsLabel, sizeLabel);
+                        
+                        // Add pixel-style animated border on hover
+                        vpsBox.setOnMouseEntered(e -> {
+                            DropShadow glow = new DropShadow();
+                            glow.setColor(Color.web("#00ffff"));
+                            glow.setWidth(20);
+                            glow.setHeight(20);
+                            vpsBox.setEffect(glow);
+                            vpsBox.setStyle(vpsBox.getStyle() + "-fx-border-color: #ff00ff;");
+                        });
+                        
+                        vpsBox.setOnMouseExited(e -> {
+                            vpsBox.setEffect(null);
+                            vpsBox.setStyle("""
+                                -fx-background-color: #2d0052;
+                                -fx-padding: 10px;
+                                -fx-background-radius: 0px;
+                                -fx-border-color: #00ffff;
+                                -fx-border-width: 2px;
+                                -fx-border-style: solid;
+                                -fx-effect: dropshadow(gaussian, #00ffff, 3, 0, 0, 0);
+                                """);
+                        });
+                        
+                        vpsList.getChildren().add(vpsBox);
+                    }
                 }
             }
 
@@ -361,8 +465,8 @@ public class RackManagementUI extends VBox {
                     availableSlots));
 
             upgradeButton.setDisable(rack.getUnlockedSlotUnits() >= rack.getMaxSlotUnits());
-            prevRackButton.setDisable(rack.getMaxRacks() <= 1);
-            nextRackButton.setDisable(rack.getMaxRacks() <= 1);
+            prevRackButton.setDisable(rack.getRackIndex() <= 0);
+            nextRackButton.setDisable(rack.getRackIndex() >= rack.getMaxRacks() - 1);
 
             int upgradeCost = calculateUpgradeCost();
             upgradeCostLabel.setText(String.format("UPGRADE COST: $%d", upgradeCost));
@@ -388,6 +492,41 @@ public class RackManagementUI extends VBox {
     private int calculateUpgradeCost() {
         int currentUnlocked = rack.getUnlockedSlotUnits();
         return currentUnlocked * 1000; // Cost increases with each upgrade
+    }
+
+    /**
+     * ซิงค์ข้อมูล RackManagementUI กับ GameState
+     * เรียกใช้เมื่อต้องการอัปเดตข้อมูลให้ตรงกับ GameState ล่าสุด
+     */
+    public void syncWithGameState() {
+        GameState currentState = ResourceManager.getInstance().getCurrentState();
+        if (currentState != null) {
+            // เก็บ index ปัจจุบันไว้
+            int currentIndex = rack.getRackIndex();
+            
+            // โหลดข้อมูล Rack ใหม่จาก GameState
+            boolean success = ResourceManager.getInstance().loadRackDataFromGameState(currentState);
+            
+            if (success) {
+                // อ้างอิง rack ใน ResourceManager ที่อัปเดตแล้ว (rack เป็น final จึงไม่สามารถกำหนดค่าใหม่ได้)
+                Rack updatedRack = ResourceManager.getInstance().getRack();
+                
+                // พยายามกลับไปที่ index เดิม ถ้าเป็นไปได้
+                if (currentIndex >= 0 && currentIndex < updatedRack.getMaxRacks()) {
+                    updatedRack.setRackIndex(currentIndex);
+                    System.out.println("กลับไปที่ Rack #" + (currentIndex + 1) + " หลังจากซิงค์ข้อมูล");
+                }
+                
+                // อัปเดต UI
+                updateUI();
+                
+                System.out.println("ซิงค์ข้อมูล RackManagementUI กับ GameState สำเร็จ");
+                parent.pushNotification("Rack Management", "ข้อมูล Rack ได้รับการอัปเดตแล้ว");
+            } else {
+                System.out.println("ไม่สามารถซิงค์ข้อมูล RackManagementUI กับ GameState ได้");
+                parent.pushNotification("Rack Management", "ไม่สามารถอัปเดตข้อมูล Rack ได้");
+            }
+        }
     }
 
     public synchronized void openRackInfo() {

@@ -1,5 +1,8 @@
 package com.vpstycoon.ui.game.inventory;
 
+import com.vpstycoon.game.GameObject;
+import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.utils.UIUtils;
@@ -68,13 +71,40 @@ public class VPSInventoryUI {
                          "-fx-border-color: #8a2be2; -fx-border-width: 1px; " +
                          "-fx-effect: dropshadow(gaussian, rgba(110,0,220,0.3), 5, 0, 0, 2);");
         
+        // โหลดข้อมูลจาก GameState ถ้ามี
+        boolean inventoryUpdated = false;
+        GameState currentState = ResourceManager.getInstance().getCurrentState();
+        if (currentState != null) {
+            // พยายามอัปเดตข้อมูล VPSInventory จาก GameState
+            for (GameObject obj : currentState.getGameObjects()) {
+                if (obj instanceof VPSOptimization) {
+                    VPSOptimization vps = (VPSOptimization) obj;
+                    if (!vps.isInstalled()) {
+                        // ถ้า VPS ไม่ได้ติดตั้ง ให้ตรวจสอบว่าอยู่ในคลังหรือยัง
+                        if (!parent.getVpsInventory().getInventoryMap().containsKey(vps.getVpsId())) {
+                            parent.getVpsInventory().addVPS(vps.getVpsId(), vps);
+                            inventoryUpdated = true;
+                        }
+                    }
+                }
+            }
+            
+            if (inventoryUpdated) {
+                System.out.println("อัปเดตคลัง VPS จาก GameState เรียบร้อยแล้ว");
+            }
+        }
+        
         Label inventoryCountLabel = new Label("SERVERS IN INVENTORY: " + parent.getVpsInventory().getSize());
         inventoryCountLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 16px; -fx-font-weight: bold;");
 
         Label rackStatsLabel = new Label("RACK SLOTS: " + parent.getRack().getOccupiedSlotUnits() + "/" + parent.getRack().getMaxSlotUnits());
         rackStatsLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 16px; -fx-font-weight: bold;");
         
-        statsBox.getChildren().addAll(inventoryCountLabel, rackStatsLabel);
+        // เพิ่มการแสดงฐานะทางการเงิน
+        Label moneyLabel = new Label("BALANCE: $" + ResourceManager.getInstance().getCompany().getMoney());
+        moneyLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-size: 16px; -fx-font-weight: bold;");
+        
+        statsBox.getChildren().addAll(inventoryCountLabel, rackStatsLabel, moneyLabel);
         
         // Inventory list
         VBox inventoryList = createInventoryList();
@@ -133,19 +163,40 @@ public class VPSInventoryUI {
         sizeHeader.setMinWidth(80);
         sizeHeader.setStyle("-fx-text-fill: #f0d0ff; -fx-font-weight: bold; -fx-font-size: 14px;");
         
+        Label statusHeader = new Label("STATUS");
+        statusHeader.setMinWidth(100);
+        statusHeader.setStyle("-fx-text-fill: #f0d0ff; -fx-font-weight: bold; -fx-font-size: 14px;");
+        
         Label actionsHeader = new Label("ACTIONS");
         actionsHeader.setMinWidth(150);
         actionsHeader.setStyle("-fx-text-fill: #f0d0ff; -fx-font-weight: bold; -fx-font-size: 14px;");
         
-        header.getChildren().addAll(idHeader, specsHeader, sizeHeader, actionsHeader);
+        header.getChildren().addAll(idHeader, specsHeader, sizeHeader, statusHeader, actionsHeader);
         inventoryList.getChildren().add(header);
+        
+        // ตรวจสอบ Syncing status กับ GameState
+        GameState currentState = ResourceManager.getInstance().getCurrentState();
         
         // Add inventory items
         for (Map.Entry<String, VPSOptimization> entry : inventory.entrySet()) {
             String vpsId = entry.getKey();
             VPSOptimization vps = entry.getValue();
             
-            HBox itemRow = createInventoryItemRow(vpsId, vps);
+            // ตรวจสอบว่า VPS อยู่ใน GameState หรือไม่
+            boolean syncedWithGameState = false;
+            if (currentState != null && currentState.getGameObjects() != null) {
+                for (GameObject obj : currentState.getGameObjects()) {
+                    if (obj instanceof VPSOptimization) {
+                        VPSOptimization stateVps = (VPSOptimization) obj;
+                        if (stateVps.getVpsId().equals(vpsId)) {
+                            syncedWithGameState = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            HBox itemRow = createInventoryItemRow(vpsId, vps, syncedWithGameState);
             inventoryList.getChildren().add(itemRow);
         }
         
@@ -156,9 +207,10 @@ public class VPSInventoryUI {
      * Create a row for an inventory item
      * @param vpsId The VPS ID
      * @param vps The VPS object
+     * @param syncedWithGameState ค่าบูลีนที่แสดงว่า VPS นี้ซิงค์กับ GameState หรือไม่
      * @return HBox containing the item information
      */
-    private HBox createInventoryItemRow(String vpsId, VPSOptimization vps) {
+    private HBox createInventoryItemRow(String vpsId, VPSOptimization vps, boolean syncedWithGameState) {
         HBox itemRow = new HBox(20);
         itemRow.setPadding(new Insets(10));
         itemRow.setStyle("-fx-background-color: #2a0a3a; -fx-background-radius: 5px; " +
@@ -177,7 +229,7 @@ public class VPSInventoryUI {
         );
         
         // VPS ID
-        Label idLabel = new Label(vpsId);
+        Label idLabel = new Label(vpsId + (syncedWithGameState ? "" : " [SYNCING]"));
         idLabel.setMinWidth(150);
         idLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-weight: bold;");
         
@@ -194,6 +246,12 @@ public class VPSInventoryUI {
         sizeLabel.setMinWidth(80);
         sizeLabel.setStyle("-fx-text-fill: #e0b0ff;");
         
+        // Status
+        Label statusLabel = new Label(syncedWithGameState ? "READY" : "SYNCING");
+        statusLabel.setMinWidth(100);
+        statusLabel.setStyle("-fx-text-fill: " + (syncedWithGameState ? "#00ff00;" : "#ffaa00;") + 
+                           "-fx-font-weight: bold;");
+        
         // Actions
         HBox actionsBox = new HBox(10);
         
@@ -203,10 +261,16 @@ public class VPSInventoryUI {
         Button detailsButton = UIUtils.createModernButton("Details", "#3498db");
         detailsButton.setOnAction(e -> showVPSDetails(vpsId, vps));
         
+        // ถ้าไม่ซิงค์กับ GameState ให้ปิดปุ่ม Install
+        if (!syncedWithGameState) {
+            installButton.setDisable(true);
+            installButton.setStyle(installButton.getStyle() + "-fx-opacity: 0.5;");
+        }
+        
         actionsBox.getChildren().addAll(installButton, detailsButton);
         
         // Add all to row
-        itemRow.getChildren().addAll(idLabel, specsLabel, sizeLabel, actionsBox);
+        itemRow.getChildren().addAll(idLabel, specsLabel, sizeLabel, statusLabel, actionsBox);
         
         return itemRow;
     }
