@@ -19,6 +19,18 @@ public class VPSInfoUI {
     }
 
     public void openVPSInfoPage(VPSOptimization vps) {
+        // Calculate currently used resources
+        int usedVCPUs = vps.getVms().stream().mapToInt(VPSOptimization.VM::getVcpu).sum();
+        int usedRamGB = vps.getVms().stream()
+                .mapToInt(vm -> Integer.parseInt(vm.getRam().replace(" GB", ""))).sum();
+        int usedDiskGB = vps.getVms().stream()
+                .mapToInt(vm -> Integer.parseInt(vm.getDisk().replace(" GB", ""))).sum();
+
+        // Calculate available resources
+        int availableVCPUs = vps.getVCPUs() - usedVCPUs;
+        int availableRamGB = vps.getRamInGB() - usedRamGB;
+        int availableDiskGB = vps.getDiskInGB() - usedDiskGB;
+
         // สร้างหน้าหลักสำหรับข้อมูล VPS
         BorderPane vpsInfoPane = new BorderPane();
         vpsInfoPane.setPrefSize(800, 600);
@@ -61,11 +73,11 @@ public class VPSInfoUI {
         infoBox.setPadding(new Insets(15));
         VBox vpsSection = UIUtils.createSection("VPS Information");
         Label vpsDetail = new Label(
-                "vCPUs: " + vps.getVCPUs() + 
-                "\nRAM: " + vps.getRamInGB() + " GB" + 
-                "\nDisk: " + vps.getDiskInGB() + " GB" +
-                "\nSize: " + vps.getSize().getDisplayName() +
-                "\nSlots Required: " + vps.getSlotsRequired());
+                "vCPUs: " + vps.getVCPUs() + " (Available: " + availableVCPUs + ")" +
+                        "\nRAM: " + vps.getRamInGB() + " GB (Available: " + availableRamGB + " GB)" +
+                        "\nDisk: " + vps.getDiskInGB() + " GB (Available: " + availableDiskGB + " GB)" +
+                        "\nSize: " + vps.getSize().getDisplayName() +
+                        "\nSlots Required: " + vps.getSlotsRequired());
         vpsDetail.setStyle("""
                             -fx-text-fill: #B0BEC5; -fx-font-size: 14px;
                             """);
