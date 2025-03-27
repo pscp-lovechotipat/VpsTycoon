@@ -17,6 +17,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.effect.Glow;
@@ -202,6 +203,7 @@ public class GameEvent implements Runnable {
         debugOverlay.setPickOnBounds(false);
         debugOverlay.setAlignment(Pos.TOP_RIGHT);
         debugOverlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        StackPane.setMargin(debugOverlay, new Insets(40,40,0,0));
         
         // Create debug label with cyberpunk style
         debugLabel = new Label("NEXT TASK: --:--");
