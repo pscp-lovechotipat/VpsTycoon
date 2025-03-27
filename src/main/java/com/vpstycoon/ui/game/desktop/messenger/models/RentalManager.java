@@ -87,18 +87,25 @@ public class RentalManager {
                     setupRentalPeriod(request, vm);
                 }
             } else {
+                // ลูกค้าตัดสินใจไม่ต่อสัญญา
                 chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
                         "Customer has decided not to renew their contract.",
                         new HashMap<>()));
                 chatAreaView.addSystemMessage("Customer has decided not to renew their contract.");
                 
-                // VM จะถูกคืนโดยอัตโนมัติในเมธอด releaseExpiredVMs() ของ MessengerController
-                // ดังนั้นไม่จำเป็นต้องทำอะไรเพิ่มเติมที่นี่
+                // ตรวจสอบให้แน่ใจว่าได้ mark request เป็น expired แล้ว
+                // แม้ว่าจะมีการเรียก markAsExpired() ใน GameTimeManager แล้ว
+                // แต่เราตรวจสอบอีกครั้งเพื่อความแน่ใจ
+                if (!request.isExpired()) {
+                    request.markAsExpired();
+                    System.out.println("RentalManager: ทำการ mark request เป็น expired: " + request.getName());
+                }
                 
-                // โน้ต: ไม่ต้องเรียก onArchiveRequest ที่นี่อีกต่อไป 
-                // เพราะ MessengerController จะเป็นคนจัดการการ archive แทน
+                // VM จะถูกคืนโดยอัตโนมัติในเมธอด releaseExpiredVMs() ของ MessengerController
+                // ซึ่งจะถูกเรียกเมื่อมีการอัพเดต Dashboard
                 
                 // อัปเดต Dashboard เพื่อให้แน่ใจว่าข้อมูลเป็นปัจจุบัน
+                // และเพื่อเรียก releaseExpiredVMs() โดยอัตโนมัติ
                 if (onUpdateDashboard != null) {
                     onUpdateDashboard.run();
                 }

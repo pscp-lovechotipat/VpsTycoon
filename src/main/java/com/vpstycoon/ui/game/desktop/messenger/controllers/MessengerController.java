@@ -421,36 +421,24 @@ public class MessengerController {
             System.out.println("พบ VM ที่กำลังถูก assign ในระบบ: " + vmAssignments.size() + " VM");
         }
         
-        // ตรวจสอบความสอดคล้องของข้อมูล
-        int countFromVMs = 0;
-        for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
-            countFromVMs += (int) vps.getVms().stream()
-                    .filter(vm -> "Running".equals(vm.getStatus()) && 
-                            !vmAssignments.containsKey(vm) && 
-                            !vm.isAssignedToCustomer())
-                    .count();
-        }
-        
-        if (countFromVMs != availableVMs) {
-            System.out.println("⚠️ ข้อมูลไม่สอดคล้องกัน: จำนวน VM จริงที่ว่าง = " + countFromVMs + 
-                              " แต่ค่า availableVMs = " + availableVMs);
-        }
+        // เรียกใช้ validateVMConsistency เพื่อตรวจสอบและแก้ไขความไม่สอดคล้องของข้อมูล
+        validateVMConsistency();
         
         // อัพเดต Dashboard ด้วยข้อมูลล่าสุด
-        dashboardView.updateDashboard(company.getRating(), requestManager.getRequests().size(), availableVMs, totalServers);
+        dashboardView.updateDashboard(company.getRating(), requestManager.getRequests().size(), company.getAvailableVMs(), totalServers);
         
         // บันทึกค่าลงใน Company เพื่อให้สามารถเรียกใช้ค่านี้ได้จากที่อื่น
-        company.setAvailableVMs(availableVMs);
+        // ไม่ต้องตั้งค่าอีกครั้งเนื่องจากเราได้เรียก validateVMConsistency แล้ว
         
         // บันทึกค่าลงใน GameState ผ่าน ResourceManager ด้วย
         if (currentState != null) {
-            currentState.setFreeVmCount(availableVMs);
+            currentState.setFreeVmCount(company.getAvailableVMs());
         }
         
         // Update the AssignVMButton status for selected request
         CustomerRequest selected = requestListView.getSelectedRequest();
         if (selected != null && !selected.isActive() && !selected.isExpired()) {
-            chatAreaView.getAssignVMButton().setDisable(availableVMs <= 0);
+            chatAreaView.getAssignVMButton().setDisable(company.getAvailableVMs() <= 0);
         }
     }
     
@@ -596,6 +584,36 @@ public class MessengerController {
                 boolean shouldEnableArchive = selectedRequest.isActive() || selectedRequest.isExpired();
                 chatAreaView.getArchiveButton().setDisable(!shouldEnableArchive);
             }
+            
+            // ตรวจสอบความสอดคล้องของข้อมูลหลังจากการปล่อย VM
+            validateVMConsistency();
+        }
+    }
+
+    /**
+     * ตรวจสอบความสอดคล้องของข้อมูลระหว่างจำนวน VM จริงและค่าใน company
+     */
+    private void validateVMConsistency() {
+        // ตรวจสอบจำนวน VM จริงในระบบ
+        int countFromVMs = 0;
+        for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+            countFromVMs += (int) vps.getVms().stream()
+                    .filter(vm -> "Running".equals(vm.getStatus()) && 
+                            !vmAssignments.containsKey(vm) && 
+                            !vm.isAssignedToCustomer())
+                    .count();
+        }
+        
+        // ตรวจสอบค่าที่เก็บไว้
+        int storedAvailableVMs = company.getAvailableVMs();
+        
+        // แก้ไขความไม่สอดคล้องถ้าจำเป็น
+        if (countFromVMs != storedAvailableVMs) {
+            System.out.println("⚠️ ตรวจพบความไม่สอดคล้องของข้อมูล: จำนวน VM จริงที่ว่าง = " + countFromVMs + 
+                              " แต่ค่า availableVMs = " + storedAvailableVMs);
+            company.setAvailableVMs(countFromVMs);
+            ResourceManager.getInstance().getCurrentState().setFreeVmCount(countFromVMs);
+            System.out.println("✅ แก้ไขแล้ว: กำหนดค่า availableVMs เป็น " + countFromVMs);
         }
     }
 
@@ -660,14 +678,43 @@ public class MessengerController {
 
     private void archiveRequest(CustomerRequest selected) {
         if (selected != null && (selected.isActive() || selected.isExpired())) {
+            // ตรวจสอบวิธีแรกโดยการค้นหาใน vmAssignments
             VPSOptimization.VM assignedVM = vmAssignments.entrySet().stream()
                     .filter(entry -> entry.getValue() == selected)
                     .map(Map.Entry::getKey)
                     .findFirst()
                     .orElse(null);
+            
             if (assignedVM != null) {
+                // กรณีปกติ ยังพบ VM ใน vmAssignments
                 releaseVM(assignedVM, true);
+            } else if (selected.isExpired()) {
+                // กรณีไม่พบ VM ใน vmAssignments แต่ request หมดอายุแล้ว
+                // ให้ตรวจสอบความไม่สอดคล้องของข้อมูลและแก้ไข
+                System.out.println("ไม่พบ VM สำหรับ request ที่หมดอายุ: " + selected.getName() + " แต่จะเพิ่ม availableVMs เพื่อแก้ไขความไม่สอดคล้อง");
+                
+                // ตรวจสอบจำนวน VM จริงในระบบ
+                int countFromVMs = 0;
+                for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                    countFromVMs += (int) vps.getVms().stream()
+                            .filter(vm -> "Running".equals(vm.getStatus()) && 
+                                    !vmAssignments.containsKey(vm) && 
+                                    !vm.isAssignedToCustomer())
+                            .count();
+                }
+                
+                // ตรวจสอบค่าที่เก็บไว้
+                int storedAvailableVMs = company.getAvailableVMs();
+                
+                // แก้ไขความไม่สอดคล้องถ้าจำเป็น
+                if (countFromVMs != storedAvailableVMs) {
+                    company.setAvailableVMs(countFromVMs);
+                    ResourceManager.getInstance().getCurrentState().setFreeVmCount(countFromVMs);
+                    System.out.println("แก้ไขความไม่สอดคล้อง: จำนวน VM จริงที่ว่าง = " + countFromVMs + 
+                                      " แต่ค่า availableVMs = " + storedAvailableVMs);
+                }
             }
+            
             requestManager.getRequests().remove(selected);
             chatAreaView.clearMessages();
             chatAreaView.getAssignVMButton().setDisable(false); // Enable ปุ่ม Assign VM ใหม่หลัง archive
