@@ -125,14 +125,17 @@ public class DataDecryptionTask extends GameTask {
         // Layout all components with cyberpunk flair
         VBox topSection = new VBox(15);
         topSection.setAlignment(Pos.CENTER);
+        topSection.setPadding(new Insets(20));
         topSection.getChildren().addAll(titleText, descText);
         
         VBox centerSection = new VBox(20);
         centerSection.setAlignment(Pos.CENTER);
+        centerSection.setPadding(new Insets(20));
         centerSection.getChildren().addAll(codeDisplay, messageLabel);
         
         HBox controlSection = new HBox(40);
         controlSection.setAlignment(Pos.CENTER);
+        controlSection.setPadding(new Insets(20));
         controlSection.getChildren().addAll(numberPad, hintsPanel);
         
         decryptionPane.setTop(topSection);

@@ -45,7 +45,7 @@ public class FirewallDefenseTask extends GameTask {
     protected void initializeTaskSpecifics() {
         VBox placeholderPane = new VBox(20);
         placeholderPane.setAlignment(Pos.CENTER);
-        placeholderPane.setPadding(new Insets(30));
+        placeholderPane.setPadding(new Insets(20));
         placeholderPane.setStyle("-fx-background-color: rgba(5, 10, 25, 0.9);");
         
         Text placeholderText = new Text("FIREWALL DEFENSE SYSTEM");
@@ -59,6 +59,7 @@ public class FirewallDefenseTask extends GameTask {
         // Main game area
         Pane defenseGrid = new Pane();
         defenseGrid.setPrefSize(600, 400);
+        defenseGrid.setPadding(new Insets(20));
         defenseGrid.setStyle("-fx-background-color: #0a1520; -fx-border-color: #3a4a5a; -fx-border-width: 2px;");
         
         // Firewall status bar
@@ -82,7 +83,7 @@ public class FirewallDefenseTask extends GameTask {
         // Statistics display
         HBox statsBox = new HBox(40);
         statsBox.setAlignment(Pos.CENTER);
-        statsBox.setPadding(new Insets(10));
+        statsBox.setPadding(new Insets(20));
         
         Text attacksRemainingText = new Text("Remaining Attacks: " + attacksToDefend[0]);
         attacksRemainingText.setFont(Font.font("Share Tech Mono", FontWeight.NORMAL, 14));

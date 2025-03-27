@@ -289,6 +289,8 @@ public class GameEvent implements Runnable {
         Platform.runLater(() -> {
             debugLabel.setText(String.format("%s | COMPLETED: %d | FAILED: %d", 
                                             status, completedTaskCount, failedTaskCount));
+            debugOverlay.getChildren().clear();
+            debugOverlay.getChildren().setAll(debugLabel);
         });
         
         // Also print to console for debug purposes

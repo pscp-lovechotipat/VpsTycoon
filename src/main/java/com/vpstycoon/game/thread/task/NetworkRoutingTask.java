@@ -115,6 +115,7 @@ public class NetworkRoutingTask extends GameTask {
             // Create network visualization pane
             networkPane = new Pane();
             networkPane.setPrefSize(600, 350);
+            networkPane.setPadding(new Insets(20));
             networkPane.setStyle("-fx-background-color: rgba(10, 15, 30, 0.7); -fx-border-color: #303060; -fx-border-width: 1px;");
             
             addGridLines(networkPane, 30, 30);
@@ -125,6 +126,7 @@ public class NetworkRoutingTask extends GameTask {
             // Create bottom control area
             VBox controlBox = new VBox(15);
             controlBox.setAlignment(Pos.CENTER);
+            controlBox.setPadding(new Insets(20));
             
             // Status label
             statusLabel = new Label("ESTABLISH OPTIMAL NETWORK PATH");
@@ -149,7 +151,7 @@ public class NetworkRoutingTask extends GameTask {
             // Add components to main task pane
             taskPane.setCenter(networkPane);
             taskPane.setBottom(controlBox);
-            BorderPane.setMargin(controlBox, new Insets(10, 0, 10, 0));
+            BorderPane.setMargin(controlBox, new Insets(20, 0, 20, 0));
             
             // Add the task pane to the game pane
             gamePane.getChildren().add(taskPane);

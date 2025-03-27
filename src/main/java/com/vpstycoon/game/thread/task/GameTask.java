@@ -389,6 +389,7 @@ public abstract class GameTask {
         // Game area - will be populated by subclasses
         gamePane = new StackPane();
         gamePane.setStyle("-fx-background-color: rgba(0, 20, 40, 0.8);");
+        gamePane.setPadding(new Insets(20));
         
         // Add scanning effect to game pane
         CyberpunkEffects.addScanningEffect(gamePane);

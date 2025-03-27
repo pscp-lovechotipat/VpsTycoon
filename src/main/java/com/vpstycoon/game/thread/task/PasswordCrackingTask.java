@@ -131,15 +131,17 @@ public class PasswordCrackingTask extends GameTask {
             // Arrange all components
             VBox topSection = new VBox(15);
             topSection.setAlignment(Pos.CENTER);
+            topSection.setPadding(new Insets(20));
             topSection.getChildren().addAll(titleText, descText);
             
             VBox centerSection = new VBox(20);
             centerSection.setAlignment(Pos.CENTER);
-            centerSection.setPadding(new Insets(30, 0, 30, 0));
+            centerSection.setPadding(new Insets(20));
             centerSection.getChildren().addAll(passwordDisplay, messageLabel, attemptsLabel);
             
             VBox bottomSection = new VBox(25);
             bottomSection.setAlignment(Pos.CENTER);
+            bottomSection.setPadding(new Insets(20));
             bottomSection.getChildren().addAll(lockVisualization, inputArea);
             
             hackPanel.setTop(topSection);
