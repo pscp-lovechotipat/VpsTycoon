@@ -30,7 +30,9 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.util.Duration;
 
-public class DashboardWindow extends VBox {
+import java.io.Serializable;
+
+public class DashboardWindow extends VBox implements Serializable {
     private Company company;
     private ResourceManager resourceManager;
     private VPSManager vpsManager;
@@ -73,6 +75,9 @@ public class DashboardWindow extends VBox {
         setupUI();
         styleWindow();
         startDataUpdates();
+        
+        // ลงทะเบียนเป็น observer เพื่อรับการแจ้งเตือนเมื่อค่า rating เปลี่ยนแปลง
+        company.addRatingObserver(newRating -> updateDashboard());
     }
 
     private void setupUI() {
@@ -438,7 +443,12 @@ public class DashboardWindow extends VBox {
     private double calculateMonthlyRevenue() {
         return requestManager.getRequests().stream()
                 .filter(req -> req.isActive())
-                .mapToDouble(req -> req.getRequiredVCPUs() * 10.0 + Double.parseDouble(req.getRequiredRam()) * 5.0 + Double.parseDouble(req.getRequiredDisk()) * 2.0)
+                .mapToDouble(req -> {
+                    // แยกเฉพาะตัวเลขออกจากหน่วย (GB)
+                    String ramStr = req.getRequiredRam().split(" ")[0];
+                    String diskStr = req.getRequiredDisk().split(" ")[0];
+                    return req.getRequiredVCPUs() * 10.0 + Double.parseDouble(ramStr) * 5.0 + Double.parseDouble(diskStr) * 2.0;
+                })
                 .sum();
     }
 
@@ -559,7 +569,7 @@ public class DashboardWindow extends VBox {
 
         double avgDiskUsage = vpsManager.getVPSMap().values().stream()
                 .flatMap(vps -> vps.getVms().stream())
-                .mapToDouble(vm -> Double.parseDouble(vm.getDisk()))
+                .mapToDouble(vm -> Double.parseDouble(vm.getDisk().split(" ")[0]))
                 .average().orElse(50.0);
                 
         XYChart.Data<String, Number> cpuData = new XYChart.Data<>(timeStamp, avgCpuUsage);

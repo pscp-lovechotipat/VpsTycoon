@@ -56,6 +56,8 @@ public class SimulationDesktopUI {
         
         // Hide the menu bars
         parent.getMenuBar().setVisible(false);
+        parent.getMoneyUI().setVisible(false);
+        parent.getDateView().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
 
         desktop.addExitButton(parent::returnToRoom);

@@ -1,6 +1,9 @@
 package com.vpstycoon.ui.game.desktop.messenger.models;
 
+import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.CustomerRequest;
+import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.desktop.messenger.MessageType;
 import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
@@ -13,6 +16,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class VMProvisioningManager {
     private final ChatHistoryManager chatHistoryManager;
@@ -21,18 +25,33 @@ public class VMProvisioningManager {
     private final Random random = new Random();
     private final long[] DEPLOY_TIMES = {10000, 5000, 2000, 1000};
     private int deployLevel = 1;
+    
+    // เพิ่มตัวแปรเพื่อเข้าถึง VMProvisioningManager ที่แท้จริง
+    private final com.vpstycoon.game.manager.VMProvisioningManager gameVMManager;
 
     public VMProvisioningManager(ChatHistoryManager chatHistoryManager, ChatAreaView chatAreaView,
                                  Map<CustomerRequest, ProgressBar> provisioningProgressBars) {
         this.chatHistoryManager = chatHistoryManager;
         this.chatAreaView = chatAreaView;
         this.provisioningProgressBars = provisioningProgressBars;
+        
+        // เข้าถึง VMProvisioningManager จาก ResourceManager
+        RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
+        this.gameVMManager = requestManager.getVmProvisioningManager();
     }
 
     public void startVMProvisioning(CustomerRequest request, VPSOptimization.VM vm, Runnable onComplete) {
         chatAreaView.addSystemMessage("Starting VM provisioning...");
         sendInitialMessages(request);
 
+        // ดึงข้อมูล VPS ที่ VM อยู่
+        VPSOptimization vps = findVPSForVM(vm);
+        if (vps == null) {
+            chatAreaView.addSystemMessage("Error: Cannot find VPS for the selected VM");
+            return;
+        }
+
+        // ให้เริ่มการทำ UI animation
         int provisioningDelay = calculateProvisioningDelay();
         final int[] progress = {0};
         final int totalSteps = provisioningDelay * 10;
@@ -68,6 +87,16 @@ public class VMProvisioningManager {
         metadata.put("isProvisioning", true);
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "Starting VM provisioning...", metadata));
 
+        // ใช้ CompletableFuture ที่แท้จริงจาก game manager
+        // ดึงค่า spec จาก VM ที่เลือก
+        int vcpus = vm.getVcpu();
+        int ramGB = parseRAMValue(vm.getRam());
+        int diskGB = parseDiskValue(vm.getDisk());
+        
+        // เรียกใช้ provisionVM จาก gameVMManager ซึ่งจะคำนวณ rating จริง
+        CompletableFuture<VPSOptimization.VM> future = gameVMManager.provisionVM(
+            request, vps, vcpus, ramGB, diskGB);
+            
         // อัปเดต ProgressBar และ Label แบบ real-time
         Timer progressTimer = new Timer();
         progressTimer.scheduleAtFixedRate(new TimerTask() {
@@ -84,17 +113,66 @@ public class VMProvisioningManager {
                     if (progress[0] >= totalSteps) {
                         this.cancel();
                         provisioningProgressBars.remove(request);
-                        sendVMDetails(request, vm);
-                        timeRemainingLabel.setText("VM provisioning completed.");
-                        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed.", new HashMap<>()));
-                        chatAreaView.addSystemMessage("VM provisioning completed.");
-                        if (onComplete != null) {
-                            onComplete.run();
+                        
+                        // เมื่อ UI animation เสร็จสิ้น ตรวจสอบว่า CompletableFuture เสร็จสิ้นหรือยัง
+                        if (future.isDone()) {
+                            // ถ้าเสร็จสิ้น ให้แสดงรายละเอียด VM และเรียก onComplete
+                            sendVMDetails(request, vm);
+                            timeRemainingLabel.setText("VM provisioning completed.");
+                            chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed.", new HashMap<>()));
+                            chatAreaView.addSystemMessage("VM provisioning completed.");
+                            if (onComplete != null) {
+                                onComplete.run();
+                            }
+                        } else {
+                            // ถ้ายังไม่เสร็จ ให้รอจนกว่า CompletableFuture จะเสร็จสิ้น
+                            future.thenAccept(completedVm -> {
+                                Platform.runLater(() -> {
+                                    sendVMDetails(request, vm);
+                                    timeRemainingLabel.setText("VM provisioning completed.");
+                                    chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed.", new HashMap<>()));
+                                    chatAreaView.addSystemMessage("VM provisioning completed.");
+                                    if (onComplete != null) {
+                                        onComplete.run();
+                                    }
+                                });
+                            });
                         }
                     }
                 });
             }
         }, 0, 100); // อัปเดตทุก 100 มิลลิวินาที
+    }
+    
+    // ฟังก์ชั่นสำหรับหา VPS ที่ VM อยู่
+    private VPSOptimization findVPSForVM(VPSOptimization.VM targetVM) {
+        ResourceManager resourceManager = ResourceManager.getInstance();
+        for (VPSOptimization vps : resourceManager.getRack().getInstalledVPS()) {
+            for (VPSOptimization.VM vm : vps.getVms()) {
+                if (vm.getIp().equals(targetVM.getIp()) && vm.getName().equals(targetVM.getName())) {
+                    return vps;
+                }
+            }
+        }
+        return null;
+    }
+    
+    // ฟังก์ชั่นสำหรับแปลงค่า RAM จากสตริงเป็นตัวเลข
+    private int parseRAMValue(String ramString) {
+        try {
+            return Integer.parseInt(ramString.split(" ")[0]);
+        } catch (Exception e) {
+            return 2; // ค่าเริ่มต้นถ้าแปลงไม่ได้
+        }
+    }
+    
+    // ฟังก์ชั่นสำหรับแปลงค่า Disk จากสตริงเป็นตัวเลข
+    private int parseDiskValue(String diskString) {
+        try {
+            return Integer.parseInt(diskString.split(" ")[0]);
+        } catch (Exception e) {
+            return 20; // ค่าเริ่มต้นถ้าแปลงไม่ได้
+        }
     }
 
     private void sendInitialMessages(CustomerRequest request) {
@@ -108,8 +186,8 @@ public class VMProvisioningManager {
 
     private int calculateProvisioningDelay() {
         long deploymentTime = DEPLOY_TIMES[Math.max(0, Math.min(deployLevel - 1, DEPLOY_TIMES.length - 1))];
-        int minDelay = 15;
-        int maxDelay = 60;
+        int minDelay = 5;
+        int maxDelay = 30;
         int provisioningDelay = minDelay + random.nextInt(maxDelay - minDelay + 1);
         return Math.max(minDelay, (int)(provisioningDelay * (deploymentTime / 10000.0)));
     }

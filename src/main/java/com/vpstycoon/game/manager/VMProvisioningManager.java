@@ -155,33 +155,11 @@ public class VMProvisioningManager implements Serializable {
         int requiredRamGB = request.getRequiredRamGB();
         int requiredDiskGB = request.getRequiredDiskGB();
         
-        // Calculate the difference between provided and required resources
-        int vcpuDiff = providedVCPUs - requiredVCPUs;
-        int ramDiff = providedRamGB - requiredRamGB;
-        int diskDiff = providedDiskGB - requiredDiskGB;
-        
-        // Base rating change
-        double ratingChange = 0.0;
-        
-        // Check if any resource is below requirements
-        if (vcpuDiff < 0 || ramDiff < 0 || diskDiff < 0) {
-            // Negative rating for under-provisioning
-            ratingChange -= 0.1 * Math.abs(Math.min(0, vcpuDiff));
-            ratingChange -= 0.05 * Math.abs(Math.min(0, ramDiff));
-            ratingChange -= 0.02 * Math.abs(Math.min(0, diskDiff));
-        } 
-        // If all requirements are met exactly
-        else if (vcpuDiff == 0 && ramDiff == 0 && diskDiff == 0) {
-            // Perfect match bonus
-            ratingChange += 0.2;
-        } 
-        // If over-provisioned
-        else {
-            // Positive rating for meeting requirements, but halved for over-provisioning
-            ratingChange += 0.1 * Math.min(2, vcpuDiff) / 2;
-            ratingChange += 0.05 * Math.min(4, ramDiff) / 2;
-            ratingChange += 0.02 * Math.min(10, diskDiff) / 2;
-        }
+        // Use the new company rating calculation method
+        double ratingChange = company.calculateVMAssignmentRatingChange(
+            requiredVCPUs, requiredRamGB, requiredDiskGB,
+            providedVCPUs, providedRamGB, providedDiskGB
+        );
         
         // Adjust rating based on customer type (higher-tier customers are harder to please)
         switch (request.getCustomerType()) {
