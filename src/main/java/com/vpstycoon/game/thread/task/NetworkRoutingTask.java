@@ -30,11 +30,13 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -42,6 +44,7 @@ import java.util.logging.Logger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javafx.scene.Cursor;
+import javafx.scene.Group;
 
 /**
  * Network Routing Task
@@ -284,6 +287,9 @@ public class NetworkRoutingTask extends GameTask {
                         
                         // Add connection visual to the network pane (below nodes)
                         networkPane.getChildren().add(0, connection.getVisual());
+                        
+                        // Ensure weight text is above the line but below nodes
+                        networkPane.getChildren().add(Math.min(1, networkPane.getChildren().size()), connection.getWeightGroup());
                     }
                 }
             }
@@ -312,56 +318,91 @@ public class NetworkRoutingTask extends GameTask {
      * In a real implementation, this would use Dijkstra's or A* algorithm
      */
     private void findOptimalPath() {
-        // This is a simplified path-finding for demonstration
-        // In a real implementation, use Dijkstra's or A* algorithm
+        // For the network optimization task, we need to find the path with minimal total distance
+        Map<NetworkNode, Double> distances = new HashMap<>();
+        Map<NetworkNode, NetworkConnection> previousConnections = new HashMap<>();
+        PriorityQueue<NetworkNode> queue = new PriorityQueue<>(Comparator.comparing(distances::get));
+        Set<NetworkNode> visited = new HashSet<>();
         
-        List<NetworkNode> currentPath = new ArrayList<>();
-        currentPath.add(sourceNode);
-        
-        findPath(currentPath, destinationNode, new ArrayList<>());
-        
-        LOGGER.info("Optimal path found with " + optimalConnections.size() + " connections");
-    }
-    
-    /**
-     * Recursive helper for path finding
-     */
-    private void findPath(List<NetworkNode> currentPath, NetworkNode target, List<NetworkConnection> currentConnections) {
-        NetworkNode current = currentPath.get(currentPath.size() - 1);
-        
-        // If we reached the target
-        if (current == target) {
-            // If this path is better than existing optimal path
-            if (optimalConnections.isEmpty() || currentConnections.size() < optimalConnections.size()) {
-                optimalConnections.clear();
-                optimalConnections.addAll(currentConnections);
-            }
-            return;
+        // Initialize distances
+        for (NetworkNode node : nodes) {
+            distances.put(node, node == sourceNode ? 0 : Double.MAX_VALUE);
         }
         
-        // Try all connections from current node
-        for (NetworkConnection conn : connections) {
-            NetworkNode nextNode = null;
+        // Start from source node
+        queue.add(sourceNode);
+        
+        while (!queue.isEmpty()) {
+            NetworkNode current = queue.poll();
             
-            if (conn.getNodeA() == current && !currentPath.contains(conn.getNodeB())) {
-                nextNode = conn.getNodeB();
-            } else if (conn.getNodeB() == current && !currentPath.contains(conn.getNodeA())) {
-                nextNode = conn.getNodeA();
+            // If we reached destination, we're done
+            if (current == destinationNode) {
+                break;
             }
             
-            if (nextNode != null) {
-                // Add to current path
-                currentPath.add(nextNode);
-                currentConnections.add(conn);
+            // Skip if already processed
+            if (visited.contains(current)) {
+                continue;
+            }
+            
+            visited.add(current);
+            
+            // Check all connections from current node
+            for (NetworkConnection conn : connections) {
+                NetworkNode neighbor = null;
                 
-                // Recursive call
-                findPath(currentPath, target, currentConnections);
+                if (conn.getNodeA() == current) {
+                    neighbor = conn.getNodeB();
+                } else if (conn.getNodeB() == current) {
+                    neighbor = conn.getNodeA();
+                } else {
+                    continue; // Connection not connected to current node
+                }
                 
-                // Backtrack
-                currentPath.remove(currentPath.size() - 1);
-                currentConnections.remove(currentConnections.size() - 1);
+                // Skip already visited nodes
+                if (visited.contains(neighbor)) {
+                    continue;
+                }
+                
+                // Calculate new distance
+                double newDistance = distances.get(current) + conn.getDistance();
+                
+                // If new distance is better, update
+                if (newDistance < distances.get(neighbor)) {
+                    distances.put(neighbor, newDistance);
+                    previousConnections.put(neighbor, conn);
+                    
+                    // Re-add to queue with new priority
+                    queue.remove(neighbor);
+                    queue.add(neighbor);
+                }
             }
         }
+        
+        // Reconstruct optimal path
+        optimalConnections.clear();
+        NetworkNode current = destinationNode;
+        
+        while (current != sourceNode) {
+            NetworkConnection conn = previousConnections.get(current);
+            if (conn == null) {
+                // No path found
+                LOGGER.warning("No path found to destination node");
+                return;
+            }
+            
+            optimalConnections.add(0, conn); // Add to front to preserve order
+            
+            // Move to previous node
+            if (conn.getNodeA() == current) {
+                current = conn.getNodeB();
+            } else {
+                current = conn.getNodeA();
+            }
+        }
+        
+        LOGGER.info("Optimal path found with " + optimalConnections.size() + 
+                   " connections and total distance " + distances.get(destinationNode));
     }
     
     /**
@@ -467,11 +508,26 @@ public class NetworkRoutingTask extends GameTask {
             return;
         }
         
-        // Check if path is optimal (using NUM_REQUIRED_CONNECTIONS)
-        boolean isOptimal = path.size() <= NUM_REQUIRED_CONNECTIONS;
+        // Calculate total distance of user's path
+        double userPathDistance = path.stream()
+            .mapToDouble(NetworkConnection::getDistance)
+            .sum();
+        
+        // Calculate optimal path distance if it's not already calculated
+        if (optimalConnections.isEmpty()) {
+            findOptimalPath();
+        }
+        
+        // Calculate optimal path distance
+        double optimalDistance = optimalConnections.stream()
+            .mapToDouble(NetworkConnection::getDistance)
+            .sum();
+        
+        // Check if path is optimal (within 20% of optimal distance)
+        boolean isOptimal = userPathDistance <= optimalDistance * 1.2;
         
         if (isOptimal) {
-            statusLabel.setText("Optimal network path established!");
+            statusLabel.setText("Optimal network path established! Distance: " + String.format("%.0f", userPathDistance));
             
             // Add glow effect to taskPane
             DropShadow glow = new DropShadow();
@@ -507,8 +563,9 @@ public class NetworkRoutingTask extends GameTask {
             });
             flash.play();
         } else {
-            // Suboptimal path - too many connections
-            statusLabel.setText("Suboptimal route - too many connections!");
+            // Suboptimal path - too many connections or too long distance
+            statusLabel.setText("Suboptimal route - Distance: " + String.format("%.0f", userPathDistance) + 
+                              " (Optimal: " + String.format("%.0f", optimalDistance) + ")");
             statusLabel.setTextFill(Color.ORANGE);
             
             // Show optimal connections
@@ -534,6 +591,11 @@ public class NetworkRoutingTask extends GameTask {
             return;
         }
         
+        // Calculate total distance of optimal path
+        double totalDistance = optimalConnections.stream()
+            .mapToDouble(NetworkConnection::getDistance)
+            .sum();
+        
         // Then highlight optimal connections
         Timeline highlightTimeline = new Timeline();
         
@@ -543,7 +605,8 @@ public class NetworkRoutingTask extends GameTask {
             
             KeyFrame kf = new KeyFrame(Duration.seconds(0.5 * i), e -> {
                 conn.setActive(true);
-                statusLabel.setText("Showing optimal path: Connection " + (index + 1));
+                statusLabel.setText("Optimal path: Connection " + (index + 1) + 
+                                   " (Total: " + String.format("%.0f", totalDistance) + ")");
             });
             
             highlightTimeline.getKeyFrames().add(kf);
@@ -552,7 +615,7 @@ public class NetworkRoutingTask extends GameTask {
         // After showing optimal path, reset again
         KeyFrame resetFrame = new KeyFrame(Duration.seconds(0.5 * optimalConnections.size() + 2), e -> {
             resetConnections();
-            statusLabel.setText("Try again with fewer connections");
+            statusLabel.setText("Try again with a more optimal route");
             statusLabel.setTextFill(Color.web("#00FFFF"));
         });
         
@@ -564,48 +627,77 @@ public class NetworkRoutingTask extends GameTask {
      * Find minimal path from source to destination
      */
     private void findMinimalPath() {
-        // Use a simplified breadth-first search to find a path
-        Map<NetworkNode, NetworkConnection> backtrack = new HashMap<>();
-        Queue<NetworkNode> queue = new LinkedList<>();
+        // Use Dijkstra's algorithm to find the shortest path
+        Map<NetworkNode, Double> distances = new HashMap<>();
+        Map<NetworkNode, NetworkConnection> previousConnections = new HashMap<>();
+        PriorityQueue<NetworkNode> queue = new PriorityQueue<>(Comparator.comparing(distances::get));
         Set<NetworkNode> visited = new HashSet<>();
         
+        // Initialize distances
+        for (NetworkNode node : nodes) {
+            distances.put(node, node == sourceNode ? 0 : Double.MAX_VALUE);
+        }
+        
+        // Start from source node
         queue.add(sourceNode);
-        visited.add(sourceNode);
         
         while (!queue.isEmpty()) {
             NetworkNode current = queue.poll();
             
+            // If we reached destination, we're done
             if (current == destinationNode) {
-                break; // Found destination
+                break;
             }
             
-            // Check all available connections from this node
+            // Skip if already processed
+            if (visited.contains(current)) {
+                continue;
+            }
+            
+            visited.add(current);
+            
+            // Check all connections from current node
             for (NetworkConnection conn : connections) {
-                NetworkNode next = null;
+                NetworkNode neighbor = null;
                 
-                if (conn.getNodeA() == current && !visited.contains(conn.getNodeB())) {
-                    next = conn.getNodeB();
-                } else if (conn.getNodeB() == current && !visited.contains(conn.getNodeA())) {
-                    next = conn.getNodeA();
+                if (conn.getNodeA() == current) {
+                    neighbor = conn.getNodeB();
+                } else if (conn.getNodeB() == current) {
+                    neighbor = conn.getNodeA();
+                } else {
+                    continue; // Connection not connected to current node
                 }
                 
-                if (next != null) {
-                    visited.add(next);
-                    backtrack.put(next, conn);
-                    queue.add(next);
+                // Skip already visited nodes
+                if (visited.contains(neighbor)) {
+                    continue;
+                }
+                
+                // Calculate new distance
+                double newDistance = distances.get(current) + conn.getDistance();
+                
+                // If new distance is better, update
+                if (newDistance < distances.get(neighbor)) {
+                    distances.put(neighbor, newDistance);
+                    previousConnections.put(neighbor, conn);
+                    
+                    // Re-add to queue with new priority
+                    queue.remove(neighbor);
+                    queue.add(neighbor);
                 }
             }
         }
         
-        // Reconstruct path if destination was found
-        if (backtrack.containsKey(destinationNode)) {
-            optimalConnections.clear();
-            NetworkNode current = destinationNode;
-            
+        // Reconstruct optimal path
+        optimalConnections.clear();
+        NetworkNode current = destinationNode;
+        
+        if (previousConnections.containsKey(destinationNode)) {
             while (current != sourceNode) {
-                NetworkConnection conn = backtrack.get(current);
+                NetworkConnection conn = previousConnections.get(current);
                 optimalConnections.add(0, conn); // Add to front to preserve order
                 
+                // Move to previous node
                 if (conn.getNodeA() == current) {
                     current = conn.getNodeB();
                 } else {
@@ -1057,6 +1149,9 @@ public class NetworkRoutingTask extends GameTask {
         private final double distance;
         private boolean active;
         private final Line visual;
+        private final Text weightText;
+        private final Rectangle weightBackground;
+        private final Group weightGroup;
         
         public NetworkConnection(NetworkNode nodeA, NetworkNode nodeB, double distance) {
             this.nodeA = nodeA;
@@ -1066,6 +1161,22 @@ public class NetworkRoutingTask extends GameTask {
             
             // Create visual representation
             visual = new Line(nodeA.getX(), nodeA.getY(), nodeB.getX(), nodeB.getY());
+            
+            // Create weight text
+            weightText = new Text(String.format("%.0f", distance));
+            weightText.setFont(Font.font("Orbitron", FontWeight.BOLD, 10));
+            
+            // Create background for weight text
+            weightBackground = new Rectangle();
+            weightBackground.setArcWidth(6);
+            weightBackground.setArcHeight(6);
+            
+            // Group text and background
+            weightGroup = new Group(weightBackground, weightText);
+            
+            // Position the text at the middle of the line
+            updateWeightPosition();
+            
             updateVisualAppearance();
             
             // Make connection interactive
@@ -1086,6 +1197,14 @@ public class NetworkRoutingTask extends GameTask {
         
         public Line getVisual() {
             return visual;
+        }
+        
+        public Text getWeightText() {
+            return weightText;
+        }
+        
+        public Group getWeightGroup() {
+            return weightGroup;
         }
         
         public boolean isActive() {
@@ -1148,6 +1267,12 @@ public class NetworkRoutingTask extends GameTask {
                 visual.setStroke(Color.web("#00FFFF"));
                 visual.setStrokeWidth(3);
                 
+                // Update weight text appearance for active connection
+                weightText.setFill(Color.web("#00FFFF"));
+                weightBackground.setFill(Color.web("#1A2A3A"));
+                weightBackground.setStroke(Color.web("#00FFFF"));
+                weightBackground.setStrokeWidth(1);
+                
                 // Add glow effect
                 Bloom glow = new Bloom();
                 glow.setThreshold(0.3);
@@ -1156,6 +1281,12 @@ public class NetworkRoutingTask extends GameTask {
                 visual.setStroke(Color.web("#3A4A5A", 0.7));
                 visual.setStrokeWidth(1.5);
                 visual.setEffect(null);
+                
+                // Update weight text appearance for inactive connection
+                weightText.setFill(Color.web("#5A6A7A", 0.9));
+                weightBackground.setFill(Color.web("#222222", 0.7));
+                weightBackground.setStroke(Color.web("#3A4A5A", 0.5));
+                weightBackground.setStrokeWidth(0.5);
             }
         }
         
@@ -1189,6 +1320,49 @@ public class NetworkRoutingTask extends GameTask {
             visual.setStartY(nodeA.getY());
             visual.setEndX(nodeB.getX());
             visual.setEndY(nodeB.getY());
+            
+            // Update weight text position
+            updateWeightPosition();
+        }
+        
+        /**
+         * Update weight text position to the middle of the line
+         */
+        private void updateWeightPosition() {
+            // Position weight text at middle of the line with a small offset
+            double midX = (nodeA.getX() + nodeB.getX()) / 2;
+            double midY = (nodeA.getY() + nodeB.getY()) / 2;
+            
+            // Add a small offset to avoid text directly on the line
+            double dx = nodeB.getX() - nodeA.getX();
+            double dy = nodeB.getY() - nodeA.getY();
+            double length = Math.sqrt(dx * dx + dy * dy);
+            
+            // Calculate perpendicular offset (8 pixels away from line)
+            double offsetX = 0;
+            double offsetY = 0;
+            if (length > 0) {
+                offsetX = -dy * 8 / length;  // Perpendicular to line
+                offsetY = dx * 8 / length;
+            }
+            
+            // Position the text
+            weightText.setX(0);
+            weightText.setY(4); // Small vertical adjustment for centering
+            
+            // Size and position the background rectangle
+            double padding = 4;
+            double width = weightText.getLayoutBounds().getWidth() + padding * 2;
+            double height = weightText.getLayoutBounds().getHeight() + padding;
+            
+            weightBackground.setWidth(width);
+            weightBackground.setHeight(height);
+            weightBackground.setX(-padding);
+            weightBackground.setY(-weightText.getLayoutBounds().getHeight() + padding / 2);
+            
+            // Position the group
+            weightGroup.setTranslateX(midX + offsetX - width / 2);
+            weightGroup.setTranslateY(midY + offsetY);
         }
     }
 
@@ -1218,7 +1392,12 @@ public class NetworkRoutingTask extends GameTask {
             NetworkConnection newConn = new NetworkConnection(nodeA, nodeB, distance);
             newConn.setActive(true); // Activate by default
             connections.add(newConn);
-            networkPane.getChildren().add(0, newConn.getVisual()); // Add visual to pane
+            
+            // Add connection visual to the network pane (below nodes)
+            networkPane.getChildren().add(0, newConn.getVisual());
+            
+            // Add weight text with proper z-order (above line but below nodes)
+            networkPane.getChildren().add(Math.min(1, networkPane.getChildren().size()), newConn.getWeightGroup());
         }
     }
 } 
