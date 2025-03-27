@@ -227,11 +227,12 @@ public class RackUpgradeWindow extends VBox {
      */
     private void buyNewRack() {
         if (numberOfRacks < maxNumberOfRacks && company.getMoney() >= rackCost) {
-            company.setMoney(company.getMoney() - rackCost);
-            numberOfRacks++;
-            updateUI();
-            parent.pushNotification("New Rack Purchased",
-                    "You have successfully purchased a new server rack.");
+            if (company.spendMoney(rackCost)) {
+                numberOfRacks++;
+                updateUI();
+                parent.pushNotification("New Rack Purchased",
+                        "You have successfully purchased a new server rack.");
+            }
         }
     }
     
@@ -240,12 +241,13 @@ public class RackUpgradeWindow extends VBox {
      */
     private void upgradeRoom() {
         if (company.getMoney() >= roomUpgradeCost) {
-            company.setMoney(company.getMoney() - roomUpgradeCost);
-            maxNumberOfRacks += 5;
-            updateUI();
-            parent.pushNotification("Server Room Upgraded",
-                    "Your server room has been expanded. You can now install up to " +
-                            maxNumberOfRacks + " racks.");
+            if (company.spendMoney(roomUpgradeCost)) {
+                maxNumberOfRacks += 5;
+                updateUI();
+                parent.pushNotification("Server Room Upgraded",
+                        "Your server room has been expanded. You can now install up to " +
+                                maxNumberOfRacks + " racks.");
+            }
         }
     }
     

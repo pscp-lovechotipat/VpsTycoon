@@ -652,8 +652,10 @@ public class GameManager {
             return false;
         }
         
-        // Deduct cost
-        company.setMoney(company.getMoney() - cost);
+        // Deduct cost using the new spendMoney method
+        if (!company.spendMoney(cost)) {
+            return false;
+        }
         
         // Create new server
         VPSOptimization server = new VPSOptimization();

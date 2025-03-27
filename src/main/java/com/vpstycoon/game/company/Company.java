@@ -26,7 +26,13 @@ public class Company implements Serializable {
         void onRatingChanged(double newRating);
     }
     
+    // ใช้ functional interface เพื่อแจ้งเตือนเมื่อเงินเข้าหรือออก
+    public interface MoneyTransactionObserver {
+        void onMoneyTransaction(long amount, long newBalance, boolean isIncome);
+    }
+    
     private final transient List<RatingObserver> ratingObservers = new ArrayList<>();
+    private final transient List<MoneyTransactionObserver> moneyObservers = new ArrayList<>();
 
     public Company() {
         this.name = "New Company";
@@ -160,7 +166,47 @@ public class Company implements Serializable {
     }
 
     public void setMoney(long money) {
+        long oldMoney = this.money;
         this.money = money;
+        
+        // คำนวณส่วนต่างและแจ้งเตือน observers
+        long difference = this.money - oldMoney;
+        if (difference != 0) {
+            boolean isIncome = difference > 0;
+            notifyMoneyObservers(difference, this.money, isIncome);
+            
+            // บันทึกรายได้หรือค่าใช้จ่าย
+            if (isIncome) {
+                this.totalRevenue += difference;
+            } else {
+                this.totalExpenses += Math.abs(difference);
+            }
+            
+            // แสดงการแจ้งเตือนบนหน้าจอ
+            pushMoneyNotification(difference, this.money, isIncome);
+        }
+    }
+    
+    /**
+     * Push notification for money transactions to UI
+     * @param amount Amount changed
+     * @param newBalance New balance
+     * @param isIncome True if income, false if expense
+     */
+    private void pushMoneyNotification(long amount, long newBalance, boolean isIncome) {
+        if (amount == 0) return;
+        
+        // Import ResourceManager to use pushNotification
+        com.vpstycoon.game.resource.ResourceManager resourceManager = com.vpstycoon.game.resource.ResourceManager.getInstance();
+        
+        String title = isIncome ? "รายได้เข้า" : "ค่าใช้จ่าย";
+        String amountStr = String.format("%,d", Math.abs(amount));
+        String balanceStr = String.format("%,d", newBalance);
+        String content = isIncome 
+            ? "ได้รับเงิน ฿" + amountStr + "\nยอดคงเหลือ: ฿" + balanceStr
+            : "จ่ายเงิน ฿" + amountStr + "\nยอดคงเหลือ: ฿" + balanceStr;
+        
+        resourceManager.pushNotification(title, content);
     }
     
     /**
@@ -168,8 +214,38 @@ public class Company implements Serializable {
      * @param amount Amount to add
      */
     public void addMoney(double amount) {
-        this.money += (long) amount;
-        this.totalRevenue += (long) amount;
+        long amountLong = (long) amount;
+        this.money += amountLong;
+        this.totalRevenue += amountLong;
+        
+        // แจ้งเตือน observers ว่ามีเงินเข้า
+        notifyMoneyObservers(amountLong, this.money, true);
+        
+        // แสดงการแจ้งเตือนบนหน้าจอ
+        pushMoneyNotification(amountLong, this.money, true);
+    }
+    
+    /**
+     * Spend money from the company's balance
+     * @param amount Amount to spend
+     * @return true if successful, false if insufficient funds
+     */
+    public boolean spendMoney(double amount) {
+        long amountLong = (long) amount;
+        if (this.money < amountLong) {
+            return false;
+        }
+        
+        this.money -= amountLong;
+        this.totalExpenses += amountLong;
+        
+        // แจ้งเตือน observers ว่ามีการใช้จ่ายเงิน
+        notifyMoneyObservers(-amountLong, this.money, false);
+        
+        // แสดงการแจ้งเตือนบนหน้าจอ
+        pushMoneyNotification(-amountLong, this.money, false);
+        
+        return true;
     }
     
     public long getTotalRevenue() {
@@ -346,6 +422,36 @@ public class Company implements Serializable {
     }
     
     /**
+     * เพิ่ม observer เพื่อรับการแจ้งเตือนเมื่อมีการเปลี่ยนแปลงเงิน
+     * @param observer Observer ที่ต้องการลงทะเบียน
+     */
+    public void addMoneyObserver(MoneyTransactionObserver observer) {
+        if (observer != null && !moneyObservers.contains(observer)) {
+            moneyObservers.add(observer);
+        }
+    }
+    
+    /**
+     * ลบ observer ออกจากรายการ
+     * @param observer Observer ที่ต้องการเพิกถอน
+     */
+    public void removeMoneyObserver(MoneyTransactionObserver observer) {
+        moneyObservers.remove(observer);
+    }
+    
+    /**
+     * แจ้งเตือน observers ทั้งหมดเมื่อมีการเปลี่ยนแปลงเงิน
+     * @param amount จำนวนเงินที่เปลี่ยนแปลง
+     * @param newBalance ยอดเงินใหม่
+     * @param isIncome true หากเป็นรายได้, false หากเป็นค่าใช้จ่าย
+     */
+    private void notifyMoneyObservers(long amount, long newBalance, boolean isIncome) {
+        for (MoneyTransactionObserver observer : moneyObservers) {
+            observer.onMoneyTransaction(amount, newBalance, isIncome);
+        }
+    }
+    
+    /**
      * Reinitializes transient fields during deserialization
      */
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -355,8 +461,12 @@ public class Company implements Serializable {
             field = Company.class.getDeclaredField("ratingObservers");
             field.setAccessible(true);
             field.set(this, new ArrayList<>());
+            
+            field = Company.class.getDeclaredField("moneyObservers");
+            field.setAccessible(true);
+            field.set(this, new ArrayList<>());
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            System.err.println("Error reinitializing ratingObservers: " + e.getMessage());
+            System.err.println("Error reinitializing observers: " + e.getMessage());
             e.printStackTrace();
         }
     }

@@ -44,7 +44,7 @@ public class RandomEventSystem {
                 EventType.NEGATIVE,
                 (company) -> {
                     long cost = Math.round(company.getMoney() * 0.1); // 10% of current money
-                    company.setMoney(company.getMoney() - cost);
+                    company.spendMoney(cost);
                     return "Lost $" + cost + " to security breach";
                 }
         ));
@@ -56,7 +56,7 @@ public class RandomEventSystem {
                 EventType.NEGATIVE,
                 (company) -> {
                     long cost = Math.round(company.getMoney() * 0.05); // 5% of current money
-                    company.setMoney(company.getMoney() - cost);
+                    company.spendMoney(cost);
                     return "Lost $" + cost + " to hardware repairs";
                 }
         ));
@@ -68,7 +68,7 @@ public class RandomEventSystem {
                 EventType.NEGATIVE,
                 (company) -> {
                     long cost = Math.round(company.getMoney() * 0.03); // 3% of current money
-                    company.setMoney(company.getMoney() - cost);
+                    company.spendMoney(cost);
                     return "Lost $" + cost + " due to power outage";
                 }
         ));
@@ -105,7 +105,7 @@ public class RandomEventSystem {
                 EventType.POSITIVE,
                 (company) -> {
                     long bonus = Math.round(company.getMoney() * 0.15); // 15% of current money
-                    company.setMoney(company.getMoney() + bonus);
+                    company.addMoney(bonus);
                     return "Received $" + bonus + " from investor";
                 }
         ));

@@ -150,8 +150,7 @@ public class GameTimeManager {
         }
 
         if (totalKeepUpCost > 0) {
-            long currentMoney = company.getMoney();
-            company.setMoney(currentMoney - totalKeepUpCost);
+            company.spendMoney(totalKeepUpCost);
             System.out.println("Monthly keep-up cost deducted: $" + totalKeepUpCost +
                     " | New balance: $" + company.getMoney());
         }
