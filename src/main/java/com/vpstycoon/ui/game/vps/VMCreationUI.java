@@ -533,14 +533,16 @@ public class VMCreationUI {
             } else {
                 try {
                     VPSOptimization.VM newVM = new VPSOptimization.VM(
-                            ipField.getText(), 
                             nameField.getText(),
-                            vcpuComboBox.getValue(), 
-                            ramComboBox.getValue(),
-                            diskComboBox.getValue(), 
-                            "Initializing"
+                            vcpuComboBox.getValue(),
+                            Integer.parseInt(ramComboBox.getValue().replaceAll("[^0-9]", "")),
+                            Integer.parseInt(diskComboBox.getValue().replaceAll("[^0-9]", ""))
                     );
 
+                    // กำหนดค่าเพิ่มเติมหลังสร้าง VM
+                    newVM.setIp(ipField.getText());
+                    newVM.setStatus("Initializing");
+                    
                     // Store additional configuration in the VM's description or elsewhere if needed
                     // These methods don't exist in the VM class, so we'll comment them out
                     // newVM.setOperatingSystem(osComboBox.getValue());
@@ -564,7 +566,11 @@ public class VMCreationUI {
                                 ListView<String> rulesList = (ListView<String>) rulesBox.getChildren().get(1);
                                 if (rulesList != null) {
                                     List<String> rules = new ArrayList<>(rulesList.getItems());
-                                    newVM.setFirewallRules(rules);
+                                    // setFirewallRules doesn't exist, save rules somewhere else if needed
+                                    // newVM.setFirewallRules(rules);
+                                    
+                                    // อาจจะบันทึกกฎ Firewall เป็น custom data หรือใน GameState ที่อื่น
+                                    System.out.println("Firewall rules: " + rules + " for VM: " + newVM.getName());
                                 }
                             }
                         } catch (Exception ex) {

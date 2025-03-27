@@ -75,6 +75,12 @@ public class MessengerController {
         this.rentalManager = new RentalManager(chatHistoryManager, chatAreaView, company, gameTimeManager);
         this.skillPointsManager = new SkillPointsManager(chatHistoryManager, chatAreaView, ResourceManager.getInstance().getSkillPointsSystem());
 
+        // ตั้งค่า MessengerController ใน ChatHistoryManager เพื่อให้สามารถค้นหา CustomerRequest ได้
+        chatHistoryManager.setMessengerController(this);
+        
+        // อัปเดต references ของ CustomerRequest ในประวัติแชท
+        chatHistoryManager.updateCustomerRequestReferences();
+
         // Load saved VM data from the ResourceManager's GameState
         GameState currentState = ResourceManager.getInstance().getCurrentState();
         if (currentState != null) {
@@ -673,15 +679,16 @@ public class MessengerController {
                 for (int i = 0; i < vmsToCreate; i++) {
                     // สร้าง VM ตามวิธีที่ถูกต้อง
                     String vmName = "vm-" + System.currentTimeMillis() + "-" + i;
-                    String vmIp = generateRandomIp();
                     VPSOptimization.VM newVM = new VPSOptimization.VM(
-                        vmIp,
                         vmName,
                         1, // ใช้ 1 vCPU ต่อ VM 
-                        "1 GB", // ใช้ค่าเริ่มต้น
-                        "10 GB", // ใช้ค่าเริ่มต้น
-                        "Running"
+                        1, // 1 GB RAM
+                        10  // 10 GB disk
                     );
+                    
+                    // กำหนด IP address แยกหลังจากสร้าง VM
+                    newVM.setIp(generateRandomIp());
+                    newVM.setStatus("Running");
                     
                     // ตรวจสอบว่ามีการบันทึกข้อมูลลูกค้าใน GameState หรือไม่
                     CustomerRequest assignedRequest = findAssignedCustomerFromGameState(vmName);
@@ -959,6 +966,13 @@ public class MessengerController {
         );
         System.out.println("บันทึกข้อมูลลูกค้า " + request.getName() + " (ID: " + request.getId() + ") ลงใน VM: " + vm.getName());
         
+        // เพิ่ม: อัปเดต assignToVM ใน CustomerRequest
+        request.assignToVM(vm.getId());
+        System.out.println("ตั้งค่า assignToVM " + vm.getId() + " ให้กับ request " + request.getName());
+        
+        // กำหนด VM ให้กับ request ใน vmAssignments
+        vmAssignments.put(vm, request);
+        
         // เพิ่มข้อความในแชท
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, 
             "VM provisioning completed successfully", new HashMap<>()));
@@ -1053,7 +1067,11 @@ public class MessengerController {
             // ลบข้อมูลลูกค้าออกจาก VM
             vm.releaseFromCustomer();
             
-            // ปล่อย VM
+            // ลบการเชื่อมโยงใน customerRequest
+            requestToRelease.unassignFromVM();
+            System.out.println("ลบการเชื่อมโยง assignToVM ของ request " + requestToRelease.getName());
+            
+            // ปล่อย VM ออกจาก assignments
             vmAssignments.remove(vm);
             
             // เพิ่มจำนวน available VM ทันที
@@ -1357,6 +1375,40 @@ public class MessengerController {
      * @return true ถ้าคำขอถูกกำหนด VM แล้ว
      */
     private boolean isRequestAssigned(CustomerRequest request) {
+        if (request == null) return false;
+        
+        // ตรวจสอบจาก assignedToVmId ก่อน (วิธีใหม่)
+        if (request.isAssignedToVM()) {
+            // ปรับสถานะลูกค้าเป็น active ถ้าไม่ได้เป็น active อยู่แล้ว
+            if (!request.isActive() && !request.isExpired()) {
+                request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
+                System.out.println("ปรับสถานะลูกค้า " + request.getName() + " เป็น active เนื่องจากมี assignedToVmId");
+            }
+            
+            // ตรวจสอบให้แน่ใจว่า VM ที่ถูก assign มีอยู่จริง
+            String vmId = request.getAssignedVmId();
+            boolean vmFound = false;
+            
+            // ค้นหา VM ที่มี ID ตรงกับ assignedToVmId
+            for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                for (VPSOptimization.VM vm : vps.getVms()) {
+                    if (vm.getId() != null && vm.getId().equals(vmId)) {
+                        // พบ VM ที่ถูก assign จึงเพิ่มเข้า vmAssignments ด้วย (ถ้ายังไม่มี)
+                        if (!vmAssignments.containsKey(vm) || !vmAssignments.get(vm).equals(request)) {
+                            vmAssignments.put(vm, request);
+                            System.out.println("เพิ่ม VM " + vm.getName() + " และ request " + request.getName() + " เข้า vmAssignments");
+                        }
+                        vmFound = true;
+                        break;
+                    }
+                }
+                if (vmFound) break;
+            }
+            
+            return true;
+        }
+        
+        // ถ้าไม่มี assignedToVmId ให้ตรวจสอบแบบเดิม
         // ตรวจสอบใน vmAssignments
         if (vmAssignments.values().contains(request)) {
             // ปรับสถานะลูกค้าเป็น active ถ้าไม่ได้เป็น active อยู่แล้ว
@@ -1364,6 +1416,20 @@ public class MessengerController {
                 request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
                 System.out.println("ปรับสถานะลูกค้า " + request.getName() + " เป็น active เนื่องจากพบใน vmAssignments");
             }
+            
+            // ค้นหา VM ที่ assign ให้กับ request นี้
+            for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
+                if (entry.getValue().equals(request)) {
+                    VPSOptimization.VM vm = entry.getKey();
+                    // อัปเดต assignedToVmId (ถ้ายังไม่มี)
+                    if (!request.isAssignedToVM()) {
+                        request.assignToVM(vm.getId());
+                        System.out.println("อัปเดต assignedToVmId = " + vm.getId() + " ให้กับ request " + request.getName());
+                    }
+                    break;
+                }
+            }
+            
             return true;
         }
         
@@ -1380,6 +1446,12 @@ public class MessengerController {
                     System.out.println("พบ VM ที่ถูกกำหนดให้ลูกค้า " + request.getName() + 
                                       " แต่ไม่ได้ถูกบันทึกใน vmAssignments จึงบันทึกเพิ่มเติม");
                     
+                    // อัปเดต assignedToVmId (ถ้ายังไม่มี)
+                    if (!request.isAssignedToVM()) {
+                        request.assignToVM(vm.getId());
+                        System.out.println("อัปเดต assignedToVmId = " + vm.getId() + " ให้กับ request " + request.getName());
+                    }
+                    
                     // ปรับสถานะลูกค้าเป็น active ถ้าไม่ได้เป็น active อยู่แล้ว และไม่ได้หมดอายุแล้ว
                     if (!request.isActive() && !request.isExpired()) {
                         request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
@@ -1392,5 +1464,60 @@ public class MessengerController {
         }
         
         return false;
+    }
+
+    /**
+     * ค้นหา CustomerRequest ในปัจจุบันที่ตรงกับ CustomerRequest ที่เก็บในประวัติแชท
+     * ใช้เพื่อแก้ไขปัญหา reference ไม่ตรงกันหลังการโหลดเกม
+     * 
+     * @param historyChatRequest CustomerRequest ที่เก็บในประวัติแชท
+     * @return CustomerRequest ที่ตรงกันในปัจจุบัน หรือ null ถ้าไม่พบ
+     */
+    public CustomerRequest findMatchingCustomerRequest(CustomerRequest historyChatRequest) {
+        if (historyChatRequest == null) return null;
+        
+        // 1. ลองค้นหาด้วย ID
+        int requestId = historyChatRequest.getId();
+        String requestName = historyChatRequest.getName();
+        
+        // ค้นหาด้วยทั้ง ID และชื่อ
+        for (CustomerRequest request : requestManager.getRequests()) {
+            if (request.getId() == requestId && request.getName().equals(requestName)) {
+                System.out.println("พบ CustomerRequest ตรงกันด้วย ID และชื่อ: " + requestId + ", " + requestName);
+                return request;
+            }
+        }
+        
+        // 2. ค้นหาด้วยชื่ออย่างเดียว
+        for (CustomerRequest request : requestManager.getRequests()) {
+            if (request.getName().equals(requestName)) {
+                System.out.println("พบ CustomerRequest ตรงกันด้วยชื่อ: " + requestName);
+                return request;
+            }
+        }
+        
+        // 3. ค้นหาด้วยคุณสมบัติอื่นๆ ที่สำคัญ
+        for (CustomerRequest request : requestManager.getRequests()) {
+            if (request.getCustomerType() == historyChatRequest.getCustomerType() &&
+                request.getRequestType() == historyChatRequest.getRequestType() &&
+                request.getRequiredVCPUs() == historyChatRequest.getRequiredVCPUs() &&
+                request.getRequiredRamGB() == historyChatRequest.getRequiredRamGB() &&
+                request.getRequiredDiskGB() == historyChatRequest.getRequiredDiskGB()) {
+                
+                System.out.println("พบ CustomerRequest ตรงกันด้วยคุณสมบัติ: " + request.getName());
+                return request;
+            }
+        }
+        
+        System.out.println("ไม่พบ CustomerRequest ที่ตรงกับ: " + requestName);
+        return null;
+    }
+
+    /**
+     * เพิ่มเมธอด getter สำหรับ requestManager
+     * @return RequestManager ที่ใช้ในปัจจุบัน
+     */
+    public RequestManager getRequestManager() {
+        return requestManager;
     }
 }

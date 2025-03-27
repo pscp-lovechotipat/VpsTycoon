@@ -96,14 +96,16 @@ public class VMProvisioningManager implements Serializable {
                 
                 // Create the VM
                 String vmName = "vm-" + request.getName().toLowerCase().replace(" ", "-");
-                String vmIp = generateRandomIp();
                 VPSOptimization.VM vm = new VPSOptimization.VM(
-                        vmIp, 
                         vmName, 
                         vcpus, 
-                        ramGB + " GB", 
-                        diskGB + " GB", 
-                        "Running");
+                        ramGB, 
+                        diskGB
+                );
+                
+                // กำหนดค่าเพิ่มเติม
+                vm.setIp(generateRandomIp());
+                vm.setStatus("Running");
                 
                 // Add VM to VPS
                 vps.addVM(vm);
@@ -115,7 +117,7 @@ public class VMProvisioningManager implements Serializable {
                 company.setRating(company.getRating() + ratingChange);
                 
                 // Track this VM and its associated request
-                String vmKey = vmIp + ":" + vmName;
+                String vmKey = vm.getIp() + ":" + vm.getName();
                 vmToRequestMap.put(vmKey, request);
                 activeRequests.put(request, vm);
                 

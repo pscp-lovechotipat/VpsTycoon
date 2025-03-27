@@ -190,6 +190,13 @@ public class ChatAreaView extends VBox {
         if (request == null) return;
 
         List<ChatMessage> history = chatHistoryManager.getChatHistory(request);
+        if (history.isEmpty()) {
+            System.out.println("ไม่พบประวัติแชทสำหรับ: " + request.getName());
+            return;
+        }
+        
+        System.out.println("โหลดประวัติแชทสำหรับ: " + request.getName() + " จำนวน " + history.size() + " ข้อความ");
+        
         for (ChatMessage message : history) {
             switch (message.getType()) {
                 case CUSTOMER:

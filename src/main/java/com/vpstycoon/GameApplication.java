@@ -176,16 +176,12 @@ public class GameApplication extends Application implements Navigator {
     public void continueGame() {
         System.out.println("=========== CONTINUE GAME ===========");
         
-        // 1. ตรวจสอบประวัติแชท
+        // 1. รีเซ็ต ChatHistoryManager ก่อน
         try {
-            com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager chatManager = 
-                com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager.getInstance();
-            
-            // แน่ใจว่ามีการโหลดประวัติแชทล่าสุด
-            System.out.println("กำลังโหลดประวัติแชท...");
-            // ไม่ต้องทำอะไรกับ ChatHistoryManager เพราะมันจะโหลดไฟล์เองตอน instantiate
+            com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager.resetInstance();
+            System.out.println("รีเซ็ต ChatHistoryManager เรียบร้อย");
         } catch (Exception e) {
-            System.err.println("เกิดข้อผิดพลาดในการโหลดประวัติแชท: " + e.getMessage());
+            System.err.println("เกิดข้อผิดพลาดในการรีเซ็ต ChatHistoryManager: " + e.getMessage());
             e.printStackTrace();
         }
         
