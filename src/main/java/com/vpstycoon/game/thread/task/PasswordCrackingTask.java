@@ -15,6 +15,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -22,6 +23,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import javafx.scene.Node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,86 +62,219 @@ public class PasswordCrackingTask extends GameTask {
 
     @Override
     protected void initializeTaskSpecifics() {
-        // Choose a random password from the list
-        targetPassword = POSSIBLE_PASSWORDS[random.nextInt(POSSIBLE_PASSWORDS.length)];
-        currentGuess = new StringBuilder();
-        for (int i = 0; i < targetPassword.length(); i++) {
-            currentGuess.append("_");
+        try {
+            // Choose a random password from the list
+            targetPassword = POSSIBLE_PASSWORDS[random.nextInt(POSSIBLE_PASSWORDS.length)];
+            currentGuess = new StringBuilder();
+            for (int i = 0; i < targetPassword.length(); i++) {
+                currentGuess.append("_");
+            }
+            
+            log("Selected password: " + targetPassword);
+            
+            // Create the main panel with cyberpunk styling
+            BorderPane hackPanel = new BorderPane();
+            hackPanel.setPadding(new Insets(20));
+            hackPanel.setMaxWidth(700);
+            hackPanel.setMaxHeight(500);
+            
+            // Add cyberpunk styling
+            hackPanel.setStyle(
+                "-fx-background-color: linear-gradient(to bottom, #0A0A2A, #151540);" +
+                "-fx-border-color: #FF00FF;" +
+                "-fx-border-width: 2px;" +
+                "-fx-border-radius: 5px;"
+            );
+            
+            // Add holographic grid lines manually
+            addHoloGridLines(hackPanel, 20, 20);
+            
+            // Create title and description
+            Text titleText = createStyledTitle("SECURITY OVERRIDE v3.0");
+            Text descText = createStyledDescription(
+                "Crack the security password by guessing characters.\n" +
+                "Each correct guess reveals more of the password."
+            );
+            
+            // Create the password display
+            HBox passwordDisplay = createPasswordDisplay();
+            
+            // Add a scanning effect to the password display
+            addScanningEffect(passwordDisplay);
+            
+            // Create feedback message
+            messageLabel = new Label("ENTER CHARACTERS TO CRACK THE PASSWORD");
+            messageLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 16));
+            messageLabel.setTextFill(Color.LIGHTCYAN);
+            
+            // Add glow effect to message
+            Glow messageGlow = new Glow(0.5);
+            messageLabel.setEffect(messageGlow);
+            
+            // Create attempts display
+            attemptsLabel = new Label("ATTEMPTS REMAINING: " + attemptsRemaining);
+            attemptsLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 16));
+            attemptsLabel.setTextFill(Color.web("#FF00FF"));
+            
+            DropShadow labelGlow = new DropShadow();
+            labelGlow.setColor(Color.web("#FF00FF"));
+            labelGlow.setRadius(10);
+            labelGlow.setSpread(0.5);
+            attemptsLabel.setEffect(labelGlow);
+            
+            // Input area for password guessing
+            HBox inputArea = createInputArea();
+            
+            // Digital lock visualization
+            StackPane lockVisualization = createLockVisualization();
+            
+            // Arrange all components
+            VBox topSection = new VBox(15);
+            topSection.setAlignment(Pos.CENTER);
+            topSection.getChildren().addAll(titleText, descText);
+            
+            VBox centerSection = new VBox(20);
+            centerSection.setAlignment(Pos.CENTER);
+            centerSection.setPadding(new Insets(30, 0, 30, 0));
+            centerSection.getChildren().addAll(passwordDisplay, messageLabel, attemptsLabel);
+            
+            VBox bottomSection = new VBox(25);
+            bottomSection.setAlignment(Pos.CENTER);
+            bottomSection.getChildren().addAll(lockVisualization, inputArea);
+            
+            hackPanel.setTop(topSection);
+            hackPanel.setCenter(centerSection);
+            hackPanel.setBottom(bottomSection);
+            
+            // Add the task content to the game pane
+            gamePane.getChildren().add(hackPanel);
+            
+            // Add background
+            addSimpleBackground(gamePane);
+            
+            log("PasswordCrackingTask initialized successfully");
+        } catch (Exception e) {
+            log("Error initializing PasswordCrackingTask: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Create a styled title text
+     */
+    private Text createStyledTitle(String title) {
+        Text titleText = new Text(title);
+        titleText.setFont(Font.font("Monospaced", FontWeight.BOLD, 28));
+        titleText.setFill(Color.web("#00FFFF"));
+        
+        DropShadow glow = new DropShadow();
+        glow.setColor(Color.web("#00FFFF"));
+        glow.setRadius(15);
+        glow.setSpread(0.7);
+        titleText.setEffect(glow);
+        
+        return titleText;
+    }
+    
+    /**
+     * Create a styled description text
+     */
+    private Text createStyledDescription(String description) {
+        Text descText = new Text(description);
+        descText.setFont(Font.font("Monospaced", FontWeight.NORMAL, 16));
+        descText.setFill(Color.web("#CCECFF"));
+        
+        // Add a subtle glow effect
+        Glow glow = new Glow(0.3);
+        descText.setEffect(glow);
+        
+        return descText;
+    }
+    
+    /**
+     * Create a styled button
+     */
+    private Button createStyledButton(String text, boolean primary) {
+        Button button = new Button(text);
+        button.setFont(Font.font("Monospaced", FontWeight.BOLD, 14));
+        
+        String baseColor, hoverColor, textColor;
+        if (primary) {
+            baseColor = "#00FFFF";
+            hoverColor = "#80FFFF";
+            textColor = "#000000";
+        } else {
+            baseColor = "#FF0066";
+            hoverColor = "#FF4D94";
+            textColor = "#FFFFFF";
         }
         
-        log("Selected password: " + targetPassword);
+        String baseStyle = 
+            "-fx-background-color: " + baseColor + ";" +
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-border-color: " + hoverColor + ";" +
+            "-fx-border-width: 1px;" +
+            "-fx-background-radius: 5px;" +
+            "-fx-border-radius: 5px;" +
+            "-fx-cursor: hand;";
         
-        // Create the main panel with cyberpunk styling
-        BorderPane hackPanel = new BorderPane();
-        hackPanel.setPadding(new Insets(20));
-        hackPanel.setMaxWidth(700);
-        hackPanel.setMaxHeight(500);
-        
-        // Add cyberpunk styling
-        hackPanel.setStyle(
-            "-fx-background-color: linear-gradient(to bottom, #0A0A2A, #151540);" +
-            "-fx-border-color: #FF00FF;" +
+        String hoverStyle = 
+            "-fx-background-color: " + hoverColor + ";" +
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-border-color: " + baseColor + ";" +
             "-fx-border-width: 2px;" +
-            "-fx-border-radius: 5px;"
-        );
+            "-fx-background-radius: 5px;" +
+            "-fx-border-radius: 5px;" +
+            "-fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian, " + baseColor + ", 10, 0.5, 0, 0);";
         
-        // Add holographic grid lines
-        CyberpunkEffects.addHoloGridLines(hackPanel, 20, 20);
+        button.setStyle(baseStyle);
         
-        // Create cyberpunk-styled title and description
-        Text titleText = CyberpunkEffects.createTaskTitle("SECURITY OVERRIDE v3.0");
-        Text descText = CyberpunkEffects.createTaskDescription(
-            "Crack the security password by guessing characters.\n" +
-            "Each correct guess reveals more of the password."
-        );
+        // Add hover effect
+        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
+        button.setOnMouseExited(e -> button.setStyle(baseStyle));
         
-        // Create the password display
-        HBox passwordDisplay = createPasswordDisplay();
+        return button;
+    }
+    
+    /**
+     * Add grid lines to create a holographic effect
+     */
+    private void addHoloGridLines(Pane pane, int hSpacing, int vSpacing) {
+        double width = pane.getPrefWidth();
+        double height = pane.getPrefHeight();
         
-        // Add a scanning effect to the password display
-        addScanningEffect(passwordDisplay);
+        // Add horizontal lines
+        for (int y = 0; y < height; y += vSpacing) {
+            Line line = new Line(0, y, width, y);
+            line.setStroke(Color.web("#FF00FF", 0.2));
+            line.setStrokeWidth(0.5);
+            pane.getChildren().add(line);
+        }
         
-        // Create feedback message with cyberpunk styling
-        messageLabel = new Label("ENTER CHARACTERS TO CRACK THE PASSWORD");
-        messageLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 16));
-        messageLabel.setTextFill(Color.LIGHTCYAN);
+        // Add vertical lines
+        for (int x = 0; x < width; x += hSpacing) {
+            Line line = new Line(x, 0, x, height);
+            line.setStroke(Color.web("#FF00FF", 0.2));
+            line.setStrokeWidth(0.5);
+            pane.getChildren().add(line);
+        }
+    }
+    
+    /**
+     * Add a simple animated background
+     */
+    private void addSimpleBackground(Pane pane) {
+        Rectangle background = new Rectangle(pane.getWidth(), pane.getHeight());
+        background.widthProperty().bind(pane.widthProperty());
+        background.heightProperty().bind(pane.heightProperty());
+        background.setFill(Color.web("#0A0A2A", 0.3));
         
-        // Add glow effect to message
-        Glow messageGlow = new Glow(0.5);
-        messageLabel.setEffect(messageGlow);
-        
-        // Create attempts display
-        attemptsLabel = CyberpunkEffects.createGlowingLabel("ATTEMPTS REMAINING: " + attemptsRemaining, "#FF00FF");
-        
-        // Input area for password guessing
-        HBox inputArea = createInputArea();
-        
-        // Digital lock visualization
-        StackPane lockVisualization = createLockVisualization();
-        
-        // Arrange all components
-        VBox topSection = new VBox(15);
-        topSection.setAlignment(Pos.CENTER);
-        topSection.getChildren().addAll(titleText, descText);
-        
-        VBox centerSection = new VBox(20);
-        centerSection.setAlignment(Pos.CENTER);
-        centerSection.setPadding(new Insets(30, 0, 30, 0));
-        centerSection.getChildren().addAll(passwordDisplay, messageLabel, attemptsLabel);
-        
-        VBox bottomSection = new VBox(25);
-        bottomSection.setAlignment(Pos.CENTER);
-        bottomSection.getChildren().addAll(lockVisualization, inputArea);
-        
-        hackPanel.setTop(topSection);
-        hackPanel.setCenter(centerSection);
-        hackPanel.setBottom(bottomSection);
-        
-        // Add the task content to the game pane
-        gamePane.getChildren().add(hackPanel);
-        
-        // Add animated background glitch effects
-        CyberpunkEffects.addAnimatedBackground(gamePane);
+        if (pane.getChildren().size() > 0) {
+            pane.getChildren().add(0, background);
+        } else {
+            pane.getChildren().add(background);
+        }
     }
     
     /**
@@ -155,7 +290,7 @@ public class PasswordCrackingTask extends GameTask {
         
         for (int i = 0; i < targetPassword.length(); i++) {
             Label charLabel = new Label("_");
-            charLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 36));
+            charLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 36));
             charLabel.setTextFill(Color.web("#FF00FF"));
             charLabel.setMinWidth(40);
             charLabel.setAlignment(Pos.CENTER);
@@ -194,7 +329,7 @@ public class PasswordCrackingTask extends GameTask {
         // Text field for character input
         TextField charInput = new TextField();
         charInput.setPromptText("ENTER CHARACTER");
-        charInput.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 16));
+        charInput.setFont(Font.font("Monospaced", FontWeight.NORMAL, 16));
         charInput.setStyle(
             "-fx-background-color: rgba(0, 10, 30, 0.8);" +
             "-fx-text-fill: #00FFFF;" +
@@ -213,7 +348,7 @@ public class PasswordCrackingTask extends GameTask {
         });
         
         // Guess button
-        Button guessButton = CyberpunkEffects.createCyberpunkButton("GUESS", true);
+        Button guessButton = createStyledButton("GUESS", true);
         guessButton.setOnAction(e -> {
             if (!charInput.getText().isEmpty()) {
                 guessCharacter(charInput.getText().charAt(0));
@@ -223,7 +358,7 @@ public class PasswordCrackingTask extends GameTask {
         });
         
         // Reveal button (for troubleshooting)
-        Button revealButton = CyberpunkEffects.createCyberpunkButton("DECRYPT ALL", false);
+        Button revealButton = createStyledButton("DECRYPT ALL", false);
         revealButton.setOnAction(e -> revealPassword());
         
         inputArea.getChildren().addAll(charInput, guessButton, revealButton);
@@ -335,7 +470,7 @@ public class PasswordCrackingTask extends GameTask {
                 found = true;
                 
                 // Add completion effect to the character
-                CyberpunkEffects.styleCompletionEffect(passwordLabels.get(i));
+                styleCompletionEffect(passwordLabels.get(i));
                 passwordLabels.get(i).setTextFill(Color.LIGHTGREEN);
             }
             
@@ -395,7 +530,7 @@ public class PasswordCrackingTask extends GameTask {
         // Success effects for all password characters
         for (Label label : passwordLabels) {
             label.setTextFill(Color.LIGHTGREEN);
-            CyberpunkEffects.styleCompletionEffect(label);
+            styleCompletionEffect(label);
         }
         
         // Complete the task
@@ -411,6 +546,27 @@ public class PasswordCrackingTask extends GameTask {
             currentGuess.setCharAt(i, targetPassword.charAt(i));
         }
         passwordCompletedSuccessfully();
+    }
+    
+    /**
+     * Apply a completion effect to a node
+     */
+    private void styleCompletionEffect(Node node) {
+        // Green glow effect
+        DropShadow glow = new DropShadow();
+        glow.setColor(Color.LIGHTGREEN);
+        glow.setRadius(15);
+        glow.setSpread(0.7);
+        node.setEffect(glow);
+        
+        // Pulsing animation
+        Timeline pulse = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(glow.radiusProperty(), 10)),
+            new KeyFrame(Duration.seconds(0.5), new KeyValue(glow.radiusProperty(), 20)),
+            new KeyFrame(Duration.seconds(1.0), new KeyValue(glow.radiusProperty(), 10))
+        );
+        pulse.setCycleCount(3);
+        pulse.play();
     }
     
     /**
