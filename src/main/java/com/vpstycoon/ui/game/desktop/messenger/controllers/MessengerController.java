@@ -18,9 +18,30 @@ import com.vpstycoon.game.GameState;
 import com.vpstycoon.ui.game.rack.Rack;
 import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.StackPane;
-
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.Glow;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.util.Duration;
+import javafx.collections.ObservableList;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -374,7 +395,43 @@ public class MessengerController {
     }
 
     private void updateRequestList() {
-        requestListView.updateRequestList(requestManager.getRequests());
+        // ตรวจสอบว่า requestManager ไม่เป็น null
+        if (requestManager == null) {
+            System.out.println("⚠️ Error: requestManager is null");
+            return;
+        }
+        
+        // ดึงข้อมูลคำขอทั้งหมด
+        ObservableList<CustomerRequest> requests = requestManager.getRequests();
+        
+        // ตรวจสอบความสมบูรณ์ของข้อมูล
+        if (requests == null) {
+            System.out.println("⚠️ Error: requests from requestManager is null");
+            return;
+        }
+        
+        // ตรวจสอบจำนวนคำขอทั้งหมด
+        System.out.println("📋 กำลังอัปเดตรายการคำขอ: พบ " + requests.size() + " รายการ");
+        
+        // ถ้ามีข้อมูลที่ไม่สมบูรณ์ในรายการ ให้กรองออก
+        List<CustomerRequest> validRequests = new ArrayList<>();
+        for (CustomerRequest request : requests) {
+            if (request != null) {
+                if (request.getTitle() == null || request.getRequiredVCPUs() <= 0) {
+                    System.out.println("⚠️ พบข้อมูลคำขอที่ไม่สมบูรณ์: ข้าม");
+                } else {
+                    validRequests.add(request);
+                }
+            }
+        }
+        
+        // แสดงผลข้อมูลหลังการกรอง
+        if (validRequests.size() != requests.size()) {
+            System.out.println("ℹ️ กรองข้อมูลคำขอ: จำนวนที่สมบูรณ์ = " + validRequests.size() + "/" + requests.size());
+        }
+        
+        // อัปเดตรายการในวิว
+        requestListView.updateRequestList(validRequests);
     }
 
     private void updateDashboard() {

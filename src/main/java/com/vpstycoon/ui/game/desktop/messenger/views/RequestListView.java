@@ -80,7 +80,8 @@ public class RequestListView extends VBox {
                 } else {
                     HBox cellContent = new HBox(10);
                     cellContent.setAlignment(Pos.CENTER_LEFT);
-                    cellContent.setPadding(new Insets(5));
+                    cellContent.setPadding(new Insets(8));
+                    cellContent.setMinHeight(95);
 
                     // เปลี่ยนจาก Circle เป็น Rectangle แบบ cyberpunk
                     Rectangle avatar = new Rectangle(30, 30);
@@ -102,7 +103,8 @@ public class RequestListView extends VBox {
                     dropShadow.setRadius(10);
                     avatar.setEffect(dropShadow);
 
-                    VBox textContent = new VBox(3);
+                    VBox textContent = new VBox(5);
+                    textContent.setPrefWidth(350);
                     HBox nameStatusBox = new HBox(5);
                     nameStatusBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -127,14 +129,20 @@ public class RequestListView extends VBox {
 
                     // เปลี่ยนรูปแบบการแสดงผลข้อมูล VM ใน cyberpunk style
                     Label previewLabel = new Label("SPECS: [ " + request.getRequiredVCPUs() + " vCPU | " +
-                            request.getRequiredRam() + " RAM ]");
+                            request.getRequiredRam() + " RAM | " + request.getRequiredDisk() + " DISK ]");
                     previewLabel.setStyle("-fx-text-fill: #00ffff; -fx-font-size: 11px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
 
-                    // เปลี่ยนจากการใช้ getRatePerHour() เป็นข้อความทั่วไป
-                    Label rateLabel = new Label("PRIORITY: HIGH");
-                    rateLabel.setStyle("-fx-text-fill: #00ff88; -fx-font-size: 11px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
+                    // แสดงข้อมูล RequestType และระยะเวลาเช่า
+                    Label requestTypeLabel = new Label("TYPE: [ " + request.getRequestType() + " | " + 
+                            request.getRentalPeriodType().getDisplayName() + " | " + 
+                            request.getDuration() + " DAYS ]");
+                    requestTypeLabel.setStyle("-fx-text-fill: #00ff88; -fx-font-size: 11px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
 
-                    textContent.getChildren().addAll(nameStatusBox, previewLabel, rateLabel);
+                    // แสดงข้อมูลอัตราการจ่ายเงิน
+                    Label rateLabel = new Label("RATE: [ $" + String.format("%.2f", request.getMonthlyPayment()) + " / MONTH ]");
+                    rateLabel.setStyle("-fx-text-fill: #ffcc00; -fx-font-size: 11px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
+
+                    textContent.getChildren().addAll(nameStatusBox, previewLabel, requestTypeLabel, rateLabel);
 
                     // ไอคอนแสดงสถานะ
                     Circle statusIndicator = new Circle(5);
@@ -168,7 +176,34 @@ public class RequestListView extends VBox {
 
     public void updateRequestList(List<CustomerRequest> requests) {
         requestView.getItems().clear();
+        
+        // ตรวจสอบและแสดงข้อมูลการดีบัก
+        System.out.println("โหลดข้อมูล CustomerRequest จำนวน: " + (requests != null ? requests.size() : 0) + " รายการ");
+        
+        // ตรวจสอบว่ามีข้อมูลหรือไม่
+        if (requests == null || requests.isEmpty()) {
+            System.out.println("ไม่พบข้อมูล CustomerRequest");
+            
+            // อัปเดตจำนวนคำขอในหัวข้อ
+            Label countLabel = (Label) ((HBox) getChildren().get(0)).getChildren().get(2);
+            countLabel.setText("[ 0 ]");
+            return;
+        }
+        
+        // ข้อมูลถูกต้อง ให้เพิ่มเข้า ListView
         requestView.getItems().addAll(requests);
+        
+        // ตรวจสอบแต่ละรายการว่ามีข้อมูลครบหรือไม่
+        int validCount = 0;
+        for (CustomerRequest request : requests) {
+            if (request.getTitle() != null && request.getRequiredVCPUs() > 0) {
+                validCount++;
+            } else {
+                System.out.println("พบข้อมูล CustomerRequest ที่ไม่สมบูรณ์: " + 
+                    (request.getTitle() != null ? request.getTitle() : "null"));
+            }
+        }
+        System.out.println("จำนวน CustomerRequest ที่สมบูรณ์: " + validCount + "/" + requests.size());
         
         // อัปเดตจำนวนคำขอในหัวข้อ
         Label countLabel = (Label) ((HBox) getChildren().get(0)).getChildren().get(2);
