@@ -31,10 +31,17 @@ import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javafx.scene.Cursor;
 
 /**
  * Network Routing Task
@@ -74,125 +81,221 @@ public class NetworkRoutingTask extends GameTask {
 
     @Override
     protected void initializeTaskSpecifics() {
-        // Create main task container
-        taskPane = new BorderPane();
-        CyberpunkEffects.styleTaskPane(taskPane);
-        taskPane.setPrefSize(650, 500);
-        taskPane.setPadding(new Insets(20));
+        try {
+            // Create main task container
+            taskPane = new BorderPane();
+            taskPane.setStyle("-fx-background-color: linear-gradient(to bottom, #0A0A2A, #1A1A4A); -fx-border-color: #00FFFF; -fx-border-width: 2px; -fx-background-radius: 5px; -fx-border-radius: 5px;");
+            taskPane.setPrefSize(650, 500);
+            taskPane.setPadding(new Insets(20));
+            
+            // Create title area
+            VBox headerBox = new VBox(10);
+            headerBox.setAlignment(Pos.CENTER);
+            
+            Text titleText = new Text("NETWORK PATH OPTIMIZATION");
+            titleText.setFont(Font.font("Orbitron", FontWeight.BOLD, 28));
+            titleText.setFill(Color.web("#00FFFF"));
+            
+            DropShadow glow = new DropShadow();
+            glow.setColor(Color.web("#00FFFF"));
+            glow.setRadius(15);
+            glow.setSpread(0.7);
+            titleText.setEffect(glow);
+            
+            Text descText = new Text("Establish optimal network routes between critical nodes");
+            descText.setFont(Font.font("Share Tech Mono", FontWeight.NORMAL, 16));
+            descText.setFill(Color.web("#CCECFF"));
+            
+            headerBox.getChildren().addAll(titleText, descText);
+            taskPane.setTop(headerBox);
+            
+            // Create network visualization pane
+            networkPane = new Pane();
+            networkPane.setPrefSize(600, 350);
+            networkPane.setStyle("-fx-background-color: rgba(10, 15, 30, 0.7); -fx-border-color: #303060; -fx-border-width: 1px;");
+            
+            addGridLines(networkPane, 30, 30);
+            
+            // Generate network
+            generateNetwork();
+            
+            // Create bottom control area
+            VBox controlBox = new VBox(15);
+            controlBox.setAlignment(Pos.CENTER);
+            
+            // Status label
+            statusLabel = new Label("ESTABLISH OPTIMAL NETWORK PATH");
+            statusLabel.setFont(Font.font("Orbitron", FontWeight.BOLD, 16));
+            statusLabel.setTextFill(Color.web("#00FFFF"));
+            
+            // Control buttons
+            HBox buttonBox = new HBox(20);
+            buttonBox.setAlignment(Pos.CENTER);
+            
+            Button resetButton = createCustomButton("RESET CONNECTIONS", false);
+            resetButton.setOnAction(e -> resetConnections());
+            
+            routeButton = createCustomButton("ESTABLISH ROUTE", true);
+            routeButton.setDisable(true);
+            routeButton.setOnAction(e -> establishRoute());
+            
+            buttonBox.getChildren().addAll(resetButton, routeButton);
+            
+            controlBox.getChildren().addAll(statusLabel, buttonBox);
+            
+            // Add components to main task pane
+            taskPane.setCenter(networkPane);
+            taskPane.setBottom(controlBox);
+            BorderPane.setMargin(controlBox, new Insets(10, 0, 10, 0));
+            
+            // Add the task pane to the game pane
+            gamePane.getChildren().add(taskPane);
+            
+            // Show path requirement with flashing visualization
+            highlightRequiredPath();
+            
+            log("NetworkRoutingTask initialized successfully");
+        } catch (Exception e) {
+            log("Error initializing NetworkRoutingTask: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Add grid lines to pane for cyberpunk look
+     */
+    private void addGridLines(Pane pane, int hSpacing, int vSpacing) {
+        // Horizontal lines
+        for (int y = vSpacing; y < pane.getPrefHeight(); y += vSpacing) {
+            Line line = new Line(0, y, pane.getPrefWidth(), y);
+            line.setStroke(Color.web("#00FFFF", 0.2));
+            line.setStrokeWidth(0.5);
+            pane.getChildren().add(line);
+        }
         
-        // Add animated background
-        CyberpunkEffects.addAnimatedBackground(taskPane);
+        // Vertical lines
+        for (int x = hSpacing; x < pane.getPrefWidth(); x += hSpacing) {
+            Line line = new Line(x, 0, x, pane.getPrefHeight());
+            line.setStroke(Color.web("#00FFFF", 0.2));
+            line.setStrokeWidth(0.5);
+            pane.getChildren().add(line);
+        }
+    }
+    
+    /**
+     * Create a custom button with cyberpunk styling
+     */
+    private Button createCustomButton(String text, boolean primary) {
+        Button button = new Button(text);
+        button.setFont(Font.font("Share Tech Mono", FontWeight.BOLD, 14));
         
-        // Create title area
-        VBox headerBox = new VBox(10);
-        headerBox.setAlignment(Pos.CENTER);
-        Text titleText = CyberpunkEffects.createTaskTitle("NETWORK PATH OPTIMIZATION");
-        Text descText = CyberpunkEffects.createTaskDescription("Establish optimal network routes between critical nodes");
-        headerBox.getChildren().addAll(titleText, descText);
-        taskPane.setTop(headerBox);
+        String baseColor, hoverColor, textColor;
+        if (primary) {
+            baseColor = "#00FFFF";
+            hoverColor = "#80FFFF";
+            textColor = "#000000";
+        } else {
+            baseColor = "#FF0066";
+            hoverColor = "#FF4D94";
+            textColor = "#FFFFFF";
+        }
         
-        // Create network visualization pane
-        networkPane = new Pane();
-        networkPane.setPrefSize(600, 350);
-        networkPane.setStyle("-fx-background-color: rgba(10, 15, 30, 0.7); -fx-border-color: #303060; -fx-border-width: 1px;");
+        String baseStyle = 
+            "-fx-background-color: " + baseColor + ";" +
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-border-color: " + hoverColor + ";" +
+            "-fx-border-width: 1px;" +
+            "-fx-background-radius: 5px;" +
+            "-fx-border-radius: 5px;" +
+            "-fx-cursor: hand;";
         
-        // Generate network
-        generateNetwork();
+        String hoverStyle = 
+            "-fx-background-color: " + hoverColor + ";" +
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-border-color: " + baseColor + ";" +
+            "-fx-border-width: 2px;" +
+            "-fx-background-radius: 5px;" +
+            "-fx-border-radius: 5px;" +
+            "-fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian, " + baseColor + ", 10, 0.5, 0, 0);";
         
-        // Add grid lines to network pane
-        CyberpunkEffects.addHoloGridLines(networkPane, 30, 30);
+        button.setStyle(baseStyle);
         
-        // Create bottom control area
-        VBox controlBox = new VBox(15);
-        controlBox.setAlignment(Pos.CENTER);
+        // Add hover effect
+        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
+        button.setOnMouseExited(e -> button.setStyle(baseStyle));
         
-        // Status label
-        statusLabel = new Label("ESTABLISH OPTIMAL NETWORK PATH");
-        statusLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 16));
-        statusLabel.setTextFill(Color.web("#00FFFF"));
-        CyberpunkEffects.pulseNode(statusLabel);
-        
-        // Control buttons
-        HBox buttonBox = new HBox(20);
-        buttonBox.setAlignment(Pos.CENTER);
-        
-        Button resetButton = CyberpunkEffects.createCyberpunkButton("RESET CONNECTIONS", false);
-        resetButton.setOnAction(e -> resetConnections());
-        
-        routeButton = CyberpunkEffects.createCyberpunkButton("ESTABLISH ROUTE", true);
-        routeButton.setDisable(true);
-        routeButton.setOnAction(e -> establishRoute());
-        
-        buttonBox.getChildren().addAll(resetButton, routeButton);
-        
-        controlBox.getChildren().addAll(statusLabel, buttonBox);
-        
-        // Add components to main task pane
-        taskPane.setCenter(networkPane);
-        taskPane.setBottom(controlBox);
-        BorderPane.setMargin(controlBox, new Insets(10, 0, 10, 0));
-        
-        // Add scanner effect to the task pane
-        CyberpunkEffects.addScanningEffect(taskPane);
-        
-        // Add the task pane to the game pane
-        gamePane.getChildren().add(taskPane);
-        
-        // Show path requirement with flashing visualization
-        highlightRequiredPath();
+        return button;
     }
     
     /**
      * Generate a network of nodes and potential connections
      */
     private void generateNetwork() {
-        nodes.clear();
-        connections.clear();
-        optimalConnections.clear();
-        
-        // Create nodes
-        for (int i = 0; i < NUM_NODES; i++) {
-            double x = 50 + random.nextDouble() * 500;
-            double y = 50 + random.nextDouble() * 250;
+        try {
+            log("Generating network nodes and connections...");
+            if (networkPane == null) {
+                log("ERROR: networkPane is null");
+                return;
+            }
             
-            NetworkNode node = new NetworkNode(i, x, y);
-            nodes.add(node);
-            networkPane.getChildren().add(node.getVisual());
-        }
-        
-        // Set source and destination nodes (first and last)
-        sourceNode = nodes.get(0);
-        sourceNode.setType(NodeType.SOURCE);
-        
-        destinationNode = nodes.get(NUM_NODES - 1);
-        destinationNode.setType(NodeType.DESTINATION);
-        
-        // Create potential connections between nodes
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i + 1; j < nodes.size(); j++) {
-                // Only create connections with 70% probability
-                if (random.nextDouble() < 0.7) {
-                    NetworkNode nodeA = nodes.get(i);
-                    NetworkNode nodeB = nodes.get(j);
-                    
-                    // Calculate distance
-                    double distance = calculateDistance(nodeA, nodeB);
-                    
-                    // Skip if too far away
-                    if (distance > 250) continue;
-                    
-                    // Create connection
-                    NetworkConnection connection = new NetworkConnection(nodeA, nodeB, distance);
-                    connections.add(connection);
-                    
-                    // Add connection visual to the network pane (below nodes)
-                    networkPane.getChildren().add(0, connection.getVisual());
+            nodes.clear();
+            connections.clear();
+            optimalConnections.clear();
+            
+            // Create nodes
+            for (int i = 0; i < NUM_NODES; i++) {
+                double x = 50 + random.nextDouble() * 500;
+                double y = 50 + random.nextDouble() * 250;
+                
+                NetworkNode node = new NetworkNode(i, x, y);
+                nodes.add(node);
+                networkPane.getChildren().add(node.getVisual());
+            }
+            
+            log("Created " + nodes.size() + " network nodes");
+            
+            // Set source and destination nodes (first and last)
+            sourceNode = nodes.get(0);
+            sourceNode.setType(NodeType.SOURCE);
+            
+            destinationNode = nodes.get(NUM_NODES - 1);
+            destinationNode.setType(NodeType.DESTINATION);
+            
+            log("Set source node: " + sourceNode.getId() + ", destination node: " + destinationNode.getId());
+            
+            // Create potential connections between nodes
+            for (int i = 0; i < nodes.size(); i++) {
+                for (int j = i + 1; j < nodes.size(); j++) {
+                    // Only create connections with 70% probability
+                    if (random.nextDouble() < 0.7) {
+                        NetworkNode nodeA = nodes.get(i);
+                        NetworkNode nodeB = nodes.get(j);
+                        
+                        // Calculate distance
+                        double distance = calculateDistance(nodeA, nodeB);
+                        
+                        // Skip if too far away
+                        if (distance > 250) continue;
+                        
+                        // Create connection
+                        NetworkConnection connection = new NetworkConnection(nodeA, nodeB, distance);
+                        connections.add(connection);
+                        
+                        // Add connection visual to the network pane (below nodes)
+                        networkPane.getChildren().add(0, connection.getVisual());
+                    }
                 }
             }
+            
+            log("Created " + connections.size() + " network connections");
+            
+            // Generate optimal path (minimize total distance)
+            findOptimalPath();
+        } catch (Exception e) {
+            log("Error in generateNetwork: " + e.getMessage());
+            e.printStackTrace();
         }
-        
-        // Generate optimal path (minimize total distance)
-        findOptimalPath();
     }
     
     /**
@@ -357,36 +460,58 @@ public class NetworkRoutingTask extends GameTask {
      * Establish route with current connections
      */
     private void establishRoute() {
-        if (!pathCompleted) {
-            statusLabel.setText("NO COMPLETE PATH DETECTED");
+        List<NetworkConnection> path = findActiveConnectionPath();
+        
+        if (path.isEmpty() || !checkPathCompletion()) {
+            statusLabel.setText("Connection failed: No path to destination");
             return;
         }
         
-        // Count active connections
-        int activeCount = 0;
-        for (NetworkConnection conn : connections) {
-            if (conn.isActive()) {
-                activeCount++;
-            }
-        }
-        
-        // Check if path is optimal
-        boolean isOptimal = activeCount <= NUM_REQUIRED_CONNECTIONS;
+        // Check if path is optimal (using NUM_REQUIRED_CONNECTIONS)
+        boolean isOptimal = path.size() <= NUM_REQUIRED_CONNECTIONS;
         
         if (isOptimal) {
-            // Success!
-            statusLabel.setText("OPTIMAL NETWORK PATH ESTABLISHED");
-            statusLabel.setTextFill(Color.web("#00FF00"));
+            statusLabel.setText("Optimal network path established!");
             
-            // Completion effect
-            animateDataTransfer();
+            // Add glow effect to taskPane
+            DropShadow glow = new DropShadow();
+            glow.setColor(Color.CYAN);
+            glow.setWidth(20);
+            glow.setHeight(20);
+            glow.setRadius(10);
+            taskPane.setEffect(glow);
             
+            // Flash the node with a success color - replacing CyberpunkEffects.styleCompletionEffect(taskPane)
+            Timeline flash = new Timeline(
+                new KeyFrame(Duration.ZERO, 
+                    new KeyValue(taskPane.opacityProperty(), 1.0)
+                ),
+                new KeyFrame(Duration.millis(100),
+                    new KeyValue(taskPane.opacityProperty(), 0.7)
+                ),
+                new KeyFrame(Duration.millis(200),
+                    new KeyValue(taskPane.opacityProperty(), 1.0)
+                ),
+                new KeyFrame(Duration.millis(300),
+                    new KeyValue(taskPane.opacityProperty(), 0.7)
+                ),
+                new KeyFrame(Duration.millis(400),
+                    new KeyValue(taskPane.opacityProperty(), 1.0)
+                )
+            );
+            
+            flash.setCycleCount(3);
+            flash.setOnFinished(e -> {
+                // Start data animation when flashing completes
+                animateDataTransfer(path);
+            });
+            flash.play();
         } else {
-            // Too many connections
-            statusLabel.setText("SUBOPTIMAL ROUTE - TOO MANY CONNECTIONS");
-            statusLabel.setTextFill(Color.web("#FFCC00"));
+            // Suboptimal path - too many connections
+            statusLabel.setText("Suboptimal route - too many connections!");
+            statusLabel.setTextFill(Color.ORANGE);
             
-            // Show optimal connections briefly
+            // Show optimal connections
             highlightOptimalConnections();
         }
     }
@@ -398,6 +523,17 @@ public class NetworkRoutingTask extends GameTask {
         // First, reset all connections to inactive
         resetConnections();
         
+        // If optimalConnections is empty, try to find a path with minimal connections
+        if (optimalConnections.isEmpty()) {
+            findMinimalPath();
+        }
+        
+        // If still empty, show error message
+        if (optimalConnections.isEmpty()) {
+            statusLabel.setText("Could not determine optimal path");
+            return;
+        }
+        
         // Then highlight optimal connections
         Timeline highlightTimeline = new Timeline();
         
@@ -407,7 +543,7 @@ public class NetworkRoutingTask extends GameTask {
             
             KeyFrame kf = new KeyFrame(Duration.seconds(0.5 * i), e -> {
                 conn.setActive(true);
-                statusLabel.setText("SHOWING OPTIMAL PATH: CONNECTION " + (index + 1));
+                statusLabel.setText("Showing optimal path: Connection " + (index + 1));
             });
             
             highlightTimeline.getKeyFrames().add(kf);
@@ -416,7 +552,7 @@ public class NetworkRoutingTask extends GameTask {
         // After showing optimal path, reset again
         KeyFrame resetFrame = new KeyFrame(Duration.seconds(0.5 * optimalConnections.size() + 2), e -> {
             resetConnections();
-            statusLabel.setText("TRY AGAIN WITH FEWER CONNECTIONS");
+            statusLabel.setText("Try again with fewer connections");
             statusLabel.setTextFill(Color.web("#00FFFF"));
         });
         
@@ -425,9 +561,64 @@ public class NetworkRoutingTask extends GameTask {
     }
     
     /**
+     * Find minimal path from source to destination
+     */
+    private void findMinimalPath() {
+        // Use a simplified breadth-first search to find a path
+        Map<NetworkNode, NetworkConnection> backtrack = new HashMap<>();
+        Queue<NetworkNode> queue = new LinkedList<>();
+        Set<NetworkNode> visited = new HashSet<>();
+        
+        queue.add(sourceNode);
+        visited.add(sourceNode);
+        
+        while (!queue.isEmpty()) {
+            NetworkNode current = queue.poll();
+            
+            if (current == destinationNode) {
+                break; // Found destination
+            }
+            
+            // Check all available connections from this node
+            for (NetworkConnection conn : connections) {
+                NetworkNode next = null;
+                
+                if (conn.getNodeA() == current && !visited.contains(conn.getNodeB())) {
+                    next = conn.getNodeB();
+                } else if (conn.getNodeB() == current && !visited.contains(conn.getNodeA())) {
+                    next = conn.getNodeA();
+                }
+                
+                if (next != null) {
+                    visited.add(next);
+                    backtrack.put(next, conn);
+                    queue.add(next);
+                }
+            }
+        }
+        
+        // Reconstruct path if destination was found
+        if (backtrack.containsKey(destinationNode)) {
+            optimalConnections.clear();
+            NetworkNode current = destinationNode;
+            
+            while (current != sourceNode) {
+                NetworkConnection conn = backtrack.get(current);
+                optimalConnections.add(0, conn); // Add to front to preserve order
+                
+                if (conn.getNodeA() == current) {
+                    current = conn.getNodeB();
+                } else {
+                    current = conn.getNodeA();
+                }
+            }
+        }
+    }
+    
+    /**
      * Animate data transfer along the established path
      */
-    private void animateDataTransfer() {
+    private void animateDataTransfer(List<NetworkConnection> path) {
         // Create data packet visual
         Circle dataPacket = new Circle(10);
         dataPacket.setFill(Color.web("#00FF00"));
@@ -438,19 +629,11 @@ public class NetworkRoutingTask extends GameTask {
         
         networkPane.getChildren().add(dataPacket);
         
-        // Get all active connections in order
-        List<NetworkConnection> activePath = findActiveConnectionPath();
-        
-        if (activePath.isEmpty()) {
-            dataPacket.setVisible(false);
-            return;
-        }
-        
         // Create animation sequence for data packet
         Timeline dataAnimation = new Timeline();
         double totalDelay = 0;
         
-        for (NetworkConnection conn : activePath) {
+        for (NetworkConnection conn : path) {
             NetworkNode start = conn.getNodeA();
             NetworkNode end = conn.getNodeB();
             
@@ -486,9 +669,6 @@ public class NetworkRoutingTask extends GameTask {
         
         // When animation completes, show success
         dataAnimation.setOnFinished(e -> {
-            // Success effect
-            CyberpunkEffects.styleCompletionEffect(taskPane);
-            
             // Fade out data packet
             FadeTransition fade = new FadeTransition(Duration.seconds(1), dataPacket);
             fade.setFromValue(1.0);
@@ -705,30 +885,166 @@ public class NetworkRoutingTask extends GameTask {
             circle.setStrokeWidth(2);
         }
         
+        /**
+         * Setup node interaction handlers
+         */
         private void setupInteraction() {
-            // Hover effect
+            // Make draggable
+            AtomicReference<Double> dragDeltaX = new AtomicReference<>((double) 0);
+            AtomicReference<Double> dragDeltaY = new AtomicReference<>((double) 0);
+            
             visual.setOnMouseEntered(e -> {
-                if (type == NodeType.NORMAL) {
-                    circle.setFill(Color.web("#4A5A6A"));
-                    
-                    DropShadow glow = new DropShadow();
-                    glow.setColor(Color.web("#00FFFF", 0.7));
-                    glow.setRadius(10);
-                    visual.setEffect(glow);
+                if (type != NodeType.SOURCE && type != NodeType.DESTINATION) {
+                    circle.setStroke(Color.YELLOW);
+                    circle.setStrokeWidth(2);
                 }
+                visual.setCursor(Cursor.HAND);
             });
             
             visual.setOnMouseExited(e -> {
-                if (type == NodeType.NORMAL) {
-                    circle.setFill(Color.web("#3A4A5A"));
-                    visual.setEffect(null);
+                if (type != NodeType.SOURCE && type != NodeType.DESTINATION) {
+                    circle.setStroke(Color.WHITE);
+                    circle.setStrokeWidth(1);
                 }
+                visual.setCursor(Cursor.DEFAULT);
             });
             
-            // Selection effect (for debugging)
-            visual.setOnMouseClicked(e -> {
-                // For clicking nodes directly
+            visual.setOnMousePressed(e -> {
+                if (e.isSecondaryButtonDown()) {
+                    // Toggle node active state on right click
+                    toggleNodeState();
+                } else {
+                    // Prepare for drag on left click
+                    dragDeltaX.set(visual.getLayoutX() - e.getSceneX());
+                    dragDeltaY.set(visual.getLayoutY() - e.getSceneY());
+                    visual.setCursor(Cursor.MOVE);
+                }
+                
+                e.consume();
             });
+            
+            visual.setOnMouseDragged(e -> {
+                if (!e.isSecondaryButtonDown()) {
+                    double newX = e.getSceneX() + dragDeltaX.get();
+                    double newY = e.getSceneY() + dragDeltaY.get();
+                    
+                    // Keep within bounds
+                    newX = Math.max(0, Math.min(networkPane.getWidth() - 30, newX));
+                    newY = Math.max(0, Math.min(networkPane.getHeight() - 30, newY));
+                    
+                    visual.setLayoutX(newX);
+                    visual.setLayoutY(newY);
+                    
+                    // Update connected lines
+                    for (NetworkConnection conn : connections) {
+                        if (conn.getNodeA() == this || conn.getNodeB() == this) {
+                            conn.updatePosition();
+                        }
+                    }
+                }
+                
+                e.consume();
+            });
+            
+            visual.setOnMouseReleased(e -> {
+                visual.setCursor(Cursor.HAND);
+                
+                if (!e.isSecondaryButtonDown()) {
+                    // Check if we can now establish route
+                    boolean canEstablish = checkPathCompletion();
+                    routeButton.setDisable(!canEstablish);
+                    
+                    if (canEstablish && !pathCompleted) {
+                        statusLabel.setText("Path complete - Click ESTABLISH ROUTE");
+                        pathCompleted = true;
+                    } else if (!canEstablish) {
+                        statusLabel.setText("Continue connecting nodes");
+                        pathCompleted = false;
+                    }
+                }
+                
+                e.consume();
+            });
+            
+            visual.setOnMouseClicked(e -> {
+                // Handle click to select or deselect node
+                if (e.getClickCount() == 2) {
+                    // Double click = select node for connection
+                    selectNodeForConnection();
+                } else if (e.isSecondaryButtonDown()) {
+                    // Right click handled in the pressed event
+                } else {
+                    // Single click = select node
+                    System.out.println("Node " + id + " clicked");
+                }
+                
+                e.consume();
+            });
+        }
+        
+        /**
+         * Select node for connection
+         */
+        public void selectNodeForConnection() {
+            // Cannot select source or destination for manual connections
+            if (type == NodeType.SOURCE || type == NodeType.DESTINATION) {
+                return;
+            }
+            
+            log("Node " + id + " selected for connection");
+            
+            // Change appearance to show selection
+            if (type == NodeType.NORMAL) {
+                // Mark as active (selected)
+                setType(NodeType.ACTIVE);
+                
+                // Find another active node to connect with
+                NetworkNode otherNode = null;
+                for (NetworkNode node : nodes) {
+                    if (node != this && node.getType() == NodeType.ACTIVE) {
+                        otherNode = node;
+                        break;
+                    }
+                }
+                
+                if (otherNode != null) {
+                    // Create connection between the two active nodes
+                    createOrToggleConnection(this, otherNode);
+                    
+                    // Reset node types
+                    setType(NodeType.NORMAL);
+                    otherNode.setType(NodeType.NORMAL);
+                    
+                    // Check if we have a complete path
+                    boolean canEstablish = checkPathCompletion();
+                    routeButton.setDisable(!canEstablish);
+                    
+                    if (canEstablish && !pathCompleted) {
+                        statusLabel.setText("Path complete - Click ESTABLISH ROUTE");
+                        pathCompleted = true;
+                    }
+                }
+            } else if (type == NodeType.ACTIVE) {
+                // Deselect
+                setType(NodeType.NORMAL);
+            }
+        }
+        
+        /**
+         * Toggle node active state
+         */
+        public void toggleNodeState() {
+            // Cannot toggle source or destination
+            if (type == NodeType.SOURCE || type == NodeType.DESTINATION) {
+                return;
+            }
+            
+            // Toggle between normal and active
+            if (type == NodeType.NORMAL) {
+                setType(NodeType.ACTIVE);
+            } else {
+                setType(NodeType.NORMAL);
+            }
         }
     }
     
@@ -863,6 +1179,46 @@ public class NetworkRoutingTask extends GameTask {
             visual.setOnMouseClicked(e -> {
                 setActive(!active);
             });
+        }
+        
+        /**
+         * Update connection line position based on connected nodes
+         */
+        public void updatePosition() {
+            visual.setStartX(nodeA.getX());
+            visual.setStartY(nodeA.getY());
+            visual.setEndX(nodeB.getX());
+            visual.setEndY(nodeB.getY());
+        }
+    }
+
+    /**
+     * Create or toggle connection between two nodes
+     */
+    private void createOrToggleConnection(NetworkNode nodeA, NetworkNode nodeB) {
+        // First check if connection already exists
+        NetworkConnection existingConn = null;
+        
+        for (NetworkConnection conn : connections) {
+            if ((conn.getNodeA() == nodeA && conn.getNodeB() == nodeB) ||
+                (conn.getNodeA() == nodeB && conn.getNodeB() == nodeA)) {
+                existingConn = conn;
+                break;
+            }
+        }
+        
+        if (existingConn != null) {
+            // Toggle existing connection
+            log("Toggling connection between nodes " + nodeA.getId() + " and " + nodeB.getId());
+            existingConn.setActive(!existingConn.isActive());
+        } else {
+            // Create new connection
+            log("Creating new connection between nodes " + nodeA.getId() + " and " + nodeB.getId());
+            double distance = calculateDistance(nodeA, nodeB);
+            NetworkConnection newConn = new NetworkConnection(nodeA, nodeB, distance);
+            newConn.setActive(true); // Activate by default
+            connections.add(newConn);
+            networkPane.getChildren().add(0, newConn.getVisual()); // Add visual to pane
         }
     }
 } 

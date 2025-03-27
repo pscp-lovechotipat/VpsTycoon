@@ -207,14 +207,41 @@ public class DataSortingTask extends GameTask {
         }
     }
     
+    /**
+     * Check if all data packets are in the correct position
+     */
     private void checkTaskCompletion() {
-        // Get the target grid
-        GridPane targetGrid = (GridPane) ((VBox) ((VBox) gamePane.getChildren().get(0)).getChildren().get(2)).getChildren().get(3);
+        log("Checking task completion...");
+        GridPane targetGrid = null;
         
-        boolean isCorrect = true;
+        // Find the target grid from the game pane
+        for (javafx.scene.Node node : gamePane.getChildren()) {
+            if (node instanceof VBox) {
+                VBox vbox = (VBox) node;
+                for (javafx.scene.Node child : vbox.getChildren()) {
+                    if (child instanceof VBox) {
+                        VBox sortingArea = (VBox) child;
+                        for (javafx.scene.Node areaChild : sortingArea.getChildren()) {
+                            if (areaChild instanceof GridPane && areaChild.getStyle().contains("#152535")) {
+                                targetGrid = (GridPane) areaChild;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (targetGrid == null) {
+            log("ERROR: Target grid not found!");
+            return;
+        }
+        
         int correctCount = 0;
+        boolean isCorrect = true;
+        StringBuilder statusMessage = new StringBuilder("Current status: ");
         
-        // Check all slots
+        // Check each position in the grid
         for (int i = 0; i < 10; i++) {
             int row = i / 5;
             int col = i % 5;
@@ -222,7 +249,14 @@ public class DataSortingTask extends GameTask {
             // Find the data packet at this position
             DataPacket packet = null;
             for (javafx.scene.Node node : targetGrid.getChildren()) {
-                if (GridPane.getRowIndex(node) == row && GridPane.getColumnIndex(node) == col) {
+                Integer nodeRow = GridPane.getRowIndex(node);
+                Integer nodeCol = GridPane.getColumnIndex(node);
+                
+                // GridPane.getRowIndex can return null if not explicitly set
+                if (nodeRow == null) nodeRow = 0;
+                if (nodeCol == null) nodeCol = 0;
+                
+                if (nodeRow == row && nodeCol == col) {
                     if (node instanceof StackPane && ((StackPane)node).getUserData() instanceof DataPacket) {
                         packet = (DataPacket) ((StackPane)node).getUserData();
                         break;
@@ -232,20 +266,25 @@ public class DataSortingTask extends GameTask {
             
             // If packet exists and has correct priority, count it
             if (packet != null) {
-                if (packet.getPriority() == i + 1) {
+                boolean isPacketCorrect = packet.getPriority() == i + 1;
+                if (isPacketCorrect) {
                     correctCount++;
+                    statusMessage.append("✓");
                 } else {
                     isCorrect = false;
+                    statusMessage.append("✗");
                 }
             } else {
                 isCorrect = false;
+                statusMessage.append("_");
             }
         }
         
+        log(statusMessage.toString());
         log("Current sorting progress: " + correctCount + "/10 packets in correct positions");
         
         // Complete task if all packets are in correct order
-        if (isCorrect && correctCount == 10) {
+        if (correctCount == 10) {
             log("All data packets sorted correctly, completing task");
             completeTask();
         }

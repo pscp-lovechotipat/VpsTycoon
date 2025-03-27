@@ -101,14 +101,75 @@ public abstract class GameTask {
         this.difficultyLevel = difficultyLevel;
         this.timeLimit = timeLimit;
         
-        // Load sound effects
+        // Load sound effects with multiple fallback paths
+        loadSoundEffects();
+    }
+
+    /**
+     * Load sound effects with fallback paths
+     */
+    private void loadSoundEffects() {
+        // List of possible paths to try for each sound
+        String[][] soundPaths = {
+            // Main path, fallback paths
+            {"/sounds/task_start.mp3", "/audio/task_start.mp3", "/sfx/task_start.mp3"},
+            {"/sounds/task_complete.mp3", "/audio/task_complete.mp3", "/sfx/task_complete.mp3"},
+            {"/sounds/task_fail.mp3", "/audio/task_fail.mp3", "/sfx/task_fail.mp3"},
+            {"/sounds/task_tick.mp3", "/audio/task_tick.mp3", "/sfx/task_tick.mp3"}
+        };
+        
         try {
-            taskStartSound = new AudioClip(getClass().getResource("/sounds/task_start.mp3").toExternalForm());
-            taskCompleteSound = new AudioClip(getClass().getResource("/sounds/task_complete.mp3").toExternalForm());
-            taskFailSound = new AudioClip(getClass().getResource("/sounds/task_fail.mp3").toExternalForm());
-            taskTickSound = new AudioClip(getClass().getResource("/sounds/task_tick.mp3").toExternalForm());
+            // Try to load start sound
+            taskStartSound = loadSoundWithFallback(soundPaths[0]);
+            
+            // Try to load complete sound
+            taskCompleteSound = loadSoundWithFallback(soundPaths[1]);
+            
+            // Try to load fail sound
+            taskFailSound = loadSoundWithFallback(soundPaths[2]);
+            
+            // Try to load tick sound
+            taskTickSound = loadSoundWithFallback(soundPaths[3]);
         } catch (Exception e) {
             log("Could not load sound effects: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Load sound with fallback paths
+     * 
+     * @param paths Array of paths to try
+     * @return AudioClip if found, null if not found
+     */
+    private AudioClip loadSoundWithFallback(String[] paths) {
+        for (String path : paths) {
+            try {
+                java.net.URL resource = getClass().getResource(path);
+                if (resource != null) {
+                    return new AudioClip(resource.toExternalForm());
+                }
+            } catch (Exception e) {
+                // Ignore and try next path
+            }
+        }
+        
+        // If we get here, no path worked
+        return null;
+    }
+    
+    /**
+     * Safely play an audio clip
+     * 
+     * @param clip The audio clip to play
+     * @param volume Volume (0.0 to 1.0)
+     */
+    private void safePlaySound(AudioClip clip, double volume) {
+        if (clip != null) {
+            try {
+                clip.play(volume);
+            } catch (Exception e) {
+                log("Error playing sound: " + e.getMessage());
+            }
         }
     }
 
@@ -170,9 +231,7 @@ public abstract class GameTask {
         this.onCompleteCallback = onComplete;
         
         // Play task start sound
-        if (taskStartSound != null) {
-            taskStartSound.play(0.8);
-        }
+        safePlaySound(taskStartSound, 0.8);
         
         // ล้าง container ก่อนเริ่ม task ใหม่
         Platform.runLater(() -> {
@@ -365,8 +424,8 @@ public abstract class GameTask {
                         if (progress < 0.25) {
                             timerBar.setStyle("-fx-accent: #ff0000; -fx-background-color: #1a1a2a;"); // Red
                             timerLabel.setTextFill(Color.RED);
-                            if (!playedWarningSound.get() && taskTickSound != null) {
-                                taskTickSound.play(0.5);
+                            if (!playedWarningSound.get()) {
+                                safePlaySound(taskTickSound, 0.5);
                             }
                         } else if (progress < 0.5) {
                             timerBar.setStyle("-fx-accent: #ffff00; -fx-background-color: #1a1a2a;"); // Yellow
@@ -382,9 +441,9 @@ public abstract class GameTask {
                     Thread.sleep(1000);
                     
                     // Play tick sound when time is running low
-                    if (remainingTime <= 5 && taskTickSound != null) {
+                    if (remainingTime <= 5) {
                         playedWarningSound.set(true);
-                        taskTickSound.play(0.3);
+                        safePlaySound(taskTickSound, 0.3);
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -419,12 +478,14 @@ public abstract class GameTask {
         company.setMoney(company.getMoney() + rewardAmount);
         
         // Play success sound
-        if (taskCompleteSound != null) {
-            taskCompleteSound.play(0.8);
-        }
+        safePlaySound(taskCompleteSound, 0.8);
         
         Platform.runLater(() -> {
-            resourceManager.getAudioManager().playSoundEffect("reward.mp3");
+            try {
+                resourceManager.getAudioManager().playSoundEffect("reward.mp3");
+            } catch (Exception e) {
+                log("Error playing reward sound: " + e.getMessage());
+            }
             resourceManager.pushCenterNotification(
                 "Task Completed: " + taskName,
                 "Well done cyberpunk! You've completed the task.\nReward: $" + rewardAmount,
@@ -443,12 +504,14 @@ public abstract class GameTask {
         company.setRating(newRating);
         
         // Play failure sound
-        if (taskFailSound != null) {
-            taskFailSound.play(0.8);
-        }
+        safePlaySound(taskFailSound, 0.8);
         
         Platform.runLater(() -> {
-            resourceManager.getAudioManager().playSoundEffect("failure.mp3");
+            try {
+                resourceManager.getAudioManager().playSoundEffect("failure.mp3");
+            } catch (Exception e) {
+                log("Error playing failure sound: " + e.getMessage());
+            }
             resourceManager.pushCenterNotification(
                 "Task Failed: " + taskName,
                 "You failed to complete the task in time.\nRating dropped to: " + String.format("%.1f", newRating),

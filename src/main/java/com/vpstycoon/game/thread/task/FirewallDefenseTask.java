@@ -7,6 +7,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -113,7 +114,7 @@ public class FirewallDefenseTask extends GameTask {
                                 decreaseFirewallIntegrity(statusBar, statusText);
                                 
                                 // Remove attack
-                                defenseGrid.getChildren().remove(attack.getShape());
+                                defenseGrid.getChildren().remove(attack.getStackPane());
                                 activeAttacks.remove(attack);
                             }
                         })
@@ -121,35 +122,8 @@ public class FirewallDefenseTask extends GameTask {
                     damageFire.play();
                     attackTimelines.add(damageFire);
                     
-                    // Click handler for attack
-                    attack.getShape().setOnMouseClicked(e -> {
-                        // Neutralize attack
-                        attack.neutralize();
-                        
-                        // Update counters
-                        attacksNeutralized[0]++;
-                        attacksBlockedText.setText("Attacks Neutralized: " + attacksNeutralized[0]);
-                        
-                        // Visual feedback
-                        attack.getShape().setFill(Color.GREEN.deriveColor(1, 1, 1, 0.5));
-                        
-                        // Remove after animation
-                        Timeline removeTimeline = new Timeline(
-                            new KeyFrame(Duration.seconds(0.5), ev -> {
-                                defenseGrid.getChildren().remove(attack.getShape());
-                                activeAttacks.remove(attack);
-                            })
-                        );
-                        removeTimeline.play();
-                        attackTimelines.add(removeTimeline);
-                        
-                        // Check if task is complete
-                        if (attacksNeutralized[0] >= 10 && 
-                            Double.parseDouble(statusText.getText().replaceAll("[^0-9.]", "")) > 50) {
-                            stopAllTimelines();
-                            completeTask();
-                        }
-                    });
+                    // Setup click handler for attack
+                    attack.setupClickHandler(defenseGrid, attacksNeutralized, attacksBlockedText, statusText);
                 }
             })
         );
@@ -192,7 +166,7 @@ public class FirewallDefenseTask extends GameTask {
         AttackNode attack;
         if (attackType == 0) {
             // Virus attack - red square
-            Rectangle virus = new Rectangle(x, y, 30, 30);
+            Rectangle virus = new Rectangle(30, 30);
             virus.setFill(Color.RED);
             virus.setArcWidth(5);
             virus.setArcHeight(5);
@@ -204,29 +178,26 @@ public class FirewallDefenseTask extends GameTask {
             javafx.scene.shape.Polygon malware = new javafx.scene.shape.Polygon();
             for (int i = 0; i < 6; i++) {
                 double angle = 2.0 * Math.PI * i / 6;
-                malware.getPoints().add(x + 20 * Math.cos(angle));
-                malware.getPoints().add(y + 20 * Math.sin(angle));
+                malware.getPoints().add(20 * Math.cos(angle));
+                malware.getPoints().add(20 * Math.sin(angle));
             }
             malware.setFill(Color.PURPLE);
             
             attack = new AttackNode(malware, "MALWARE");
         } else {
             // Ransomware - orange circle
-            javafx.scene.shape.Circle ransomware = new javafx.scene.shape.Circle(x, y, 18);
+            javafx.scene.shape.Circle ransomware = new javafx.scene.shape.Circle(18);
             ransomware.setFill(Color.ORANGE);
             
             attack = new AttackNode(ransomware, "RANSOM");
         }
         
-        // Label
-        Text label = new Text(attack.getType());
-        label.setFont(Font.font("Share Tech Mono", FontWeight.BOLD, 10));
-        label.setFill(Color.WHITE);
-        label.setX(x - 15);
-        label.setY(y + 5);
+        // Position the attack node
+        attack.getStackPane().setLayoutX(x - 20);
+        attack.getStackPane().setLayoutY(y - 20);
         
         // Add to container
-        container.getChildren().addAll(attack.getShape(), label);
+        container.getChildren().add(attack.getStackPane());
         
         return attack;
     }
@@ -266,6 +237,7 @@ public class FirewallDefenseTask extends GameTask {
     // Class to represent an attack
     private class AttackNode {
         private final javafx.scene.shape.Shape shape;
+        private final StackPane stackPane;
         private final String type;
         private boolean neutralized = false;
         private Timeline pulseAnimation;
@@ -274,14 +246,55 @@ public class FirewallDefenseTask extends GameTask {
             this.shape = shape;
             this.type = type;
             
+            // Create label
+            Text label = new Text(type);
+            label.setFont(Font.font("Share Tech Mono", FontWeight.BOLD, 10));
+            label.setFill(Color.WHITE);
+            
+            // Create stack pane to hold shape and label
+            stackPane = new StackPane(shape, label);
+            stackPane.setPrefSize(40, 40);
+            
             // Add pulsing effect
             pulseAnimation = new Timeline(
-                new KeyFrame(Duration.seconds(0), e -> shape.setOpacity(1.0)),
-                new KeyFrame(Duration.seconds(0.5), e -> shape.setOpacity(0.7)),
-                new KeyFrame(Duration.seconds(1.0), e -> shape.setOpacity(1.0))
+                new KeyFrame(Duration.seconds(0), e -> stackPane.setOpacity(1.0)),
+                new KeyFrame(Duration.seconds(0.5), e -> stackPane.setOpacity(0.7)),
+                new KeyFrame(Duration.seconds(1.0), e -> stackPane.setOpacity(1.0))
             );
             pulseAnimation.setCycleCount(Timeline.INDEFINITE);
             pulseAnimation.play();
+        }
+        
+        // Add click handler for stack pane
+        public void setupClickHandler(Pane defenseGrid, int[] attacksNeutralized, Text attacksBlockedText, Text statusText) {
+            stackPane.setOnMouseClicked(e -> {
+                // Update counters
+                attacksNeutralized[0]++;
+                attacksBlockedText.setText("Attacks Neutralized: " + attacksNeutralized[0]);
+                
+                // Visual feedback
+                shape.setFill(Color.GREEN.deriveColor(1, 1, 1, 0.5));
+                
+                // Neutralize attack
+                neutralize();
+                
+                // Remove after animation
+                Timeline removeTimeline = new Timeline(
+                    new KeyFrame(Duration.seconds(0.5), ev -> {
+                        defenseGrid.getChildren().remove(stackPane);
+                        activeAttacks.remove(this);
+                    })
+                );
+                removeTimeline.play();
+                attackTimelines.add(removeTimeline);
+                
+                // Check if task is complete
+                if (attacksNeutralized[0] >= 10 && 
+                    Double.parseDouble(statusText.getText().replaceAll("[^0-9.]", "")) > 50) {
+                    stopAllTimelines();
+                    completeTask();
+                }
+            });
         }
         
         public void stopPulseAnimation() {
@@ -292,6 +305,10 @@ public class FirewallDefenseTask extends GameTask {
         
         public javafx.scene.shape.Shape getShape() {
             return shape;
+        }
+        
+        public StackPane getStackPane() {
+            return stackPane;
         }
         
         public String getType() {

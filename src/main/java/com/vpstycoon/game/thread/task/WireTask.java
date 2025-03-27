@@ -36,6 +36,10 @@ public class WireTask extends GameTask {
     private final List<Circle> leftWires = new ArrayList<>();
     private final List<Circle> rightWires = new ArrayList<>();
     
+    private Circle[] leftConnectors;
+    private Circle[] rightConnectors;
+    private Line[] connectionLines;
+    
     private Circle selectedWire = null;
     private Line currentLine = null;
     private final List<Line> connectedLines = new ArrayList<>();
@@ -124,8 +128,10 @@ public class WireTask extends GameTask {
      * @param lines Array of connection lines
      */
     private void updateConnection(javafx.scene.input.MouseEvent e, int wireIndex, Line[] lines) {
-        lines[wireIndex].setEndX(e.getX());
-        lines[wireIndex].setEndY(e.getY());
+        // ใช้ scene coordinates เพื่อให้ตำแหน่งตรงกับเมาส์จริงๆ
+        javafx.geometry.Point2D point = lines[wireIndex].getParent().sceneToLocal(e.getSceneX(), e.getSceneY());
+        lines[wireIndex].setEndX(point.getX());
+        lines[wireIndex].setEndY(point.getY());
     }
     
     /**
@@ -138,47 +144,104 @@ public class WireTask extends GameTask {
      * @param rightColors Colors of right connectors
      */
     private void finishConnection(javafx.scene.input.MouseEvent e, int wireIndex, Circle[] rightConnectors, Line[] lines, String[] rightColors) {
+        // แปลง scene coordinates เป็น local coordinates ของ parent
+        javafx.geometry.Point2D point = lines[wireIndex].getParent().sceneToLocal(e.getSceneX(), e.getSceneY());
+        double mouseX = point.getX();
+        double mouseY = point.getY();
+        
         // Check if the line ends near a right connector
         for (int i = 0; i < rightConnectors.length; i++) {
             Circle target = rightConnectors[i];
-            double targetX = target.getLayoutX() + 15;
-            double targetY = target.getLayoutY() + 15;
             
-            // Check if mouse is near the target
-            if (Math.abs(e.getX() - targetX) < 20 && Math.abs(e.getY() - targetY) < 20) {
+            // แปลง target coordinates ให้อยู่ใน coordinate space เดียวกันกับ mouse
+            javafx.geometry.Point2D targetPoint = lines[wireIndex].getParent().sceneToLocal(
+                target.localToScene(target.getBoundsInLocal()).getCenterX(),
+                target.localToScene(target.getBoundsInLocal()).getCenterY()
+            );
+            double targetX = targetPoint.getX();
+            double targetY = targetPoint.getY();
+            
+            // เพิ่มระยะการตรวจจับให้มากขึ้น
+            if (Math.abs(mouseX - targetX) < 30 && Math.abs(mouseY - targetY) < 30) {
                 // Snap the line to the target
                 lines[wireIndex].setEndX(targetX);
                 lines[wireIndex].setEndY(targetY);
                 
+                // เปลี่ยนสีของเส้นให้ตรงกับข้อมูลจริง (เส้นที่ต่อจาก left connector)
+                lines[wireIndex].setStroke(leftConnectors[wireIndex].getFill());
+                
+                // Debug: แสดงข้อมูลการเชื่อมต่อ
+                log("Connected wire " + wireIndex + " to connector " + i);
+                
+                // ทดสอบว่าสีตรงกันหรือไม่
+                String leftColor = ((javafx.scene.paint.Color)leftConnectors[wireIndex].getFill()).toString();
+                String rightColor = ((javafx.scene.paint.Color)rightConnectors[i].getFill()).toString();
+                log("Left color: " + leftColor + ", Right color: " + rightColor + ", Match: " + leftColor.equals(rightColor));
+                
                 // Check if this completes all connections
                 boolean allConnected = true;
+                boolean allCorrectColors = true;
+                
+                // สร้าง mapping ของการเชื่อมต่อปัจจุบัน
+                int[] currentConnections = new int[lines.length];
+                java.util.Arrays.fill(currentConnections, -1); // -1 = ยังไม่เชื่อมต่อ
+                
+                // ตรวจสอบการเชื่อมต่อทั้งหมด
                 for (int j = 0; j < lines.length; j++) {
-                    // A line is connected if its end coordinates match a right connector
-                    boolean lineConnected = false;
+                    boolean foundConnection = false;
+                    
                     for (int k = 0; k < rightConnectors.length; k++) {
-                        double connectorX = rightConnectors[k].getLayoutX() + 15;
-                        double connectorY = rightConnectors[k].getLayoutY() + 15;
+                        // ควรใช้ parent ของ line ที่เรากำลังตรวจสอบ ไม่ใช่ของ line ปัจจุบัน
+                        javafx.geometry.Point2D connPoint = lines[j].getParent().sceneToLocal(
+                            rightConnectors[k].localToScene(rightConnectors[k].getBoundsInLocal()).getCenterX(),
+                            rightConnectors[k].localToScene(rightConnectors[k].getBoundsInLocal()).getCenterY()
+                        );
                         
-                        if (Math.abs(lines[j].getEndX() - connectorX) < 5 && Math.abs(lines[j].getEndY() - connectorY) < 5) {
-                            lineConnected = true;
+                        // ตรวจสอบว่าเส้นเชื่อมต่อกับข้อต่อใด
+                        if (lines[j].getStroke() != Color.TRANSPARENT && 
+                            Math.abs(lines[j].getEndX() - connPoint.getX()) < 10 && 
+                            Math.abs(lines[j].getEndY() - connPoint.getY()) < 10) {
                             
-                            // Check color match (on array indices for simplicity)
-                            if (j != k) {
-                                // Colors don't match - game not complete yet
-                                return;
+                            currentConnections[j] = k;
+                            foundConnection = true;
+                            
+                            // เช็คว่าสีตรงกันหรือไม่ - โดยดูจากสีของ connector ไม่ใช่ตำแหน่ง
+                            String leftWireColor = ((javafx.scene.paint.Color)leftConnectors[j].getFill()).toString();
+                            String rightWireColor = ((javafx.scene.paint.Color)rightConnectors[k].getFill()).toString();
+                            
+                            if (!leftWireColor.equals(rightWireColor)) {
+                                log("Color mismatch: wire " + j + " (color " + leftWireColor + 
+                                    ") connected to " + k + " (color " + rightWireColor + ")");
+                                allCorrectColors = false;
+                            } else {
+                                log("Color match: wire " + j + " connected correctly");
                             }
                             
                             break;
                         }
                     }
                     
-                    if (!lineConnected) {
+                    if (!foundConnection && lines[j].getStroke() != Color.TRANSPARENT) {
+                        log("Warning: Wire " + j + " appears connected but endpoint not found near any connector");
                         allConnected = false;
                     }
                 }
                 
+                // จำนวนสายที่เชื่อมต่อ (เฉพาะที่มีการเชื่อมต่อแล้ว)
+                int connectedCount = 0;
+                for (int j = 0; j < currentConnections.length; j++) {
+                    if (currentConnections[j] != -1) {
+                        connectedCount++;
+                    }
+                }
+                
+                log("Connected wires: " + connectedCount + "/" + wireCount + 
+                    " (allConnected=" + allConnected + 
+                    ", allCorrectColors=" + allCorrectColors + ")");
+                
                 // If all wires are connected correctly, complete the task
-                if (allConnected) {
+                if (connectedCount == wireCount && allCorrectColors) {
+                    log("All " + wireCount + " wires connected correctly!");
                     completeTask();
                 }
                 
@@ -225,9 +288,9 @@ public class WireTask extends GameTask {
         shuffleArray(rightColors);
         
         // Store the connections
-        Circle[] leftConnectors = new Circle[wireCount];
-        Circle[] rightConnectors = new Circle[wireCount];
-        Line[] connectionLines = new Line[wireCount];
+        leftConnectors = new Circle[wireCount];
+        rightConnectors = new Circle[wireCount];
+        connectionLines = new Line[wireCount];
         
         for (int i = 0; i < wireCount; i++) {
             connectionLines[i] = new Line();
@@ -245,6 +308,7 @@ public class WireTask extends GameTask {
         // Create left side connectors
         VBox leftSide = new VBox(20);
         leftSide.setAlignment(Pos.CENTER_LEFT);
+        leftSide.setPadding(new Insets(0, 20, 0, 0)); // เพิ่ม padding ให้ห่างจากขอบ
         for (int i = 0; i < wireCount; i++) {
             Circle circle = new Circle(15);
             circle.setFill(Color.web(leftColors[i]));
@@ -253,6 +317,11 @@ public class WireTask extends GameTask {
             leftConnectors[i] = circle;
             
             final int wireIndex = i;
+            
+            // เพิ่ม handler เมื่อเมาส์ hover เพื่อให้เห็นชัดว่าคลิกได้
+            circle.setOnMouseEntered(e -> circle.setStroke(Color.YELLOW));
+            circle.setOnMouseExited(e -> circle.setStroke(Color.WHITE));
+            
             circle.setOnMousePressed(e -> startConnection(wireIndex, leftConnectors, connectionLines));
             circle.setOnMouseDragged(e -> updateConnection(e, wireIndex, connectionLines));
             circle.setOnMouseReleased(e -> finishConnection(e, wireIndex, rightConnectors, connectionLines, rightColors));
@@ -263,12 +332,18 @@ public class WireTask extends GameTask {
         // Create right side connectors
         VBox rightSide = new VBox(20);
         rightSide.setAlignment(Pos.CENTER_RIGHT);
+        rightSide.setPadding(new Insets(0, 0, 0, 20)); // เพิ่ม padding ให้ห่างจากขอบ
         for (int i = 0; i < wireCount; i++) {
             Circle circle = new Circle(15);
             circle.setFill(Color.web(rightColors[i]));
             circle.setStroke(Color.WHITE);
             circle.setStrokeWidth(2);
             rightConnectors[i] = circle;
+            
+            // เพิ่ม handler เมื่อเมาส์ hover เพื่อให้เห็นชัดว่าคลิกได้
+            circle.setOnMouseEntered(e -> circle.setStroke(Color.YELLOW));
+            circle.setOnMouseExited(e -> circle.setStroke(Color.WHITE));
+            
             rightSide.getChildren().add(circle);
         }
         
