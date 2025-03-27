@@ -232,7 +232,8 @@ public class SkillPointsSystem implements Serializable {
             case RACK_SLOTS:
                 String slotBonus = "+" + (level * 2) + " rack slots";
                 String discountBonus = (level > 1) ? ", " + ((level - 1) * 10) + "% discount on rack slot upgrades" : "";
-                return "Level " + level + ": " + slotBonus + discountBonus;
+                String networkBonus = (level > 1) ? ", +" + ((level - 1) * 10) + " Gbps network speed per rack" : "";
+                return "Level " + level + ": " + slotBonus + discountBonus + networkBonus;
             case NETWORK_SPEED:
                 return "Level " + level + ": +" + (level * 20) + "% network speed";
             case SERVER_EFFICIENCY:
@@ -249,5 +250,15 @@ public class SkillPointsSystem implements Serializable {
             default:
                 return "Unknown skill type. Cannot be upgraded further.";
         }
+    }
+
+    /**
+     * Get the rack network speed multiplier based on the RACK_SLOTS skill level
+     * @return Network speed increment in Gbps (added to base 10 Gbps)
+     */
+    public int getRackNetworkSpeedBonus() {
+        int skillLevel = getSkillLevel(SkillType.RACK_SLOTS);
+        // Level 1: +0 Gbps, Level 2: +10 Gbps, Level 3: +20 Gbps, Level 4: +30 Gbps
+        return (skillLevel > 1) ? (skillLevel - 1) * 10 : 0;
     }
 } 

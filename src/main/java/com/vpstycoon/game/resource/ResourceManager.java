@@ -13,6 +13,7 @@ import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.enums.VPSSize;
 import com.vpstycoon.ui.game.GameplayContentPane;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 import com.vpstycoon.ui.game.notification.NotificationController;
 import com.vpstycoon.ui.game.notification.NotificationModel;
 import com.vpstycoon.ui.game.notification.NotificationView;
@@ -62,6 +63,41 @@ public class ResourceManager implements Serializable {
     private GameTimeController gameTimeController;
 
     private SkillPointsSystem skillPointsSystem;
+
+    // Interface for rack UI update notifications
+    public interface RackUIUpdateListener {
+        void onRackUIUpdate();
+    }
+    
+    private List<RackUIUpdateListener> rackUIUpdateListeners = new ArrayList<>();
+    
+    /**
+     * Add a listener to be notified when rack UI should be updated
+     * @param listener The listener to add
+     */
+    public void addRackUIUpdateListener(RackUIUpdateListener listener) {
+        if (listener != null && !rackUIUpdateListeners.contains(listener)) {
+            rackUIUpdateListeners.add(listener);
+        }
+    }
+    
+    /**
+     * Remove a rack UI update listener
+     * @param listener The listener to remove
+     */
+    public void removeRackUIUpdateListener(RackUIUpdateListener listener) {
+        rackUIUpdateListeners.remove(listener);
+    }
+    
+    /**
+     * Notify all registered listeners that rack UI should be updated
+     * This is called when rack-related skills are upgraded
+     */
+    public void notifyRackUIUpdate() {
+        for (RackUIUpdateListener listener : new ArrayList<>(rackUIUpdateListeners)) {
+            listener.onRackUIUpdate();
+        }
+    }
 
     private NotificationModel notificationModel;
     private NotificationView notificationView;
@@ -179,8 +215,8 @@ public class ResourceManager implements Serializable {
         
         // บันทึกข้อมูล Chat History จาก ChatHistoryManager ลงใน GameState (ถ้ามี)
         try {
-            com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager chatManager = 
-                com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager.getInstance();
+            ChatHistoryManager chatManager =
+                ChatHistoryManager.getInstance();
             if (chatManager != null) {
                 // บันทึกข้อมูลลงใน GameState โดยตรง (ไม่ต้องเรียก saveChatHistory เพราะเดี๋ยวจะเรียกวนกัน)
                 System.out.println("กำลังบันทึกข้อมูล Chat History ลงใน GameState...");

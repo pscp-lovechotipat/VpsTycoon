@@ -4,6 +4,7 @@ import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.game.resource.ResourceManager.RackUIUpdateListener;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.utils.UIUtils;
@@ -27,7 +28,7 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RackManagementUI extends VBox {
+public class RackManagementUI extends VBox implements RackUIUpdateListener {
     private final GameplayContentPane parent;
     private final List<Pane> slotPanes = new ArrayList<>();
     private final int MAX_SLOTS = 10;
@@ -42,6 +43,10 @@ public class RackManagementUI extends VBox {
     private final Label upgradeInfoLabel;
     private final BorderPane mainRackDisplay;
     private final StackPane rackViewport;
+    
+    // Network value labels that need to be updated
+    private Label networkValueEmpty;
+    private Label networkValuePopulated;
 
     public RackManagementUI(GameplayContentPane parent) {
         this.parent = parent;
@@ -233,6 +238,9 @@ public class RackManagementUI extends VBox {
 
         // Initial UI update
         updateUI();
+        
+        // Register as a listener for rack UI updates
+        ResourceManager.getInstance().addRackUIUpdateListener(this);
     }
     
     private Button createCyberButton(String text) {
@@ -991,8 +999,14 @@ public class RackManagementUI extends VBox {
             
             Label networkLabel = new Label("NETWORK:");
             networkLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            Label networkValue = new Label("10 Gbps");
-            networkValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
+            
+            // Get the base network speed + skill point bonus
+            int baseNetworkSpeed = 10;
+            int networkSpeedBonus = ResourceManager.getInstance().getSkillPointsSystem().getRackNetworkSpeedBonus();
+            int totalNetworkSpeed = baseNetworkSpeed + networkSpeedBonus;
+            networkValueEmpty = new Label(totalNetworkSpeed + " Gbps");
+            
+            networkValueEmpty.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
             
             Label usersLabel = new Label("ACTIVE USERS:");
             usersLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
@@ -1005,7 +1019,7 @@ public class RackManagementUI extends VBox {
             statusGrid.add(slotsLabel, 0, 1);
             statusGrid.add(slotsValue, 1, 1);
             statusGrid.add(networkLabel, 0, 2);
-            statusGrid.add(networkValue, 1, 2);
+            statusGrid.add(networkValueEmpty, 1, 2);
             statusGrid.add(usersLabel, 0, 3);
             statusGrid.add(usersValue, 1, 3);
             
@@ -1456,8 +1470,14 @@ public class RackManagementUI extends VBox {
             // Row 2
             Label networkLabel = new Label("NETWORK:");
             networkLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            Label networkValue = new Label("10 Gbps");
-            networkValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
+            
+            // Get the base network speed + skill point bonus
+            int baseNetworkSpeed = 10;
+            int networkSpeedBonus = ResourceManager.getInstance().getSkillPointsSystem().getRackNetworkSpeedBonus();
+            int totalNetworkSpeed = baseNetworkSpeed + networkSpeedBonus;
+            networkValuePopulated = new Label(totalNetworkSpeed + " Gbps");
+            
+            networkValuePopulated.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
             
             // Row 3
             Label usersLabel = new Label("ACTIVE USERS:");
@@ -1471,7 +1491,7 @@ public class RackManagementUI extends VBox {
             statusGrid.add(slotsLabel, 0, 1);
             statusGrid.add(slotsValue, 1, 1);
             statusGrid.add(networkLabel, 0, 2);
-            statusGrid.add(networkValue, 1, 2);
+            statusGrid.add(networkValuePopulated, 1, 2);
             statusGrid.add(usersLabel, 0, 3);
             statusGrid.add(usersValue, 1, 3);
             
@@ -2237,5 +2257,38 @@ public class RackManagementUI extends VBox {
 
     public int getMAX_SLOTS() {
         return parent.getRack().getMaxSlotUnits();
+    }
+
+    // Implement the RackUIUpdateListener interface
+    @Override
+    public void onRackUIUpdate() {
+        // Update network speed displays
+        updateNetworkLabels();
+    }
+
+    // Update both network value labels with current speed values
+    private void updateNetworkLabels() {
+        // Get current network speed values
+        int baseNetworkSpeed = 10;
+        int networkSpeedBonus = ResourceManager.getInstance().getSkillPointsSystem().getRackNetworkSpeedBonus();
+        int totalNetworkSpeed = baseNetworkSpeed + networkSpeedBonus;
+        
+        // Update labels if they exist
+        if (networkValueEmpty != null) {
+            networkValueEmpty.setText(totalNetworkSpeed + " Gbps");
+        }
+        
+        if (networkValuePopulated != null) {
+            networkValuePopulated.setText(totalNetworkSpeed + " Gbps");
+        }
+    }
+
+    /**
+     * Clean up resources when this UI is disposed
+     * Should be called when the UI is no longer needed
+     */
+    public void dispose() {
+        // Unregister from resource manager
+        ResourceManager.getInstance().removeRackUIUpdateListener(this);
     }
 }

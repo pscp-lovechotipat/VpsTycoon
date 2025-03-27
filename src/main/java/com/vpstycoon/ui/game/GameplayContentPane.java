@@ -417,6 +417,11 @@ public class GameplayContentPane extends BorderPane {
 
     // === Navigation Methods ===
     public void returnToRoom() {
+        // Dispose rack management UI to unregister listeners
+        if (rackManagementUI != null) {
+            rackManagementUI.dispose();
+        }
+        
         gameArea.getChildren().clear();
         setupUI();
 

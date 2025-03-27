@@ -2,6 +2,7 @@ package com.vpstycoon.ui.game.desktop;
 
 import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.company.SkillPointsSystem.SkillType;
+import com.vpstycoon.game.resource.ResourceManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -134,6 +135,9 @@ public class SkillPointsWindow extends VBox {
         switch (skillType) {
             case RACK_SLOTS:
                 bonusText = "Current bonus: +" + (currentLevel * 2) + " rack slots";
+                if (currentLevel > 1) {
+                    bonusText += ", +" + ((currentLevel - 1) * 10) + " Gbps network speed per rack";
+                }
                 break;
             case NETWORK_SPEED:
                 bonusText = "Current bonus: +" + (currentLevel * 20) + "% network speed";
@@ -180,6 +184,12 @@ public class SkillPointsWindow extends VBox {
         upgradeButton.setOnAction(e -> {
             if (skillPointsSystem.upgradeSkill(skillType)) {
                 updateUI();
+                
+                // If upgrading RACK_SLOTS, notify parent to update rack UI
+                if (skillType == SkillType.RACK_SLOTS) {
+                    // Update any open RackManagementUI instances
+                    ResourceManager.getInstance().notifyRackUIUpdate();
+                }
             }
         });
 
