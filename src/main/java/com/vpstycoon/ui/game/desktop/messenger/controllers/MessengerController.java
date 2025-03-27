@@ -237,7 +237,7 @@ public class MessengerController {
                     chatAreaView.getMessageInput().clear();
 
                     if (!selected.isActive()) {
-                        new Thread(() -> {
+                        Thread responseThread = new Thread(() -> {
                             try {
                                 Thread.sleep(1000);
                                 Platform.runLater(() -> {
@@ -248,9 +248,11 @@ public class MessengerController {
                             } catch (InterruptedException ex) {
                                 Thread.currentThread().interrupt();
                             }
-                        }).start();
+                        });
+                        responseThread.setDaemon(true);
+                        responseThread.start();
                     } else {
-                        new Thread(() -> {
+                        Thread responseThread = new Thread(() -> {
                             try {
                                 Thread.sleep(1000);
                                 Platform.runLater(() -> {
@@ -261,7 +263,9 @@ public class MessengerController {
                             } catch (InterruptedException ex) {
                                 Thread.currentThread().interrupt();
                             }
-                        }).start();
+                        });
+                        responseThread.setDaemon(true);
+                        responseThread.start();
                     }
                 }
             }

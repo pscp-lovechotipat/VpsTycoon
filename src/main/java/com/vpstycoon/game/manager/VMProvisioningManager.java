@@ -85,7 +85,7 @@ public class VMProvisioningManager implements Serializable {
         int creationTimeMs = (int)(baseTimeMs * (1.0 - reductionRate));
 
         // Start a new thread to simulate VM creation time
-        new Thread(() -> {
+        Thread vmCreationThread = new Thread(() -> {
             try {
                 System.out.println("Creating VM for " + request.getName() + 
                         " with " + vcpus + " vCPUs, " + ramGB + "GB RAM, " + 
@@ -133,7 +133,9 @@ public class VMProvisioningManager implements Serializable {
             } catch (InterruptedException e) {
                 future.completeExceptionally(e);
             }
-        }).start();
+        });
+        vmCreationThread.setDaemon(true);
+        vmCreationThread.start();
         
         return future;
     }
