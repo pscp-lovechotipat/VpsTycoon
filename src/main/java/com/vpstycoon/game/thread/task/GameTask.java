@@ -31,6 +31,8 @@ import javafx.stage.StageStyle;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.vpstycoon.game.company.SkillPointsSystem;
+
 /**
  * Abstract class representing a game task in cyberpunk theme similar to Among Us tasks.
  * Each task has a UI component that can be displayed to the player.
@@ -49,6 +51,10 @@ public abstract class GameTask {
     protected boolean completed = false;
     protected boolean failed = false;
     protected Runnable onCompleteCallback;
+    
+    // Management skill effect
+    protected double managementEfficiency = 1.0;
+    protected int managementLevel = 1;
 
     // New fields for overlay approach
     protected StackPane taskContainer;
@@ -103,6 +109,18 @@ public abstract class GameTask {
         
         // Load sound effects with multiple fallback paths
         loadSoundEffects();
+        
+        // Get management efficiency from SkillPointsSystem
+        SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
+        if (skillPointsSystem != null) {
+            managementEfficiency = skillPointsSystem.getManagementEfficiency();
+            managementLevel = skillPointsSystem.getSkillLevel(SkillPointsSystem.SkillType.MANAGEMENT);
+            
+            // Adjust time limit based on management efficiency (higher efficiency = more time)
+            if (managementLevel > 1) {
+                timeLimit = (int)(timeLimit * (1.0 + (managementEfficiency - 1.0) * 0.5));
+            }
+        }
     }
 
     /**
@@ -470,12 +488,24 @@ public abstract class GameTask {
     }
     
     /**
-     * Apply the reward for completing the task
+     * Apply reward for completing task
      */
     protected void applyReward() {
         GameState gameState = resourceManager.getCurrentState();
         Company company = gameState.getCompany();
-        company.setMoney(company.getMoney() + rewardAmount);
+        
+        // Apply management efficiency to reward (higher efficiency = higher reward)
+        long adjustedReward = (long)(rewardAmount * managementEfficiency);
+        
+        company.setMoney(company.getMoney() + adjustedReward);
+        
+        // If management level > 1, chance to earn skill point
+        if (managementLevel > 1 && random.nextDouble() < 0.25 * (managementLevel - 1)) {
+            SkillPointsSystem skillSystem = ResourceManager.getInstance().getSkillPointsSystem();
+            if (skillSystem != null) {
+                skillSystem.addPoints(1);
+            }
+        }
         
         // Play success sound
         safePlaySound(taskCompleteSound, 0.8);
@@ -486,21 +516,38 @@ public abstract class GameTask {
             } catch (Exception e) {
                 log("Error playing reward sound: " + e.getMessage());
             }
+            
+            String rewardMsg = "Well done cyberpunk! You've completed the task.\nReward: $" + adjustedReward;
+            
+            // Add management bonus info for levels > 1
+            if (managementLevel > 1) {
+                int bonusPercent = (int)((managementEfficiency - 1.0) * 100);
+                rewardMsg += " (includes " + bonusPercent + "% Management bonus)";
+            }
+            
             resourceManager.pushCenterNotification(
                 "Task Completed: " + taskName,
-                "Well done cyberpunk! You've completed the task.\nReward: $" + rewardAmount,
+                rewardMsg,
                 "/images/notification/success.png"
             );
         });
     }
     
     /**
-     * Apply the penalty for failing the task
+     * Apply penalty for failing task
      */
     protected void applyPenalty() {
         GameState gameState = resourceManager.getCurrentState();
         Company company = gameState.getCompany();
-        double newRating = Math.max(1.0, company.getRating() - penaltyRating);
+        
+        // Apply management efficiency to reduce penalty (higher efficiency = lower penalty)
+        double penaltyReduction = Math.min(0.5, (managementEfficiency - 1.0) * 0.5);
+        double adjustedPenalty = penaltyRating * (1.0 - penaltyReduction);
+        
+        // Set minimum penalty of 1 point
+        adjustedPenalty = Math.max(1.0, adjustedPenalty);
+        
+        double newRating = Math.max(1.0, company.getRating() - adjustedPenalty);
         company.setRating(newRating);
         
         // Play failure sound
@@ -512,9 +559,18 @@ public abstract class GameTask {
             } catch (Exception e) {
                 log("Error playing failure sound: " + e.getMessage());
             }
+            
+            String penaltyMsg = "You failed to complete the task in time.\nRating dropped to: " + String.format("%.1f", newRating);
+            
+            // Add management protection info for levels > 1
+            if (managementLevel > 1) {
+                int protectionPercent = (int)(penaltyReduction * 100);
+                penaltyMsg += " (" + protectionPercent + "% penalty reduction from Management skill)";
+            }
+            
             resourceManager.pushCenterNotification(
                 "Task Failed: " + taskName,
-                "You failed to complete the task in time.\nRating dropped to: " + String.format("%.1f", newRating),
+                penaltyMsg,
                 "/images/notification/failure.png"
             );
         });

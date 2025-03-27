@@ -4,6 +4,7 @@ import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -23,12 +24,17 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import javafx.scene.Node;
+import javafx.animation.FadeTransition;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+
+import com.vpstycoon.game.company.SkillPointsSystem;
+import com.vpstycoon.game.resource.ResourceManager;
 
 /**
  * Server Cooling Task
@@ -61,6 +67,11 @@ public class ServerCoolingTask extends GameTask {
     private boolean emergencyMode = false;
     private final AtomicBoolean running = new AtomicBoolean(true);
     private Thread temperatureThread;
+    private Thread autoAssistThread;
+    
+    // Management efficiency factor
+    private double managementEfficiency = 1.0;
+    private int managementLevel = 1;
 
     public ServerCoolingTask() {
         super(
@@ -73,9 +84,20 @@ public class ServerCoolingTask extends GameTask {
                 60    // time limit in seconds
         );
         
+        // Get management efficiency from SkillPointsSystem
+        SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
+        if (skillPointsSystem != null) {
+            managementEfficiency = skillPointsSystem.getManagementEfficiency();
+            managementLevel = skillPointsSystem.getSkillLevel(SkillPointsSystem.SkillType.MANAGEMENT);
+        }
+        
         // Initialize server temperatures (60-85% hot)
         for (int i = 0; i < NUM_SERVERS; i++) {
-            serverTemperatures.add(60.0 + random.nextDouble() * 25.0);
+            // Higher management efficiency means lower starting temperatures
+            double temperatureReduction = (managementEfficiency - 1.0) * 15.0;
+            double baseTemp = 60.0 + random.nextDouble() * 25.0;
+            double adjustedTemp = Math.max(50.0, baseTemp - temperatureReduction);
+            serverTemperatures.add(adjustedTemp);
             coolingRates.add(1.0); // Default cooling rate
         }
     }
@@ -96,7 +118,18 @@ public class ServerCoolingTask extends GameTask {
         headerBox.setAlignment(Pos.CENTER);
         Text titleText = CyberpunkEffects.createTaskTitle("SERVER COOLING MANAGEMENT");
         Text descText = CyberpunkEffects.createTaskDescription("Balance cooling resources to stabilize server temperatures");
-        headerBox.getChildren().addAll(titleText, descText);
+        
+        // Add management level info if level > 1
+        if (managementLevel > 1) {
+            Text managementText = new Text("Management Skill Level " + managementLevel + 
+                                         " (+" + (int)((managementEfficiency - 1.0) * 100) + "% Efficiency)");
+            managementText.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 14));
+            managementText.setFill(Color.web("#39FF14"));
+            headerBox.getChildren().addAll(titleText, descText, managementText);
+        } else {
+            headerBox.getChildren().addAll(titleText, descText);
+        }
+        
         taskPane.setTop(headerBox);
         
         // Create main content with server status and controls
@@ -163,6 +196,11 @@ public class ServerCoolingTask extends GameTask {
         
         // Start temperature simulation thread
         startTemperatureSimulation();
+        
+        // Start auto-assist for management level 3+
+        if (managementLevel >= 3) {
+            startAutoAssist();
+        }
     }
     
     /**
@@ -250,35 +288,19 @@ public class ServerCoolingTask extends GameTask {
                     // Update temperatures
                     updateTemperatures();
                     
-                    // Update UI
-                    Platform.runLater(this::updateUI);
-                    
                     // Check for server failure
-                    boolean failed = checkServerFailure();
-                    if (failed) {
-                        running.set(false);
+                    if (checkServerFailure()) {
+                        break;
                     }
                     
-                    // Check for task completion (all servers in safe range)
-                    boolean allSafe = checkAllServersSafe();
-                    if (allSafe) {
-                        Platform.runLater(() -> {
-                            statusLabel.setText("ALL SERVERS STABILIZED");
-                            statusLabel.setTextFill(Color.web("#00FF00"));
-                            
-                            // Complete task after servers remain stable for a while
-                            Timeline completeTimer = new Timeline(
-                                new KeyFrame(Duration.seconds(3), e -> {
-                                    CyberpunkEffects.styleCompletionEffect(taskPane);
-                                    completeTask();
-                                })
-                            );
-                            completeTimer.play();
-                        });
-                        running.set(false);
+                    // Check for completion if all servers are at safe temperature
+                    if (checkAllServersSafe()) {
+                        completed = true;
+                        Platform.runLater(this::completeTask);
+                        break;
                     }
                     
-                    // Sleep before next update
+                    // Wait before next update
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -286,43 +308,36 @@ public class ServerCoolingTask extends GameTask {
                 }
             }
         });
-        
         temperatureThread.setDaemon(true);
         temperatureThread.start();
     }
     
     /**
-     * Update server temperatures based on cooling rates
+     * Update temperatures based on cooling rates
      */
     private void updateTemperatures() {
-        for (int i = 0; i < NUM_SERVERS; i++) {
-            double currentTemp = serverTemperatures.get(i);
-            double coolingRate = coolingRates.get(i);
+        Platform.runLater(() -> {
+            // Calculate base heat increase
+            // Higher management levels reduce heat increase rate
+            double baseHeatIncrease = 0.3 / managementEfficiency;
             
-            // Heat generation (varies by server)
-            double heatGeneration = 0.5 + (i * 0.2) + (random.nextDouble() * 0.6);
-            
-            // Random temperature spike
-            if (random.nextDouble() < 0.05) { // 5% chance
-                heatGeneration += 1.0 + random.nextDouble() * 2.0;
-                LOGGER.info("Temperature spike on server " + (i + 1));
+            for (int i = 0; i < NUM_SERVERS; i++) {
+                // Calculate heat change based on cooling rate
+                double heatChange = baseHeatIncrease - coolingRates.get(i) * 0.15;
+                
+                // Apply heat change
+                double newTemp = serverTemperatures.get(i) + heatChange;
+                
+                // Ensure temperature stays within bounds
+                newTemp = Math.max(20.0, Math.min(MAX_TEMPERATURE, newTemp));
+                
+                // Update temperature
+                serverTemperatures.set(i, newTemp);
+                
+                // Update UI
+                updateServerUI(i);
             }
-            
-            // Calculate new temperature
-            double tempChange = heatGeneration - coolingRate;
-            double newTemp = currentTemp + tempChange;
-            
-            // Clamp temperature
-            newTemp = Math.max(20.0, Math.min(MAX_TEMPERATURE, newTemp));
-            
-            // Update temperature
-            serverTemperatures.set(i, newTemp);
-        }
-        
-        // Restore some power over time (cooling systems optimize)
-        if (totalPower < 100.0 && !emergencyMode) {
-            totalPower = Math.min(100.0, totalPower + 0.2);
-        }
+        });
     }
     
     /**
@@ -409,7 +424,10 @@ public class ServerCoolingTask extends GameTask {
      * Activate emergency cooling for all servers
      */
     private void activateEmergencyCooling() {
-        if (totalPower < 30.0) {
+        // Apply management efficiency to emergency cooling cost
+        double emergencyCost = 30.0 / managementEfficiency;
+        
+        if (totalPower < emergencyCost) {
             // Not enough power for emergency cooling
             statusLabel.setText("INSUFFICIENT POWER FOR EMERGENCY COOLING");
             statusLabel.setTextFill(Color.web("#FF0000"));
@@ -429,11 +447,14 @@ public class ServerCoolingTask extends GameTask {
         
         // Activate emergency cooling
         emergencyMode = true;
-        totalPower -= 30.0;
+        totalPower -= emergencyCost;
         
         // Max cooling for all servers temporarily
+        // Higher management skill increases cooling effect
+        double coolingBoost = MAX_COOLING_EFFECT * (1.0 + (managementEfficiency - 1.0) * 0.5);
+        
         for (int i = 0; i < NUM_SERVERS; i++) {
-            coolingRates.set(i, MAX_COOLING_EFFECT);
+            coolingRates.set(i, coolingBoost);
             coolingSliders.get(i).setValue(2.0);
         }
         
@@ -448,8 +469,11 @@ public class ServerCoolingTask extends GameTask {
         taskPane.setEffect(blueGlow);
         
         // Reset after a few seconds
+        // Higher management skill gives longer emergency cooling duration
+        int duration = 5 + (int)((managementEfficiency - 1.0) * 5.0);
+        
         Timeline resetTimeline = new Timeline(
-            new KeyFrame(Duration.seconds(5), e -> {
+            new KeyFrame(Duration.seconds(duration), e -> {
                 emergencyMode = false;
                 taskPane.setEffect(null);
                 statusLabel.setText("EMERGENCY COOLING DEACTIVATED");
@@ -476,7 +500,9 @@ public class ServerCoolingTask extends GameTask {
         }
         
         // Scale to available power
-        double scaleFactor = Math.min(1.0, 4.0 / totalNeeded);
+        // Higher management skill improves the efficiency of auto-balancing
+        double autoBalanceBonus = 1.0 + (managementEfficiency - 1.0) * 0.5;
+        double scaleFactor = Math.min(1.0, 4.0 * autoBalanceBonus / totalNeeded);
         
         // Allocate cooling rates proportionally
         for (int i = 0; i < NUM_SERVERS; i++) {
@@ -492,8 +518,12 @@ public class ServerCoolingTask extends GameTask {
             coolingSliders.get(i).setValue(sliderValue);
         }
         
-        // Recalculate total power usage
-        totalPower = 100.0 - (coolingRates.stream().mapToDouble(Double::doubleValue).sum() * 25 - NUM_SERVERS * 25);
+        // Recalculate total power usage with management efficiency bonus
+        double powerUsage = coolingRates.stream().mapToDouble(Double::doubleValue).sum() * 25 - NUM_SERVERS * 25;
+        // Higher management skill means lower power consumption
+        powerUsage = powerUsage / (1.0 + (managementEfficiency - 1.0) * 0.3);
+        
+        totalPower = 100.0 - powerUsage;
         updatePowerDisplay();
         
         statusLabel.setText("COOLING RESOURCES AUTO-BALANCED");
@@ -570,19 +600,166 @@ public class ServerCoolingTask extends GameTask {
      * Clean up resources when task is done
      */
     private void cleanupResources() {
-        // Stop temperature thread
         running.set(false);
         if (temperatureThread != null) {
             temperatureThread.interrupt();
         }
+        if (autoAssistThread != null) {
+            autoAssistThread.interrupt();
+        }
+    }
+
+    @Override
+    protected void cleanupTask() {
+        cleanupResources();
+        super.cleanupTask();
+    }
+
+    private void updateServerUI(int serverIndex) {
+        // Update temperature bar
+        tempBars.get(serverIndex).setProgress(serverTemperatures.get(serverIndex) / MAX_TEMPERATURE);
+        tempBars.get(serverIndex).setStyle("-fx-accent: " + 
+            getTemperatureColorString(serverTemperatures.get(serverIndex)) + ";");
+        
+        // Update temperature label
+        tempLabels.get(serverIndex).setText(String.format("%.1f°C", serverTemperatures.get(serverIndex)));
+        tempLabels.get(serverIndex).setTextFill(getTemperatureColor(serverTemperatures.get(serverIndex)));
+        
+        // Update server rectangle color
+        serverRects.get(serverIndex).setFill(getTemperatureColor(serverTemperatures.get(serverIndex)));
+        
+        // Add warning effect for critical temperature
+        if (serverTemperatures.get(serverIndex) >= CRITICAL_TEMP) {
+            if (!tempLabels.get(serverIndex).getStyleClass().contains("critical")) {
+                tempLabels.get(serverIndex).getStyleClass().add("critical");
+                CyberpunkEffects.pulseNode(tempLabels.get(serverIndex));
+            }
+        } else {
+            tempLabels.get(serverIndex).getStyleClass().remove("critical");
+        }
     }
 
     /**
-     * ทำความสะอาด resources ทั้งหมดและเตรียมสำหรับ task ถัดไป
+     * Start auto-assist thread for management level 3+
      */
-    @Override
-    protected void cleanupTask() {
-        super.cleanupTask();
-        cleanupResources();
+    private void startAutoAssist() {
+        autoAssistThread = new Thread(() -> {
+            while (running.get()) {
+                try {
+                    // Management level 3: 15% chance every 5 seconds to auto-stabilize one server
+                    // Management level 4: 30% chance every 5 seconds to auto-stabilize one server
+                    double assistChance = managementLevel == 3 ? 0.15 : 0.30;
+                    
+                    if (random.nextDouble() < assistChance) {
+                        // Find the hottest server
+                        int hottestServerIndex = findHottestServerIndex();
+                        if (hottestServerIndex >= 0) {
+                            // Auto-stabilize this server
+                            Platform.runLater(() -> {
+                                // Apply extra cooling to this server
+                                double currentCooling = coolingRates.get(hottestServerIndex);
+                                double assistCooling = MAX_COOLING_EFFECT * 1.5;
+                                coolingRates.set(hottestServerIndex, assistCooling);
+                                
+                                // Update the slider - do this smoothly
+                                animateSliderValue(coolingSliders.get(hottestServerIndex), 2.0);
+                                
+                                // Display management assistant notification
+                                String assistMessage = managementLevel == 3 ? 
+                                    "Management Assistant stabilizing Server " + (hottestServerIndex + 1) : 
+                                    "Advanced Management AI optimizing Server " + (hottestServerIndex + 1);
+                                
+                                // Show visual feedback
+                                showAssistNotification(hottestServerIndex, assistMessage);
+                                
+                                // Reset cooling after a few seconds
+                                Timeline resetTimeline = new Timeline(
+                                    new KeyFrame(Duration.seconds(3), e -> {
+                                        coolingRates.set(hottestServerIndex, currentCooling);
+                                        animateSliderValue(coolingSliders.get(hottestServerIndex), 
+                                            (currentCooling - MIN_COOLING_EFFECT) / (MAX_COOLING_EFFECT - MIN_COOLING_EFFECT) * 2.0);
+                                    })
+                                );
+                                resetTimeline.play();
+                            });
+                        }
+                    }
+                    
+                    // Wait before next auto-assist check
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+        autoAssistThread.setDaemon(true);
+        autoAssistThread.start();
+    }
+
+    /**
+     * Find the index of the server with the highest temperature
+     * @return Index of the hottest server, or -1 if all servers are cool
+     */
+    private int findHottestServerIndex() {
+        int hottestIndex = -1;
+        double maxTemp = SAFE_TEMP; // Only assist if temperature is above safe level
+        
+        for (int i = 0; i < serverTemperatures.size(); i++) {
+            if (serverTemperatures.get(i) > maxTemp) {
+                maxTemp = serverTemperatures.get(i);
+                hottestIndex = i;
+            }
+        }
+        
+        return hottestIndex;
+    }
+
+    /**
+     * Animate a slider value change
+     * @param slider The slider to animate
+     * @param targetValue The target value
+     */
+    private void animateSliderValue(Slider slider, double targetValue) {
+        Timeline timeline = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(slider.valueProperty(), slider.getValue())),
+            new KeyFrame(Duration.millis(500), new KeyValue(slider.valueProperty(), targetValue))
+        );
+        timeline.play();
+    }
+
+    /**
+     * Show a visual notification for auto-assist
+     * @param serverIndex The server being assisted
+     * @param message The message to display
+     */
+    private void showAssistNotification(int serverIndex, String message) {
+        // Create a label for the notification
+        Label assistLabel = new Label(message);
+        assistLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 12));
+        assistLabel.setTextFill(Color.web("#00FFFF"));
+        assistLabel.setStyle("-fx-background-color: rgba(0, 30, 60, 0.7); -fx-padding: 5px;");
+        
+        // Add glow effect
+        Glow glow = new Glow(0.8);
+        assistLabel.setEffect(glow);
+        
+        // Position near the server
+        Bounds serverBounds = serverRects.get(serverIndex).localToScene(serverRects.get(serverIndex).getBoundsInLocal());
+        
+        StackPane.setMargin(assistLabel, new Insets(
+            serverBounds.getMinY() - 30, 0, 0, serverBounds.getMinX() - 20
+        ));
+        
+        // Add to game pane
+        gamePane.getChildren().add(assistLabel);
+        
+        // Fade out after a few seconds
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(2.5), assistLabel);
+        fadeOut.setFromValue(1.0);
+        fadeOut.setToValue(0.0);
+        fadeOut.setDelay(Duration.seconds(1.5));
+        fadeOut.setOnFinished(e -> gamePane.getChildren().remove(assistLabel));
+        fadeOut.play();
     }
 } 
