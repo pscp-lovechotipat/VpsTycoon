@@ -461,6 +461,12 @@ public class MarketWindow extends BorderPane {
             -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
 
+        // Get marketing discount
+        SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
+        int discountPercent = skillPointsSystem.getMarketDiscount();
+        double discountMultiplier = 1.0 - (discountPercent / 100.0);
+        double finalPrice = Math.round(product.getPrice() * discountMultiplier);
+
         // Product name
         Label nameLabel = new Label(product.getName());
         nameLabel.setStyle("""
@@ -481,7 +487,11 @@ public class MarketWindow extends BorderPane {
         descLabel.setWrapText(true);
 
         // Price
-        Label priceLabel = new Label(product.getPriceDisplay());
+        String priceText = discountPercent > 0 
+            ? "$" + finalPrice + " (" + product.getPriceDisplay() + " - " + discountPercent + "%)"
+            : product.getPriceDisplay();
+            
+        Label priceLabel = new Label(priceText);
         priceLabel.setStyle("""
             -fx-text-fill: #ff00ff;
             -fx-font-size: 16px;
@@ -491,7 +501,11 @@ public class MarketWindow extends BorderPane {
             """);
 
         // Buy button
-        Button buyButton = new Button("BUY NOW");
+        String buyButtonText = discountPercent > 0 
+            ? "BUY NOW - " + discountPercent + "%"
+            : "BUY NOW";
+            
+        Button buyButton = new Button(buyButtonText);
         buyButton.setStyle("""
             -fx-background-color: #1a1a1a;
             -fx-text-fill: #9a30fa;
@@ -531,12 +545,15 @@ public class MarketWindow extends BorderPane {
         );
 
         buyButton.setOnAction(e -> {
-            if (parent.getCompany().getMoney() < product.getPrice()) {
+            // Apply discount to final price
+            long actualPrice = Math.round(finalPrice);
+            
+            if (parent.getCompany().getMoney() < actualPrice) {
                 parent.pushNotification("PURCHASE FAILED", "INSUFFICIENT FUNDS");
                 return;
             }
 
-            parent.getCompany().setMoney(parent.getCompany().getMoney() - product.getPrice());
+            parent.getCompany().setMoney(parent.getCompany().getMoney() - actualPrice);
             // Update money display after purchase
             updateMoneyDisplay();
 
@@ -597,6 +614,12 @@ public class MarketWindow extends BorderPane {
             -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
 
+        // Get marketing discount
+        SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
+        int discountPercent = skillPointsSystem.getMarketDiscount();
+        double discountMultiplier = 1.0 - (discountPercent / 100.0);
+        double finalPrice = Math.round(product.getPrice() * discountMultiplier);
+
         // Product name
         Label nameLabel = new Label(product.getName());
         nameLabel.setStyle("""
@@ -617,7 +640,11 @@ public class MarketWindow extends BorderPane {
         descLabel.setWrapText(true);
 
         // Price
-        Label priceLabel = new Label(product.getPriceDisplay());
+        String priceText = discountPercent > 0 
+            ? "$" + finalPrice + " (" + product.getPriceDisplay() + " - " + discountPercent + "%)"
+            : product.getPriceDisplay();
+            
+        Label priceLabel = new Label(priceText);
         priceLabel.setStyle("""
             -fx-text-fill: #ff00ff;
             -fx-font-size: 16px;
@@ -627,7 +654,11 @@ public class MarketWindow extends BorderPane {
             """);
 
         // Buy button
-        Button buyButton = new Button("BUY NOW");
+        String buyButtonText = discountPercent > 0 
+            ? "BUY NOW - " + discountPercent + "%"
+            : "BUY NOW";
+            
+        Button buyButton = new Button(buyButtonText);
         buyButton.setStyle("""
             -fx-background-color: #1a1a1a;
             -fx-text-fill: #9a30fa;
@@ -667,12 +698,15 @@ public class MarketWindow extends BorderPane {
         );
 
         buyButton.setOnAction(e -> {
-            if (parent.getCompany().getMoney() < product.getPrice()) {
+            // Apply discount to final price
+            long actualPrice = Math.round(finalPrice);
+            
+            if (parent.getCompany().getMoney() < actualPrice) {
                 parent.pushNotification("PURCHASE FAILED", "INSUFFICIENT FUNDS");
                 return;
             }
 
-            parent.getCompany().setMoney(parent.getCompany().getMoney() - product.getPrice());
+            parent.getCompany().setMoney(parent.getCompany().getMoney() - actualPrice);
             // Update money display after purchase
             updateMoneyDisplay();
             

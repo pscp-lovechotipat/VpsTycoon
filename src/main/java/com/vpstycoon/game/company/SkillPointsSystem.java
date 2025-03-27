@@ -173,6 +173,16 @@ public class SkillPointsSystem implements Serializable {
     }
     
     /**
+     * Get the market discount percentage based on the MARKETING skill level
+     * @return Discount percentage (0-30)
+     */
+    public int getMarketDiscount() {
+        int skillLevel = getSkillLevel(SkillType.MARKETING);
+        // Level 1: 0%, Level 2: 10%, Level 3: 20%, Level 4: 30%
+        return skillLevel > 1 ? (skillLevel - 1) * 10 : 0;
+    }
+    
+    /**
      * Get the security level based on the SECURITY skill level
      * @return Security level
      */
@@ -256,7 +266,9 @@ public class SkillPointsSystem implements Serializable {
             case SERVER_EFFICIENCY:
                 return "Level " + level + ": +" + (level * 15) + "% server efficiency";
             case MARKETING:
-                return "Level " + level + ": +" + (level * 25) + "% customer acquisition";
+                String marketingBonus = "+" + (level * 25) + "% customer acquisition";
+                String marketDiscountBonus = (level > 1) ? ", " + ((level - 1) * 10) + "% discount on market purchases" : "";
+                return "Level " + level + ": " + marketingBonus + marketDiscountBonus;
             case SECURITY:
                 if (level == 2) {
                     return "Level " + level + ": Unlocks firewall management";

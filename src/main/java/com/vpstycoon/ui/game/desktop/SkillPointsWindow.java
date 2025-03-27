@@ -147,6 +147,9 @@ public class SkillPointsWindow extends VBox {
                 break;
             case MARKETING:
                 bonusText = "Current bonus: +" + (currentLevel * 25) + "% customer acquisition";
+                if (currentLevel > 1) {
+                    bonusText += ", " + ((currentLevel - 1) * 10) + "% discount on market purchases";
+                }
                 break;
             case SECURITY:
                 bonusText = "Current bonus: +" + (currentLevel * 50) + "% security level";
