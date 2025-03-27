@@ -238,45 +238,54 @@ public class DataSortingTask extends GameTask {
         }
         
         int correctCount = 0;
-        boolean isCorrect = true;
         StringBuilder statusMessage = new StringBuilder("Current status: ");
         
-        // Check each position in the grid
+        // แสดงข้อมูลเบื้องต้นของ GridPane
+        log("Target grid children count: " + targetGrid.getChildren().size());
+        
+        // สร้าง array 2 มิติเพื่อเก็บแพ็กเก็ตที่พบในแต่ละตำแหน่ง
+        DataPacket[][] packetGrid = new DataPacket[2][5]; // 2 rows, 5 columns
+        
+        // ตรวจหาแพ็กเก็ตทั้งหมดใน GridPane และใส่ลงในตำแหน่งที่ถูกต้อง
+        for (javafx.scene.Node node : targetGrid.getChildren()) {
+            if (node instanceof StackPane && ((StackPane)node).getUserData() instanceof DataPacket) {
+                Integer rowIndex = GridPane.getRowIndex(node);
+                Integer colIndex = GridPane.getColumnIndex(node);
+                
+                // ถ้า GridPane ไม่ได้กำหนดค่า index ให้ชัดเจน ให้ใช้ค่า default = 0
+                rowIndex = (rowIndex == null) ? 0 : rowIndex;
+                colIndex = (colIndex == null) ? 0 : colIndex;
+                
+                if (rowIndex < 2 && colIndex < 5) { // ป้องกัน index out of bounds
+                    DataPacket packet = (DataPacket) ((StackPane)node).getUserData();
+                    packetGrid[rowIndex][colIndex] = packet;
+                    log("Found packet with priority " + packet.getPriority() + " at position [" + rowIndex + "," + colIndex + "]");
+                }
+            }
+        }
+        
+        // ตรวจสอบแต่ละตำแหน่งว่ามีแพ็กเก็ตอยู่หรือไม่ และมีค่า priority ถูกต้องหรือไม่
         for (int i = 0; i < 10; i++) {
             int row = i / 5;
             int col = i % 5;
             
-            // Find the data packet at this position
-            DataPacket packet = null;
-            for (javafx.scene.Node node : targetGrid.getChildren()) {
-                Integer nodeRow = GridPane.getRowIndex(node);
-                Integer nodeCol = GridPane.getColumnIndex(node);
-                
-                // GridPane.getRowIndex can return null if not explicitly set
-                if (nodeRow == null) nodeRow = 0;
-                if (nodeCol == null) nodeCol = 0;
-                
-                if (nodeRow == row && nodeCol == col) {
-                    if (node instanceof StackPane && ((StackPane)node).getUserData() instanceof DataPacket) {
-                        packet = (DataPacket) ((StackPane)node).getUserData();
-                        break;
-                    }
-                }
-            }
+            // ตรวจสอบแพ็กเก็ตในตำแหน่งนี้
+            DataPacket packet = packetGrid[row][col];
             
-            // If packet exists and has correct priority, count it
             if (packet != null) {
-                boolean isPacketCorrect = packet.getPriority() == i + 1;
-                if (isPacketCorrect) {
+                // แพ็กเก็ตมีค่า priority ถูกต้องหรือไม่
+                boolean isCorrect = packet.getPriority() == i + 1;
+                if (isCorrect) {
                     correctCount++;
                     statusMessage.append("✓");
                 } else {
-                    isCorrect = false;
                     statusMessage.append("✗");
                 }
+                log("Position " + (i + 1) + ": Found packet with priority " + packet.getPriority() + 
+                    (isCorrect ? " (correct)" : " (incorrect)"));
             } else {
-                isCorrect = false;
                 statusMessage.append("_");
+                log("Position " + (i + 1) + ": No packet found");
             }
         }
         
