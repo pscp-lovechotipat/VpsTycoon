@@ -44,13 +44,6 @@ public class VMProvisioningManager {
         chatAreaView.addSystemMessage("Starting VM provisioning...");
         sendInitialMessages(request);
 
-        // ดึงข้อมูล VPS ที่ VM อยู่
-        VPSOptimization vps = findVPSForVM(vm);
-        if (vps == null) {
-            chatAreaView.addSystemMessage("Error: Cannot find VPS for the selected VM");
-            return;
-        }
-
         // ให้เริ่มการทำ UI animation
         int provisioningDelay = calculateProvisioningDelay();
         final int[] progress = {0};
@@ -87,17 +80,8 @@ public class VMProvisioningManager {
         metadata.put("isProvisioning", true);
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "Starting VM provisioning...", metadata));
 
-        // ใช้ CompletableFuture ที่แท้จริงจาก game manager
-        // ดึงค่า spec จาก VM ที่เลือก
-        int vcpus = vm.getVcpu();
-        int ramGB = parseRAMValue(vm.getRam());
-        int diskGB = parseDiskValue(vm.getDisk());
-        
-        // เรียกใช้ provisionVM จาก gameVMManager ซึ่งจะคำนวณ rating จริง
-        CompletableFuture<VPSOptimization.VM> future = gameVMManager.provisionVM(
-            request, vps, vcpus, ramGB, diskGB);
-            
-        // อัปเดต ProgressBar และ Label แบบ real-time
+        // แทนที่จะใช้ CompletableFuture จาก gameVMManager
+        // ให้ใช้ Timer จัดการการแสดงผล UI animation เท่านั้น
         Timer progressTimer = new Timer();
         progressTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -114,29 +98,13 @@ public class VMProvisioningManager {
                         this.cancel();
                         provisioningProgressBars.remove(request);
                         
-                        // เมื่อ UI animation เสร็จสิ้น ตรวจสอบว่า CompletableFuture เสร็จสิ้นหรือยัง
-                        if (future.isDone()) {
-                            // ถ้าเสร็จสิ้น ให้แสดงรายละเอียด VM และเรียก onComplete
-                            sendVMDetails(request, vm);
-                            timeRemainingLabel.setText("VM provisioning completed.");
-                            chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed.", new HashMap<>()));
-                            chatAreaView.addSystemMessage("VM provisioning completed.");
-                            if (onComplete != null) {
-                                onComplete.run();
-                            }
-                        } else {
-                            // ถ้ายังไม่เสร็จ ให้รอจนกว่า CompletableFuture จะเสร็จสิ้น
-                            future.thenAccept(completedVm -> {
-                                Platform.runLater(() -> {
-                                    sendVMDetails(request, vm);
-                                    timeRemainingLabel.setText("VM provisioning completed.");
-                                    chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed.", new HashMap<>()));
-                                    chatAreaView.addSystemMessage("VM provisioning completed.");
-                                    if (onComplete != null) {
-                                        onComplete.run();
-                                    }
-                                });
-                            });
+                        // เมื่อ UI animation เสร็จสิ้น ให้แสดงรายละเอียด VM และเรียก onComplete
+                        sendVMDetails(request, vm);
+                        timeRemainingLabel.setText("VM provisioning completed.");
+                        chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed.", new HashMap<>()));
+                        chatAreaView.addSystemMessage("VM provisioning completed.");
+                        if (onComplete != null) {
+                            onComplete.run();
                         }
                     }
                 });

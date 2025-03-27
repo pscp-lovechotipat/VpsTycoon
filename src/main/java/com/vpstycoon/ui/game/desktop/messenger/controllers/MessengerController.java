@@ -22,6 +22,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.StackPane;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,22 +132,71 @@ public class MessengerController {
         requestListView.getRequestView().getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             chatAreaView.updateChatHeader(newVal);
             
-            // Only enable the assignVM button if there are running VMs available
+            // Only enable the assignVM button if there are running VMs available and the customer doesn't already have a VM
             boolean hasAvailableVMs = false;
-            if (newVal != null && !newVal.isActive() && !newVal.isExpired()) {
-                for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
-                    hasAvailableVMs = vps.getVms().stream()
-                            .anyMatch(vm -> "Running".equals(vm.getStatus()) && 
-                                    !vmAssignments.containsKey(vm) && 
-                                    !vm.isAssignedToCustomer());
-                    if (hasAvailableVMs) break;
+            boolean customerAlreadyHasVM = false;
+            
+            if (newVal != null) {
+                // ตรวจสอบว่าลูกค้ารายนี้มี VM ถูกกำหนดไว้แล้วหรือไม่โดยใช้ isRequestAssigned
+                customerAlreadyHasVM = isRequestAssigned(newVal);
+                
+                if (!newVal.isActive() && !newVal.isExpired() && !customerAlreadyHasVM) {
+                    for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                        hasAvailableVMs = vps.getVms().stream()
+                                .anyMatch(vm -> "Running".equals(vm.getStatus()) && 
+                                        !vmAssignments.containsKey(vm) && 
+                                        !vm.isAssignedToCustomer());
+                        if (hasAvailableVMs) break;
+                    }
                 }
             }
             
-            chatAreaView.getAssignVMButton().setDisable(newVal == null || newVal.isActive() || newVal.isExpired() || !hasAvailableVMs);
+            chatAreaView.getAssignVMButton().setDisable(newVal == null || newVal.isActive() || 
+                                                     newVal.isExpired() || !hasAvailableVMs || 
+                                                     customerAlreadyHasVM);
+            
             chatAreaView.getArchiveButton().setDisable(newVal == null || (!newVal.isActive() && !newVal.isExpired()));
             if (newVal != null) {
                 updateChatWithRequestDetails(newVal);
+                
+                // แสดงข้อความถ้าลูกค้ามี VM อยู่แล้ว
+                if (customerAlreadyHasVM && !newVal.isExpired()) {
+                    VPSOptimization.VM assignedVM = null;
+                    for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
+                        if (entry.getValue().equals(newVal)) {
+                            assignedVM = entry.getKey();
+                            break;
+                        }
+                    }
+                    
+                    // ปรับสถานะลูกค้าเป็น active ถ้าไม่ได้เป็น active แล้ว
+                    if (!newVal.isActive()) {
+                        newVal.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
+                        System.out.println("ปรับสถานะลูกค้า " + newVal.getName() + " เป็น active เนื่องจากมี VM อยู่แล้ว");
+                    }
+                    
+                    if (assignedVM != null) {
+                        chatAreaView.addSystemMessage("ลูกค้ารายนี้มี VM " + assignedVM.getName() + " ถูกกำหนดไว้แล้ว");
+                        
+                        // ตรวจสอบว่า VM มีการบันทึกข้อมูลลูกค้าหรือไม่
+                        if (!assignedVM.isAssignedToCustomer()) {
+                            // บันทึกข้อมูลลูกค้าลงใน VM
+                            assignedVM.assignToCustomer(
+                                String.valueOf(newVal.getId()),
+                                newVal.getName(),
+                                ResourceManager.getInstance().getGameTimeManager().getGameTimeMs()
+                            );
+                            System.out.println("บันทึกข้อมูลลูกค้า " + newVal.getName() + " ลงใน VM " + assignedVM.getName());
+                        }
+                    } else {
+                        chatAreaView.addSystemMessage("ลูกค้ารายนี้มี VM ถูกกำหนดไว้แล้ว");
+                    }
+                    
+                    // อัพเดตปุ่ม UI
+                    chatAreaView.getAssignVMButton().setDisable(true);
+                    chatAreaView.getArchiveButton().setDisable(false);
+                    chatAreaView.updateChatHeader(newVal);
+                }
             }
         });
 
@@ -208,12 +258,15 @@ public class MessengerController {
                     }
                 }
                 
-                // ถ้าไม่มี VM จริงในระบบ แต่มีค่า availableVMs บอกว่ามี และมีเซิร์ฟเวอร์อยู่ในระบบ
-                if (!hasAnyVMs && company.getAvailableVMs() > 0 && totalServerCount > 0) {
-                    System.out.println("สร้าง VM objects ในขณะที่กดปุ่ม Assign VM");
-                    
-                    // สร้าง VM ตามจำนวนที่ควรมี
-                    createVirtualMachines(company.getAvailableVMs(), totalServerCount);
+                // ไม่สร้าง VM ใหม่จากปุ่ม Assign VM อีกต่อไป
+                if (!hasAnyVMs) {
+                    if (company.getAvailableVMs() > 0) {
+                        chatAreaView.addSystemMessage("ไม่สามารถหา VM จริงในระบบได้แม้ว่าระบบจะรายงานว่ามี " + 
+                                                    company.getAvailableVMs() + " VM ที่ว่าง");
+                    } else {
+                        chatAreaView.addSystemMessage("ไม่มี VM ที่พร้อมใช้งาน โปรดสร้าง VM ใหม่ก่อน");
+                    }
+                    return;
                 }
                 
                 // รวบรวม VM ที่มีสถานะ Running และยังไม่ถูกใช้งาน
@@ -227,12 +280,7 @@ public class MessengerController {
                 }
                 
                 if (allAvailableVMs.isEmpty()) {
-                    if (company.getAvailableVMs() > 0) {
-                        chatAreaView.addSystemMessage("แม้ว่าระบบจะรายงานว่ามี " + company.getAvailableVMs() + 
-                            " VM ที่ว่าง แต่ไม่สามารถหา VM จริงในระบบได้ โปรดสร้าง VM ใหม่ก่อน");
-                    } else {
-                        chatAreaView.addSystemMessage("ไม่มี VM ที่พร้อมใช้งาน โปรดสร้าง VM ใหม่ก่อน");
-                    }
+                    chatAreaView.addSystemMessage("ไม่มี VM ที่พร้อมใช้งาน โปรดสร้าง VM ใหม่ก่อน");
                     return;
                 }
                 
@@ -241,6 +289,52 @@ public class MessengerController {
                 dialog.setOnConfirm(() -> {
                     VPSOptimization.VM selectedVM = dialog.getSelectedVM();
                     if (selectedVM != null) {
+                        // ตรวจสอบว่าลูกค้ารายนี้มี VM ถูกกำหนดไว้แล้วหรือไม่
+                        boolean customerAlreadyHasVM = false;
+                        VPSOptimization.VM existingVM = null;
+                        
+                        for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
+                            if (entry.getValue().equals(selected)) {
+                                customerAlreadyHasVM = true;
+                                existingVM = entry.getKey();
+                                break;
+                            }
+                        }
+                        
+                        if (customerAlreadyHasVM) {
+                            // ปรับสถานะลูกค้าเป็น active ถ้าไม่ได้เป็น active แล้ว
+                            if (!selected.isActive() && !selected.isExpired()) {
+                                selected.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
+                                System.out.println("ปรับสถานะลูกค้า " + selected.getName() + " เป็น active เนื่องจากมี VM อยู่แล้ว");
+                            }
+                            
+                            // ตรวจสอบว่า VM มีการบันทึกข้อมูลลูกค้าหรือไม่
+                            if (existingVM != null && !existingVM.isAssignedToCustomer()) {
+                                existingVM.assignToCustomer(
+                                    String.valueOf(selected.getId()),
+                                    selected.getName(),
+                                    ResourceManager.getInstance().getGameTimeManager().getGameTimeMs()
+                                );
+                                System.out.println("บันทึกข้อมูลลูกค้า " + selected.getName() + " ลงใน VM " + existingVM.getName());
+                            }
+                            
+                            // แสดงข้อความให้ผู้ใช้ทราบ
+                            if (existingVM != null) {
+                                chatAreaView.addSystemMessage("ลูกค้ารายนี้มี VM " + existingVM.getName() + " ถูกกำหนดไว้แล้ว");
+                            } else {
+                                chatAreaView.addSystemMessage("ลูกค้ารายนี้มี VM ถูกกำหนดไว้แล้ว");
+                            }
+                            
+                            // อัพเดต UI
+                            chatAreaView.getAssignVMButton().setDisable(true);
+                            chatAreaView.getArchiveButton().setDisable(false);
+                            chatAreaView.updateChatHeader(selected);
+                            
+                            // ไม่ต้องดำเนินการต่อ
+                            return;
+                        }
+                        
+                        // ดำเนินการต่อเฉพาะเมื่อลูกค้ายังไม่มี VM
                         // Assign VM ทันทีเมื่อกด CONFIRM
                         vmAssignments.put(selectedVM, selected); // ล็อก VM
                         selected.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
@@ -259,7 +353,7 @@ public class MessengerController {
                         updateDashboard(); // อัพเดต UI เพื่อแสดงจำนวน VM ที่ถูกต้อง
                         updateRequestList(); // อัพเดตสถานะคำขอ
 
-                        // เริ่ม provisioning หลังจาก assign
+                        // กลับไปใช้ provisioning animation แบบเดิม
                         vmProvisioningManager.startVMProvisioning(selected, selectedVM, () -> {
                             completeVMProvisioning(selected, selectedVM);
                         });
@@ -395,10 +489,16 @@ public class MessengerController {
         }
         
         if (!hasAnyVMs && availableVMs > 0 && totalServers > 0) {
-            System.out.println("4. สร้าง VM objects เนื่องจากมีค่า availableVMs=" + availableVMs + 
+            System.out.println("⚠️ พบความไม่สอดคล้อง: มีค่า availableVMs=" + availableVMs + 
                                " แต่ไม่มี VM objects จริงในระบบ");
             
-            createVirtualMachines(availableVMs, totalServers);
+            // แทนที่จะสร้าง VM objects ให้ปรับค่า availableVMs เป็น 0 แทน
+            availableVMs = 0;
+            company.setAvailableVMs(0);
+            if (currentState != null) {
+                currentState.setFreeVmCount(0);
+            }
+            System.out.println("ปรับค่า availableVMs เป็น 0 เนื่องจากไม่มี VM objects จริงในระบบ");
         }
         
         // ตรวจสอบและแสดงข้อมูลสถิติ
@@ -468,11 +568,34 @@ public class MessengerController {
                     }
                     
                     // นับเฉพาะ VM ที่มีสถานะ Running และยังไม่ได้ถูกใช้งาน และไม่มีลูกค้าใช้งานอยู่
-                    rackVMs += (int) vps.getVms().stream()
+                    // และตรวจสอบไม่ให้เกิน capacity ของ server
+                    int maxVMsPerServer = vps.getVCPUs(); // ใช้ vCPU เป็นตัวกำหนด capacity
+                    int existingVMs = vps.getVms().size();
+                    
+                    // ถ้ามี VM เกิน capacity แล้ว ไม่ให้นับเพิ่ม
+                    if (existingVMs >= maxVMsPerServer) {
+                        System.out.println("   เซิร์ฟเวอร์ " + vpsId + " มี VM เกิน capacity แล้ว (" + 
+                                         existingVMs + "/" + maxVMsPerServer + ")");
+                        continue;
+                    }
+                    
+                    // นับ VM ที่ใช้ได้ แต่ไม่เกิน capacity
+                    int availableVMsInServer = (int) vps.getVms().stream()
                             .filter(vm -> "Running".equals(vm.getStatus()) && 
                                     !vmAssignments.containsKey(vm) &&
                                     !vm.isAssignedToCustomer())
                             .count();
+                    
+                    // ไม่นับเกิน capacity ที่เหลือ
+                    int remainingCapacity = maxVMsPerServer - existingVMs;
+                    if (remainingCapacity > 0) {
+                        // เพิ่มจำนวน VM ที่สามารถใช้ได้ โดยไม่เกิน capacity ที่เหลือ
+                        rackVMs += availableVMsInServer;
+                        
+                        System.out.println("   เซิร์ฟเวอร์ " + vpsId + ": มี VM ว่างพร้อมใช้ " + 
+                                         availableVMsInServer + " VM (capacity เหลือ " + 
+                                         remainingCapacity + " VM)");
+                    }
                 }
                 
                 System.out.println("   VM ในแร็คที่พร้อมใช้งาน (ไม่มีลูกค้าใช้งาน): " + rackVMs + " VM");
@@ -491,13 +614,61 @@ public class MessengerController {
         // กระจาย VM ให้กับเซิร์ฟเวอร์ที่มีอยู่
         int remainingVMs = vmCount;
         
-        // ถ้ามีเซิร์ฟเวอร์ คำนวณว่าแต่ละเซิร์ฟเวอร์ควรมี VM กี่ตัว
+        // ถ้ามีเซิร์ฟเวอร์ คำนวณว่าแต่ละเซิร์ฟเวอร์ควรมี VM กี่ตัว แต่ไม่เกิน capacity
         if (serverCount > 0) {
-            int vmsPerServer = (int) Math.ceil((double) vmCount / serverCount);
+            // สร้าง map เพื่อเก็บข้อมูลว่าแต่ละ server มี capacity เหลือเท่าไร
+            Map<String, Integer> serverCapacity = new HashMap<>();
+            int totalAvailableCapacity = 0;
             
-            for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
-                // ไม่สร้างเกินจำนวน VM ที่เหลือ
-                int vmsToCreate = Math.min(remainingVMs, vmsPerServer);
+            // คำนวณ capacity ของแต่ละ server
+            for (Map.Entry<String, VPSOptimization> entry : vpsManager.getVPSMap().entrySet()) {
+                String serverId = entry.getKey();
+                VPSOptimization vps = entry.getValue();
+                
+                // คำนวณความจุสูงสุดตาม spec (vCPUs)
+                // สมมติว่า VM แต่ละตัวใช้ 1 vCPU ต่อ VM เป็นอย่างน้อย
+                int maxVMsPerServer = vps.getVCPUs();
+                
+                // ตรวจสอบจำนวน VM ที่มีอยู่แล้วในเซิร์ฟเวอร์นี้
+                int existingVMs = vps.getVms().size();
+                
+                // คำนวณ capacity ที่เหลือ
+                int remainingCapacity = Math.max(0, maxVMsPerServer - existingVMs);
+                
+                // เก็บค่าลงใน map
+                serverCapacity.put(serverId, remainingCapacity);
+                totalAvailableCapacity += remainingCapacity;
+                
+                System.out.println("เซิร์ฟเวอร์ " + serverId + " มี capacity เหลือ " + 
+                                  remainingCapacity + " VM (max: " + maxVMsPerServer + 
+                                  ", มีอยู่แล้ว: " + existingVMs + ")");
+            }
+            
+            // ถ้า capacity รวมไม่พอสำหรับจำนวน VM ที่ต้องการสร้าง
+            if (totalAvailableCapacity < vmCount) {
+                System.out.println("⚠️ เตือน: จำนวน VM ที่ต้องการสร้าง (" + vmCount + 
+                                 ") มากกว่า capacity รวมที่เหลืออยู่ (" + totalAvailableCapacity + 
+                                 ") จะสร้างเท่าที่ capacity เหลือ");
+                
+                // ปรับลดจำนวน VM ที่จะสร้างให้ไม่เกิน capacity
+                remainingVMs = totalAvailableCapacity;
+                
+                // อัพเดตค่า availableVMs ใน company และ GameState ให้สอดคล้องกับ capacity จริง
+                company.setAvailableVMs(totalAvailableCapacity);
+                ResourceManager.getInstance().getCurrentState().setFreeVmCount(totalAvailableCapacity);
+                System.out.println("ปรับค่า availableVMs เป็น " + totalAvailableCapacity + " ตาม capacity จริง");
+            }
+            
+            // สร้าง VM ตามจำนวนที่ capacity เหลือในแต่ละเซิร์ฟเวอร์
+            for (Map.Entry<String, VPSOptimization> entry : vpsManager.getVPSMap().entrySet()) {
+                String serverId = entry.getKey();
+                VPSOptimization vps = entry.getValue();
+                
+                // ดึงค่า capacity ที่เหลือของเซิร์ฟเวอร์นี้
+                int availableCapacity = serverCapacity.get(serverId);
+                
+                // สร้าง VM เท่าที่ capacity เหลือ แต่ไม่เกินจำนวนที่ต้องการ
+                int vmsToCreate = Math.min(remainingVMs, availableCapacity);
                 
                 for (int i = 0; i < vmsToCreate; i++) {
                     // สร้าง VM ตามวิธีที่ถูกต้อง
@@ -506,9 +677,9 @@ public class MessengerController {
                     VPSOptimization.VM newVM = new VPSOptimization.VM(
                         vmIp,
                         vmName,
-                        vps.getVCPUs(),
-                        vps.getRamInGB() + " GB",
-                        vps.getDiskInGB() + " GB",
+                        1, // ใช้ 1 vCPU ต่อ VM 
+                        "1 GB", // ใช้ค่าเริ่มต้น
+                        "10 GB", // ใช้ค่าเริ่มต้น
                         "Running"
                     );
                     
@@ -530,6 +701,25 @@ public class MessengerController {
                 
                 if (remainingVMs <= 0) break;
             }
+            
+            // ถ้าสร้าง VM ได้น้อยกว่าที่ต้องการ (เนื่องจาก capacity ไม่พอ)
+            if (remainingVMs > 0) {
+                System.out.println("⚠️ ไม่สามารถสร้าง VM ได้ครบตามต้องการ เนื่องจาก capacity ไม่พอ ยังเหลืออีก " + 
+                                  remainingVMs + " VM ที่ต้องการสร้าง");
+                
+                // อัพเดตค่า availableVMs ให้สอดคล้องกับความเป็นจริง
+                int actualCreated = vmCount - remainingVMs;
+                if (company.getAvailableVMs() > actualCreated) {
+                    company.setAvailableVMs(actualCreated);
+                    ResourceManager.getInstance().getCurrentState().setFreeVmCount(actualCreated);
+                    System.out.println("ปรับค่า availableVMs เป็น " + actualCreated + " ตามที่สร้างได้จริง");
+                }
+            }
+        } else {
+            System.out.println("⚠️ ไม่สามารถสร้าง VM ได้เนื่องจากไม่มีเซิร์ฟเวอร์ในระบบ");
+            // ไม่มีเซิร์ฟเวอร์ ไม่ควรมี VM อยู่
+            company.setAvailableVMs(0);
+            ResourceManager.getInstance().getCurrentState().setFreeVmCount(0);
         }
     }
 
@@ -596,12 +786,120 @@ public class MessengerController {
     private void validateVMConsistency() {
         // ตรวจสอบจำนวน VM จริงในระบบ
         int countFromVMs = 0;
-        for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+        int invalidVMs = 0;
+        Map<String, List<VPSOptimization.VM>> vmsToRemove = new HashMap<>();
+        
+        for (Map.Entry<String, VPSOptimization> entry : vpsManager.getVPSMap().entrySet()) {
+            String serverId = entry.getKey();
+            VPSOptimization vps = entry.getValue();
+            
+            // ตรวจสอบว่า server แต่ละตัวไม่มี VM เกิน capacity
+            int maxVMsPerServer = vps.getVCPUs(); // ใช้ vCPU เป็นตัวกำหนด capacity
+            int totalVMsInServer = vps.getVms().size();
+            
+            // ตรวจสอบและเก็บรายการ VM ที่ต้องลบ (กรณีเกิน capacity)
+            if (totalVMsInServer > maxVMsPerServer) {
+                System.out.println("⚠️ ตรวจพบว่าเซิร์ฟเวอร์ " + serverId + " มี VM เกิน capacity: " + 
+                                  totalVMsInServer + " VM (max: " + maxVMsPerServer + " VM)");
+                
+                // จัดเรียง VM ตามสถานะ - ลบที่ไม่ได้ใช้งานก่อน และเก็บรักษาที่มีลูกค้าใช้งานอยู่
+                List<VPSOptimization.VM> allVMs = new ArrayList<>(vps.getVms());
+                List<VPSOptimization.VM> unusedVMs = new ArrayList<>();
+                List<VPSOptimization.VM> assignedVMs = new ArrayList<>();
+                
+                for (VPSOptimization.VM vm : allVMs) {
+                    if (!vm.isAssignedToCustomer() && !vmAssignments.containsKey(vm)) {
+                        unusedVMs.add(vm);
+                    } else {
+                        assignedVMs.add(vm);
+                    }
+                }
+                
+                // คำนวณจำนวน VM ที่ต้องลบ
+                int excessVMs = totalVMsInServer - maxVMsPerServer;
+                List<VPSOptimization.VM> vmList = new ArrayList<>();
+                
+                // ลบจาก VM ที่ไม่ได้ใช้งานก่อน
+                int toRemoveFromUnused = Math.min(excessVMs, unusedVMs.size());
+                for (int i = 0; i < toRemoveFromUnused; i++) {
+                    vmList.add(unusedVMs.get(i));
+                }
+                
+                // ถ้ายังไม่พอ ต้องลบ VM ที่มีลูกค้าใช้งานด้วย (ถ้าจำเป็น)
+                if (toRemoveFromUnused < excessVMs) {
+                    int toRemoveFromAssigned = excessVMs - toRemoveFromUnused;
+                    System.out.println("⚠️ ต้องลบ VM ที่มีลูกค้าใช้งานออก " + toRemoveFromAssigned + 
+                                      " VM เนื่องจาก capacity ไม่พอ");
+                    
+                    // ในกรณีนี้ ควรแจ้งเตือนผู้ใช้งานว่ามีปัญหา
+                    for (int i = 0; i < Math.min(toRemoveFromAssigned, assignedVMs.size()); i++) {
+                        vmList.add(assignedVMs.get(i));
+                    }
+                }
+                
+                // เก็บรายการ VM ที่ต้องลบ
+                vmsToRemove.put(serverId, vmList);
+                invalidVMs += vmList.size();
+            }
+            
+            // นับเฉพาะ VM ที่มีสถานะ Running และไม่ได้ถูกใช้งาน
             countFromVMs += (int) vps.getVms().stream()
                     .filter(vm -> "Running".equals(vm.getStatus()) && 
                             !vmAssignments.containsKey(vm) && 
                             !vm.isAssignedToCustomer())
                     .count();
+        }
+        
+        // ลบ VM ที่เกิน capacity
+        if (invalidVMs > 0) {
+            System.out.println("⚠️ จะดำเนินการลบ VM ที่เกิน capacity จำนวน " + invalidVMs + " VM");
+            
+            for (Map.Entry<String, List<VPSOptimization.VM>> entry : vmsToRemove.entrySet()) {
+                String serverId = entry.getKey();
+                List<VPSOptimization.VM> vmList = entry.getValue();
+                VPSOptimization vps = vpsManager.getVPSMap().get(serverId);
+                
+                for (VPSOptimization.VM vm : vmList) {
+                    // ตรวจสอบว่า VM นี้มีลูกค้าใช้งานอยู่หรือไม่
+                    CustomerRequest request = null;
+                    for (Map.Entry<VPSOptimization.VM, CustomerRequest> vmEntry : vmAssignments.entrySet()) {
+                        if (vmEntry.getKey().equals(vm)) {
+                            request = vmEntry.getValue();
+                            break;
+                        }
+                    }
+                    
+                    // ถ้า VM นี้มีลูกค้าใช้งานอยู่ ให้แจ้งเตือนและปรับสถานะ
+                    if (request != null) {
+                        System.out.println("⚠️ ลบ VM " + vm.getName() + " ที่กำลังถูกใช้งานโดยลูกค้า " + 
+                                          request.getName() + " เนื่องจากเกิน capacity");
+                        
+                        // ปรับสถานะของลูกค้า
+                        request.deactivate();
+                        
+                        // ลบการเชื่อมโยง
+                        vmAssignments.remove(vm);
+                    } else if (vm.isAssignedToCustomer()) {
+                        System.out.println("⚠️ ลบ VM " + vm.getName() + " ที่กำลังถูกใช้งานโดยลูกค้า " + 
+                                          vm.getCustomerName() + " เนื่องจากเกิน capacity");
+                    } else {
+                        System.out.println("ลบ VM " + vm.getName() + " ที่ไม่มีลูกค้าใช้งาน เนื่องจากเกิน capacity");
+                    }
+                    
+                    // ลบ VM ออกจาก server
+                    vps.removeVM(vm);
+                }
+            }
+            
+            // คำนวณจำนวน VM ที่ว่างอีกครั้งหลังจากลบ
+            countFromVMs = 0;
+            for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                countFromVMs += (int) vps.getVms().stream()
+                        .filter(vm -> "Running".equals(vm.getStatus()) && 
+                                !vmAssignments.containsKey(vm) && 
+                                !vm.isAssignedToCustomer())
+                        .count();
+            }
         }
         
         // ตรวจสอบค่าที่เก็บไว้
@@ -661,9 +959,6 @@ public class MessengerController {
         );
         System.out.println("บันทึกข้อมูลลูกค้า " + request.getName() + " (ID: " + request.getId() + ") ลงใน VM: " + vm.getName());
         
-        // อัพเดต dashboard เพื่อแสดงสถานะล่าสุด
-        updateDashboard();
-        
         // เพิ่มข้อความในแชท
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, 
             "VM provisioning completed successfully", new HashMap<>()));
@@ -671,9 +966,14 @@ public class MessengerController {
         
         // ให้รางวัล skill points
         skillPointsManager.awardSkillPoints(request, 0.2);
+
+        validateVMConsistency();
         
         // อัพเดตรายการคำขอ
         updateRequestList();
+
+        // อัพเดต dashboard เพื่อแสดงสถานะล่าสุด
+        updateDashboard();
     }
 
     private void archiveRequest(CustomerRequest selected) {
@@ -881,33 +1181,98 @@ public class MessengerController {
             
             System.out.println("โหลด VPS จาก GameState จำนวน " + vpsCount + " เครื่อง");
             
+            // ตรวจสอบ VM ทั้งหมดที่มีลูกค้ากำหนดไว้แล้ว
+            for (VPSOptimization vps : loadedVPSList) {
+                for (VPSOptimization.VM vm : vps.getVms()) {
+                    if (vm.isAssignedToCustomer()) {
+                        String customerId = vm.getCustomerId();
+                        
+                        // ค้นหาลูกค้าจาก ID
+                        for (CustomerRequest request : requestManager.getRequests()) {
+                            if (String.valueOf(request.getId()).equals(customerId)) {
+                                // ตรวจสอบว่า VM นี้ถูกบันทึกใน vmAssignments หรือไม่
+                                boolean vmFound = false;
+                                for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
+                                    if (entry.getKey().equals(vm)) {
+                                        vmFound = true;
+                                        break;
+                                    }
+                                }
+                                
+                                // ถ้ายังไม่ได้บันทึกใน vmAssignments ให้เพิ่มเข้าไป
+                                if (!vmFound) {
+                                    vmAssignments.put(vm, request);
+                                    System.out.println("เพิ่ม VM " + vm.getName() + " ที่ถูกกำหนดให้ลูกค้า " + 
+                                                     request.getName() + " ลงใน vmAssignments");
+                                }
+                                
+                                // ปรับสถานะลูกค้าเป็น active ถ้าไม่ได้เป็น active อยู่แล้ว และไม่ได้หมดอายุ
+                                if (!request.isActive() && !request.isExpired()) {
+                                    request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
+                                    System.out.println("ปรับสถานะลูกค้า " + request.getName() + 
+                                                     " เป็น active เนื่องจากมี VM " + vm.getName() + " ถูกกำหนดไว้แล้ว");
+                                }
+                                
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
             // ตรวจสอบคำขอที่ active อยู่และกำหนดให้กับ VM ที่เหมาะสม
             List<CustomerRequest> activeRequests = new ArrayList<>();
             for (CustomerRequest request : requestManager.getRequests()) {
-                if (request.isActive() && !request.isExpired()) {
+                if (request.isActive() && !request.isExpired() && !isRequestAssigned(request)) {
                     activeRequests.add(request);
                     System.out.println("พบคำขอที่ active: " + request.getName() + " (ID: " + request.getId() + ")");
                 }
             }
             
-            // ถ้ามีคำขอที่ active อยู่ ให้กำหนด VM ให้แต่ละคำขอ
+            // ถ้ามีคำขอที่ active อยู่ ให้กำหนด VM ให้แต่ละคำขอ (แต่ไม่สร้าง VM เพิ่ม)
             if (!activeRequests.isEmpty()) {
                 int assignedCount = 0;
                 
-                // สร้าง VM เพิ่มถ้าจำเป็น (เฉพาะกรณีที่ VPS มี VM น้อยกว่าจำนวนคำขอ)
-                int totalVMs = 0;
+                // ตรวจสอบจำนวน VM ทั้งหมดที่มีในระบบ
+                int availableVMs = 0;
                 for (VPSOptimization vps : loadedVPSList) {
-                    totalVMs += vps.getVms().size();
+                    // นับ VM ที่ว่างอยู่
+                    availableVMs += (int) vps.getVms().stream()
+                            .filter(vm -> "Running".equals(vm.getStatus()) && 
+                                    !vmAssignments.containsKey(vm) && 
+                                    !vm.isAssignedToCustomer())
+                            .count();
                 }
                 
-                if (totalVMs < activeRequests.size()) {
-                    // สร้าง VM เพิ่มเติมสำหรับคำขอที่ active
-                    int neededVMs = activeRequests.size() - totalVMs;
-                    createVirtualMachines(neededVMs, loadedVPSList.size());
-                    System.out.println("สร้าง VM เพิ่ม " + neededVMs + " VM สำหรับคำขอที่ active");
+                System.out.println("จำนวน VM ว่างในระบบ: " + availableVMs + " VM");
+                
+                // ตรวจสอบว่ามี VM ว่างพอสำหรับคำขอทั้งหมดหรือไม่
+                if (activeRequests.size() > availableVMs) {
+                    System.out.println("⚠️ จำนวน VM ว่างไม่พอสำหรับคำขอที่ active (" + 
+                                      activeRequests.size() + " คำขอ, " + availableVMs + " VM)");
+                    
+                    // จัดเรียงคำขอตามเวลา (เก่าสุดอยู่หน้าสุด)
+                    activeRequests.sort(Comparator.comparingLong(CustomerRequest::getCreationTime));
+                    
+                    // ตัดคำขอที่ใหม่สุดออก
+                    if (availableVMs < activeRequests.size()) {
+                        int toBeRemoved = activeRequests.size() - availableVMs;
+                        for (int i = 0; i < toBeRemoved; i++) {
+                            // เอาจากท้ายสุด (ใหม่สุด)
+                            CustomerRequest droppedRequest = activeRequests.remove(activeRequests.size() - 1);
+                            System.out.println("ไม่สามารถจัดสรร VM ให้คำขอ: " + droppedRequest.getName() + 
+                                            " เนื่องจาก VM ไม่พอ");
+                            
+                            // ปรับสถานะของคำขอให้ไม่ active
+                            droppedRequest.deactivate();
+                        }
+                        
+                        System.out.println("จัดการให้คำขอที่มีความสำคัญน้อยกว่า " + toBeRemoved + 
+                                        " คำขอ ไม่ได้รับการจัดสรร VM");
+                    }
                 }
                 
-                // เชื่อมต่อ VM กับคำขอที่ active
+                // เชื่อมต่อ VM กับคำขอที่ active (เฉพาะที่มี VM ว่างพอ)
                 for (CustomerRequest request : activeRequests) {
                     // หา VM ที่ว่างอยู่
                     VPSOptimization.VM availableVM = null;
@@ -935,10 +1300,31 @@ public class MessengerController {
                         );
                         assignedCount++;
                         System.out.println("กำหนด VM " + availableVM.getName() + " ให้กับลูกค้า " + request.getName());
+                    } else {
+                        // ไม่พบ VM ว่าง
+                        System.out.println("⚠️ ไม่พบ VM ว่างที่จะกำหนดให้กับลูกค้า " + request.getName());
+                        
+                        // ปรับสถานะของคำขอให้ไม่ active
+                        request.deactivate();
+                        System.out.println("ปรับคำขอของลูกค้า " + request.getName() + " เป็นไม่ active");
                     }
                 }
                 
                 System.out.println("กำหนด VM ให้กับคำขอที่ active แล้ว " + assignedCount + " VM");
+                
+                // อัพเดตค่า availableVMs ใน company และ GameState
+                int remainingFreeVMs = 0;
+                for (VPSOptimization vps : loadedVPSList) {
+                    remainingFreeVMs += (int) vps.getVms().stream()
+                            .filter(vm -> "Running".equals(vm.getStatus()) && 
+                                    !vmAssignments.containsKey(vm) && 
+                                    !vm.isAssignedToCustomer())
+                            .count();
+                }
+                
+                company.setAvailableVMs(remainingFreeVMs);
+                ResourceManager.getInstance().getCurrentState().setFreeVmCount(remainingFreeVMs);
+                System.out.println("อัพเดตค่า availableVMs เป็น " + remainingFreeVMs + " ตามจำนวน VM ว่างที่เหลือ");
             }
         }
     }
@@ -957,6 +1343,7 @@ public class MessengerController {
         
         // ค้นหาคำขอที่ active ที่ยังไม่ได้รับการกำหนด VM
         for (CustomerRequest request : requestManager.getRequests()) {
+            // ตรวจสอบว่าคำขอ active แต่ยังไม่หมดอายุ และยังไม่ได้รับการกำหนด VM
             if (request.isActive() && !request.isExpired() && !isRequestAssigned(request)) {
                 return request;
             }
@@ -970,6 +1357,40 @@ public class MessengerController {
      * @return true ถ้าคำขอถูกกำหนด VM แล้ว
      */
     private boolean isRequestAssigned(CustomerRequest request) {
-        return vmAssignments.values().contains(request);
+        // ตรวจสอบใน vmAssignments
+        if (vmAssignments.values().contains(request)) {
+            // ปรับสถานะลูกค้าเป็น active ถ้าไม่ได้เป็น active อยู่แล้ว
+            if (!request.isActive() && !request.isExpired()) {
+                request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
+                System.out.println("ปรับสถานะลูกค้า " + request.getName() + " เป็น active เนื่องจากพบใน vmAssignments");
+            }
+            return true;
+        }
+        
+        // ตรวจสอบใน VM ทั้งหมดว่ามีการบันทึกข้อมูลลูกค้าที่ตรงกับคำขอนี้หรือไม่
+        String requestId = String.valueOf(request.getId());
+        for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+            for (VPSOptimization.VM vm : vps.getVms()) {
+                if (vm.isAssignedToCustomer() && 
+                    requestId.equals(vm.getCustomerId())) {
+                    // พบว่า VM นี้ถูกกำหนดให้ลูกค้ารายนี้แล้ว
+                    // แต่ไม่ได้ถูกบันทึกใน vmAssignments อาจเป็นเพราะโหลดจาก save
+                    // ให้บันทึกเข้า vmAssignments ด้วย
+                    vmAssignments.put(vm, request);
+                    System.out.println("พบ VM ที่ถูกกำหนดให้ลูกค้า " + request.getName() + 
+                                      " แต่ไม่ได้ถูกบันทึกใน vmAssignments จึงบันทึกเพิ่มเติม");
+                    
+                    // ปรับสถานะลูกค้าเป็น active ถ้าไม่ได้เป็น active อยู่แล้ว และไม่ได้หมดอายุแล้ว
+                    if (!request.isActive() && !request.isExpired()) {
+                        request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
+                        System.out.println("ปรับสถานะลูกค้า " + request.getName() + " เป็น active เนื่องจากพบใน VM");
+                    }
+                    
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }
