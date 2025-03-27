@@ -594,6 +594,19 @@ public class ResourceManager implements Serializable {
         centerNotificationController.push(title, content, image);
     }
 
+    /**
+     * แสดงการแจ้งเตือนแบบกลางจอที่จะหายไปเองอัตโนมัติหลังจากเวลาที่กำหนด
+     * 
+     * @param title หัวข้อ notification
+     * @param content เนื้อหา notification
+     * @param image รูปภาพประกอบ
+     * @param autoCloseMillis เวลาในหน่วย millisecond ที่จะปิด notification อัตโนมัติ
+     */
+    public void pushCenterNotificationAutoClose(String title, String content, String image, long autoCloseMillis) {
+        initializeNotifications();
+        centerNotificationController.pushAutoClose(title, content, image, autoCloseMillis);
+    }
+
     // Notification getters
     public NotificationModel getNotificationModel() {
         initializeNotifications();

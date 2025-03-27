@@ -1,0 +1,188 @@
+/* Cyberpunk theme CSS for VPS Tycoon */
+
+/* Base styles */
+.root {
+    -fx-font-family: 'Share Tech Mono', monospace;
+    -fx-background-color: #0a0a2a;
+    -fx-text-fill: #00ffff;
+}
+
+.cyberpunk-task {
+    -fx-background-color: #0a0a2a;
+    -fx-border-color: #00ffff;
+    -fx-border-width: 3px;
+    -fx-effect: dropshadow(gaussian, #00aaff, 15, 0.7, 0, 0);
+}
+
+/* Text styling */
+.text {
+    -fx-fill: #00ffff;
+}
+
+.title-text {
+    -fx-font-family: 'Orbitron', sans-serif;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-fill: #00ffff;
+    -fx-effect: dropshadow(gaussian, #00ffff, 10, 0.6, 0, 0);
+}
+
+.description-text {
+    -fx-font-family: 'Share Tech Mono', monospace;
+    -fx-font-size: 16px;
+    -fx-fill: #b3f0ff;
+}
+
+/* Button styling */
+.button {
+    -fx-background-color: #2a0a60;
+    -fx-text-fill: #00ffff;
+    -fx-border-color: #7700ff;
+    -fx-border-width: 2px;
+    -fx-font-family: 'Share Tech Mono', monospace;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 8px 15px;
+}
+
+.button:hover {
+    -fx-background-color: #4a1a90;
+    -fx-border-color: #aa50ff;
+    -fx-effect: dropshadow(gaussian, #7700ff, 10, 0.6, 0, 0);
+}
+
+.button:pressed {
+    -fx-background-color: #3a0a80;
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+.abort-button {
+    -fx-background-color: #ff3366;
+    -fx-text-fill: white;
+    -fx-border-color: #ff0066;
+}
+
+.abort-button:hover {
+    -fx-background-color: #ff5588;
+    -fx-border-color: #ff3366;
+    -fx-effect: dropshadow(gaussian, #ff0066, 10, 0.6, 0, 0);
+}
+
+/* Progress bar styling */
+.progress-bar {
+    -fx-background-color: transparent;
+    -fx-border-color: #30305a;
+    -fx-border-width: 1px;
+}
+
+.progress-bar > .bar {
+    -fx-background-color: linear-gradient(to right, #ff00ff, #00ffff);
+    -fx-background-radius: 0;
+    -fx-border-width: 0;
+}
+
+.progress-bar > .track {
+    -fx-background-color: #12122a;
+    -fx-background-radius: 0;
+}
+
+/* Panel styling */
+.game-pane {
+    -fx-background-color: rgba(0, 20, 40, 0.8);
+    -fx-border-color: #00aaff;
+    -fx-border-width: 1px;
+    -fx-padding: 10px;
+}
+
+.control-pane {
+    -fx-background-color: rgba(10, 10, 40, 0.7);
+    -fx-border-color: #7700ff;
+    -fx-border-width: 1px;
+    -fx-padding: 15px;
+}
+
+/* Label styling */
+.label {
+    -fx-font-family: 'Share Tech Mono', monospace;
+    -fx-text-fill: #00ffff;
+}
+
+.timer-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ff00ff;
+}
+
+/* Scrollbar styling */
+.scroll-bar {
+    -fx-background-color: #0a0a2a;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #00aaff;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: #2a0a60;
+}
+
+/* Text field styling */
+.text-field {
+    -fx-background-color: #12122a;
+    -fx-text-fill: #00ffff;
+    -fx-border-color: #30305a;
+    -fx-border-width: 1px;
+}
+
+.text-field:focused {
+    -fx-border-color: #00aaff;
+    -fx-effect: dropshadow(gaussian, #00aaff, 5, 0.4, 0, 0);
+}
+
+/* Neon effects */
+.neon-border {
+    -fx-border-color: #00ffff;
+    -fx-border-width: 2px;
+    -fx-effect: dropshadow(gaussian, #00ffff, 10, 0.6, 0, 0);
+}
+
+.neon-text {
+    -fx-fill: #00ffff;
+    -fx-effect: dropshadow(gaussian, #00ffff, 8, 0.8, 0, 0);
+}
+
+.neon-pink {
+    -fx-fill: #ff00ff;
+    -fx-effect: dropshadow(gaussian, #ff00ff, 8, 0.8, 0, 0);
+}
+
+/* Slider styling */
+.slider .track {
+    -fx-background-color: #12122a;
+    -fx-pref-height: 4px;
+}
+
+.slider .thumb {
+    -fx-background-color: #00ffff;
+    -fx-pref-width: 15px;
+    -fx-pref-height: 15px;
+    -fx-effect: dropshadow(gaussian, #00ffff, 5, 0.6, 0, 0);
+}
+
+/* Toggle button styling */
+.toggle-button {
+    -fx-background-color: #2a0a60;
+    -fx-text-fill: #00ffff;
+    -fx-border-color: #7700ff;
+    -fx-border-width: 2px;
+}
+
+.toggle-button:selected {
+    -fx-background-color: #4a1a90;
+    -fx-border-color: #00ffff;
+    -fx-effect: dropshadow(gaussian, #00ffff, 8, 0.6, 0, 0);
+} 
