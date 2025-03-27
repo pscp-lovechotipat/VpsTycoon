@@ -6,6 +6,7 @@ import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.ui.game.rack.Rack;
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatMessage;
+import com.vpstycoon.game.company.SkillPointsSystem.SkillType;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -51,6 +52,9 @@ public class GameState implements Serializable {
     // เพิ่มฟิลด์สำหรับเก็บการเชื่อมโยงระหว่าง VM และ CustomerRequest
     private Map<String, String> vmAssignments; // vmId -> requestId
     
+    // เพิ่มฟิลด์สำหรับเก็บระดับทักษะ (skill levels)
+    private Map<SkillType, Integer> skillLevels;
+
     public GameState() {
         this.company = ResourceManager.getInstance().getCompany();
 
@@ -67,6 +71,7 @@ public class GameState implements Serializable {
         this.pendingRequests = new ArrayList<>();
         this.completedRequests = new ArrayList<>();
         this.vmAssignments = new HashMap<>();
+        this.skillLevels = new HashMap<>();
 
         this.localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
@@ -244,5 +249,14 @@ public class GameState implements Serializable {
 
     public long getGameTimeMs() {
         return gameTimeMs;
+    }
+
+    // Getter และ Setter สำหรับ skillLevels
+    public Map<SkillType, Integer> getSkillLevels() {
+        return skillLevels;
+    }
+    
+    public void setSkillLevels(Map<SkillType, Integer> skillLevels) {
+        this.skillLevels = skillLevels;
     }
 }

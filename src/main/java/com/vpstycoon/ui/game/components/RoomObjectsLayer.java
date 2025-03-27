@@ -48,7 +48,7 @@ public class RoomObjectsLayer {
         musicBoxLayer.setScaleX(3);
         musicBoxLayer.setScaleY(3);
         musicBoxLayer.setTranslateX(155);
-        musicBoxLayer.setTranslateY(249);
+        musicBoxLayer.setTranslateY(235);
 
         if (!run) {
             musicBoxLayer.setVisible(false);
@@ -90,7 +90,7 @@ public class RoomObjectsLayer {
         musicStopLayer.setScaleX(3);
         musicStopLayer.setScaleY(3);
         musicStopLayer.setTranslateX(155);
-        musicStopLayer.setTranslateY(249);
+        musicStopLayer.setTranslateY(235);
         if (run) {
             musicStopLayer.setVisible(false);
             this.setRun(true);
@@ -132,7 +132,7 @@ public class RoomObjectsLayer {
         keroroLayer.setScaleX(3);
         keroroLayer.setScaleY(3);
         keroroLayer.setTranslateX(130);
-        keroroLayer.setTranslateY(430);
+        keroroLayer.setTranslateY(410);
 
         String normalStyle = ("""
             -fx-background-image: url('/images/Object/Keroro.png');
@@ -163,10 +163,10 @@ public class RoomObjectsLayer {
         Pane monitorLayer = new Pane();
         monitorLayer.setPrefWidth(50);
         monitorLayer.setPrefHeight(75);
-        monitorLayer.setScaleX(3);
-        monitorLayer.setScaleY(3);
-        monitorLayer.setTranslateX(400);
-        monitorLayer.setTranslateY(270);
+        monitorLayer.setScaleX(2);
+        monitorLayer.setScaleY(2);
+        monitorLayer.setTranslateX(375);
+        monitorLayer.setTranslateY(235);
 
         String normalStyle = ("""
             -fx-background-image: url('/images/Moniter/MoniterF2.png');
@@ -211,17 +211,17 @@ public class RoomObjectsLayer {
         Pane serverLayer = new Pane();
 
         // get image size to set perf size
-        Image img = new Image("/images/servers/server.png");
+        Image img = new Image("/images/servers/server2.gif");
         serverLayer.setPrefWidth(img.getWidth());
         serverLayer.setPrefHeight(img.getHeight());
-        serverLayer.setScaleX(0.2);
-        serverLayer.setScaleY(0.2);
-        serverLayer.setTranslateX(320);
-        serverLayer.setTranslateY(50);
+        serverLayer.setScaleX(0.25);
+        serverLayer.setScaleY(0.25);
+        serverLayer.setTranslateX(340);
+        serverLayer.setTranslateY(-210);
 
         // Style ปกติ (ตามที่มึงให้มา)
         String normalStyle = """
-            -fx-background-image: url('/images/servers/server.png');
+            -fx-background-image: url('/images/servers/server2.gif');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
@@ -230,7 +230,7 @@ public class RoomObjectsLayer {
 
         // Style ตอน hover (ใส่ขนาดด้วย)
         String hoverStyle = """
-            -fx-background-image: url('/images/servers/server.png');
+            -fx-background-image: url('/images/servers/server2.gif');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;

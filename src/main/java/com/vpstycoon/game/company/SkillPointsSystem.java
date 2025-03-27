@@ -15,7 +15,7 @@ import com.vpstycoon.game.vps.enums.VPSProduct;
 public class SkillPointsSystem implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private static final Map<SkillType, Integer> skillLevels = new HashMap<>();
+    private final Map<SkillType, Integer> skillLevels = new HashMap<>();
     private final Company company;
 
     // Skill types
@@ -56,16 +56,48 @@ public class SkillPointsSystem implements Serializable {
         initializeSkillLevels(); // เรียกเมธอดแยกเพื่อกำหนดค่า
     }
 
+    /**
+     * Constructor that loads skill levels from a saved game state
+     * @param company The company object
+     * @param savedSkillLevels The previously saved skill levels map
+     */
+    public SkillPointsSystem(Company company, Map<SkillType, Integer> savedSkillLevels) {
+        this.company = company;
+        
+        // If we have saved skill levels, use them
+        if (savedSkillLevels != null && !savedSkillLevels.isEmpty()) {
+            this.skillLevels.putAll(savedSkillLevels);
+            
+            // Ensure all skill types have a level
+            for (SkillType skill : SkillType.values()) {
+                if (!this.skillLevels.containsKey(skill)) {
+                    this.skillLevels.put(skill, 1); // Default to level 1 for any missing skills
+                }
+            }
+        } else {
+            // Otherwise initialize with defaults
+            initializeSkillLevels();
+        }
+    }
+
     private void initializeSkillLevels() {
         for (SkillType skill : SkillType.values()) {
             skillLevels.put(skill, 1); // Initialize all skills at level 1
         }
     }
 
+    /**
+     * Get the current skill levels map for saving
+     * @return Map of skill types and their levels
+     */
+    public Map<SkillType, Integer> getSkillLevelsMap() {
+        return new HashMap<>(skillLevels);
+    }
+
     @Serial
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        initializeSkillLevels(); // กำหนดค่าใหม่หลังโหลดข้อมูล
+        // No need to reinitialize on loading since skillLevels is no longer static
     }
 
     /**

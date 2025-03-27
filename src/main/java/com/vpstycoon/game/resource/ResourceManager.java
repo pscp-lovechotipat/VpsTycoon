@@ -212,6 +212,12 @@ public class ResourceManager implements Serializable {
             System.out.println("กำลังบันทึกข้อมูล Free VM count: " + this.company.getAvailableVMs());
             state.setFreeVmCount(this.company.getAvailableVMs());
         }
+
+        // บันทึกข้อมูล SkillPointsSystem
+        if (this.skillPointsSystem != null) {
+            System.out.println("กำลังบันทึกข้อมูล Skill Points...");
+            state.setSkillLevels(this.skillPointsSystem.getSkillLevelsMap());
+        }
         
         // บันทึกข้อมูล Chat History จาก ChatHistoryManager ลงใน GameState (ถ้ามี)
         try {
@@ -441,15 +447,28 @@ public class ResourceManager implements Serializable {
             // โหลดข้อมูล Rack
             loadRackDataFromGameState(state);
             
+            // Update the current state and company
+            this.company = state.getCompany();
+            this.currentState = state;
+            
+            // Reinitialize the SkillPointsSystem with the loaded company and skill levels
+            if (this.company != null) {
+                // Check if there are saved skill levels
+                if (state.getSkillLevels() != null && !state.getSkillLevels().isEmpty()) {
+                    System.out.println("โหลดข้อมูล Skill Levels จาก GameState...");
+                    this.skillPointsSystem = new SkillPointsSystem(this.company, state.getSkillLevels());
+                } else {
+                    System.out.println("ไม่พบข้อมูล Skill Levels ใน GameState สร้างใหม่...");
+                    this.skillPointsSystem = new SkillPointsSystem(this.company);
+                }
+            }
+            
             System.out.println("โหลดข้อมูลเกมสำเร็จ จาก: " + saveFile.getAbsolutePath());
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการโหลดข้อมูลเกม: " + e.getMessage());
             e.printStackTrace();
             return new GameState();
         }
-        
-        // Update the current state
-        this.currentState = state;
         
         return state;
     }
@@ -823,8 +842,15 @@ public class ResourceManager implements Serializable {
 
     public void setCurrentState(GameState state) {
         this.currentState = state;
-        if (state.getCompany() != null) {
-            this.company = state.getCompany();
+        this.company = state.getCompany();
+        
+        // Reinitialize SkillPointsSystem with the loaded company and skill levels
+        if (this.company != null) {
+            if (state.getSkillLevels() != null && !state.getSkillLevels().isEmpty()) {
+                this.skillPointsSystem = new SkillPointsSystem(this.company, state.getSkillLevels());
+            } else {
+                this.skillPointsSystem = new SkillPointsSystem(this.company);
+            }
         }
     }
 

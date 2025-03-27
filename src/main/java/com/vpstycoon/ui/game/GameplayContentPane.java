@@ -270,14 +270,14 @@ public class GameplayContentPane extends BorderPane {
 
     private Pane createBackgroundLayer() {
         Pane backgroundLayer = new Pane();
-        Image backgroundImage = new Image("/images/rooms/room2_NoKeroro(70)2.png");
+        Image backgroundImage = new Image("/images/rooms/room.gif");
 
         double scaleFactor = 0.26;
         backgroundLayer.setPrefWidth(backgroundImage.getWidth() * scaleFactor);
         backgroundLayer.setPrefHeight(backgroundImage.getHeight() * scaleFactor);
 
         backgroundLayer.setStyle("""
-        -fx-background-image: url("/images/rooms/room2_NoKeroro(70)2.png");
+        -fx-background-image: url("/images/rooms/room.gif");
         -fx-background-size: cover;
         -fx-background-repeat: no-repeat;
         -fx-background-position: center;
