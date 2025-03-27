@@ -1032,13 +1032,53 @@ public class MessengerController {
         request.assignToVM(vm.getId());
         System.out.println("ตั้งค่า assignToVM " + vm.getId() + " ให้กับ request " + request.getName());
         
+        // เพิ่ม: คำนวณการเปลี่ยนแปลงของ rating ตามความพึงพอใจของลูกค้า
+        double ratingChange = vmProvisioningManager.calculateRatingChange(
+            request, 
+            vm.getVcpu(), 
+            Integer.parseInt(vm.getRam().replaceAll("[^0-9]", "")), 
+            Integer.parseInt(vm.getDisk().replaceAll("[^0-9]", ""))
+        );
+        
+        // อัพเดต rating ของบริษัท
+        Company company = ResourceManager.getInstance().getCompany();
+        company.setRating(company.getRating() + ratingChange);
+        System.out.println("Rating change applied: " + String.format("%.2f", ratingChange) + 
+                ". New rating: " + String.format("%.2f", company.getRating()));
+        
         // กำหนด VM ให้กับ request ใน vmAssignments
         vmAssignments.put(vm, request);
+        
+        // เพิ่ม: ประมวลผลการจ่ายเงินเริ่มต้นเมื่อ VM พร้อมใช้งาน
+        double paymentAmount = request.getPaymentAmount();
+        
+        // Apply security bonus if applicable
+        SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
+        double securityBonus = skillPointsSystem.getSecurityPaymentBonus();
+        if (securityBonus > 0) {
+            double bonusAmount = paymentAmount * securityBonus;
+            paymentAmount += bonusAmount;
+            System.out.println("Security bonus applied: +" + String.format("%.2f", bonusAmount) + 
+                    " (" + (securityBonus * 100) + "%)");
+        }
+        
+        // Add initial payment to company money
+        company.addMoney(paymentAmount);
+        System.out.println("Received initial payment of " + String.format("%.2f", paymentAmount) + 
+                " from " + request.getName() + " (" + request.getRentalPeriodType().getDisplayName() + ")");
         
         // เพิ่มข้อความในแชท
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, 
             "VM provisioning completed successfully", new HashMap<>()));
         chatAreaView.addSystemMessage("VM provisioning completed successfully");
+        chatAreaView.addSystemMessage("Received initial payment of " + String.format("%.2f", paymentAmount) + 
+                " from " + request.getName());
+        
+        // ให้ข้อมูลเพิ่มเติมเกี่ยวกับการเปลี่ยนแปลง rating
+        String ratingMessage = ratingChange >= 0 
+            ? "Customer is satisfied with the VM specs. Rating increased by " + String.format("%.2f", ratingChange)
+            : "Customer expected better VM specs. Rating decreased by " + String.format("%.2f", Math.abs(ratingChange));
+        chatAreaView.addSystemMessage(ratingMessage);
         
         // ให้รางวัล skill points
         skillPointsManager.awardSkillPoints(request, 0.2);

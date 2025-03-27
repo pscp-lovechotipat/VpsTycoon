@@ -217,6 +217,57 @@ public class VMProvisioningManager {
 
     // Method is no longer needed as we use SkillPointsSystem directly
     public void setDeployLevel(int deployLevel) {
-        // This method is kept for backward compatibility but is now a no-op
+        // ไม่ได้ใช้แล้ว เนื่องจากเราใช้ SkillPointsSystem โดยตรง
+    }
+
+    /**
+     * Calculate the rating change based on how well the provided VM matches the customer's requirements
+     * @param request The customer request
+     * @param providedVCPUs Number of vCPUs provided
+     * @param providedRamGB Amount of RAM provided in GB
+     * @param providedDiskGB Amount of disk space provided in GB
+     * @return The rating change (positive or negative)
+     */
+    public double calculateRatingChange(
+            CustomerRequest request, 
+            int providedVCPUs, 
+            int providedRamGB, 
+            int providedDiskGB) {
+        
+        Company company = ResourceManager.getInstance().getCompany();
+        
+        // Get the required resources
+        int requiredVCPUs = request.getRequiredVCPUs();
+        int requiredRamGB = request.getRequiredRamGB();
+        int requiredDiskGB = request.getRequiredDiskGB();
+        
+        // Use the company rating calculation method
+        double ratingChange = company.calculateVMAssignmentRatingChange(
+            requiredVCPUs, requiredRamGB, requiredDiskGB,
+            providedVCPUs, providedRamGB, providedDiskGB
+        );
+        
+        // Adjust rating based on customer type (higher-tier customers are harder to please)
+        switch (request.getCustomerType()) {
+            case INDIVIDUAL:
+                ratingChange *= 1.2; // Individuals are easier to please
+                break;
+            case SMALL_BUSINESS:
+                ratingChange *= 1.1;
+                break;
+            case MEDIUM_BUSINESS:
+                ratingChange *= 1.0; // Neutral
+                break;
+            case LARGE_BUSINESS:
+                ratingChange *= 0.9;
+                break;
+            case ENTERPRISE:
+            case BUSINESS:
+                ratingChange *= 0.8; // Enterprises are harder to please
+                break;
+        }
+        
+        // Limit the rating change to a reasonable range
+        return Math.max(-0.5, Math.min(0.5, ratingChange));
     }
 }
