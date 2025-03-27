@@ -1,5 +1,6 @@
 package com.vpstycoon.game.manager;
 
+import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.resource.ResourceManager;
@@ -31,7 +32,29 @@ public class RequestManager implements Serializable {
         this.completedRequests = new ArrayList<>();
         this.company = company;
         this.vmProvisioningManager = new VMProvisioningManager(company);
-        initializeSampleRequests();
+        
+        // ตรวจสอบใน GameState ก่อนว่ามี pendingRequests ที่บันทึกไว้หรือไม่
+        GameState currentState = ResourceManager.getInstance().getCurrentState();
+        boolean hasExistingRequests = false;
+        
+        if (currentState != null && currentState.getPendingRequests() != null 
+            && !currentState.getPendingRequests().isEmpty()) {
+            // มีข้อมูล pendingRequests ที่บันทึกไว้ ไม่ต้องสร้างใหม่
+            pendingRequests.addAll(currentState.getPendingRequests());
+            System.out.println("โหลด pendingRequests จาก GameState: " + pendingRequests.size() + " รายการ");
+            hasExistingRequests = true;
+            
+            // โหลด completedRequests ถ้ามี
+            if (currentState.getCompletedRequests() != null) {
+                completedRequests.addAll(currentState.getCompletedRequests());
+                System.out.println("โหลด completedRequests จาก GameState: " + completedRequests.size() + " รายการ");
+            }
+        }
+        
+        // ถ้าไม่มีข้อมูลที่บันทึกไว้ ให้สร้าง request ตัวอย่าง
+        if (!hasExistingRequests) {
+            initializeSampleRequests();
+        }
     }
 
     private void initializeSampleRequests() {
@@ -255,5 +278,16 @@ public class RequestManager implements Serializable {
      */
     public static long gameDaysToRealTime(int gameDays) {
         return gameDays * GAME_MONTH_MS / 30;
+    }
+
+    /**
+     * Add multiple completed requests at once (used when loading from save file)
+     * @param requests List of completed requests to add
+     */
+    public void addCompletedRequests(List<CustomerRequest> requests) {
+        if (requests != null) {
+            this.completedRequests.addAll(requests);
+            System.out.println("เพิ่ม " + requests.size() + " รายการลงใน completedRequests");
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.vpstycoon.game;
 
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.thread.GameTimeManager;
@@ -75,6 +76,39 @@ public class GameManager {
         // Save company
         if (requestManager != null) {
             currentState.setCompany(requestManager.getVmProvisioningManager().getCompany());
+            
+            // บันทึกข้อมูล pendingRequests และ completedRequests
+            List<CustomerRequest> pendingRequests = new ArrayList<>(requestManager.getRequests());
+            List<CustomerRequest> completedRequests = new ArrayList<>(requestManager.getCompletedRequests());
+            
+            currentState.setPendingRequests(pendingRequests);
+            currentState.setCompletedRequests(completedRequests);
+            
+            System.out.println("บันทึกข้อมูล Requests: pending=" + pendingRequests.size() + 
+                              ", completed=" + completedRequests.size());
+            
+            // บันทึกข้อมูลการ assign VM ให้กับ request
+            Map<String, String> vmAssignments = new HashMap<>();
+            
+            // เก็บข้อมูลการ assign VM จาก request ทั้งหมด (ทั้ง pending และ completed)
+            for (CustomerRequest request : pendingRequests) {
+                if (request.isAssignedToVM()) {
+                    vmAssignments.put(request.getAssignedVmId(), String.valueOf(request.getId()));
+                    System.out.println("บันทึกการ assign VM " + request.getAssignedVmId() + 
+                                      " ให้กับ request " + request.getName());
+                }
+            }
+            
+            for (CustomerRequest request : completedRequests) {
+                if (request.isAssignedToVM()) {
+                    vmAssignments.put(request.getAssignedVmId(), String.valueOf(request.getId()));
+                    System.out.println("บันทึกการ assign VM " + request.getAssignedVmId() + 
+                                      " ให้กับ request " + request.getName() + " (completed)");
+                }
+            }
+            
+            currentState.setVmAssignments(vmAssignments);
+            System.out.println("บันทึกข้อมูลการ assign VM: " + vmAssignments.size() + " รายการ");
         }
         
         // Save date/time if time manager is running
@@ -230,6 +264,61 @@ public class GameManager {
                 
                 // Initialize game with saved company
                 initializeNewGame(company);
+                
+                // ===== โหลดข้อมูล Requests =====
+                if (this.requestManager != null) {
+                    // โหลดข้อมูล pendingRequests
+                    if (savedState.getPendingRequests() != null && !savedState.getPendingRequests().isEmpty()) {
+                        // ล้าง pendingRequests ปัจจุบันก่อน
+                        this.requestManager.getRequests().clear();
+                        
+                        // เพิ่ม pendingRequests จาก savedState
+                        this.requestManager.getRequests().addAll(savedState.getPendingRequests());
+                        System.out.println("โหลด pendingRequests: " + savedState.getPendingRequests().size() + " รายการ");
+                    }
+                    
+                    // โหลดข้อมูล completedRequests
+                    if (savedState.getCompletedRequests() != null) {
+                        // เพิ่ม completedRequests จาก savedState เข้าไปใน requestManager
+                        this.requestManager.addCompletedRequests(savedState.getCompletedRequests());
+                        System.out.println("โหลด completedRequests: " + savedState.getCompletedRequests().size() + " รายการ");
+                    }
+                    
+                    // โหลดข้อมูล VM assignments และตั้งค่า assignedToVmId ใน CustomerRequest
+                    if (savedState.getVmAssignments() != null && !savedState.getVmAssignments().isEmpty()) {
+                        Map<String, String> vmAssignments = savedState.getVmAssignments();
+                        System.out.println("โหลดข้อมูลการ assign VM: " + vmAssignments.size() + " รายการ");
+                        
+                        // สร้าง map จาก requestId ไปยัง CustomerRequest เพื่อใช้ในการค้นหา
+                        Map<String, CustomerRequest> requestIdMap = new HashMap<>();
+                        
+                        // เพิ่ม pending requests
+                        for (CustomerRequest request : this.requestManager.getRequests()) {
+                            requestIdMap.put(String.valueOf(request.getId()), request);
+                        }
+                        
+                        // เพิ่ม completed requests
+                        for (CustomerRequest request : this.requestManager.getCompletedRequests()) {
+                            requestIdMap.put(String.valueOf(request.getId()), request);
+                        }
+                        
+                        // ตั้งค่า assignedToVmId ใน CustomerRequest
+                        for (Map.Entry<String, String> entry : vmAssignments.entrySet()) {
+                            String vmId = entry.getKey();
+                            String requestId = entry.getValue();
+                            
+                            CustomerRequest request = requestIdMap.get(requestId);
+                            if (request != null) {
+                                request.assignToVM(vmId);
+                                System.out.println("ตั้งค่า assignToVM " + vmId + " ให้กับ request " + request.getName());
+                            } else {
+                                System.out.println("ไม่พบ request id " + requestId + " สำหรับ VM " + vmId);
+                            }
+                        }
+                    }
+                } else {
+                    System.err.println("ไม่สามารถโหลดข้อมูล Requests ได้: requestManager เป็น null");
+                }
                 
                 // Set date/time from saved state
                 if (savedState.getLocalDateTime() != null) {

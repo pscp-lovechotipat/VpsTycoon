@@ -177,6 +177,19 @@ public class ResourceManager implements Serializable {
             state.setFreeVmCount(this.company.getAvailableVMs());
         }
         
+        // บันทึกข้อมูล Chat History จาก ChatHistoryManager ลงใน GameState (ถ้ามี)
+        try {
+            com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager chatManager = 
+                com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager.getInstance();
+            if (chatManager != null) {
+                // บันทึกข้อมูลลงใน GameState โดยตรง (ไม่ต้องเรียก saveChatHistory เพราะเดี๋ยวจะเรียกวนกัน)
+                System.out.println("กำลังบันทึกข้อมูล Chat History ลงใน GameState...");
+            }
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูล Chat History: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
         // บันทึกข้อมูล Rack
         System.out.println("กำลังบันทึกข้อมูล Rack...");
         if (rack != null) {

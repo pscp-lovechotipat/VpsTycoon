@@ -300,30 +300,37 @@ public class VPSOptimization extends GameObject implements Serializable {
 
     public static class VM implements Serializable {
         private static final long serialVersionUID = 1L;
-        private String ip;
         private String name;
-        private int vcpu;
-        private String ram;
-        private String disk;
+        private String id;
+        private int vCPUs;
+        private int ramInGB;
+        private int diskInGB;
         private String status;
-        private List<String> firewallRules;
-        private boolean firewallEnabled;
+        private String ipAddress;
+        private long startTime;
+        private boolean assignedToCustomer;
         private String customerId;
         private String customerName;
         private long assignedTime;
 
-        public VM(String ip, String name, int vcpu, String ram, String disk, String status) {
-            this.ip = ip;
+        public VM(String name, int vCPUs, int ramInGB, int diskInGB) {
             this.name = name;
-            this.vcpu = vcpu;
-            this.ram = ram;
-            this.disk = disk;
-            this.status = status;
-            this.firewallRules = new ArrayList<>();
-            this.firewallEnabled = true;
+            this.id = "vm-" + System.currentTimeMillis() + "-" + new Random().nextInt(1000);
+            this.vCPUs = vCPUs;
+            this.ramInGB = ramInGB;
+            this.diskInGB = diskInGB;
+            this.status = "Stopped";
+            this.ipAddress = generateRandomIp();
+            this.startTime = 0;
+            this.assignedToCustomer = false;
             this.customerId = null;
             this.customerName = null;
             this.assignedTime = 0;
+        }
+        
+        private String generateRandomIp() {
+            Random random = new Random();
+            return "192.168." + (random.nextInt(253) + 1) + "." + (random.nextInt(253) + 1);
         }
 
         public void assignToCustomer(String customerId, String customerName, long assignedTime) {
@@ -355,11 +362,11 @@ public class VPSOptimization extends GameObject implements Serializable {
         }
 
         public String getIp() {
-            return ip;
+            return ipAddress;
         }
 
         public void setIp(String ip) {
-            this.ip = ip;
+            this.ipAddress = ip;
         }
 
         public String getName() {
@@ -371,27 +378,27 @@ public class VPSOptimization extends GameObject implements Serializable {
         }
 
         public int getVcpu() {
-            return vcpu;
+            return vCPUs;
         }
 
         public void setVcpu(int vcpu) {
-            this.vcpu = vcpu;
+            this.vCPUs = vcpu;
         }
 
         public String getRam() {
-            return ram;
+            return Integer.toString(ramInGB) + "GB";
         }
 
         public void setRam(String ram) {
-            this.ram = ram;
+            this.ramInGB = Integer.parseInt(ram.replace("GB", ""));
         }
 
         public String getDisk() {
-            return disk;
+            return Integer.toString(diskInGB) + "GB";
         }
 
         public void setDisk(String disk) {
-            this.disk = disk;
+            this.diskInGB = Integer.parseInt(disk.replace("GB", ""));
         }
 
         public String getStatus() {
@@ -402,33 +409,8 @@ public class VPSOptimization extends GameObject implements Serializable {
             this.status = status;
         }
         
-        public List<String> getFirewallRules() {
-            return firewallRules;
-        }
-        
-        public void setFirewallRules(List<String> firewallRules) {
-            this.firewallRules = firewallRules;
-        }
-        
-        public void addFirewallRule(String rule) {
-            if (this.firewallRules == null) {
-                this.firewallRules = new ArrayList<>();
-            }
-            this.firewallRules.add(rule);
-        }
-        
-        public void removeFirewallRule(String rule) {
-            if (this.firewallRules != null) {
-                this.firewallRules.remove(rule);
-            }
-        }
-        
-        public boolean isFirewallEnabled() {
-            return firewallEnabled;
-        }
-        
-        public void setFirewallEnabled(boolean firewallEnabled) {
-            this.firewallEnabled = firewallEnabled;
+        public String getId() {
+            return id;
         }
     }
 

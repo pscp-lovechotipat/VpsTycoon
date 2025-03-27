@@ -4,6 +4,8 @@ import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.ui.game.rack.Rack;
+import com.vpstycoon.game.manager.CustomerRequest;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatMessage;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -39,6 +41,16 @@ public class GameState implements Serializable {
     // เพิ่มฟิลด์สำหรับเก็บจำนวน free VM
     private int freeVmCount;
     
+    // เพิ่มฟิลด์สำหรับเก็บประวัติแชท
+    private Map<CustomerRequest, List<ChatMessage>> chatHistory;
+    
+    // เพิ่มฟิลด์สำหรับเก็บข้อมูล pendingRequests และ completedRequests
+    private List<CustomerRequest> pendingRequests;
+    private List<CustomerRequest> completedRequests;
+    
+    // เพิ่มฟิลด์สำหรับเก็บการเชื่อมโยงระหว่าง VM และ CustomerRequest
+    private Map<String, String> vmAssignments; // vmId -> requestId
+    
     public GameState() {
         this.company = ResourceManager.getInstance().getCompany();
 
@@ -51,6 +63,10 @@ public class GameState implements Serializable {
         this.rackConfiguration = new HashMap<>();
         this.vpsInventoryData = new HashMap<>();
         this.freeVmCount = 0;
+        this.chatHistory = new HashMap<>();
+        this.pendingRequests = new ArrayList<>();
+        this.completedRequests = new ArrayList<>();
+        this.vmAssignments = new HashMap<>();
 
         this.localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
@@ -70,6 +86,9 @@ public class GameState implements Serializable {
         this.rackConfiguration = new HashMap<>();
         this.vpsInventoryData = new HashMap<>();
         this.freeVmCount = 0;
+        this.chatHistory = new HashMap<>();
+        this.pendingRequests = new ArrayList<>();
+        this.completedRequests = new ArrayList<>();
     }
 
     public GameState(Company company) {
@@ -81,6 +100,9 @@ public class GameState implements Serializable {
         this.rackConfiguration = new HashMap<>();
         this.vpsInventoryData = new HashMap<>();
         this.freeVmCount = 0;
+        this.chatHistory = new HashMap<>();
+        this.pendingRequests = new ArrayList<>();
+        this.completedRequests = new ArrayList<>();
     }
 
     // Getter และ Setter สำหรับ freeVmCount
@@ -110,6 +132,41 @@ public class GameState implements Serializable {
         this.vpsInventoryData = vpsInventoryData;
     }
     
+    // Getter และ Setter สำหรับประวัติแชท
+    public Map<CustomerRequest, List<ChatMessage>> getChatHistory() {
+        return chatHistory;
+    }
+    
+    public void setChatHistory(Map<CustomerRequest, List<ChatMessage>> chatHistory) {
+        this.chatHistory = chatHistory;
+    }
+
+    // Add getters and setters for pendingRequests and completedRequests
+    public List<CustomerRequest> getPendingRequests() {
+        return pendingRequests;
+    }
+    
+    public void setPendingRequests(List<CustomerRequest> pendingRequests) {
+        this.pendingRequests = pendingRequests;
+    }
+    
+    public List<CustomerRequest> getCompletedRequests() {
+        return completedRequests;
+    }
+    
+    public void setCompletedRequests(List<CustomerRequest> completedRequests) {
+        this.completedRequests = completedRequests;
+    }
+
+    // Getter และ Setter สำหรับ vmAssignments
+    public Map<String, String> getVmAssignments() {
+        return vmAssignments;
+    }
+    
+    public void setVmAssignments(Map<String, String> vmAssignments) {
+        this.vmAssignments = vmAssignments;
+    }
+
     public void addGameObject(GameObject obj) {
         if (gameObjects == null) {
             gameObjects = new ArrayList<>();
