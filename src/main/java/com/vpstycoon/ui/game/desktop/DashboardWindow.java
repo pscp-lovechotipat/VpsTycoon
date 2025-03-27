@@ -32,12 +32,12 @@ import javafx.util.Duration;
 
 import java.io.Serializable;
 
-public class DashboardWindow extends VBox implements Serializable {
+public class DashboardWindow extends VBox {
     private Company company;
     private ResourceManager resourceManager;
     private VPSManager vpsManager;
     private RequestManager requestManager;
-    private final Runnable onClose;
+    private final transient Runnable onClose;
     private Timeline glowAnimation;
 
     // UI components that need to be updated

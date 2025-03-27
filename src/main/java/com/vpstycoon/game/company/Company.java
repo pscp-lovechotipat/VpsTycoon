@@ -1,6 +1,7 @@
 package com.vpstycoon.game.company;
 
 import java.io.Serializable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class Company implements Serializable {
         void onRatingChanged(double newRating);
     }
     
-    private final List<RatingObserver> ratingObservers = new ArrayList<>();
+    private final transient List<RatingObserver> ratingObservers = new ArrayList<>();
 
     public Company() {
         this.name = "New Company";
@@ -341,6 +342,22 @@ public class Company implements Serializable {
     private void notifyRatingObservers() {
         for (RatingObserver observer : ratingObservers) {
             observer.onRatingChanged(this.rating);
+        }
+    }
+    
+    /**
+     * Reinitializes transient fields during deserialization
+     */
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        java.lang.reflect.Field field;
+        try {
+            field = Company.class.getDeclaredField("ratingObservers");
+            field.setAccessible(true);
+            field.set(this, new ArrayList<>());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            System.err.println("Error reinitializing ratingObservers: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 } 
