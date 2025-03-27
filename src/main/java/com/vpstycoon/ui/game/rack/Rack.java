@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.vps.VPSInventory;
 
 public class Rack extends StackPane implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -558,7 +560,7 @@ public class Rack extends StackPane implements Serializable {
      * @param inventory VPSInventory สำหรับตรวจสอบ VPS ที่ติดตั้ง
      * @return true หากโหลดข้อมูลสำเร็จ, false หากมีข้อผิดพลาด
      */
-    public boolean loadFromGameState(com.vpstycoon.game.GameState gameState, com.vpstycoon.game.vps.VPSInventory inventory) {
+    public boolean loadFromGameState(GameState gameState, VPSInventory inventory) {
         if (gameState == null) {
             System.out.println("ไม่สามารถโหลดข้อมูล Rack ได้: GameState เป็น null");
             return false;
@@ -703,7 +705,7 @@ public class Rack extends StackPane implements Serializable {
      * เมธอดนี้เรียกใช้เมื่อต้องการอัปเดตข้อมูล Rack ให้ตรงกับ GameState ในระหว่างเกม
      * @param gameState GameState ที่ต้องการซิงค์ข้อมูลด้วย
      */
-    public void syncRackWithGameState(com.vpstycoon.game.GameState gameState) {
+    public void syncRackWithGameState(GameState gameState) {
         if (gameState == null) {
             System.out.println("ไม่สามารถซิงค์ข้อมูล Rack ได้: GameState เป็น null");
             return;

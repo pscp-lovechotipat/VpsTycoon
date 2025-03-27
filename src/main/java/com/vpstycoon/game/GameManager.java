@@ -9,6 +9,7 @@ import com.vpstycoon.game.thread.RequestGenerator;
 import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.VPSSize;
+import com.vpstycoon.ui.game.rack.Rack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -171,7 +172,7 @@ public class GameManager {
         }
         
         // Save rack information
-        com.vpstycoon.ui.game.rack.Rack rack = ResourceManager.getInstance().getRack();
+        Rack rack = ResourceManager.getInstance().getRack();
         if (rack != null) {
             try {
                 // เก็บข้อมูลการตั้งค่า Rack
@@ -415,14 +416,14 @@ public class GameManager {
                 }
                 
                 // โหลดข้อมูล Rack (ถ้ามี)
-                com.vpstycoon.ui.game.rack.Rack rack = null;
+                Rack rack = null;
                 Map<String, Object> rackConfig = savedState.getRackConfiguration();
                 if (rackConfig != null && !rackConfig.isEmpty()) {
                     System.out.println("พบข้อมูล Rack Configuration");
                     
                     try {
                         // 1. สร้าง Rack ใหม่
-                        rack = new com.vpstycoon.ui.game.rack.Rack();
+                        rack = new Rack();
                         
                         // 2. สร้าง Rack ตามจำนวนที่บันทึกไว้
                         int maxRacks = rackConfig.containsKey("maxRacks") ? (Integer) rackConfig.get("maxRacks") : 0;
@@ -514,7 +515,7 @@ public class GameManager {
                 } else {
                     System.out.println("ไม่พบข้อมูล Rack Configuration");
                     // ถ้าไม่พบข้อมูล Rack ให้สร้าง Rack เริ่มต้น
-                    rack = new com.vpstycoon.ui.game.rack.Rack();
+                    rack = new Rack();
                     rack.addRack(10); // สร้าง rack พร้อม 10 slots
                     ResourceManager.getInstance().setRack(rack);
                     System.out.println("เพิ่ม rack เริ่มต้นพร้อม 1 slot ปลดล็อคแล้ว");
@@ -549,7 +550,7 @@ public class GameManager {
         // ตรวจสอบว่าข้อมูล rack ถูกโหลดหรือไม่
         if (!rackLoadedSuccessfully) {
             System.out.println("ไม่สามารถโหลดข้อมูล Rack ได้ ทำการสร้าง Rack ใหม่...");
-            com.vpstycoon.ui.game.rack.Rack rack = new com.vpstycoon.ui.game.rack.Rack();
+            Rack rack = new Rack();
             rack.addRack(10); // สร้าง rack พร้อม 10 slots
             ResourceManager.getInstance().setRack(rack);
             System.out.println("สร้าง Rack ใหม่เสร็จเรียบร้อย");

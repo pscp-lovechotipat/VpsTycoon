@@ -24,6 +24,9 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import java.time.LocalDateTime;
+import java.util.List;
+import com.vpstycoon.game.GameObject;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 
 public class GameApplication extends Application implements Navigator {
     private Stage primaryStage;
@@ -134,11 +137,11 @@ public class GameApplication extends Application implements Navigator {
         
         // 1. ลบและรีเซ็ตประวัติแชท
         try {
-            com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager chatManager = 
-                com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager.getInstance();
-            chatManager.clearChatHistory();
-            chatManager.deleteChatHistoryFile();
-            com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager.resetInstance();
+            ChatHistoryManager chatManager =
+                ChatHistoryManager.getInstance();
+            
+            // เคลียร์ประวัติแชททั้งหมด
+            ChatHistoryManager.resetInstance();
             System.out.println("ล้างประวัติแชทเรียบร้อย");
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการลบประวัติแชท: " + e.getMessage());
@@ -178,7 +181,7 @@ public class GameApplication extends Application implements Navigator {
         
         // 1. รีเซ็ต ChatHistoryManager ก่อน
         try {
-            com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager.resetInstance();
+            ChatHistoryManager.resetInstance();
             System.out.println("รีเซ็ต ChatHistoryManager เรียบร้อย");
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการรีเซ็ต ChatHistoryManager: " + e.getMessage());
@@ -313,9 +316,9 @@ public class GameApplication extends Application implements Navigator {
             if (gameplayScreen != null) {
                 try {
                     // สร้าง GameState จากข้อมูลปัจจุบัน
-                    com.vpstycoon.game.company.Company company = ResourceManager.getInstance().getCompany();
+                    Company company = ResourceManager.getInstance().getCompany();
                     if (company != null) {
-                        java.util.List<com.vpstycoon.game.GameObject> gameObjects = 
+                        List<GameObject> gameObjects = 
                             ResourceManager.getInstance().getCurrentState().getGameObjects();
                         
                         GameState state = new GameState(company, gameObjects);

@@ -25,6 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 
+import com.vpstycoon.ui.game.rack.Rack;
+import com.vpstycoon.game.vps.VPSOptimization;
+import com.vpstycoon.game.GameManager;
+
 public class GameplayScreen extends GameScreen {
     private GameState state;
     private final Navigator navigator;
@@ -213,7 +217,7 @@ public class GameplayScreen extends GameScreen {
                                 // ยืนยันว่ายังอยู่ในหน้าเกม
                                 if (gameFlowManager != null) {
                                     // ตรวจสอบว่าข้อมูล Rack โหลดสมบูรณ์แล้วหรือยัง
-                                    com.vpstycoon.ui.game.rack.Rack rack = com.vpstycoon.game.resource.ResourceManager.getInstance().getRack();
+                                    Rack rack = ResourceManager.getInstance().getRack();
                                     if (rack != null) {
                                         System.out.println("กำลังตรวจสอบความพร้อมของข้อมูลก่อนบันทึกเกม...");
                                         System.out.println("- จำนวน rack: " + rack.getMaxRacks());
@@ -221,11 +225,11 @@ public class GameplayScreen extends GameScreen {
                                         System.out.println("- จำนวน slot ที่ปลดล็อค: " + rack.getUnlockedSlotUnits());
                                         
                                         // แสดงข้อมูล VPS ที่ติดตั้งในทุก rack
-                                        List<com.vpstycoon.game.vps.VPSOptimization> allVPS = rack.getAllInstalledVPS();
+                                        List<VPSOptimization> allVPS = rack.getAllInstalledVPS();
                                         System.out.println("- จำนวน VPS ทั้งหมดที่ติดตั้งในทุก rack: " + allVPS.size());
                                         
                                         // ตรวจสอบข้อมูลใน GameManager ว่าโหลดสมบูรณ์หรือไม่
-                                        com.vpstycoon.game.GameManager gameManager = com.vpstycoon.game.GameManager.getInstance();
+                                        GameManager gameManager = GameManager.getInstance();
                                         System.out.println("- จำนวน VPS ที่ติดตั้งใน GameManager: " + gameManager.getInstalledServers().size());
                                         System.out.println("- จำนวน VPS ใน Inventory: " + gameManager.getVpsInventory().getSize());
                                         

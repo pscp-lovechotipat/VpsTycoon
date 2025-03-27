@@ -20,6 +20,10 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.GameState;
+import java.util.List;
+import com.vpstycoon.game.GameObject;
 
 public class ResumeScreen extends StackPane {
     private final Navigator navigator;
@@ -129,11 +133,11 @@ public class ResumeScreen extends StackPane {
                 ResourceManager.getInstance().pushNotification("บันทึกเกม", "กำลังบันทึกความก้าวหน้าของคุณ...");
                 
                 // สร้าง GameState จากข้อมูลปัจจุบัน
-                com.vpstycoon.game.company.Company company = ResourceManager.getInstance().getCompany();
-                java.util.List<com.vpstycoon.game.GameObject> gameObjects = 
+                Company company = ResourceManager.getInstance().getCompany();
+                List<GameObject> gameObjects = 
                     ResourceManager.getInstance().getCurrentState().getGameObjects();
                 
-                com.vpstycoon.game.GameState state = new com.vpstycoon.game.GameState(company, gameObjects);
+                GameState state = new GameState(company, gameObjects);
                 state.setLocalDateTime(ResourceManager.getInstance().getGameTimeController().getGameTimeManager().getGameDateTime());
                 
                 // บันทึกเกม

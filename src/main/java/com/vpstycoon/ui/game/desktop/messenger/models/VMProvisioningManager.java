@@ -27,7 +27,7 @@ public class VMProvisioningManager {
     private int deployLevel = 1;
     
     // เพิ่มตัวแปรเพื่อเข้าถึง VMProvisioningManager ที่แท้จริง
-    private final com.vpstycoon.game.manager.VMProvisioningManager gameVMManager;
+    private final com.vpstycoon.game.manager.VMProvisioningManager gameVMProvisioningManager;
 
     public VMProvisioningManager(ChatHistoryManager chatHistoryManager, ChatAreaView chatAreaView,
                                  Map<CustomerRequest, ProgressBar> provisioningProgressBars) {
@@ -37,7 +37,7 @@ public class VMProvisioningManager {
         
         // เข้าถึง VMProvisioningManager จาก ResourceManager
         RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
-        this.gameVMManager = requestManager.getVmProvisioningManager();
+        this.gameVMProvisioningManager = requestManager.getVmProvisioningManager();
     }
 
     public void startVMProvisioning(CustomerRequest request, VPSOptimization.VM vm, Runnable onComplete) {

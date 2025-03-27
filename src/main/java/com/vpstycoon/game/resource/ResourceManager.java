@@ -419,8 +419,8 @@ public class ResourceManager implements Serializable {
                 int freeVmCount = 0;
                 if (state.getGameObjects() != null) {
                     for (Object obj : state.getGameObjects()) {
-                        if (obj instanceof com.vpstycoon.game.vps.VPSOptimization) {
-                            com.vpstycoon.game.vps.VPSOptimization vps = (com.vpstycoon.game.vps.VPSOptimization) obj;
+                        if (obj instanceof VPSOptimization) {
+                            VPSOptimization vps = (VPSOptimization) obj;
                             if (vps.isInstalled()) {
                                 freeVmCount += vps.getVms().stream()
                                     .filter(vm -> "Running".equals(vm.getStatus()))
@@ -472,7 +472,7 @@ public class ResourceManager implements Serializable {
             
             // ถ้าไม่มีข้อมูล Rack ให้สร้าง Rack เริ่มต้น
             if (this.rack == null) {
-                this.rack = new com.vpstycoon.ui.game.rack.Rack();
+                this.rack = new Rack();
                 this.rack.addRack(10); // สร้าง rack พร้อม 10 slots
                 System.out.println("สร้าง Rack เริ่มต้นเรียบร้อยแล้ว");
             }
@@ -484,10 +484,10 @@ public class ResourceManager implements Serializable {
         
         // สร้าง Rack ใหม่
         if (this.rack == null) {
-            this.rack = new com.vpstycoon.ui.game.rack.Rack();
+            this.rack = new Rack();
         } else {
             // ล้างข้อมูล Rack เดิม เพื่อเตรียมโหลดข้อมูลใหม่
-            this.rack = new com.vpstycoon.ui.game.rack.Rack();
+            this.rack = new Rack();
         }
         
         try {
@@ -614,7 +614,7 @@ public class ResourceManager implements Serializable {
             e.printStackTrace();
             
             // กรณีเกิดข้อผิดพลาด ให้สร้าง Rack เริ่มต้น
-            this.rack = new com.vpstycoon.ui.game.rack.Rack();
+            this.rack = new Rack();
             this.rack.addRack(10); // สร้าง rack พร้อม 10 slots
             System.out.println("เกิดข้อผิดพลาด สร้าง Rack เริ่มต้นแทน");
             return false;
