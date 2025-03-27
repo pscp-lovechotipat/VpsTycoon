@@ -1,10 +1,11 @@
-package com.vpstycoon.game.manager;
+package com.vpstycoon.ui.game.desktop.messenger.models;
 
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.company.SkillPointsSystem;
+import com.vpstycoon.game.manager.CustomerRequest;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Manages the provisioning of VMs for customer requests and handles customer satisfaction ratings.
  */
-public class VMProvisioningManager implements Serializable {
+public class VMProvisioningManagerImpl implements Serializable {
     private static final long serialVersionUID = 1L;
     
     // Map to track which VM is assigned to which customer request
@@ -33,7 +34,7 @@ public class VMProvisioningManager implements Serializable {
     private final SkillPointsSystem skillPointsSystem;
     private int deployLevel = 1;
 
-    public VMProvisioningManager(Company company) {
+    public VMProvisioningManagerImpl(Company company) {
         this.vmToRequestMap = new HashMap<>();
         this.activeRequests = new HashMap<>();
         this.company = company;
@@ -118,6 +119,24 @@ public class VMProvisioningManager implements Serializable {
                 // Activate the request to start receiving payments
                 request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
                 
+                // Process initial payment when VM is delivered
+                double paymentAmount = request.getPaymentAmount();
+                
+                // Apply security bonus if applicable
+                double securityBonus = skillPointsSystem.getSecurityPaymentBonus();
+                if (securityBonus > 0) {
+                    double bonusAmount = paymentAmount * securityBonus;
+                    paymentAmount += bonusAmount;
+                    System.out.println("Security bonus applied: +" + String.format("%.2f", bonusAmount) + 
+                            " (" + (securityBonus * 100) + "%)");
+                }
+                
+                // Add initial payment to company money
+                company.addMoney(paymentAmount);
+                
+                System.out.println("Received initial payment of " + String.format("%.2f", paymentAmount) + 
+                        " from " + request.getName() + " (" + request.getRentalPeriodType().getDisplayName() + ")");
+                
                 // Complete the future with the new VM
                 future.complete(vm);
                 
@@ -199,6 +218,15 @@ public class VMProvisioningManager implements Serializable {
                 // Calculate payment amount
                 double paymentAmount = request.getPaymentAmount();
                 
+                // Apply security bonus if applicable
+                double securityBonus = skillPointsSystem.getSecurityPaymentBonus();
+                if (securityBonus > 0) {
+                    double bonusAmount = paymentAmount * securityBonus;
+                    paymentAmount += bonusAmount;
+                    System.out.println("Security bonus applied: +" + String.format("%.2f", bonusAmount) + 
+                            " (" + (securityBonus * 100) + "%)");
+                }
+                
                 // Add to total
                 totalPayment += paymentAmount;
                 
@@ -212,7 +240,7 @@ public class VMProvisioningManager implements Serializable {
         
         // Update company money
         if (totalPayment > 0) {
-            company.setMoney(company.getMoney() + (long)totalPayment);
+            company.addMoney(totalPayment);
         }
         
         return totalPayment;

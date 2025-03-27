@@ -155,6 +155,15 @@ public class SkillPointsWindow extends VBox {
                 bonusText = "Current bonus: +" + (currentLevel * 50) + "% security level";
                 if (currentLevel >= 2) {
                     bonusText += " (Firewall management unlocked)";
+                    
+                    // Add payment bonus information
+                    if (currentLevel == 2) {
+                        bonusText += ", +3% VM payment bonus";
+                    } else if (currentLevel == 3) {
+                        bonusText += ", +5% VM payment bonus";
+                    } else if (currentLevel == 4) {
+                        bonusText += ", +10% VM payment bonus";
+                    }
                 }
                 break;
             case MANAGEMENT:

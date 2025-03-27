@@ -1,8 +1,8 @@
 package com.vpstycoon.ui.game.desktop;
 
-import com.vpstycoon.game.manager.VMProvisioningManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
+import com.vpstycoon.ui.game.desktop.messenger.models.VMProvisioningManagerImpl;
 import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
 
@@ -18,7 +18,7 @@ public class SimulationDesktopUI {
         int availableVMs = 0;
         
         // ดึง VMProvisioningManager จาก RequestManager เพื่อใช้ข้อมูลการกำหนด VM
-        VMProvisioningManager vmProvisioningManager = parent.getRequestManager().getVmProvisioningManager();
+        VMProvisioningManagerImpl vmProvisioningManager = parent.getRequestManager().getVmProvisioningManager();
         
         // ตรวจสอบ VM ทั้งหมดจากทุก VPS
         for (var vps : parent.getVpsManager().getVPSMap().values()) {

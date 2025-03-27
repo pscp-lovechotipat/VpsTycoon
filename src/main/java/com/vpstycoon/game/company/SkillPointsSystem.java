@@ -270,8 +270,14 @@ public class SkillPointsSystem implements Serializable {
                 String marketDiscountBonus = (level > 1) ? ", " + ((level - 1) * 10) + "% discount on market purchases" : "";
                 return "Level " + level + ": " + marketingBonus + marketDiscountBonus;
             case SECURITY:
-                if (level == 2) {
-                    return "Level " + level + ": Unlocks firewall management";
+                if (level == 1) {
+                    return "Level " + level + ": +" + (level * 50) + "% security level";
+                } else if (level == 2) {
+                    return "Level " + level + ": +" + (level * 50) + "% security level, Unlocks firewall management, +3% payment bonus";
+                } else if (level == 3) {
+                    return "Level " + level + ": +" + (level * 50) + "% security level, Unlocks firewall management, +5% payment bonus";
+                } else if (level == 4) {
+                    return "Level " + level + ": +" + (level * 50) + "% security level, Unlocks firewall management, +10% payment bonus";
                 }
                 return "Level " + level + ": +" + (level * 50) + "% security level";
             case MANAGEMENT:
@@ -300,5 +306,20 @@ public class SkillPointsSystem implements Serializable {
         int skillLevel = getSkillLevel(SkillType.RACK_SLOTS);
         // Level 1: +0 Gbps, Level 2: +10 Gbps, Level 3: +20 Gbps, Level 4: +30 Gbps
         return (skillLevel > 1) ? (skillLevel - 1) * 10 : 0;
+    }
+    
+    /**
+     * Get the payment bonus percentage based on the SECURITY skill level
+     * @return Payment bonus percentage (0%, 3%, 5%, or 10%)
+     */
+    public double getSecurityPaymentBonus() {
+        int skillLevel = getSkillLevel(SkillType.SECURITY);
+        return switch (skillLevel) {
+            case 1 -> 0.0; // Level 1: 0% bonus
+            case 2 -> 0.03; // Level 2: 3% bonus
+            case 3 -> 0.05; // Level 3: 5% bonus
+            case 4 -> 0.10; // Level 4: 10% bonus
+            default -> 0.0;
+        };
     }
 } 

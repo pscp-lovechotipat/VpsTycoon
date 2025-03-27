@@ -26,8 +26,8 @@ public class VMProvisioningManager {
     private final Random random = new Random();
     private final long[] DEPLOY_TIMES = {10000, 5000, 2000, 1000};
     
-    // เพิ่มตัวแปรเพื่อเข้าถึง VMProvisioningManager ที่แท้จริง
-    private final com.vpstycoon.game.manager.VMProvisioningManager gameVMProvisioningManager;
+    // เปลี่ยนไปใช้ VMProvisioningManagerImpl ที่อยู่ใน package เดียวกัน
+    private final VMProvisioningManagerImpl gameVMProvisioningManager;
     // เพิ่มตัวแปรเพื่อเข้าถึง SkillPointsSystem
     private final SkillPointsSystem skillPointsSystem;
 
@@ -37,9 +37,10 @@ public class VMProvisioningManager {
         this.chatAreaView = chatAreaView;
         this.provisioningProgressBars = provisioningProgressBars;
         
-        // เข้าถึง VMProvisioningManager จาก ResourceManager
-        RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
-        this.gameVMProvisioningManager = requestManager.getVmProvisioningManager();
+        // เข้าถึง VMProvisioningManagerImpl จาก ResourceManager
+        Company company = ResourceManager.getInstance().getCompany();
+        this.gameVMProvisioningManager = new VMProvisioningManagerImpl(company);
+        
         // เข้าถึง SkillPointsSystem จาก ResourceManager
         this.skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
     }

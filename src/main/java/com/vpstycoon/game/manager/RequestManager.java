@@ -6,6 +6,7 @@ import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.RequestType;
+import com.vpstycoon.ui.game.desktop.messenger.models.VMProvisioningManagerImpl;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -20,7 +21,7 @@ public class RequestManager implements Serializable {
     
     private final ObservableList<CustomerRequest> pendingRequests;
     private final List<CustomerRequest> completedRequests;
-    private final VMProvisioningManager vmProvisioningManager;
+    private final VMProvisioningManagerImpl vmProvisioningManager;
     private final Company company;
     private final Random random = new Random();
     
@@ -31,7 +32,7 @@ public class RequestManager implements Serializable {
         this.pendingRequests = FXCollections.observableArrayList();
         this.completedRequests = new ArrayList<>();
         this.company = company;
-        this.vmProvisioningManager = new VMProvisioningManager(company);
+        this.vmProvisioningManager = new VMProvisioningManagerImpl(company);
         
         // ตรวจสอบใน GameState ก่อนว่ามี pendingRequests ที่บันทึกไว้หรือไม่
         GameState currentState = ResourceManager.getInstance().getCurrentState();
@@ -258,7 +259,7 @@ public class RequestManager implements Serializable {
      * Get the VM provisioning manager
      * @return The VM provisioning manager
      */
-    public VMProvisioningManager getVmProvisioningManager() {
+    public VMProvisioningManagerImpl getVmProvisioningManager() {
         return vmProvisioningManager;
     }
     
