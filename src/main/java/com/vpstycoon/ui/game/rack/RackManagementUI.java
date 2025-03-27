@@ -145,7 +145,8 @@ public class RackManagementUI extends VBox {
         getChildren().add(scrollPane);
 
         // Upgrade section with cyber theme
-        upgradeButton = createCyberButton("UPGRADE RACK");
+        int initialUpgradeCost = calculateUpgradeCost();
+        upgradeButton = createCyberButton("UPGRADE RACK ($" + initialUpgradeCost + ")");
         upgradeButton.setOnMouseEntered(e -> {
             upgradeButton.setEffect(glowEffect);
             upgradeButton.setStyle(upgradeButton.getStyle() + "-fx-background-color: #6600cc; -fx-text-fill: #ffffff;");
@@ -194,8 +195,38 @@ public class RackManagementUI extends VBox {
         });
 
         upgradeButton.setOnAction(e -> {
-            if (rack.upgrade()) {
-                animateRackUpgrade();
+            int upgradeCost = calculateUpgradeCost();
+            if (parent.getCompany().getMoney() >= upgradeCost) {
+                // Deduct the cost first
+                parent.getCompany().setMoney(parent.getCompany().getMoney() - upgradeCost);
+                
+                if (parent.getRack().upgrade()) {
+                    Timeline pulseAnimation = new Timeline();
+                    pulseAnimation.getKeyFrames().addAll(
+                        new KeyFrame(Duration.ZERO, 
+                            new KeyValue(upgradeButton.scaleXProperty(), 1.0),
+                            new KeyValue(upgradeButton.scaleYProperty(), 1.0)
+                        ),
+                        new KeyFrame(Duration.millis(200), 
+                            new KeyValue(upgradeButton.scaleXProperty(), 1.05),
+                            new KeyValue(upgradeButton.scaleYProperty(), 1.05)
+                        ),
+                        new KeyFrame(Duration.millis(400), 
+                            new KeyValue(upgradeButton.scaleXProperty(), 1.0),
+                            new KeyValue(upgradeButton.scaleYProperty(), 1.0)
+                        )
+                    );
+                    
+                    pulseAnimation.setOnFinished(event -> {
+                        parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " + 
+                                              parent.getRack().getUnlockedSlotUnits() + " SLOTS");
+                        openRackInfo();
+                    });
+                    
+                    pulseAnimation.play();
+                }
+            } else {
+                parent.pushNotification("UPGRADE FAILED", "INSUFFICIENT FUNDS");
             }
         });
 
@@ -458,17 +489,25 @@ public class RackManagementUI extends VBox {
             }
 
             int availableSlots = rack.getMaxSlotUnits() - rack.getUnlockedSlotUnits();
-            upgradeInfoLabel.setText(String.format("SERVER: %d\nSLOTS: %d/%d (%d available)",
+            int upgradeCost = calculateUpgradeCost();
+            upgradeInfoLabel.setText(String.format("SERVER: %d\nSLOTS: %d/%d (%d available)\nUPGRADE COST: $%d",
                     rack.getRackIndex() + 1,
                     rack.getUnlockedSlotUnits(),
                     rack.getMaxSlotUnits(),
-                    availableSlots));
+                    availableSlots,
+                    upgradeCost));
 
-            upgradeButton.setDisable(rack.getUnlockedSlotUnits() >= rack.getMaxSlotUnits());
+            boolean canAffordUpgrade = parent.getCompany().getMoney() >= upgradeCost;
+            boolean hasAvailableSlots = rack.getUnlockedSlotUnits() < rack.getMaxSlotUnits();
+            
+            // Update button text with current price
+            upgradeButton.setText("UPGRADE RACK ($" + upgradeCost + ")");
+            
+            // Disable upgrade button if all slots are unlocked or player doesn't have enough money
+            upgradeButton.setDisable(!hasAvailableSlots || !canAffordUpgrade);
             prevRackButton.setDisable(rack.getRackIndex() <= 0);
             nextRackButton.setDisable(rack.getRackIndex() >= rack.getMaxRacks() - 1);
 
-            int upgradeCost = calculateUpgradeCost();
             upgradeCostLabel.setText(String.format("UPGRADE COST: $%d", upgradeCost));
         }
     }
@@ -491,7 +530,7 @@ public class RackManagementUI extends VBox {
 
     private int calculateUpgradeCost() {
         int currentUnlocked = rack.getUnlockedSlotUnits();
-        return currentUnlocked * 1000; // Cost increases with each upgrade
+        return currentUnlocked * 100; // Start at 100 and multiply by number of unlocked slots
     }
 
     /**
@@ -936,35 +975,42 @@ public class RackManagementUI extends VBox {
             inventoryButton.setMaxWidth(Double.MAX_VALUE);
             inventoryButton.setOnAction(e -> parent.openVPSInventory());
             
-            Button upgradeButton = createPixelButton("UPGRADE RACK", "#4CAF50");
+            int upgradeCost = calculateUpgradeCost();
+            Button upgradeButton = createPixelButton("UPGRADE RACK ($" + upgradeCost + ")", "#4CAF50");
             upgradeButton.setMaxWidth(Double.MAX_VALUE);
             upgradeButton.setOnAction(e -> {
-                if (parent.getRack().upgrade()) {
-                    Timeline pulseAnimation = new Timeline();
-                    pulseAnimation.getKeyFrames().addAll(
-                new KeyFrame(Duration.ZERO, 
-                            new KeyValue(upgradeButton.scaleXProperty(), 1.0),
-                            new KeyValue(upgradeButton.scaleYProperty(), 1.0)
-                        ),
-                        new KeyFrame(Duration.millis(200), 
-                            new KeyValue(upgradeButton.scaleXProperty(), 1.05),
-                            new KeyValue(upgradeButton.scaleYProperty(), 1.05)
-                        ),
-                        new KeyFrame(Duration.millis(400), 
-                            new KeyValue(upgradeButton.scaleXProperty(), 1.0),
-                            new KeyValue(upgradeButton.scaleYProperty(), 1.0)
-                        )
-            );
+                int currentUpgradeCost = calculateUpgradeCost();
+                if (parent.getCompany().getMoney() >= currentUpgradeCost) {
+                    // Deduct the cost first
+                    parent.getCompany().setMoney(parent.getCompany().getMoney() - currentUpgradeCost);
                     
-                    pulseAnimation.setOnFinished(event -> {
-                        parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " + 
-                                              parent.getRack().getUnlockedSlotUnits() + " SLOTS");
-                        openRackInfo();
-                    });
-                    
-                    pulseAnimation.play();
+                    if (parent.getRack().upgrade()) {
+                        Timeline pulseAnimation = new Timeline();
+                        pulseAnimation.getKeyFrames().addAll(
+                            new KeyFrame(Duration.ZERO, 
+                                new KeyValue(upgradeButton.scaleXProperty(), 1.0),
+                                new KeyValue(upgradeButton.scaleYProperty(), 1.0)
+                            ),
+                            new KeyFrame(Duration.millis(200), 
+                                new KeyValue(upgradeButton.scaleXProperty(), 1.05),
+                                new KeyValue(upgradeButton.scaleYProperty(), 1.05)
+                            ),
+                            new KeyFrame(Duration.millis(400), 
+                                new KeyValue(upgradeButton.scaleXProperty(), 1.0),
+                                new KeyValue(upgradeButton.scaleYProperty(), 1.0)
+                            )
+                        );
+                        
+                        pulseAnimation.setOnFinished(event -> {
+                            parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " + 
+                                                  parent.getRack().getUnlockedSlotUnits() + " SLOTS");
+                            openRackInfo();
+                        });
+                        
+                        pulseAnimation.play();
+                    }
                 } else {
-                    parent.pushNotification("UPGRADE FAILED", "MAXIMUM CAPACITY REACHED");
+                    parent.pushNotification("UPGRADE FAILED", "INSUFFICIENT FUNDS");
                 }
             });
             
@@ -1395,36 +1441,42 @@ public class RackManagementUI extends VBox {
             inventoryButton.setMaxWidth(Double.MAX_VALUE); // Make button fill width
             inventoryButton.setOnAction(e -> parent.openVPSInventory());
             
-            Button upgradeButton = createPixelButton("UPGRADE RACK", "#4CAF50");
-            upgradeButton.setMaxWidth(Double.MAX_VALUE); // Make button fill width
+            int upgradeCost = calculateUpgradeCost();
+            Button upgradeButton = createPixelButton("UPGRADE RACK ($" + upgradeCost + ")", "#4CAF50");
+            upgradeButton.setMaxWidth(Double.MAX_VALUE);
             upgradeButton.setOnAction(e -> {
-                if (parent.getRack().upgrade()) {
-                    // Add upgrade animation without infoPane references
-                    Timeline pulseAnimation = new Timeline();
-                    pulseAnimation.getKeyFrames().addAll(
-                        new KeyFrame(Duration.ZERO, 
-                            new KeyValue(upgradeButton.scaleXProperty(), 1.0),
-                            new KeyValue(upgradeButton.scaleYProperty(), 1.0)
-                        ),
-                        new KeyFrame(Duration.millis(200), 
-                            new KeyValue(upgradeButton.scaleXProperty(), 1.05),
-                            new KeyValue(upgradeButton.scaleYProperty(), 1.05)
-                        ),
-                        new KeyFrame(Duration.millis(400), 
-                            new KeyValue(upgradeButton.scaleXProperty(), 1.0),
-                            new KeyValue(upgradeButton.scaleYProperty(), 1.0)
-                        )
-                    );
+                int currentUpgradeCost = calculateUpgradeCost();
+                if (parent.getCompany().getMoney() >= currentUpgradeCost) {
+                    // Deduct the cost first
+                    parent.getCompany().setMoney(parent.getCompany().getMoney() - currentUpgradeCost);
                     
-                    pulseAnimation.setOnFinished(event -> {
-                        parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " + 
-                                              parent.getRack().getUnlockedSlotUnits() + " SLOTS");
-                        openRackInfo();
-                    });
-                    
-                    pulseAnimation.play();
+                    if (parent.getRack().upgrade()) {
+                        Timeline pulseAnimation = new Timeline();
+                        pulseAnimation.getKeyFrames().addAll(
+                            new KeyFrame(Duration.ZERO, 
+                                new KeyValue(upgradeButton.scaleXProperty(), 1.0),
+                                new KeyValue(upgradeButton.scaleYProperty(), 1.0)
+                            ),
+                            new KeyFrame(Duration.millis(200), 
+                                new KeyValue(upgradeButton.scaleXProperty(), 1.05),
+                                new KeyValue(upgradeButton.scaleYProperty(), 1.05)
+                            ),
+                            new KeyFrame(Duration.millis(400), 
+                                new KeyValue(upgradeButton.scaleXProperty(), 1.0),
+                                new KeyValue(upgradeButton.scaleYProperty(), 1.0)
+                            )
+                        );
+                        
+                        pulseAnimation.setOnFinished(event -> {
+                            parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " + 
+                                                  parent.getRack().getUnlockedSlotUnits() + " SLOTS");
+                            openRackInfo();
+                        });
+                        
+                        pulseAnimation.play();
+                    }
                 } else {
-                    parent.pushNotification("UPGRADE FAILED", "MAXIMUM CAPACITY REACHED");
+                    parent.pushNotification("UPGRADE FAILED", "INSUFFICIENT FUNDS");
                 }
             });
 
