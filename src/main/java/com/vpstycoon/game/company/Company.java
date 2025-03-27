@@ -360,4 +360,20 @@ public class Company implements Serializable {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Reduce the company rating by specified amount
+     * @param amount Amount to reduce rating by
+     */
+    public void reduceRating(double amount) {
+        if (amount > 0) {
+            double oldRating = this.rating;
+            this.rating = Math.max(0, this.rating - amount);
+            
+            // ถ้าค่า rating เปลี่ยน ให้แจ้งเตือน observers
+            if (oldRating != this.rating) {
+                notifyRatingObservers();
+            }
+        }
+    }
 } 
