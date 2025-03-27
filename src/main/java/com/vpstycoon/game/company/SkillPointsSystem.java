@@ -93,6 +93,16 @@ public class SkillPointsSystem implements Serializable {
     }
     
     /**
+     * Get the rack slot upgrade discount percentage based on the RACK_SLOTS skill level
+     * @return Discount percentage (0-100)
+     */
+    public int getRackSlotUpgradeDiscount() {
+        int skillLevel = getSkillLevel(SkillType.RACK_SLOTS);
+        // Level 1: 0%, Level 2: 10%, Level 3: 20%, Level 4: 30%
+        return (skillLevel > 1) ? (skillLevel - 1) * 10 : 0;
+    }
+    
+    /**
      * Upgrade a skill if enough points are available
      * @param skillType The skill to upgrade
      * @return true if upgrade was successful, false otherwise
@@ -220,7 +230,9 @@ public class SkillPointsSystem implements Serializable {
         
         switch (skillType) {
             case RACK_SLOTS:
-                return "Level " + level + ": +" + (level * 2) + " rack slots";
+                String slotBonus = "+" + (level * 2) + " rack slots";
+                String discountBonus = (level > 1) ? ", " + ((level - 1) * 10) + "% discount on rack slot upgrades" : "";
+                return "Level " + level + ": " + slotBonus + discountBonus;
             case NETWORK_SPEED:
                 return "Level " + level + ": +" + (level * 20) + "% network speed";
             case SERVER_EFFICIENCY:

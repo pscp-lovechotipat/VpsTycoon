@@ -2,6 +2,7 @@ package com.vpstycoon.ui.game.rack;
 
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
@@ -490,6 +491,34 @@ public class RackManagementUI extends VBox {
 
             int availableSlots = rack.getMaxSlotUnits() - rack.getUnlockedSlotUnits();
             int upgradeCost = calculateUpgradeCost();
+            
+            // Check if discount is applied
+            int discountPercent = 0;
+            try {
+                SkillPointsSystem skillPointsSystem = 
+                    ResourceManager.getInstance().getSkillPointsSystem();
+                
+                if (skillPointsSystem != null) {
+                    discountPercent = skillPointsSystem.getRackSlotUpgradeDiscount();
+                }
+            } catch (Exception e) {
+                System.out.println("Error getting skill points system: " + e.getMessage());
+            }
+            
+            // Update upgrade cost label with discount information if applicable
+            if (discountPercent > 0) {
+                upgradeCostLabel.setText(String.format("UPGRADE COST: $%d (-%d%% DISCOUNT)", 
+                    upgradeCost, discountPercent));
+                // Add a glow effect to highlight the discount
+                Glow discountGlow = new Glow(0.5);
+                upgradeCostLabel.setEffect(discountGlow);
+                upgradeCostLabel.setStyle(upgradeCostLabel.getStyle() + "; -fx-text-fill: #00ffaa;");
+            } else {
+                upgradeCostLabel.setText(String.format("UPGRADE COST: $%d", upgradeCost));
+                upgradeCostLabel.setEffect(null);
+                upgradeCostLabel.setStyle(upgradeCostLabel.getStyle() + "; -fx-text-fill: #00ffff;");
+            }
+            
             upgradeInfoLabel.setText(String.format("SERVER: %d\nSLOTS: %d/%d (%d available)\nUPGRADE COST: $%d",
                     rack.getRackIndex() + 1,
                     rack.getUnlockedSlotUnits(),
@@ -507,8 +536,6 @@ public class RackManagementUI extends VBox {
             upgradeButton.setDisable(!hasAvailableSlots || !canAffordUpgrade);
             prevRackButton.setDisable(rack.getRackIndex() <= 0);
             nextRackButton.setDisable(rack.getRackIndex() >= rack.getMaxRacks() - 1);
-
-            upgradeCostLabel.setText(String.format("UPGRADE COST: $%d", upgradeCost));
         }
     }
     
@@ -530,7 +557,28 @@ public class RackManagementUI extends VBox {
 
     private int calculateUpgradeCost() {
         int currentUnlocked = rack.getUnlockedSlotUnits();
-        return currentUnlocked * 100; // Start at 100 and multiply by number of unlocked slots
+        int baseCost = currentUnlocked * 100; // Start at 100 and multiply by number of unlocked slots
+        
+        // Apply discount if available from skill points
+        int discountPercent = 0;
+        try {
+            // Get the skill points system from the ResourceManager
+            SkillPointsSystem skillPointsSystem = 
+                ResourceManager.getInstance().getSkillPointsSystem();
+            
+            if (skillPointsSystem != null) {
+                discountPercent = skillPointsSystem.getRackSlotUpgradeDiscount();
+            }
+        } catch (Exception e) {
+            System.out.println("Error getting skill points system: " + e.getMessage());
+        }
+        
+        // Apply the discount
+        if (discountPercent > 0) {
+            baseCost = (int)(baseCost * (1 - discountPercent / 100.0));
+        }
+        
+        return baseCost;
     }
 
     /**
