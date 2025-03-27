@@ -23,6 +23,7 @@ import javafx.scene.control.Label;
 import javafx.scene.effect.Glow;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -39,10 +40,15 @@ public class GameEvent implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(GameEvent.class.getName());
     
     // Timing constants for tasks
-    private static final int INITIAL_TASK_DELAY = 20 * 1000; // 20 seconds initial delay before tasks start
-    private static final int MIN_TASK_INTERVAL = 30 * 1000; // Minimum 30 seconds between tasks
-    private static final int MAX_TASK_INTERVAL = 90 * 1000; // Maximum 90 seconds between tasks
-    private static final int DEBUG_INTERVAL = 5 * 1000; // Debug output every 5 seconds
+    private static final int INITIAL_TASK_DELAY = 5 * 1000; // 20 seconds initial delay before tasks start
+    private static final int MIN_TASK_INTERVAL = 5 * 1000; // Minimum 30 seconds between tasks
+    private static final int MAX_TASK_INTERVAL = 5 * 1000; // Maximum 90 seconds between tasks
+    private static final int DEBUG_INTERVAL = 1 * 1000;
+
+//    private static final int INITIAL_TASK_DELAY = 5 * 60 * 1000; // 20 seconds initial delay before tasks start
+//    private static final int MIN_TASK_INTERVAL = 3 * 60 * 1000; // Minimum 30 seconds between tasks
+//    private static final int MAX_TASK_INTERVAL = 7 * 60 * 1000; // Maximum 90 seconds between tasks
+//    private static final int DEBUG_INTERVAL = 5 * 1000; // Debug output every 5 seconds
 
     private final GameplayContentPane gameplayContentPane;
     private final ResourceManager resourceManager;
@@ -77,31 +83,31 @@ public class GameEvent implements Runnable {
         
         // Data decryption task
         () -> new DataDecryptionTask(random.nextInt(3) + 3), // 3-5 digits
-        
+
         // Firewall Defense Task
         () -> new FirewallDefenseTask(),
-        
+
         // Data Sorting Task
         () -> new DataSortingTask(),
-        
+
         // Password Cracking Task
         () -> new PasswordCrackingTask(),
-        
+
         // Network Routing Task
         () -> new NetworkRoutingTask(),
-        
+
         // Server Cooling Task
         () -> new ServerCoolingTask(),
-        
+
         // Resource Optimization Task
         () -> new ResourceOptimizationTask(),
-        
+
         // Calibration Task
         () -> new CalibrationTask(),
-        
+
         // File Recovery Task
         () -> new FileRecoveryTask(),
-        
+
         // New Hacking Grid Task
         () -> new HackingTask()
     };
@@ -145,6 +151,20 @@ public class GameEvent implements Runnable {
         taskOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); // More opaque for cyberpunk look
         taskOverlay.setAlignment(Pos.CENTER);
         taskOverlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE); // Cover entire area
+        taskOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        taskOverlay.setMinSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+        
+        // Add viewport constraints to ensure content stays within the screen
+        taskOverlay.setClip(new Rectangle(taskOverlay.getWidth(), taskOverlay.getHeight()));
+        
+        // Ensure the overlay adapts to window size
+        taskOverlay.layoutBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
+            Rectangle clip = new Rectangle(
+                newBounds.getWidth(), 
+                newBounds.getHeight()
+            );
+            taskOverlay.setClip(clip);
+        });
         
         // Add cyberpunk-styled glitch effects to overlay
         addGlitchEffect(taskOverlay);
@@ -152,6 +172,10 @@ public class GameEvent implements Runnable {
         // Add the overlay to the main UI stack
         Platform.runLater(() -> {
             gameplayContentPane.getRootStack().getChildren().add(taskOverlay);
+            
+            // Ensure the overlay is resized to match the parent container
+            taskOverlay.prefWidthProperty().bind(gameplayContentPane.getRootStack().widthProperty());
+            taskOverlay.prefHeightProperty().bind(gameplayContentPane.getRootStack().heightProperty());
         });
     }
     
@@ -205,24 +229,34 @@ public class GameEvent implements Runnable {
         debugOverlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
         StackPane.setMargin(debugOverlay, new Insets(40,40,0,0));
         
-        // Create debug label with cyberpunk style
+        // Create debug label with improved cyberpunk style
         debugLabel = new Label("NEXT TASK: --:--");
         debugLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 14));
-        debugLabel.setTextFill(Color.CYAN);
+        debugLabel.setTextFill(Color.web("#00F6FF")); // ใช้สีเดียวกับ VMCreationUI
         debugLabel.setEffect(new Glow(0.8));
-        debugLabel.setStyle("-fx-background-color: rgba(0, 30, 60, 0.7); " +
-                           "-fx-padding: 5 10; " +
+        debugLabel.setStyle("-fx-background-color: rgba(42, 27, 61, 0.8); " +
+                           "-fx-padding: 8 15; " +
                            "-fx-background-radius: 5; " +
-                           "-fx-border-color: #00ffff; " +
+                           "-fx-border-color: #8A2BE2; " + // ใช้สีเดียวกับ VMCreationUI
                            "-fx-border-width: 1; " +
-                           "-fx-border-radius: 5;");
+                           "-fx-border-radius: 5;" +
+                           "-fx-effect: dropshadow(gaussian, rgba(120, 0, 255, 0.4), 10, 0, 0, 5);");
         
+        // เพิ่ม label เข้าไปใน overlay
         debugOverlay.getChildren().add(debugLabel);
+        
+        // ตั้งค่าการแสดงผลตาม debugMode
         debugOverlay.setVisible(debugMode);
         
-        // Add to UI
+        // Add to UI on JavaFX thread
         Platform.runLater(() -> {
-            gameplayContentPane.getRootStack().getChildren().add(debugOverlay);
+            // ตรวจสอบว่า debugOverlay ยังไม่ได้ถูกเพิ่มแล้ว
+            if (!gameplayContentPane.getRootStack().getChildren().contains(debugOverlay)) {
+                gameplayContentPane.getRootStack().getChildren().add(debugOverlay);
+                
+                // เรียก updateDebugLabel หลังจากเพิ่ม overlay
+                updateDebugLabel();
+            }
         });
     }
 
@@ -250,12 +284,14 @@ public class GameEvent implements Runnable {
             // Log startup information
             LOGGER.info("Task system started. First task in " + formatTime(INITIAL_TASK_DELAY));
             System.out.println("[GAMEEVENT] Task system started. First task in " + formatTime(INITIAL_TASK_DELAY));
+            
+            // เรียก updateDebugLabel เพื่อแสดงข้อมูลเริ่มต้น
             updateDebugLabel();
 
             while (isRunning) {
                 long currentTime = System.currentTimeMillis();
                 
-                // Output debug information
+                // Output debug information with increased frequency
                 if (debugMode && (currentTime - lastDebugTime) >= DEBUG_INTERVAL) {
                     lastDebugTime = currentTime;
                     updateDebugLabel();
@@ -264,6 +300,8 @@ public class GameEvent implements Runnable {
                 // Check if it's time for a task and no task is currently active
                 if (currentTime >= nextTaskTime && !taskActive.get()) {
                     triggerRandomTask();
+                    // อัพเดตทันทีหลังจากเริ่ม task
+                    updateDebugLabel();
                 }
                 
                 // Sleep briefly to avoid busy-waiting
@@ -287,10 +325,17 @@ public class GameEvent implements Runnable {
         String status = taskActive.get() ? "TASK ACTIVE" : "NEXT TASK: " + timeFormatted;
         
         Platform.runLater(() -> {
+            // อัพเดตข้อความโดยไม่ต้อง clear และ add ใหม่ทุกครั้ง
             debugLabel.setText(String.format("%s | COMPLETED: %d | FAILED: %d", 
-                                            status, completedTaskCount, failedTaskCount));
-            debugOverlay.getChildren().clear();
-            debugOverlay.getChildren().setAll(debugLabel);
+                                        status, completedTaskCount, failedTaskCount));
+            
+            // ตรวจสอบว่า debugLabel อยู่ใน children ของ debugOverlay หรือไม่
+            if (!debugOverlay.getChildren().contains(debugLabel)) {
+                debugOverlay.getChildren().setAll(debugLabel);
+            }
+            
+            // ตรวจสอบว่า debugOverlay มีการแสดงผลตาม debugMode
+            debugOverlay.setVisible(debugMode);
         });
         
         // Also print to console for debug purposes
@@ -334,6 +379,9 @@ public class GameEvent implements Runnable {
     private void triggerRandomTask() {
         // Set task active flag to prevent new tasks from being triggered
         taskActive.set(true);
+        
+        // อัพเดต debug เมื่อสถานะ task เปลี่ยน
+        updateDebugLabel();
         
         int taskIndex = random.nextInt(taskFactories.length);
         GameTask task = taskFactories[taskIndex].get();
@@ -379,13 +427,7 @@ public class GameEvent implements Runnable {
         taskOverlay.setOpacity(0);
         taskOverlay.setVisible(true);
         
-        // Fade in animation
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(250), taskOverlay);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        fadeIn.play();
-        
-        // Start the task in the overlay with callback ที่จะแสดงผลลัพธ์หลังจบมินิเกม
+        // Start the task in the overlay with callback that will run when the task is completed/failed
         task.showTask(() -> {
             // Hide the overlay with a fade-out animation
             FadeTransition fadeOut = new FadeTransition(Duration.millis(250), taskOverlay);
@@ -393,10 +435,22 @@ public class GameEvent implements Runnable {
             fadeOut.setToValue(0);
             fadeOut.setOnFinished(e -> {
                 taskOverlay.setVisible(false);
+                taskOverlay.getChildren().clear(); // Remove task UI
                 processTaskCompletion(task);
             });
             fadeOut.play();
         });
+        
+        // Only set margin if there are children after the task has been added
+        if (!taskOverlay.getChildren().isEmpty()) {
+            StackPane.setMargin(taskOverlay.getChildren().get(0), new Insets(20));
+        }
+        
+        // Fade in animation
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(250), taskOverlay);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        fadeIn.play();
     }
     
     /**
@@ -492,8 +546,14 @@ public class GameEvent implements Runnable {
      * Schedule the next task after a completed/failed task
      */
     private void scheduleNextTask() {
-        // Calculate next task time
-        int interval = MIN_TASK_INTERVAL + random.nextInt(MAX_TASK_INTERVAL - MIN_TASK_INTERVAL);
+        // Calculate next task time with safety check
+        int interval;
+        if (MAX_TASK_INTERVAL > MIN_TASK_INTERVAL) {
+            interval = MIN_TASK_INTERVAL + random.nextInt(MAX_TASK_INTERVAL - MIN_TASK_INTERVAL);
+        } else {
+            // Fallback if MAX <= MIN
+            interval = MIN_TASK_INTERVAL;
+        }
         nextTaskTime = System.currentTimeMillis() + interval;
         
         LOGGER.info("Task completed/failed. Next task in " + formatTime(interval));
@@ -502,7 +562,7 @@ public class GameEvent implements Runnable {
         // Set task active flag to false to allow new tasks
         taskActive.set(false);
         
-        // Update debug overlay
+        // อัพเดตทันทีหลังจากกำหนดเวลา task ถัดไป 
         updateDebugLabel();
     }
     
@@ -582,9 +642,28 @@ public class GameEvent implements Runnable {
         LOGGER.info("Debug mode " + (enabled ? "enabled" : "disabled"));
         System.out.println("[GAMEEVENT] Debug mode " + (enabled ? "enabled" : "disabled"));
         
-        // Update debug overlay visibility
+        // Update debug overlay visibility and refresh data
         Platform.runLater(() -> {
-            debugOverlay.setVisible(enabled);
+            // ตรวจสอบว่า overlay ถูกสร้างแล้ว
+            if (debugOverlay != null) {
+                debugOverlay.setVisible(enabled);
+                
+                // ถ้าเปิดใช้งาน debug ให้อัพเดตข้อมูลทันที
+                if (enabled) {
+                    // ตรวจสอบว่า label ถูกเพิ่มไปแล้วหรือไม่
+                    if (!debugOverlay.getChildren().contains(debugLabel)) {
+                        debugOverlay.getChildren().add(debugLabel);
+                    }
+                    
+                    // อัพเดตข้อมูล
+                    updateDebugLabel();
+                }
+                
+                // ตรวจสอบว่า overlay อยู่ใน scene หรือไม่
+                if (!gameplayContentPane.getRootStack().getChildren().contains(debugOverlay) && enabled) {
+                    gameplayContentPane.getRootStack().getChildren().add(debugOverlay);
+                }
+            }
         });
     }
     

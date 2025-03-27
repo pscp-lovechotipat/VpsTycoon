@@ -70,9 +70,13 @@ public class HackingTask extends GameTask {
         
         // Create the main container with cyberpunk styling
         BorderPane hackingPane = new BorderPane();
-        hackingPane.setPadding(new Insets(20));
-        hackingPane.setMaxWidth(700);
-        hackingPane.setMaxHeight(550);
+        hackingPane.setPadding(new Insets(10));
+        hackingPane.setPrefWidth(600);
+        hackingPane.setPrefHeight(420);
+        hackingPane.setMaxWidth(600);
+        hackingPane.setMaxHeight(420);
+        hackingPane.setMinWidth(600);
+        hackingPane.setMinHeight(420);
         
         // Apply cyberpunk styling with neon border
         hackingPane.setStyle(
@@ -107,19 +111,20 @@ public class HackingTask extends GameTask {
         // Create status panel
         VBox statusPanel = createStatusPanel();
         
-        // Arrange all components
-        VBox topSection = new VBox(15);
+        // Arrange all components with reduced spacing
+        VBox topSection = new VBox(10);
         topSection.setAlignment(Pos.CENTER);
+        topSection.setPadding(new Insets(5));
         topSection.getChildren().addAll(titleText, descText);
         
-        VBox centerSection = new VBox(20);
+        VBox centerSection = new VBox(10);
         centerSection.setAlignment(Pos.CENTER);
-        centerSection.setPadding(new Insets(20, 0, 20, 0));
+        centerSection.setPadding(new Insets(5, 0, 5, 0));
         centerSection.getChildren().addAll(gridPane, statusLabel);
         
-        HBox bottomSection = new HBox(30);
+        HBox bottomSection = new HBox(20);
         bottomSection.setAlignment(Pos.CENTER);
-        bottomSection.setPadding(new Insets(20, 0, 0, 0));
+        bottomSection.setPadding(new Insets(5, 0, 0, 0));
         bottomSection.getChildren().addAll(statusPanel, controlButtons);
         
         hackingPane.setTop(topSection);
@@ -130,7 +135,7 @@ public class HackingTask extends GameTask {
         gamePane.getChildren().add(hackingPane);
         
         // Add animated background effects
-        CyberpunkEffects.addAnimatedBackground(gamePane);
+        CyberpunkEffects.addAnimatedBackground(hackingPane);
     }
     
     /**
@@ -139,18 +144,18 @@ public class HackingTask extends GameTask {
     private GridPane createGridDisplay() {
         GridPane gridPane = new GridPane();
         gridPane.setAlignment(Pos.CENTER);
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
-        gridPane.setPadding(new Insets(20));
+        gridPane.setHgap(6);
+        gridPane.setVgap(6);
+        gridPane.setPadding(new Insets(10));
         
         // Create grid buttons
         for (int row = 0; row < GRID_SIZE; row++) {
             for (int col = 0; col < GRID_SIZE; col++) {
                 // Create node button with cyberpunk styling
                 Button nodeButton = new Button();
-                nodeButton.setPrefSize(60, 60);
-                nodeButton.setMinSize(60, 60);
-                nodeButton.setMaxSize(60, 60);
+                nodeButton.setPrefSize(48, 48);
+                nodeButton.setMinSize(48, 48);
+                nodeButton.setMaxSize(48, 48);
                 
                 // Set initial style (hidden node)
                 styleGridButton(nodeButton, row, col, false);
@@ -172,19 +177,19 @@ public class HackingTask extends GameTask {
      * Create control buttons
      */
     private HBox createControlButtons() {
-        HBox controlBox = new HBox(15);
+        HBox controlBox = new HBox(10);
         controlBox.setAlignment(Pos.CENTER);
         
         // Reset button
-        Button resetButton = CyberpunkEffects.createCyberpunkButton("RESET PATH", false);
+        Button resetButton = CyberpunkEffects.createCyberpunkButton("RESET", false);
         resetButton.setOnAction(e -> resetPath());
         
         // Verify button
-        Button verifyButton = CyberpunkEffects.createCyberpunkButton("VERIFY PATH", true);
+        Button verifyButton = CyberpunkEffects.createCyberpunkButton("VERIFY", true);
         verifyButton.setOnAction(e -> verifyPath());
         
         // Cheat button (for testing)
-        Button revealButton = CyberpunkEffects.createCyberpunkButton("REVEAL PATH", false);
+        Button revealButton = CyberpunkEffects.createCyberpunkButton("REVEAL", false);
         revealButton.setOnAction(e -> revealPath());
         
         controlBox.getChildren().addAll(resetButton, verifyButton, revealButton);
@@ -195,22 +200,22 @@ public class HackingTask extends GameTask {
      * Create status panel with cyberpunk styling
      */
     private VBox createStatusPanel() {
-        VBox statusBox = new VBox(10);
+        VBox statusBox = new VBox(5);
         statusBox.setAlignment(Pos.CENTER);
-        statusBox.setPadding(new Insets(15));
+        statusBox.setPadding(new Insets(8));
         statusBox.setStyle("-fx-background-color: rgba(0, 10, 30, 0.6); -fx-border-color: #00FFFF; -fx-border-width: 1px;");
         
         Text statusTitle = new Text("HACK STATUS");
-        statusTitle.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 16));
+        statusTitle.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 14));
         statusTitle.setFill(Color.web("#00FFFF"));
         
-        Text pathLengthText = new Text("PATH LENGTH: 0/" + PATH_LENGTH);
+        Text pathLengthText = new Text("PATH: 0/" + PATH_LENGTH);
         pathLengthText.setId("pathLength");
-        pathLengthText.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 14));
+        pathLengthText.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 12));
         pathLengthText.setFill(Color.LIGHTCYAN);
         
-        Text securityLevelText = new Text("SECURITY LEVEL: HIGH");
-        securityLevelText.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 14));
+        Text securityLevelText = new Text("SECURITY: HIGH");
+        securityLevelText.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 12));
         securityLevelText.setFill(Color.LIGHTCYAN);
         
         DropShadow glow = new DropShadow();
@@ -293,7 +298,7 @@ public class HackingTask extends GameTask {
             
             // Update button text based on grid value
             Label valueLabel = new Label(Integer.toString(value));
-            valueLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 18));
+            valueLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 16));
             valueLabel.setTextFill(Color.LIGHTCYAN);
             button.setGraphic(valueLabel);
             
@@ -304,7 +309,7 @@ public class HackingTask extends GameTask {
             button.setStyle(baseStyle);
             
             Label valueLabel = new Label(Integer.toString(value));
-            valueLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 18));
+            valueLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 16));
             valueLabel.setTextFill(Color.GRAY);
             button.setGraphic(valueLabel);
         } else {

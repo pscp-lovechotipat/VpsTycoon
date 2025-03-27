@@ -82,9 +82,9 @@ public class DataDecryptionTask extends GameTask {
         
         // Create a cyberpunk-styled container for the task
         BorderPane decryptionPane = new BorderPane();
-        decryptionPane.setPadding(new Insets(30));
+        decryptionPane.setPadding(new Insets(20)); // Reduced padding
         decryptionPane.setMaxWidth(700);
-        decryptionPane.setMaxHeight(500);
+        decryptionPane.setMaxHeight(300); // Reduced max height
         decryptionPane.getStyleClass().add("cyberpunk-decryption-panel");
         
         // Add holographic grid effect to decryption pane
@@ -101,7 +101,7 @@ public class DataDecryptionTask extends GameTask {
         
         // Feedback message display with cyberpunk styling
         messageLabel = new Label("ENTER DECRYPTION SEQUENCE");
-        messageLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 16));
+        messageLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 14)); // Reduced font size
         messageLabel.setTextFill(Color.LIGHTCYAN);
         
         DropShadow glow = new DropShadow();
@@ -122,37 +122,44 @@ public class DataDecryptionTask extends GameTask {
         // Scanner effect for the code display
         addScannerEffect(codeDisplay);
         
+        // Create reset button
+        Button resetButton = CyberpunkEffects.createCyberpunkButton("RESET CODE", false);
+        resetButton.setOnAction(e -> resetCode());
+        
         // Layout all components with cyberpunk flair
-        VBox topSection = new VBox(15);
+        VBox topSection = new VBox(10); // Reduced spacing
         topSection.setAlignment(Pos.CENTER);
-        topSection.setPadding(new Insets(20));
+        topSection.setPadding(new Insets(10)); // Reduced padding
         topSection.getChildren().addAll(titleText, descText);
         
-        VBox centerSection = new VBox(20);
+        VBox centerSection = new VBox(10); // Reduced spacing
         centerSection.setAlignment(Pos.CENTER);
-        centerSection.setPadding(new Insets(20));
+        centerSection.setPadding(new Insets(10)); // Reduced padding
         centerSection.getChildren().addAll(codeDisplay, messageLabel);
         
-        HBox controlSection = new HBox(40);
+        // Create section for number pad and reset button side by side
+        HBox inputSection = new HBox(10);
+        inputSection.setAlignment(Pos.CENTER_LEFT);
+        
+        // Add reset button to right side of the number pad in a VBox for proper positioning
+        VBox resetButtonBox = new VBox();
+        resetButtonBox.setAlignment(Pos.CENTER);
+        resetButtonBox.getChildren().add(resetButton);
+        
+        inputSection.getChildren().addAll(numberPad, resetButtonBox);
+        
+        HBox controlSection = new HBox(20); // Reduced spacing
         controlSection.setAlignment(Pos.CENTER);
-        controlSection.setPadding(new Insets(20));
-        controlSection.getChildren().addAll(numberPad, hintsPanel);
+        controlSection.setPadding(new Insets(10)); // Reduced padding
+        controlSection.getChildren().addAll(inputSection, hintsPanel);
         
         decryptionPane.setTop(topSection);
         decryptionPane.setCenter(centerSection);
         decryptionPane.setBottom(controlSection);
         
-        // Add reset button
-        Button resetButton = CyberpunkEffects.createCyberpunkButton("RESET CODE", false);
-        resetButton.setOnAction(e -> resetCode());
-        
-        BorderPane.setMargin(resetButton, new Insets(20, 0, 0, 0));
-        BorderPane.setAlignment(resetButton, Pos.CENTER);
-        
         // Add animated background for additional cyberpunk effect
         BorderPane backgroundPane = new BorderPane();
         backgroundPane.setCenter(decryptionPane);
-        backgroundPane.setBottom(resetButton);
         CyberpunkEffects.addAnimatedBackground(backgroundPane);
         
         // Add the task content to the game pane
@@ -163,21 +170,24 @@ public class DataDecryptionTask extends GameTask {
      * Create the code display with cyberpunk styling
      */
     private HBox createCodeDisplay() {
-        HBox codeDisplay = new HBox(15);
+        HBox codeDisplay = new HBox(10); // Reduced spacing
         codeDisplay.setAlignment(Pos.CENTER);
-        codeDisplay.setPadding(new Insets(20));
+        codeDisplay.setPadding(new Insets(10)); // Reduced padding
         codeDisplay.setStyle("-fx-background-color: rgba(5, 15, 25, 0.6); -fx-border-color: #00ffff; -fx-border-width: 1;");
         
         codeLabels = new ArrayList<>();
         playerCode = new int[codeLength];
         
+        // Adjust the size of code boxes based on the code length
+        int digitSize = Math.min(50, 200 / codeLength);
+        
         for (int i = 0; i < codeLength; i++) {
             // Create each digit slot with cyberpunk styling
             StackPane digitSlot = new StackPane();
-            digitSlot.setMinSize(50, 50);
+            digitSlot.setMinSize(digitSize, digitSize);
             
             // Create background rectangle with neon border
-            Rectangle background = new Rectangle(50, 50);
+            Rectangle background = new Rectangle(digitSize, digitSize);
             background.setFill(Color.web("#061020"));
             
             // Add inner stroke effect
@@ -189,7 +199,8 @@ public class DataDecryptionTask extends GameTask {
             
             // Create digit label
             Label digitLabel = new Label("_");
-            digitLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 24));
+            digitLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 
+                Math.min(24, 18 + (digitSize / 10)))); // Scale font with digit size
             digitLabel.setTextFill(Color.web("#00FFFF"));
             
             // Animate the label with a glow effect
@@ -220,9 +231,9 @@ public class DataDecryptionTask extends GameTask {
      * Create number pad with cyberpunk styling
      */
     private VBox createNumberPad() {
-        VBox numberPad = new VBox(10);
+        VBox numberPad = new VBox(5); // Reduced spacing
         numberPad.setAlignment(Pos.CENTER);
-        numberPad.setPadding(new Insets(20));
+        numberPad.setPadding(new Insets(10)); // Reduced padding
         numberPad.setStyle("-fx-background-color: rgba(10, 20, 40, 0.6); -fx-border-color: #00ccff; -fx-border-width: 1px;");
         
         // Create digit buttons in a grid
@@ -230,7 +241,7 @@ public class DataDecryptionTask extends GameTask {
         digitButtons = new ArrayList<>();
         
         for (int i = 0; i < 4; i++) {
-            rows[i] = new HBox(10);
+            rows[i] = new HBox(5); // Reduced spacing
             rows[i].setAlignment(Pos.CENTER);
         }
         

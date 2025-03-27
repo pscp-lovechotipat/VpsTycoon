@@ -20,6 +20,8 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -48,7 +50,7 @@ public class CyberpunkEffects {
         Color.web("#FE01B1"), // Hot Pink
         Color.web("#FFFF00"), // Yellow
         Color.web("#FF0000"), // Red
-        Color.web("#0080FF")  // Blue
+        Color.web("#8A2BE2")  // Violet (Updated from Blue to match VM theme)
     };
     
     // Fonts
@@ -62,11 +64,12 @@ public class CyberpunkEffects {
      */
     public static void styleTaskPane(BorderPane pane) {
         pane.setStyle(
-            "-fx-background-color: linear-gradient(to bottom, #0A0A2A, #1A1A4A);" +
-            "-fx-border-color: #00FFFF;" +
+            "-fx-background-color: linear-gradient(to bottom, #1A0033, #380066);" +
+            "-fx-border-color: #8A2BE2;" +
             "-fx-border-width: 2px;" +
             "-fx-background-radius: 5px;" +
-            "-fx-border-radius: 5px;"
+            "-fx-border-radius: 5px;" +
+            "-fx-effect: dropshadow(gaussian, rgba(120, 0, 255, 0.4), 15, 0, 0, 7);"
         );
         
         // Add holo grid lines to the pane
@@ -79,12 +82,12 @@ public class CyberpunkEffects {
      * @return Styled text node
      */
     public static Text createTaskTitle(String title) {
-        Text titleText = new Text(title);
-        titleText.setFont(Font.font(CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 28));
-        titleText.setFill(Color.web("#00FFFF"));
+        Text titleText = new Text(">> " + title + " <<");
+        titleText.setFont(Font.font(CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 24));
+        titleText.setFill(Color.web("#E4FBFF"));
         
         DropShadow glow = new DropShadow();
-        glow.setColor(Color.web("#00FFFF"));
+        glow.setColor(Color.web("#00F6FF"));
         glow.setRadius(15);
         glow.setSpread(0.7);
         titleText.setEffect(glow);
@@ -102,7 +105,7 @@ public class CyberpunkEffects {
     public static Text createTaskDescription(String description) {
         Text descText = new Text(description);
         descText.setFont(Font.font(CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 16));
-        descText.setFill(Color.web("#CCECFF"));
+        descText.setFill(Color.web("#00F6FF"));
         
         // Add a subtle glow effect
         Glow glow = new Glow(0.3);
@@ -123,33 +126,38 @@ public class CyberpunkEffects {
         
         String baseColor, hoverColor, textColor;
         if (primary) {
-            baseColor = "#00FFFF";
-            hoverColor = "#80FFFF";
-            textColor = "#000000";
+            baseColor = "#8A2BE2";
+            hoverColor = "#9e33ff";
+            textColor = "#FFFFFF";
         } else {
-            baseColor = "#FF0066";
-            hoverColor = "#FF4D94";
+            baseColor = "#F44336";
+            hoverColor = "#FF6659";
             textColor = "#FFFFFF";
         }
         
         String baseStyle = 
             "-fx-background-color: " + baseColor + ";" +
             "-fx-text-fill: " + textColor + ";" +
-            "-fx-border-color: " + hoverColor + ";" +
+            "-fx-border-color: #00F6FF;" +
             "-fx-border-width: 1px;" +
             "-fx-background-radius: 5px;" +
             "-fx-border-radius: 5px;" +
+            "-fx-padding: 10px 25px;" +
+            "-fx-font-size: 14px;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 0);" +
             "-fx-cursor: hand;";
         
         String hoverStyle = 
             "-fx-background-color: " + hoverColor + ";" +
             "-fx-text-fill: " + textColor + ";" +
-            "-fx-border-color: " + baseColor + ";" +
-            "-fx-border-width: 2px;" +
+            "-fx-border-color: #00F6FF;" +
+            "-fx-border-width: 1px;" +
             "-fx-background-radius: 5px;" +
             "-fx-border-radius: 5px;" +
-            "-fx-cursor: hand;" +
-            "-fx-effect: dropshadow(gaussian, " + baseColor + ", 10, 0.5, 0, 0);";
+            "-fx-padding: 10px 25px;" +
+            "-fx-font-size: 14px;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,255,255,0.5), 10, 0, 0, 0);" +
+            "-fx-cursor: hand;";
         
         button.setStyle(baseStyle);
         
@@ -198,8 +206,8 @@ public class CyberpunkEffects {
         // Create a background with gradient
         LinearGradient gradient = new LinearGradient(
             0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
-            new Stop(0, Color.web("#0A0A2A")),
-            new Stop(1, Color.web("#1A1A4A"))
+            new Stop(0, Color.web("#1A0033")),
+            new Stop(1, Color.web("#380066"))
         );
         
         pane.setBackground(new Background(new BackgroundFill(
@@ -430,17 +438,18 @@ public class CyberpunkEffects {
         BorderPane popup = new BorderPane();
         popup.setPadding(new Insets(20));
         
-        String baseColor = success ? "#00FFFF" : "#FF0066";
+        String baseColor = success ? "#00F6FF" : "#F44336";
         
         popup.setStyle(
-            "-fx-background-color: rgba(10, 20, 40, 0.9);" +
+            "-fx-background-color: rgba(58, 28, 90, 0.7);" +
             "-fx-border-color: " + baseColor + ";" +
             "-fx-border-width: 2px;" +
             "-fx-background-radius: 5px;" +
-            "-fx-border-radius: 5px;"
+            "-fx-border-radius: 5px;" +
+            "-fx-effect: dropshadow(gaussian, rgba(138, 43, 226, 0.4), 15, 0, 0, 7);"
         );
         
-        Label titleLabel = createGlowingLabel(title, baseColor);
+        Label titleLabel = createGlowingLabel(">> " + title + " <<", baseColor);
         Text messageText = new Text(message);
         messageText.setFont(Font.font(CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 14));
         messageText.setFill(Color.WHITE);
@@ -450,5 +459,49 @@ public class CyberpunkEffects {
         popup.setCenter(messageText);
         
         return popup;
+    }
+    
+    /**
+     * Create a cyberpunk-styled section with a title
+     * @param title Section title
+     * @return Styled VBox for the section
+     */
+    public static VBox createCyberSection(String title) {
+        VBox section = new VBox(15);
+        section.setPadding(new Insets(15));
+        section.setStyle("-fx-background-color: rgba(58, 28, 90, 0.4); -fx-background-radius: 5px; " +
+                "-fx-border-color: #8A2BE2; -fx-border-width: 1px; -fx-border-radius: 5px; " +
+                "-fx-effect: dropshadow(gaussian, rgba(120, 0, 255, 0.2), 10, 0, 0, 3);");
+        
+        Label titleLabel = new Label(title);
+        titleLabel.setStyle("-fx-text-fill: #00F6FF; -fx-font-size: 16px; -fx-font-weight: bold; " +
+                "-fx-font-family: 'Monospace'; -fx-padding: 0 0 5 0; " + 
+                "-fx-border-color: #8A2BE2; -fx-border-width: 0 0 1 0;");
+        titleLabel.setPrefWidth(Double.MAX_VALUE);
+                
+        section.getChildren().add(titleLabel);
+        return section;
+    }
+    
+    /**
+     * Create a cyberpunk-styled card with a title
+     * @param title Card title
+     * @return Styled HBox for the card
+     */
+    public static HBox createCyberCard(String title) {
+        HBox card = new HBox(15);
+        card.setPadding(new Insets(15));
+        card.setStyle("-fx-background-color: rgba(58, 28, 90, 0.4); -fx-background-radius: 5px; " +
+                "-fx-border-color: #00F6FF; -fx-border-width: 1px; -fx-border-radius: 5px; " +
+                "-fx-effect: dropshadow(gaussian, rgba(0, 246, 255, 0.2), 10, 0, 0, 3);");
+        
+        VBox titleBox = new VBox(5);
+        Label titleLabel = new Label(title);
+        titleLabel.setStyle("-fx-text-fill: #00F6FF; -fx-font-size: 16px; -fx-font-weight: bold; " +
+                "-fx-font-family: 'Monospace';");
+        titleBox.getChildren().add(titleLabel);
+        
+        card.getChildren().add(titleBox);
+        return card;
     }
 } 

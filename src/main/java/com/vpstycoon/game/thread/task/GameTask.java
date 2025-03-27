@@ -11,10 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
@@ -64,7 +61,8 @@ public abstract class GameTask {
     protected Label timerLabel;
     
     // Content panes - for subclasses to use
-    protected BorderPane taskPane;
+    protected Pane taskPane;
+    protected BorderPane contentPane;
     protected StackPane gamePane;
     protected VBox controlPane;
     
@@ -252,7 +250,7 @@ public abstract class GameTask {
         safePlaySound(taskStartSound, 0.8);
         
         // ล้าง container ก่อนเริ่ม task ใหม่
-        Platform.runLater(() -> {
+         Platform.runLater(() -> {
             taskContainer.getChildren().clear();
             
             // Initialize the base UI components
@@ -275,12 +273,18 @@ public abstract class GameTask {
      * Initialize the task UI components
      */
     protected void initializeUI() {
-        // Create main task pane with cyberpunk theme
-        taskPane = new BorderPane();
-        taskPane.setPrefSize(800, 600);
+        // Create a main container that will hold both the task content and the footer
+        StackPane mainContainer = new StackPane();
+        mainContainer.setAlignment(Pos.CENTER);
+        mainContainer.setPrefSize(800, 600);
+        
+        // Create main content pane with cyberpunk theme (without footer)
+        contentPane = new BorderPane();
+        contentPane.setPrefSize(800, 580); // Reduced height to accommodate separate footer
+        contentPane.setMaxSize(800, 580); // Set max size to prevent overflow
         
         // Apply cyberpunk styling
-        CyberpunkEffects.styleTaskPane(taskPane);
+        CyberpunkEffects.styleTaskPane(contentPane);
         
         // Title and description area
         Text titleText = CyberpunkEffects.createTaskTitle(taskName);
@@ -350,7 +354,7 @@ public abstract class GameTask {
             failed = true;
             applyPenalty();
             if (taskContainer != null) {
-                taskContainer.getChildren().remove(taskPane);
+                taskContainer.getChildren().remove(mainContainer);
             }
             if (onCompleteCallback != null) {
                 onCompleteCallback.run();
@@ -365,16 +369,43 @@ public abstract class GameTask {
         // Make reward label pulse
         CyberpunkEffects.pulseNode(rewardLabel);
         
-        // Header with title, description
-        VBox headerBox = new VBox(10);
+        // Header with title, description - more compact to save space
+        VBox headerBox = new VBox(5); // Reduced spacing
         headerBox.setAlignment(Pos.CENTER);
-        headerBox.setPadding(new Insets(20));
+        headerBox.setPadding(new Insets(10)); // Reduced padding
         headerBox.getChildren().addAll(titleText, descText, difficultyBox);
+        headerBox.setMaxHeight(120); // Limit max height
         
-        // Footer with timer and close button
-        VBox footerBox = new VBox(10);
-        footerBox.setAlignment(Pos.CENTER);
-        footerBox.setPadding(new Insets(20));
+        // Game area - will be populated by subclasses - constrained with min/max height
+        gamePane = new StackPane();
+        gamePane.setStyle("-fx-background-color: rgba(0, 20, 40, 0.8);");
+        gamePane.setPadding(new Insets(10)); // Reduced padding
+        gamePane.setMinHeight(300); // Set minimum height
+        gamePane.setMaxHeight(480); // Set maximum height to prevent overflow
+        
+        // Add scanning effect to game pane
+        CyberpunkEffects.addScanningEffect(gamePane);
+        
+        // Control area - will be populated by subclasses
+        controlPane = new VBox(10); // Reduced spacing
+        controlPane.setAlignment(Pos.CENTER);
+        controlPane.setPadding(new Insets(10)); // Reduced padding
+        
+        // Set up the BorderPane with header and game content only
+        contentPane.setTop(headerBox);
+        contentPane.setCenter(gamePane);
+        
+        // Create a separate footer StackPane for the timer and buttons
+        StackPane footerPane = new StackPane();
+        footerPane.setAlignment(Pos.BOTTOM_CENTER);
+        footerPane.setPrefHeight(100);
+        footerPane.setMaxHeight(100);
+        footerPane.setStyle("-fx-background-color: rgba(10, 15, 30, 0.9); -fx-border-color: #00ffff; -fx-border-width: 1px 0 0 0;");
+        
+        // Create the footer content
+        VBox footerContent = new VBox(5);
+        footerContent.setAlignment(Pos.CENTER);
+        footerContent.setPadding(new Insets(10));
         
         HBox timerBox = new HBox(10);
         timerBox.setAlignment(Pos.CENTER);
@@ -384,28 +415,34 @@ public abstract class GameTask {
         actionBox.setAlignment(Pos.CENTER);
         actionBox.getChildren().addAll(rewardLabel, closeButton);
         
-        footerBox.getChildren().addAll(timerBox, actionBox);
+        footerContent.getChildren().addAll(timerBox, actionBox);
+        footerPane.getChildren().add(footerContent);
         
-        // Game area - will be populated by subclasses
-        gamePane = new StackPane();
-        gamePane.setStyle("-fx-background-color: rgba(0, 20, 40, 0.8);");
-        gamePane.setPadding(new Insets(20));
+        // Adjust padding for header to keep content within bounds
+        headerBox.setPadding(new Insets(15,0,0,0)); // Reduced top padding
         
-        // Add scanning effect to game pane
-        CyberpunkEffects.addScanningEffect(gamePane);
+        // Add scroll constraints to ensure all content is visible
+        BorderPane.setAlignment(headerBox, Pos.TOP_CENTER);
+        BorderPane.setAlignment(gamePane, Pos.CENTER);
         
-        // Control area - will be populated by subclasses
-        controlPane = new VBox(15);
-        controlPane.setAlignment(Pos.CENTER);
-        controlPane.setPadding(new Insets(20));
+        // Position the two main components in the StackPane
+        StackPane.setAlignment(contentPane, Pos.TOP_CENTER);
+        StackPane.setAlignment(footerPane, Pos.BOTTOM_CENTER);
         
-        // Layout
-        taskPane.setTop(headerBox);
-        taskPane.setCenter(gamePane);
-        taskPane.setBottom(footerBox);
+        // Add the BorderPane and footer to the main container
+        mainContainer.getChildren().addAll(contentPane, footerPane);
+        
+        // Enable scaling to fit content
+        mainContainer.setScaleX(0.99);
+        mainContainer.setScaleY(0.99);
+        mainContainer.setPadding(new Insets(20));
         
         // Add CSS styles
-        taskPane.getStyleClass().add("cyberpunk-task");
+        contentPane.getStyleClass().add("cyberpunk-task");
+        
+        // IMPORTANT: Set the mainContainer as our primary node for the task
+        // This changes the taskPane reference to be our mainContainer
+        this.taskPane = mainContainer;
     }
     
     // Helper method to convert Color to RGB code string

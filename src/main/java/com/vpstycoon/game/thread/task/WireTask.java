@@ -114,10 +114,10 @@ public class WireTask extends GameTask {
     private void startConnection(int wireIndex, Circle[] connectors, Line[] lines) {
         // Clear any existing line at this index
         lines[wireIndex].setStroke(Color.web(WIRE_COLORS[wireIndex]));
-        lines[wireIndex].setStartX(connectors[wireIndex].getLayoutX() + 15);
-        lines[wireIndex].setStartY(connectors[wireIndex].getLayoutY() + 15);
+        lines[wireIndex].setStartX(connectors[wireIndex].getLayoutX() - 40);
+        lines[wireIndex].setStartY(connectors[wireIndex].getLayoutY());
         lines[wireIndex].setEndX(connectors[wireIndex].getLayoutX() + 15);
-        lines[wireIndex].setEndY(connectors[wireIndex].getLayoutY() + 15);
+        lines[wireIndex].setEndY(connectors[wireIndex].getLayoutY());
     }
     
     /**
@@ -255,32 +255,22 @@ public class WireTask extends GameTask {
 
     @Override
     protected void initializeTaskSpecifics() {
-        // Create the task UI
-        VBox taskContent = new VBox(10);
+        // Create the task UI using CyberpunkEffects
+        VBox taskContent = new VBox(15);
         taskContent.setAlignment(Pos.CENTER);
         taskContent.setPadding(new Insets(20));
         taskContent.setMaxWidth(600);
         taskContent.setMaxHeight(500);
-        taskContent.setStyle("-fx-background-color: #1e1e2e; -fx-background-radius: 10;");
+        taskContent.setStyle("-fx-background-color: rgba(42, 27, 61, 0.7); -fx-background-radius: 5px; " +
+                "-fx-border-color: #8A2BE2; -fx-border-width: 1px; -fx-border-radius: 5px; " +
+                "-fx-effect: dropshadow(gaussian, rgba(120, 0, 255, 0.2), 10, 0, 0, 3);");
         
-        // Task title
-        Label titleLabel = new Label(getTaskName());
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #cba6f7;");
+        // Task title already in the header, no need to add again
         
-        // Task description
-        Label descriptionLabel = new Label(getTaskDescription());
-        descriptionLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #cdd6f4;");
-        descriptionLabel.setWrapText(true);
-        
-        // Timer label
-        timerLabel = new Label("Time remaining: " + getTimeLimit() + "s");
-        timerLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #f38ba8;");
-        
-        // Create a container for the wires
-        VBox wiresContainer = new VBox(15);
+        // Create a container for the wires with cyberpunk styling
+        VBox wiresContainer = CyberpunkEffects.createCyberSection("CONNECTION MATRIX");
         wiresContainer.setAlignment(Pos.CENTER);
         wiresContainer.setPadding(new Insets(20));
-        wiresContainer.setStyle("-fx-background-color: #313244; -fx-background-radius: 8;");
         
         // Create wires with random colors and positions
         String[] leftColors = getRandomColors(wireCount);
@@ -305,22 +295,41 @@ public class WireTask extends GameTask {
             wirePane.getChildren().add(line);
         }
         
-        // Create left side connectors
+        // Create left side connectors with cyberpunk styling
         VBox leftSide = new VBox(20);
         leftSide.setAlignment(Pos.CENTER_LEFT);
-        leftSide.setPadding(new Insets(0, 20, 0, 0)); // เพิ่ม padding ให้ห่างจากขอบ
+        leftSide.setPadding(new Insets(0, 20, 0, 0));
+        
+        Label inputLabel = new Label("INPUT NODES");
+        inputLabel.setStyle("-fx-text-fill: #00F6FF; -fx-font-size: 14px; -fx-font-weight: bold; -fx-font-family: 'Monospace';");
+        leftSide.getChildren().add(inputLabel);
+        
         for (int i = 0; i < wireCount; i++) {
             Circle circle = new Circle(15);
             circle.setFill(Color.web(leftColors[i]));
-            circle.setStroke(Color.WHITE);
+            circle.setStroke(Color.web("#00F6FF"));
             circle.setStrokeWidth(2);
+            
+            // Add glow effect
+            DropShadow glow = new DropShadow();
+            glow.setColor(Color.web(leftColors[i]));
+            glow.setRadius(10);
+            glow.setSpread(0.3);
+            circle.setEffect(glow);
+            
             leftConnectors[i] = circle;
             
             final int wireIndex = i;
             
-            // เพิ่ม handler เมื่อเมาส์ hover เพื่อให้เห็นชัดว่าคลิกได้
-            circle.setOnMouseEntered(e -> circle.setStroke(Color.YELLOW));
-            circle.setOnMouseExited(e -> circle.setStroke(Color.WHITE));
+            // Add hover effect
+            circle.setOnMouseEntered(e -> {
+                circle.setStroke(Color.web("#E4FBFF"));
+                circle.setStrokeWidth(3);
+            });
+            circle.setOnMouseExited(e -> {
+                circle.setStroke(Color.web("#00F6FF"));
+                circle.setStrokeWidth(2);
+            });
             
             circle.setOnMousePressed(e -> startConnection(wireIndex, leftConnectors, connectionLines));
             circle.setOnMouseDragged(e -> updateConnection(e, wireIndex, connectionLines));
@@ -329,20 +338,39 @@ public class WireTask extends GameTask {
             leftSide.getChildren().add(circle);
         }
         
-        // Create right side connectors
+        // Create right side connectors with cyberpunk styling
         VBox rightSide = new VBox(20);
         rightSide.setAlignment(Pos.CENTER_RIGHT);
-        rightSide.setPadding(new Insets(0, 0, 0, 20)); // เพิ่ม padding ให้ห่างจากขอบ
+        rightSide.setPadding(new Insets(0, 0, 0, 20));
+        
+        Label outputLabel = new Label("OUTPUT NODES");
+        outputLabel.setStyle("-fx-text-fill: #00F6FF; -fx-font-size: 14px; -fx-font-weight: bold; -fx-font-family: 'Monospace';");
+        rightSide.getChildren().add(outputLabel);
+        
         for (int i = 0; i < wireCount; i++) {
             Circle circle = new Circle(15);
             circle.setFill(Color.web(rightColors[i]));
-            circle.setStroke(Color.WHITE);
+            circle.setStroke(Color.web("#00F6FF"));
             circle.setStrokeWidth(2);
+            
+            // Add glow effect
+            DropShadow glow = new DropShadow();
+            glow.setColor(Color.web(rightColors[i]));
+            glow.setRadius(10);
+            glow.setSpread(0.3);
+            circle.setEffect(glow);
+            
             rightConnectors[i] = circle;
             
-            // เพิ่ม handler เมื่อเมาส์ hover เพื่อให้เห็นชัดว่าคลิกได้
-            circle.setOnMouseEntered(e -> circle.setStroke(Color.YELLOW));
-            circle.setOnMouseExited(e -> circle.setStroke(Color.WHITE));
+            // Add hover effect
+            circle.setOnMouseEntered(e -> {
+                circle.setStroke(Color.web("#E4FBFF"));
+                circle.setStrokeWidth(3);
+            });
+            circle.setOnMouseExited(e -> {
+                circle.setStroke(Color.web("#00F6FF"));
+                circle.setStrokeWidth(2);
+            });
             
             rightSide.getChildren().add(circle);
         }
@@ -353,29 +381,29 @@ public class WireTask extends GameTask {
         wiresLayout.getChildren().addAll(leftSide, wirePane, rightSide);
         wiresContainer.getChildren().add(wiresLayout);
         
-        // Add everything to the task content
-        taskContent.getChildren().addAll(
-            titleLabel,
-            descriptionLabel,
-            timerLabel,
-            wiresContainer
-        );
+        // Add instructions
+        Label instructionsLabel = new Label("Connect each input node to its matching output node");
+        instructionsLabel.setStyle("-fx-text-fill: #E4FBFF; -fx-font-size: 14px; -fx-font-family: 'Monospace';");
         
-        // Add a reset button
-        Button resetButton = new Button("RESET CONNECTIONS");
-        resetButton.setStyle("-fx-background-color: #45475a; -fx-text-fill: white; -fx-padding: 8 16;");
+        // Add a reset button with cyberpunk styling
+        Button resetButton = CyberpunkEffects.createCyberpunkButton("RESET CONNECTIONS", false);
         resetButton.setOnAction(e -> {
             for (Line line : connectionLines) {
                 line.setStroke(Color.TRANSPARENT);
             }
         });
         
-        taskContent.getChildren().add(resetButton);
+        VBox controlsBox = new VBox(15);
+        controlsBox.setAlignment(Pos.CENTER);
+        controlsBox.setPadding(new Insets(15, 0, 0, 0));
+        controlsBox.getChildren().addAll(instructionsLabel, resetButton);
         
-        // Add to the task container
-        taskContainer.getChildren().add(taskContent);
+        // Add the task components to the content
+        taskContent.getChildren().addAll(wiresContainer, controlsBox);
         
-        // Add the task content to the task pane
-        taskPane.setCenter(taskContent);
+        // Add to the game pane
+        taskContent.setScaleX(0.8);
+        taskContent.setScaleY(0.8);
+        gamePane.getChildren().add(taskContent);
     }
 } 

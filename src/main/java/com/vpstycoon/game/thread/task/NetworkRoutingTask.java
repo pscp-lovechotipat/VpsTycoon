@@ -114,7 +114,8 @@ public class NetworkRoutingTask extends GameTask {
             
             // Create network visualization pane
             networkPane = new Pane();
-            networkPane.setPrefSize(600, 350);
+            networkPane.setPrefSize(600, 180);
+            networkPane.setMaxSize(600, 180);
             networkPane.setPadding(new Insets(20));
             networkPane.setStyle("-fx-background-color: rgba(10, 15, 30, 0.7); -fx-border-color: #303060; -fx-border-width: 1px;");
             
@@ -248,17 +249,37 @@ public class NetworkRoutingTask extends GameTask {
             connections.clear();
             optimalConnections.clear();
             
-            // Create nodes
+            // Get actual dimensions of the networkPane
+            double paneWidth = networkPane.getPrefWidth();
+            double paneHeight = networkPane.getPrefHeight();
+            
+            // Ensure we have valid dimensions
+            if (paneWidth <= 0) paneWidth = 600;
+            if (paneHeight <= 0) paneHeight = 300;
+            
+            // Define margins to keep nodes away from edges
+            double margin = 30;
+            double usableWidth = paneWidth - (2 * margin);
+            double usableHeight = paneHeight - (2 * margin);
+            
+            log("Network pane dimensions: " + paneWidth + "x" + paneHeight);
+            
+            // Create nodes with positions constrained to the network pane
             for (int i = 0; i < NUM_NODES; i++) {
-                double x = 50 + random.nextDouble() * 500;
-                double y = 50 + random.nextDouble() * 250;
+                // Position nodes in a more organized way within boundaries
+                double x = margin + (random.nextDouble() * usableWidth);
+                double y = margin + (random.nextDouble() * usableHeight);
+                
+                // Ensure positions are within bounds
+                x = Math.min(paneWidth - margin, Math.max(margin, x));
+                y = Math.min(paneHeight - margin, Math.max(margin, y));
                 
                 NetworkNode node = new NetworkNode(i, x, y);
                 nodes.add(node);
                 networkPane.getChildren().add(node.getVisual());
             }
             
-            log("Created " + nodes.size() + " network nodes");
+            log("Created " + nodes.size() + " network nodes within bounds");
             
             // Set source and destination nodes (first and last)
             sourceNode = nodes.get(0);
@@ -268,6 +289,9 @@ public class NetworkRoutingTask extends GameTask {
             destinationNode.setType(NodeType.DESTINATION);
             
             log("Set source node: " + sourceNode.getId() + ", destination node: " + destinationNode.getId());
+            
+            // Calculate maximum allowed distance based on pane size
+            double maxDistance = Math.min(paneWidth, paneHeight) * 0.8;
             
             // Create potential connections between nodes
             for (int i = 0; i < nodes.size(); i++) {
@@ -280,8 +304,8 @@ public class NetworkRoutingTask extends GameTask {
                         // Calculate distance
                         double distance = calculateDistance(nodeA, nodeB);
                         
-                        // Skip if too far away
-                        if (distance > 250) continue;
+                        // Skip if too far away - scale based on pane size
+                        if (distance > maxDistance) continue;
                         
                         // Create connection
                         NetworkConnection connection = new NetworkConnection(nodeA, nodeB, distance);
@@ -298,12 +322,66 @@ public class NetworkRoutingTask extends GameTask {
             
             log("Created " + connections.size() + " network connections");
             
+            // Make sure there is at least one path from source to destination
+            ensurePathExists();
+            
             // Generate optimal path (minimize total distance)
             findOptimalPath();
         } catch (Exception e) {
             log("Error in generateNetwork: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Ensure there is at least one path from source to destination
+     */
+    private void ensurePathExists() {
+        // Check if a path exists
+        Set<NetworkNode> visited = new HashSet<>();
+        Queue<NetworkNode> queue = new LinkedList<>();
+        
+        // Start BFS from source
+        queue.add(sourceNode);
+        visited.add(sourceNode);
+        
+        while (!queue.isEmpty()) {
+            NetworkNode current = queue.poll();
+            
+            // If we reached destination, path exists
+            if (current == destinationNode) {
+                return; // Path found, no need to continue
+            }
+            
+            // Check all connections from current node
+            for (NetworkConnection conn : connections) {
+                NetworkNode neighbor = null;
+                
+                if (conn.getNodeA() == current) {
+                    neighbor = conn.getNodeB();
+                } else if (conn.getNodeB() == current) {
+                    neighbor = conn.getNodeA();
+                } else {
+                    continue; // Connection not connected to current node
+                }
+                
+                // If neighbor not visited, add to queue
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                }
+            }
+        }
+        
+        // If we get here, no path exists - create a direct connection
+        log("No path exists from source to destination, creating direct connection");
+        double distance = calculateDistance(sourceNode, destinationNode);
+        NetworkConnection directConn = new NetworkConnection(sourceNode, destinationNode, distance);
+        connections.add(directConn);
+        
+        // Add connection visual
+        networkPane.getChildren().add(0, directConn.getVisual());
+        networkPane.getChildren().add(Math.min(1, networkPane.getChildren().size()), directConn.getWeightGroup());
     }
     
     /**

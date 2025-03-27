@@ -16,6 +16,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -72,11 +73,15 @@ public class PasswordCrackingTask extends GameTask {
             
             log("Selected password: " + targetPassword);
             
-            // Create the main panel with cyberpunk styling
+            // Create the main panel with cyberpunk styling and fixed size
             BorderPane hackPanel = new BorderPane();
-            hackPanel.setPadding(new Insets(20));
-            hackPanel.setMaxWidth(700);
-            hackPanel.setMaxHeight(500);
+            hackPanel.setPadding(new Insets(10));
+            hackPanel.setPrefWidth(680);
+            hackPanel.setPrefHeight(400);
+            hackPanel.setMaxWidth(680);
+            hackPanel.setMaxHeight(400);
+            hackPanel.setMinWidth(680);
+            hackPanel.setMinHeight(400);
             
             // Add cyberpunk styling
             hackPanel.setStyle(
@@ -104,7 +109,7 @@ public class PasswordCrackingTask extends GameTask {
             
             // Create feedback message
             messageLabel = new Label("ENTER CHARACTERS TO CRACK THE PASSWORD");
-            messageLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 16));
+            messageLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 14));
             messageLabel.setTextFill(Color.LIGHTCYAN);
             
             // Add glow effect to message
@@ -113,7 +118,7 @@ public class PasswordCrackingTask extends GameTask {
             
             // Create attempts display
             attemptsLabel = new Label("ATTEMPTS REMAINING: " + attemptsRemaining);
-            attemptsLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 16));
+            attemptsLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 14));
             attemptsLabel.setTextFill(Color.web("#FF00FF"));
             
             DropShadow labelGlow = new DropShadow();
@@ -128,31 +133,53 @@ public class PasswordCrackingTask extends GameTask {
             // Digital lock visualization
             StackPane lockVisualization = createLockVisualization();
             
-            // Arrange all components
-            VBox topSection = new VBox(15);
+            // Arrange all components with reduced spacing
+            VBox topSection = new VBox(8);
             topSection.setAlignment(Pos.CENTER);
-            topSection.setPadding(new Insets(20));
+            topSection.setPadding(new Insets(8));
+            topSection.setMaxHeight(110);
             topSection.getChildren().addAll(titleText, descText);
             
-            VBox centerSection = new VBox(20);
+            VBox centerSection = new VBox(10);
             centerSection.setAlignment(Pos.CENTER);
-            centerSection.setPadding(new Insets(20));
+            centerSection.setPadding(new Insets(10));
+            centerSection.setMaxHeight(160);
             centerSection.getChildren().addAll(passwordDisplay, messageLabel, attemptsLabel);
             
-            VBox bottomSection = new VBox(25);
+            VBox bottomSection = new VBox(15);
             bottomSection.setAlignment(Pos.CENTER);
-            bottomSection.setPadding(new Insets(20));
+            bottomSection.setPadding(new Insets(10));
+            bottomSection.setMaxHeight(160);
             bottomSection.getChildren().addAll(lockVisualization, inputArea);
+            
+            // Set alignment for each section
+            BorderPane.setAlignment(topSection, Pos.TOP_CENTER);
+            BorderPane.setAlignment(centerSection, Pos.CENTER);
+            BorderPane.setAlignment(bottomSection, Pos.BOTTOM_CENTER);
             
             hackPanel.setTop(topSection);
             hackPanel.setCenter(centerSection);
             hackPanel.setBottom(bottomSection);
             
-            // Add the task content to the game pane
-            gamePane.getChildren().add(hackPanel);
+            // Clear existing content
+            gamePane.getChildren().clear();
             
-            // Add background
-            addSimpleBackground(gamePane);
+            // Create a fixed size container that will not resize with parent
+            StackPane hackPanelContainer = new StackPane();
+            hackPanelContainer.setAlignment(Pos.CENTER);
+            hackPanelContainer.getChildren().add(hackPanel);
+            
+            // Fix the container size to prevent stretching
+            hackPanelContainer.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            hackPanelContainer.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+            hackPanelContainer.setPrefSize(680, 400);
+            
+            // Add the container to game pane
+            gamePane.getChildren().add(hackPanelContainer);
+            
+            // Do not apply scaling - use fixed size instead
+            // gamePane.setScaleX(0.95);
+            // gamePane.setScaleY(0.95);
             
             log("PasswordCrackingTask initialized successfully");
         } catch (Exception e) {
@@ -264,37 +291,26 @@ public class PasswordCrackingTask extends GameTask {
     }
     
     /**
-     * Add a simple animated background
-     */
-    private void addSimpleBackground(Pane pane) {
-        Rectangle background = new Rectangle(pane.getWidth(), pane.getHeight());
-        background.widthProperty().bind(pane.widthProperty());
-        background.heightProperty().bind(pane.heightProperty());
-        background.setFill(Color.web("#0A0A2A", 0.3));
-        
-        if (pane.getChildren().size() > 0) {
-            pane.getChildren().add(0, background);
-        } else {
-            pane.getChildren().add(background);
-        }
-    }
-    
-    /**
      * Create the password display with cyberpunk styling
      */
     private HBox createPasswordDisplay() {
-        HBox passwordDisplay = new HBox(15);
+        HBox passwordDisplay = new HBox(10);
         passwordDisplay.setAlignment(Pos.CENTER);
-        passwordDisplay.setPadding(new Insets(20));
+        passwordDisplay.setPadding(new Insets(10));
         passwordDisplay.setStyle("-fx-background-color: rgba(0, 10, 30, 0.6); -fx-border-color: #FF00FF; -fx-border-width: 1px;");
+        passwordDisplay.setMaxWidth(600);
         
         passwordLabels = new ArrayList<>();
         
+        // Calculate character width based on password length to ensure good fit
+        int charWidth = Math.max(30, Math.min(40, 200 / targetPassword.length()));
+        int fontSize = Math.max(24, Math.min(36, 100 / targetPassword.length()));
+        
         for (int i = 0; i < targetPassword.length(); i++) {
             Label charLabel = new Label("_");
-            charLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, 36));
+            charLabel.setFont(Font.font("Monospaced", FontWeight.BOLD, fontSize));
             charLabel.setTextFill(Color.web("#FF00FF"));
-            charLabel.setMinWidth(40);
+            charLabel.setMinWidth(charWidth);
             charLabel.setAlignment(Pos.CENTER);
             
             // Add glow effect
@@ -324,20 +340,22 @@ public class PasswordCrackingTask extends GameTask {
      * Create input area for character guessing
      */
     private HBox createInputArea() {
-        HBox inputArea = new HBox(15);
+        HBox inputArea = new HBox(10);
         inputArea.setAlignment(Pos.CENTER);
-        inputArea.setPadding(new Insets(20));
+        inputArea.setPadding(new Insets(10));
+        inputArea.setMaxWidth(600);
         
         // Text field for character input
         TextField charInput = new TextField();
         charInput.setPromptText("ENTER CHARACTER");
-        charInput.setFont(Font.font("Monospaced", FontWeight.NORMAL, 16));
+        charInput.setFont(Font.font("Monospaced", FontWeight.NORMAL, 14));
         charInput.setStyle(
             "-fx-background-color: rgba(0, 10, 30, 0.8);" +
             "-fx-text-fill: #00FFFF;" +
             "-fx-border-color: #00FFFF;" +
             "-fx-border-width: 1px;" +
-            "-fx-max-width: 200px;"
+            "-fx-max-width: 160px;" +
+            "-fx-pref-width: 160px;"
         );
         
         // Limit to one character
@@ -372,10 +390,11 @@ public class PasswordCrackingTask extends GameTask {
      */
     private StackPane createLockVisualization() {
         StackPane lockPane = new StackPane();
-        lockPane.setMinHeight(100);
+        lockPane.setMinHeight(80);
+        lockPane.setMaxHeight(80);
         
         // Create the lock circle
-        Rectangle lockBase = new Rectangle(200, 100);
+        Rectangle lockBase = new Rectangle(180, 80);
         lockBase.setArcWidth(20);
         lockBase.setArcHeight(20);
         lockBase.setFill(Color.web("#151530"));
@@ -383,14 +402,14 @@ public class PasswordCrackingTask extends GameTask {
         lockBase.setStrokeWidth(2);
         
         // Create digital circuitry pattern
-        VBox circuitPattern = new VBox(5);
-        circuitPattern.setMaxWidth(180);
-        circuitPattern.setMaxHeight(80);
+        VBox circuitPattern = new VBox(3);
+        circuitPattern.setMaxWidth(160);
+        circuitPattern.setMaxHeight(60);
         
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             HBox row = new HBox(5);
-            for (int j = 0; j < 8; j++) {
-                Line circuit = new Line(0, 0, random.nextInt(15) + 5, 0);
+            for (int j = 0; j < 6; j++) {
+                Line circuit = new Line(0, 0, random.nextInt(10) + 5, 0);
                 circuit.setStroke(Color.web("#FF00FF", 0.5 + random.nextDouble() * 0.5));
                 circuit.setStrokeWidth(1);
                 row.getChildren().add(circuit);
@@ -400,7 +419,7 @@ public class PasswordCrackingTask extends GameTask {
         
         // Add lock status text
         Text lockStatus = new Text("LOCKED");
-        lockStatus.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 18));
+        lockStatus.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 16));
         lockStatus.setFill(Color.web("#FF0000"));
         
         // Add glow effect to status
@@ -491,15 +510,26 @@ public class PasswordCrackingTask extends GameTask {
             messageLabel.setText("CHARACTER NOT FOUND. TRY AGAIN.");
             messageLabel.setTextFill(Color.RED);
             
-            // Shake animation for wrong guess
-            Timeline shakeTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(gamePane.translateXProperty(), 0)),
-                new KeyFrame(Duration.millis(50), new KeyValue(gamePane.translateXProperty(), -10)),
-                new KeyFrame(Duration.millis(100), new KeyValue(gamePane.translateXProperty(), 10)),
-                new KeyFrame(Duration.millis(150), new KeyValue(gamePane.translateXProperty(), -10)),
-                new KeyFrame(Duration.millis(200), new KeyValue(gamePane.translateXProperty(), 0))
-            );
-            shakeTimeline.play();
+            // Use a more subtle effect for wrong guess that won't cause layout changes
+            if (attemptsRemaining > 0) {
+                // Flash effect instead of shake
+                DropShadow errorGlow = new DropShadow();
+                errorGlow.setColor(Color.RED);
+                errorGlow.setRadius(20);
+                errorGlow.setSpread(0.5);
+                
+                Node targetNode = messageLabel;
+                targetNode.setEffect(errorGlow);
+                
+                Timeline flashTimeline = new Timeline(
+                    new KeyFrame(Duration.ZERO, new KeyValue(errorGlow.radiusProperty(), 20)),
+                    new KeyFrame(Duration.millis(300), new KeyValue(errorGlow.radiusProperty(), 5)),
+                    new KeyFrame(Duration.millis(600), new KeyValue(errorGlow.radiusProperty(), 20))
+                );
+                flashTimeline.setCycleCount(2);
+                flashTimeline.setOnFinished(e -> targetNode.setEffect(new Glow(0.5)));
+                flashTimeline.play();
+            }
             
             // Check if out of attempts
             if (attemptsRemaining <= 0) {
