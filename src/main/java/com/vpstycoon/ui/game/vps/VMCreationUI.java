@@ -81,9 +81,9 @@ public class VMCreationUI {
         // Calculate currently used resources
         int usedVCPUs = vps.getVms().stream().mapToInt(VPSOptimization.VM::getVcpu).sum();
         int usedRamGB = vps.getVms().stream()
-                .mapToInt(vm -> Integer.parseInt(vm.getRam().replace(" GB", ""))).sum();
+                .mapToInt(vm -> Integer.parseInt(vm.getRam().replace("GB", ""))).sum();
         int usedDiskGB = vps.getVms().stream()
-                .mapToInt(vm -> Integer.parseInt(vm.getDisk().replace(" GB", ""))).sum();
+                .mapToInt(vm -> Integer.parseInt(vm.getDisk().replace("GB", ""))).sum();
 
         // Calculate available resources
         int availableVCPUs = vps.getVCPUs() - usedVCPUs;
