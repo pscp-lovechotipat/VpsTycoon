@@ -157,6 +157,19 @@ public class SkillPointsWindow extends VBox {
             case MANAGEMENT:
                 bonusText = "Current bonus: +" + (currentLevel * 20) + "% management efficiency";
                 break;
+            case DEPLOY:
+                if (currentLevel == 1) {
+                    bonusText = "Current bonus: No deployment time reduction";
+                } else {
+                    int reductionPercent = switch (currentLevel) {
+                        case 2 -> 20;
+                        case 3 -> 40;
+                        case 4 -> 60;
+                        default -> 0;
+                    };
+                    bonusText = "Current bonus: " + reductionPercent + "% VM deployment time reduction";
+                }
+                break;
         }
 
         Label bonusLabel = new Label(bonusText);

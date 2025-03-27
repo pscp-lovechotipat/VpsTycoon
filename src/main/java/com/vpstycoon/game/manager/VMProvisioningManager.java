@@ -71,16 +71,10 @@ public class VMProvisioningManager implements Serializable {
 
         // ดึงระดับ Deploy จาก SkillPointsSystem
         SkillPointsSystem skillSystem = ResourceManager.getInstance().getSkillPointsSystem();
-        int deployLevel = skillSystem.getSkillLevel(SkillPointsSystem.SkillType.SERVER_EFFICIENCY);
+        int deployLevel = skillSystem.getSkillLevel(SkillPointsSystem.SkillType.DEPLOY);
 
         // คำนวณอัตราลดเวลา
-        double reductionRate = switch (deployLevel) {
-            case 1 -> 1.00;
-            case 2 -> 0.20;
-            case 3 -> 0.30;
-            case 4 -> 0.50;
-            default -> 0.0;
-        };
+        double reductionRate = skillSystem.getDeploymentTimeReduction();
 
         int creationTimeMs = (int)(baseTimeMs * (1.0 - reductionRate));
 

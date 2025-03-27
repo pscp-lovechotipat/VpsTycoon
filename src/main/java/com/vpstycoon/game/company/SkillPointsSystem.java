@@ -25,7 +25,8 @@ public class SkillPointsSystem implements Serializable {
         SERVER_EFFICIENCY("Server Efficiency", "Improves server performance and reduces costs", 4),
         MARKETING("Marketing", "Improves your company's visibility and attracts more customers", 4),
         SECURITY("Security", "Enhances your security systems and reduces the risk of attacks", 4),
-        MANAGEMENT("Management", "Improves your ability to manage resources and staff", 4);
+        MANAGEMENT("Management", "Improves your ability to manage resources and staff", 4),
+        DEPLOY("Deploy", "Reduces VM deployment time to customers", 4);
         
         private final String name;
         private final String description;
@@ -190,6 +191,22 @@ public class SkillPointsSystem implements Serializable {
     }
     
     /**
+     * Get the deployment time reduction percentage based on the DEPLOY skill level
+     * @return Deployment time reduction percentage (0-100)
+     */
+    public double getDeploymentTimeReduction() {
+        int skillLevel = getSkillLevel(SkillType.DEPLOY);
+        // Level 1: 0%, Level 2: 20%, Level 3: 40%, Level 4: 60%
+        return switch (skillLevel) {
+            case 1 -> 0.0;
+            case 2 -> 0.2;
+            case 3 -> 0.4;
+            case 4 -> 0.6;
+            default -> 0.0;
+        };
+    }
+    
+    /**
      * Check if firewall management is unlocked
      * @return true if firewall management is unlocked
      */
@@ -247,6 +264,17 @@ public class SkillPointsSystem implements Serializable {
                 return "Level " + level + ": +" + (level * 50) + "% security level";
             case MANAGEMENT:
                 return "Level " + level + ": +" + (level * 20) + "% management efficiency";
+            case DEPLOY:
+                if (level == 1) {
+                    return "Level " + level + ": No deployment time reduction";
+                } else if (level == 2) {
+                    return "Level " + level + ": 20% deployment time reduction";
+                } else if (level == 3) {
+                    return "Level " + level + ": 40% deployment time reduction";
+                } else if (level == 4) {
+                    return "Level " + level + ": 60% deployment time reduction";
+                }
+                return "Level " + level + ": Reduces VM deployment time to customers";
             default:
                 return "Unknown skill type. Cannot be upgraded further.";
         }

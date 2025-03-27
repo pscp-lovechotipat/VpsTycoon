@@ -14,6 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import com.vpstycoon.game.company.SkillPointsSystem;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -24,10 +25,11 @@ public class VMProvisioningManager {
     private final Map<CustomerRequest, ProgressBar> provisioningProgressBars;
     private final Random random = new Random();
     private final long[] DEPLOY_TIMES = {10000, 5000, 2000, 1000};
-    private int deployLevel = 1;
     
     // เพิ่มตัวแปรเพื่อเข้าถึง VMProvisioningManager ที่แท้จริง
     private final com.vpstycoon.game.manager.VMProvisioningManager gameVMProvisioningManager;
+    // เพิ่มตัวแปรเพื่อเข้าถึง SkillPointsSystem
+    private final SkillPointsSystem skillPointsSystem;
 
     public VMProvisioningManager(ChatHistoryManager chatHistoryManager, ChatAreaView chatAreaView,
                                  Map<CustomerRequest, ProgressBar> provisioningProgressBars) {
@@ -38,6 +40,8 @@ public class VMProvisioningManager {
         // เข้าถึง VMProvisioningManager จาก ResourceManager
         RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
         this.gameVMProvisioningManager = requestManager.getVmProvisioningManager();
+        // เข้าถึง SkillPointsSystem จาก ResourceManager
+        this.skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
     }
 
     public void startVMProvisioning(CustomerRequest request, VPSOptimization.VM vm, Runnable onComplete) {
@@ -153,11 +157,18 @@ public class VMProvisioningManager {
     }
 
     private int calculateProvisioningDelay() {
+        // Get the deploy skill level
+        int deployLevel = skillPointsSystem.getSkillLevel(SkillPointsSystem.SkillType.DEPLOY);
+        // Get deployment time based on skill level
         long deploymentTime = DEPLOY_TIMES[Math.max(0, Math.min(deployLevel - 1, DEPLOY_TIMES.length - 1))];
+        
         int minDelay = 5;
         int maxDelay = 30;
         int provisioningDelay = minDelay + random.nextInt(maxDelay - minDelay + 1);
-        return Math.max(minDelay, (int)(provisioningDelay * (deploymentTime / 10000.0)));
+        
+        // Apply time reduction based on skill level
+        double reduction = skillPointsSystem.getDeploymentTimeReduction();
+        return Math.max(minDelay, (int)(provisioningDelay * (1.0 - reduction)));
     }
 
     private void sendVMDetails(CustomerRequest request, VPSOptimization.VM vm) {
@@ -203,7 +214,8 @@ public class VMProvisioningManager {
         return new String(passwordArray);
     }
 
+    // Method is no longer needed as we use SkillPointsSystem directly
     public void setDeployLevel(int deployLevel) {
-        this.deployLevel = deployLevel;
+        // This method is kept for backward compatibility but is now a no-op
     }
 }

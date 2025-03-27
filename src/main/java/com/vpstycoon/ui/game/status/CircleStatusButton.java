@@ -53,6 +53,7 @@ public class CircleStatusButton {
             case "network speed":
                 return SkillPointsSystem.SkillType.NETWORK_SPEED;
             case "deploy":
+                return SkillPointsSystem.SkillType.DEPLOY;
             case "server efficiency":
                 return SkillPointsSystem.SkillType.SERVER_EFFICIENCY;
             case "marketing":

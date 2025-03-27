@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game.desktop.messenger.controllers;
 
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
@@ -1157,13 +1158,11 @@ public class MessengerController {
 
     private void loadSkillLevels() {
         try {
-            java.lang.reflect.Field skillLevelsField = com.vpstycoon.ui.game.status.CircleStatusButton.class
-                    .getDeclaredField("skillLevels");
-            skillLevelsField.setAccessible(true);
-            HashMap<String, Integer> skillLevels = (HashMap<String, Integer>) skillLevelsField.get(null);
-            int deployLevel = skillLevels.getOrDefault("Deploy", 1);
+            // Get deploy skill level directly from SkillPointsSystem
+            SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
+            int deployLevel = skillPointsSystem.getSkillLevel(SkillPointsSystem.SkillType.DEPLOY);
             vmProvisioningManager.setDeployLevel(deployLevel);
-            System.out.println("Loaded skill levels: " + skillLevels);
+            System.out.println("Loaded deploy skill level: " + deployLevel);
         } catch (Exception e) {
             System.err.println("Error loading skill levels: " + e.getMessage());
             vmProvisioningManager.setDeployLevel(1);
