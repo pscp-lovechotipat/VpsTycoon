@@ -1,665 +1,1881 @@
 # 🎮 VPS TYCOON
 
-## 📋 สารบัญ
-
-<hr />
-
-- [🤝 วิธีการมีส่วนร่วม](#how-to-contribute)
-- [📖 คู่มือการพัฒนา](#game-development-guide)
-- [🎮 รายละเอียดเกม](#game-details)
-- [⚙️ การติดตั้ง](#technical-setup)
-- [✅ สิ่งที่ต้องทำ](#todo)
-
-# How Contribute by Nong Claude Kung :
-# VPS Tycoon - Game Development Guide
-
-## โครงสร้างโปรเจค
-
-โปรเจคนี้เป็นเกม Tycoon ที่พัฒนาด้วย JavaFX แบ่งเป็นแพ็คเกจหลักๆ ดังนี้:
-
-### 1. com.vpstycoon
-- `GameApplication.java` - คลาสหลักที่เริ่มต้นเกม จัดการ navigation ระหว่างหน้าต่างๆ
-
-### 2. com.vpstycoon.config
-- จัดการการตั้งค่าเกม เช่น ความละเอียดหน้าจอ, เสียง
-- ใช้ Jackson สำหรับ serialize/deserialize ข้อมูล
-
-### 3. com.vpstycoon.game
-- ตัวเกมหลัก จัดการ game state และ objects ในเกม
-- `GameManager.java` - จัดการสถานะเกม การเซฟ/โหลด
-- `GameObject.java` - คลาสพื้นฐานสำหรับวัตถุในเกม
-
-### 4. com.vpstycoon.ui
-- ส่วน UI ทั้งหมด แบ่งเป็น:
-  - menu/ - หน้าเมนูต่างๆ
-  - settings/ - หน้าตั้งค่า
-  - game/ - หน้าเล่นเกม
-
-### 5. com.vpstycoon.event
-- ระบบ Event Bus สำหรับการสื่อสารระหว่างคอมโพเนนต์
-
-### 6. com.vpstycoon.audio
-- จัดการเสียงเพลงและเอฟเฟค
-
-## แนวทางการพัฒนา
-
-1. **Model-View Pattern**
-   - แยก logic ออกจาก UI ชัดเจน
-   - ใช้ Properties และ Bindings ของ JavaFX
-
-2. **Event-Driven Architecture**
-   - ใช้ EventBus ลดการ coupling
-   - แยก concerns ด้วย event handlers
-
-3. **Config Management**
-   - ใช้ JSON สำหรับบันทึกการตั้งค่า
-   - รองรับการ hot-reload
-
-4. **Resource Management**
-   - จัดการ assets (ภาพ, เสียง) แบบ lazy loading
-   - มีระบบ cache
-
-## Tips สำหรับมือใหม่
-
-1. เริ่มจากการทำความเข้าใจ `GameApplication.java`
-2. ศึกษาการทำงานของ UI ใน package ui/
-3. ดูตัวอย่างการสร้าง GameObject ใน game/
-4. ทดลองเพิ่ม features ใหม่โดยดู pattern จากโค้ดที่มีอยู่
-
-# ลายละเอียดเกม Flow game เจาะลึกมากขึ้น
----
-## Main menu : New game, Continue , Setting ,Exit
-    -New game สร้างเซฟเกมใหม่ ***หากมีเซฟแล้วต้องถาม For sure?***
-    -Continue เล่นเกมต่อ ***หากไม่มีเซฟแล้วต้องแจ้งไป New game***
-    -Setting Set Resolotion , Music , Credit , Tutorial คลิก
-    -Exit ออกเกม
----
-
-## Game play
----
-### Development Points (แต้มการพัฒนา)
-    แต้มการพัฒนา (Development Points) สามารถแบ่งการใช้งานออกเป็น 4 หมวดหลัก:
-    -🔴 Deploy
-    ลดเวลาการ Deploy VPS
-    ปลดล็อค ระบบปฏิบัติการใหม่ๆ
-    ได้รับแต้มจาก : ระหว่างการ Opitmize
-    -🔵 Network
-    เพิ่ม Bandwidth
-    ลด Network Congestion (ป้องกันเครือข่ายหนาแน่น)
-    ได้รับแต้มจาก : ระหว่างการปล่อยเช่า Vps
-    -🟣 Security (ความปลอดภัย)
-    ลดโอกาส Data Breach
-    เพิ่มตัวเลือก Firewall ป้องกันการแฮ็กมากขึ้น
-    ได้รับแต้มจาก : ระหว่างการแก้ไขปัญหาที่เข้ามา
-    -🟢 Marketing (การตลาด)
-    เพิ่มช่องทางการตลาด
-    เพิ่มโอกาสได้รับ Rating สูงขึ้น
-    เพิ่มจำนวน Request ที่ได้รับ
-    ได้รับแต้มจาก : หลังการโปรโมท
-
-### Tutorial สอนวิธีการเล่น (สอนรอบเดียวแค่ New game)
-#### Two Options
-    -สไลด์ Show รูปภาพวิธีเล่นให้ผู้เล่นเลื่อนเอง
-    -Event คลิกเพื่อไปต่อ
-
-### กดตัวคอมพิวเตอร์ขึ้น Interface Desktops
-
-#### Chat
-    -ดู Request ลูกค้า แสดง Rating ของบริษัทมุมบน
-    -Request Chat มีเพดาห์ Level ที่ต้องปลดโดยใช้แต้ม Marketing
-    -Level Chat ที่ต้องปลดเพื่อ รับลูกค้ามากขึ้น ประเภทลูกค้าดีขึ้น ความยากRequestที่ยากขึ้น อัพเกรด
-
-#### ประเภทลูกค้า ระดับลูกค้า
-    -ลูกค้าบุคคลทั่วไป , ลูกค้าบริษัทเล็ก กลาง ใหญ่
-    -งานที่ Request ยากขึ้นต้อง Optimize Vps ให้ดีเหมาะกับประเภทงาน (แบบใช้ให้คุ้มค่าอะ)
-    -ประเภทงานที่เน้นความเร็ว ปลอดภัย รองรับความเสถียร
-    -Maketing Point เพิ่ม หาก 1. Rating ที่ได้ลูกค้าเยอะหลังสรุป 2. เพิ่มจากการที่รับลูกค้าแต่ละประเภท ได้ Point ต่างกัน
-
-#### หลังรับงาน Request 
-##### เฟส 1 การเตรียมเครื่องให้ลูกค้า Optimize เตรียม 5 ด้าน
-    มีตัวเลือกให้ผู้เล่นเลือกเลย แล้วปลดล็อคจากค่า Point ด้าน Seculity Deploy หรือ การซื้อ
-    -OS เลือกระบบปฏิบัติการให้เหมาะสมกับประเภทงาน มีคำอธิบายสั้นแนะนำ
-    -Security เกี่ยวกับ Firewall การเข้ารหัสป้องกัน
-    -Performance Tuning ทำให้ Vps เร็วขึ้น เสถียร
-    -Back up & Restore การเก็บข้อมูล
-    -Monitoring & Alerts
-    ทุกตัวเลือกมีแบบไม่เลือกก็ได้เพื่อประหยัดงบ ยกเว้น OS
-    Opitimize ดีถูกใจรับ Deploy
-
-##### เฟส 2 รัน Event (เกิดปัญหา พวก secure firewall) การใช้งานเครื่อง Vps ของลูกค้า
-    -ถ้า Opitimize มาเหมาะกับงานและดี จะป้องกันให้เกิด Event บัคน้อยลง
-    -ถ้า Optimize มาน้อยหรือไม่เหมาะกับงานอาจเกิดบัคบ่อย
-    -เมื่อเกิดบัค ระหว่างนั้นจะไม่ได้เงิน ต้องเข้าช่วงซ่อมระบบ
-    -หากระหว่างการใช้งานเกิดบัคบ่อยส่งผลต่อ Rating
-    -ระหว่างการใช้ลูกค้าค่า Point Security Network
-    ***Event ที่เกิดได้ตามการ Opitimize***
-    🛑 Data Breach – ข้อมูลรั่วไหลหากไม่มี Firewall ส่งผลให้ลูกค้าให้คะแนนต่ำลง ต้องติดตั้ง Firewall และอัปเกรด Security
-
-    ⚡ ไฟดับ – เกิดขึ้นหากไม่มี UPS ทำให้ VPS ดับชั่วคราว ลูกค้าอาจยกเลิกบริการ ต้องซื้อ UPS หรือย้ายไป Co-location
-
-    🌐 Network Congestion – ลูกค้ามากเกินไปทำให้ VPS ช้า ต้องอัปเกรด Bandwidth หรือ Load Balancer
-
-    🛠️ ฮาร์ดแวร์พัง – เกิดขึ้นจากการใช้งานหนัก VPS ในเครื่องได้รับผลกระทบ ต้องซื้อเซิร์ฟเวอร์ใหม่หรือใช้ Backup
-
-    💰 ลูกค้าร้องเรียนเรื่องราคา – ตั้งราคาสูงเกินไป อาจทำให้ลูกค้าหาย ต้องลดราคาหรือเพิ่มโปรโมชั่น
-
-    🦠 การโจมตี DDoS – ทำให้เซิร์ฟเวอร์โหลดสูง อาจล่ม ต้องติดตั้ง DDoS Protection และ Load Balancer
-
-    📉 การแข่งขันจากคู่แข่ง – มีคู่แข่งเสนอราคาถูกกว่า ทำให้ลูกค้าหาย ต้องอัปเกรดบริการหรือทำการตลาดเพิ่ม
-
-    📦 ขาดสต็อก IP – IP Address ไม่พอ ลูกค้าต้องรอ ต้องซื้อ IP Block เพิ่ม
-
-    🔄 ระบบทำงานผิดพลาด – Bug หรือ Glitch ทำให้ VPS ล่ม ต้อง Rollback ระบบหรืออัปเดตแพตช์แก้ไข
-
-    🎉 โอกาสพิเศษ – ได้รับรีวิวดี ลูกค้าเพิ่มขึ้น หรือได้ส่วนลดจาก Market
-
-    📍 การจัดการเหตุการณ์สุ่ม
-
-    แจ้งเตือนใน Dashboard ให้ผู้เล่นเลือกแก้ไขปัญหา
-    เหตุการณ์ต้องใช้เวลาต่างกันตาม Opitimize (ซ่อมฮาร์ดแวร์)
-
-##### เฟส 3 สรุปผล
-    -ค่า Point ที่ได้ทั้งหมด วัดจาก Market Deploy Security Network
-    -ค่า Rating วัดจาก คำนวณจากบัค , ความเร็ว
-    -Market Point วัดจาก การคำนวณจาก Rating
----
-### Interface Desktops Market
-##### ระบบตลาด upgrade
-
-## Intellij Install
----
-
-### กรณี download javaFX มาเองในเครื่อง
-
-- ใส่ใน `VM OPTION` 
-- ที่ `Run > Edit Configurations...` 
-- กด `Modifly options...`
-
-  ```
-  --module-path "C:\javafx-sdk-23.0.2\lib" --add-modules javafx.controls,javafx.fxml
-  ```
----
-
----
-
-## **1) ภาพรวม (Game Overview)**
-
-### **แนวเกม:**
-
-- เกมแนว **Tycoon** ที่ให้ผู้เล่นบริหารธุรกิจ **VPS Hosting** ด้วยรูปแบบที่เข้าใจง่าย
-
-### **เป้าหมายของเกม:**
-
-1. **บริหารเซิร์ฟเวอร์**: ซื้อ, อัปเกรด, ดูแลเซิร์ฟเวอร์เพื่อรองรับลูกค้า VPS
-2. **จัดการการเงิน**: รักษาสภาพคล่องทางการเงิน และทำกำไรให้ได้
-3. **แก้ปัญหาแบบ Real-time**: เผชิญปัญหาสุ่ม เช่น Data Breach, VM Crash
-4. **ขยายธุรกิจ**: อัปเกรดห้อง, ติดตั้ง Firewall, Router เพื่อรองรับลูกค้ารายใหญ่
-
-### **กลไกหลักของเกม:**
-
-- **การบริหารทรัพยากร**: วางแผนซื้อ/อัปเกรดเซิร์ฟเวอร์ และจัดการค่าใช้จ่าย
-- **การตั้งค่า VPS Plans**: กำหนดแพ็กเกจ VPS เพื่อให้เหมาะสมกับตลาด
-- **เหตุการณ์สุ่ม (Random Events)**: สร้างความท้าทายให้ผู้เล่น
-- **การพัฒนาและขยายธุรกิจ**: ลงทุนเพิ่ม Firewall, Router, และอัปเกรดห้อง Server
-
----
-
-## **2) การตั้งค่าเริ่มต้น (Starting Conditions)**
-
-- **เงินเริ่มต้น**: 100,000 THB
-- **เซิร์ฟเวอร์เริ่มต้น**: Dell PowerEdge R210 (4 Cores, 16GB RAM, 500GB HDD)
-- **Overhead Cost**: 5,000 THB/เดือน (ค่าดำเนินการคงที่)
-- **รอบเวลาในเกม**: 1 เดือน = 15 นาทีในเกม
-
----
-
-## **3) โครงสร้างของเกม (Game Structure)**
-
-### **3.1) เมนูหลัก (Main Menu)**
-
-- **เริ่มเกมใหม่** (Start New Game)
-- **โหลดเกม** (Load Game)
-- **ตั้งค่าเกม** (Settings)
-- **ออกจากเกม** (Exit)
-
-### **3.2) ส่วนหลักของเกม**
-
-1. **Dashboard**: แสดงข้อมูลภาพรวมของธุรกิจ (รายได้, ค่าใช้จ่าย, ความพึงพอใจของลูกค้า)
-2. **Server Room**: จัดการ Rack Server (ซื้อ/อัปเกรด/ดูแล)
-3. **Market**: ซื้ออุปกรณ์เพิ่มเติม เช่น Firewall, Router, อัปเกรดห้อง Server
-4. **Client Management**: ดูคำสั่งซื้อ VPS จากลูกค้า และกำหนด VPS ให้พวกเขา
-5. **Event Handling**: ระบบแจ้งเตือนปัญหาสุ่ม เช่น การโจมตีจาก Hacker, Server ล่ม
-
----
-
-## **4) ระบบเซิร์ฟเวอร์ (Server System)**
-
-### **ตารางเซิร์ฟเวอร์**
-
-|**ชื่อเซิร์ฟเวอร์**|**ราคาซื้อ (บาท)**|**ค่าใช้จ่ายรายเดือน (บาท)**|**CPU Cores**|**RAM (GB)**|**Storage**|**Network Port**|
-|---|---|---|---|---|---|---|
-|Dell PowerEdge R210|20,000|2,000|4|16|500GB HDD|1 Gbps (Shared)|
-|Dell PowerEdge R310|35,000|3,000|6|32|1TB HDD|1 Gbps (Shared)|
-|Dell PowerEdge R410|50,000|4,000|8|64|1TB SSD|1 Gbps (Shared)|
-
----
-
-## **5) ระบบมัลติเธรด (Multithreading System)**
-
-### **การใช้งาน Multithreading ในเกม**
-
-- **CustomerSimulator (Thread)**: จำลองลูกค้าที่สั่งซื้อ VPS
-- **ServerMonitor (Thread)**: ตรวจสอบสถานะเซิร์ฟเวอร์และแจ้งเตือนปัญหา
-- **EventProcessor (Thread)**: จัดการเหตุการณ์สุ่ม เช่น DDoS, ไฟดับ
-
-### **ตัวอย่างโค้ด Multithreading**
-
-```java
-class CustomerSimulator extends Thread {
-    public void run() {
-        while (true) {
-            System.out.println("ลูกค้าใหม่ขอเช่า VPS...");
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-}
+## 📋 สารบัญ (Table of Contents)
+
+- [📖 รายละเอียดโปรเจค (Project Overview)](#project-overview)
+- [🎮 รายละเอียดเกม (Game Details)](#game-details)
+- [⚙️ การติดตั้ง (Installation)](#installation)
+- [🤝 วิธีการมีส่วนร่วม (How to Contribute)](#how-to-contribute)
+- [✅ สิ่งที่ต้องทำ (Todo)](#todo)
+
+<a id="project-overview"></a>
+## 📖 รายละเอียดโปรเจค (Project Overview)
+
+VPS Tycoon เป็นเกมแนว Tycoon ที่พัฒนาด้วย JavaFX ให้ผู้เล่นได้บริหารธุรกิจ VPS Hosting
+
+### โครงสร้างโปรเจค (Project Structure)
+
+```
+com.vpstycoon/
+├── GameApplication.java    - คลาสหลักที่เริ่มต้นเกม จัดการ navigation
+├── config/                 - การตั้งค่าเกม (ความละเอียดหน้าจอ, เสียง)
+├── game/                   - ตัวเกมหลัก, GameState, GameManager
+├── ui/                     - ส่วน UI และหน้าจอต่างๆ
+├── event/                  - ระบบ Event Bus
+├── audio/                  - ระบบเสียงเพลงและเอฟเฟค
+└── screen/                 - จัดการหน้าจอ และ resolution
 ```
 
----
+### เทคโนโลยีที่ใช้ (Technologies)
 
-## **6) แผนผังคลาส (Class Diagram - Java)**
+- **Java 23** - ภาษาหลักที่ใช้พัฒนา
+- **JavaFX 23** - สำหรับ UI และกราฟิก
+- **Jackson 2.13.4** - สำหรับจัดการ JSON
+- **Maven** - เครื่องมือจัดการ dependencies
+
+<a id="game-details"></a>
+## 🎮 รายละเอียดเกม (Game Details)
+
+### แนวเกม (Game Genre)
+เกมแนว Tycoon ที่ให้ผู้เล่นบริหารธุรกิจ VPS Hosting
+
+### เป้าหมายของเกม (Game Goals)
+1. **บริหารเซิร์ฟเวอร์**: ซื้อ, อัปเกรด, ดูแลเซิร์ฟเวอร์เพื่อรองรับลูกค้า VPS
+2. **จัดการการเงิน**: รักษาสภาพคล่องทางการเงิน และทำกำไร
+3. **แก้ปัญหาแบบ Real-time**: เผชิญกับปัญหาสุ่ม เช่น Data Breach, VM Crash
+4. **ขยายธุรกิจ**: อัปเกรดห้อง, ติดตั้ง Firewall, Router เพื่อรองรับลูกค้ารายใหญ่
+
+### กลไกหลักของเกม (Core Mechanics)
+- **การบริหารทรัพยากร**: วางแผนซื้อ/อัปเกรดเซิร์ฟเวอร์ และจัดการค่าใช้จ่าย
+- **การตั้งค่า VPS Plans**: กำหนดแพ็กเกจ VPS ให้เหมาะสมกับตลาด
+- **เหตุการณ์สุ่ม (Random Events)**: สร้างความท้าทายให้ผู้เล่น
+- **ระบบพัฒนา (Development Points)**: ใช้แต้มเพื่อพัฒนาธุรกิจใน 4 ด้าน
+  - 🔴 Deploy: ลดเวลาการ Deploy VPS, ปลดล็อคระบบปฏิบัติการใหม่
+  - 🔵 Network: เพิ่ม Bandwidth, ลด Network Congestion
+  - 🟣 Security: ลดโอกาส Data Breach, เพิ่มตัวเลือก Firewall
+  - 🟢 Marketing: เพิ่มช่องทางการตลาด, เพิ่มโอกาสได้ Rating สูง
+
+### Game Flow
+1. **Main Menu**: New game, Continue, Setting, Exit
+2. **Gameplay**:
+   - เลือกรับคำขอจากลูกค้า
+   - Optimize VPS (เลือก OS, Security, Performance Tuning, Backup, Monitoring)
+   - จัดการกับ Events ที่เกิดขึ้นระหว่างการให้บริการ
+   - สรุปผลการให้บริการ (ได้รับ Points, Rating)
+3. **Market**: อัพเกรดอุปกรณ์และบริษัท
+
+<a id="installation"></a>
+## ⚙️ การติดตั้ง (Installation)
+
+### ความต้องการระบบ (Requirements)
+- Java 23 หรือสูงกว่า
+- JavaFX 23
+- Maven
+
+### วิธีติดตั้ง (Setup Instructions)
+
+1. **Clone โปรเจค**
+```
+git clone https://github.com/yourusername/vps-tycoon.git
+cd vps-tycoon
+```
+
+2. **Build ด้วย Maven**
+```
+mvn clean package
+```
+
+3. **รันเกม**
+```
+mvn javafx:run
+```
+
+### การตั้งค่า Intellij IDEA
+
+สำหรับการใช้งานกับ IntelliJ IDEA กรณีติดตั้ง JavaFX แยก:
+
+1. ไปที่ `Run > Edit Configurations...`
+2. กด `Modify options...`
+3. ใส่ใน VM options:
+```
+--module-path "C:\path\to\javafx-sdk-23\lib" --add-modules javafx.controls,javafx.fxml,javafx.media
+```
+
+<a id="how-to-contribute"></a>
+## 🤝 วิธีการมีส่วนร่วม (How to Contribute)
+
+1. **Fork โปรเจค**
+2. **สร้าง branch ใหม่**
+   ```
+   git checkout -b feature/your-feature-name
+   ```
+3. **Commit การเปลี่ยนแปลง**
+   ```
+   git commit -m "เพิ่มฟีเจอร์: รายละเอียด"
+   ```
+4. **Push ไปยัง branch ของคุณ**
+   ```
+   git push origin feature/your-feature-name
+   ```
+5. **สร้าง Pull Request**
+
+### แนวทางการพัฒนา (Development Guidelines)
+
+1. **Model-View Pattern**: แยก logic ออกจาก UI ชัดเจน
+2. **Event-Driven Architecture**: ใช้ EventBus ลดการ coupling
+3. **Config Management**: ใช้ JSON สำหรับบันทึกการตั้งค่า
+4. **Resource Management**: จัดการ assets (ภาพ, เสียง) แบบ lazy loading
 
 ```mermaid
 classDiagram
 direction BT
-class AudioManager {
-- double sfxVolume
+class AttackNode {
++ AttackNode(Shape, String)
+- boolean neutralized
+- Shape shape
+- String type
++ stopPulseAnimation() void
++ neutralize() void
+  String type
+  Shape shape
+  boolean neutralized
+  }
+  class AudioManager {
++ AudioManager()
 - double musicVolume
-- AudioManager instance
-- Map~String, Media~ soundCache
-- MediaPlayer musicPlayer
+- double sfxVolume
 + playMusic(String) void
-+ setMusicVolume(double) void
-+ playSoundEffect(String) void
-+ setSfxVolume(double) void
-+ dispose() void
-+ getInstance() AudioManager
 - onSettingsChanged(SettingsChangedEvent) void
++ resumeMusic() void
++ playSoundEffect(String) void
++ pauseMusic() void
++ stopSoundEffect(String) void
++ dispose() void
+  double musicVolume
+  double sfxVolume
+  }
+  class BackupSystem {
+  <<enumeration>>
+- BackupSystem(double)
+- double score
++ valueOf(String) BackupSystem
++ values() BackupSystem[]
+  double score
+  }
+  class ButtonUtils {
++ ButtonUtils()
++ createModalButton(String) Button
++ createButton(String) Button
+  }
+  class CalibrationTask {
++ CalibrationTask()
+# initializeTaskSpecifics() void
+}
+class CenterNotificationController {
++ CenterNotificationController(CenterNotificationModel, CenterNotificationView)
+- CenterNotificationView view
++ push(String, String) void
++ pushAutoClose(String, String, String, long) void
++ push(String, String, String) void
+  CenterNotificationView view
+  }
+  class CenterNotificationModel {
++ CenterNotificationModel()
++ hasNotifications() boolean
++ addNotification(Notification) void
+  Notification nextNotification
+  }
+  class CenterNotificationView {
++ CenterNotificationView()
+- CenterNotificationModel model
+- AudioManager audioManager
+- playFadeInAnimation(VBox) void
++ addNotificationPane(String, String, String) void
+- createAndShowNotification(String, String, String) void
++ addNotificationPane(String, String) void
+- showNextNotification() void
+- createTaskNotificationPane(String, String, Image, Runnable) VBox
+- createNotificationPane(String, String, Image) VBox
++ addNotificationPaneAutoClose(String, String, String, long) void
+- fadeOutAndRemove(StackPane) void
++ createAndShowTaskNotification(String, String, String, Runnable) void
+- showNextNotificationAutoClose(long) void
+  CenterNotificationModel model
+  AudioManager audioManager
+  }
+  class ChatAreaView {
++ ChatAreaView(ChatHistoryManager)
+- VBox messagesBox
+- Button archiveButton
+- Button assignVMButton
+- Button sendButton
+- TextField messageInput
+- addUserMessageFromHistory(String) void
++ addCustomerMessage(CustomerRequest, String) void
++ addUserMessage(String) void
++ addSystemMessage(String) void
++ clearMessages() void
+- addSystemMessageFromHistory(String) void
+- addCustomerMessageFromHistory(CustomerRequest, String) void
++ updateChatHeader(CustomerRequest) void
++ loadChatHistory(CustomerRequest) void
+  Button assignVMButton
+  TextField messageInput
+  VBox messagesBox
+  Button sendButton
+  Button archiveButton
+  }
+  class ChatHistoryManager {
++ ChatHistoryManager()
+- ChatHistoryManager instance
+- MessengerController messengerController
+- loadChatHistoryFromFile() Map~CustomerRequest, List~ChatMessage~~
++ addMessage(CustomerRequest, ChatMessage) void
++ saveChatHistory() void
++ clearChatHistory() void
+- saveChatHistoryToFile() void
+- loadChatHistoryFromGameState() Map~CustomerRequest, List~ChatMessage~~
+- saveChatHistoryToGameState() void
++ resetInstance() void
++ updateCustomerRequestReferences() void
++ deleteChatHistoryFile() boolean
++ getChatHistory(CustomerRequest) List~ChatMessage~
+  ChatHistoryManager instance
+  MessengerController messengerController
+  }
+  class ChatMessage {
++ ChatMessage(MessageType, String, Map~String, Object~)
+- Map~String, Object~ metadata
+- String content
+- MessageType type
+- long timestamp
+  long timestamp
+  String content
+  MessageType type
+  Map~String, Object~ metadata
+  }
+  class ChatSystem {
++ ChatSystem()
+- int chatLevel
+- List~CustomerType~ unlockedCustomerTypes
++ upgradeChatLevel() void
++ unlockCustomerType(CustomerType, int) void
++ getPointsForCustomerType(CustomerType) int
+- initializeCustomerTypes() void
+  List~CustomerType~ unlockedCustomerTypes
+  int chatLevel
+  }
+  class Circle {
++ Circle(double)
+  }
+  class CircleStatusButton {
++ CircleStatusButton(String, Color, Color, GameplayContentPane)
+- Runnable onClickAction
+- int skillLevel
+- int skillPoints
+- SkillType skillType
+- VBox container
+- getColorForSkill(String) Color
+- resolveSkillType(String) SkillType
+- createCyberButton(Color, Color) StackPane
+- createContainer(String, Color, Color) VBox
+- createCyberLabel(String, Color) Label
+- styleButton(Button, Color, boolean) void
+- openUpgradePanel() void
+- toRgbString(Color) String
+  SkillType skillType
+  VBox container
+  int skillPoints
+  Runnable onClickAction
+  int skillLevel
+  }
+  class Company {
++ Company()
+- long money
+- int marketingPoints
+- int failedRequests
+- int skillPointsAvailable
+- int availableVMs
+- int completedRequests
+- double rating
+- String name
+- long totalRevenue
+- int customerSatisfaction
+- long totalExpenses
++ addRatingObserver(RatingObserver) void
+- notifyRatingObservers() void
++ recordCompletedRequest(int) void
+- updateRating() void
++ calculateVMAssignmentRatingChange(int, int, int, int, int, int) double
+- readObject(ObjectInputStream) void
+- findTierIndex(int, int[]) int
++ addSkillPoints(int) void
++ removeRatingObserver(RatingObserver) void
++ addMoney(double) void
++ recordFailedRequest() void
+- calculateSpecRatingImpact(int, int, double) double
+- calculateSpecTierImpact(int, int, int[]) double
+  int marketingPoints
+  int failedRequests
+  int starRating
+  int skillPointsAvailable
+  int availableVMs
+  int completedRequests
+  double rating
+  String name
+  long totalExpenses
+  long totalRevenue
+  long profit
+  int customerSatisfaction
+  long money
   }
   class ConfigSerializer {
-- ObjectMapper mapper
-- String CONFIG_FILE
-+ saveToFile(GameConfig) void
++ ConfigSerializer()
 + loadFromFile() GameConfig
++ saveToFile(GameConfig) void
+  }
+  class Customer {
++ Customer(String, CustomerType, double)
+- String name
+# double budget
+- int id
+# CustomerType customerType
+String name
+int id
+CustomerType customerType
+double budget
+}
+class CustomerRequest {
++ CustomerRequest(CustomerType, RequestType, double, int)
++ CustomerRequest(CustomerType, RequestType, double, int, int, int, int, RentalPeriodType)
+- int requiredVCPUs
+- int duration
+- long creationTime
+- long lastPaymentTime
+- RentalPeriodType rentalPeriodType
+- RequestType requestType
+- boolean isExpired
+- int requiredDiskGB
+- double monthlyPayment
+- boolean isActive
+- int requiredRamGB
++ hashCode() int
++ recordPayment(long) void
++ isPaymentDue(long) boolean
++ markAsExpired() void
++ assignToVM(String) void
++ equals(Object) boolean
++ unassignFromVM() void
+- calculateMonthlyPayment() double
++ activate(long) void
++ deactivate() void
+  RentalPeriodType rentalPeriodType
+  int requiredVCPUs
+  long lastPaymentTime
+  double monthlyPayment
+  int duration
+  boolean isExpired
+  String assignedVmId
+  int requiredRamGB
+  int requiredDiskGB
+  RequestType requestType
+  long creationTime
+  int rentalPeriod
+  String title
+  long rentalStartTimeMs
+  CustomerType customerType
+  String requiredRam
+  boolean isActive
+  String requiredDisk
+  double paymentAmount
+  boolean assignedToVM
+  double budget
+  }
+  class CustomerType {
+  <<enumeration>>
+- CustomerType(int, String)
+- int requiredPoints
+- String displayName
++ valueOf(String) CustomerType
++ values() CustomerType[]
+  String displayName
+  int requiredPoints
+  }
+  class CutsceneScreen {
++ CutsceneScreen(GameConfig, ScreenManager, Navigator)
+- setupUI() void
+- skipCutscene() void
+- playCutscene() void
+- setupSkipButton() void
+  }
+  class DashboardView {
++ DashboardView()
++ updateDashboard(double, int, int, int) void
+- createCard(String) VBox
+  }
+  class DashboardWindow {
++ DashboardWindow(Company, VPSManager, RequestManager, Runnable)
+- setupUI() void
+- createStatCard(String, String, String) VBox
+- applyCyberPerformanceColors(LineChart~String, Number~) void
+- createRevenueChart() LineChart~String, Number~
+- startDataUpdates() void
+- calculateTotalVMs() int
+- calculateAverageRating() double
+- updateChartData(double) void
+- calculateMonthlyRevenue() double
++ updateDashboard() void
+- styleWindow() void
+- calculateUptime() double
+- applyCyberSeriesColors(LineChart~String, Number~) void
+- createPerformanceChart() LineChart~String, Number~
+  LineChart~String, Number~ seriesColors
+  }
+  class DataDecryptionTask {
++ DataDecryptionTask(int)
++ DataDecryptionTask()
+- generateClues(GridPane) void
+- generateMathClue(GridPane, int) void
+# initializeTaskSpecifics() void
+- getIndexOfSymbol(int) int
+- checkSolution() void
+- generateSymbolMapping() void
+  }
+  class DataPacket {
++ DataPacket(int)
+- int priority
+- StackPane node
+- getPriorityColor(int) Color
+  int priority
+  StackPane node
+  }
+  class DataSortingTask {
++ DataSortingTask()
+# initializeTaskSpecifics() void
+- checkTaskCompletion() void
+  }
+  class DateController {
++ DateController(DateModel, DateView)
++ onTimeChanged(LocalDateTime, long) void
++ onRentalPeriodCheck(CustomerRequest, RentalPeriodType) void
+  }
+  class DateModel {
++ DateModel(LocalDateTime, GameplayContentPane)
+- ObjectProperty~LocalDateTime~ date
++ dateProperty() ObjectProperty~LocalDateTime~
++ timeRemainingProperty() StringProperty
+- updateTimeRemaining() void
+  LocalDateTime date
+  }
+  class DateView {
++ DateView(GameplayContentPane, DateModel)
++ initializeUI() void
+  }
+  class DebugOverlayManager {
++ DebugOverlayManager()
+- VBox debugOverlay
++ toggleDebug() void
++ updateGameInfo(StackPane) void
++ startTimer() void
+- updateFPS(long) void
++ updateMousePosition(double, double) void
++ stopTimer() void
+  VBox debugOverlay
   }
   class DefaultGameConfig {
-- double sfxVolume
+- DefaultGameConfig()
 - double musicVolume
-- boolean vsyncEnabled
-- boolean isFullscreen
 - DefaultGameConfig instance
-- ScreenResolution selectedResolution
-+ getResolution() ScreenResolution
-+ setFullscreen(boolean) void
-+ getInstance() DefaultGameConfig
-+ setVsyncEnabled(boolean) void
-+ isFullscreen() boolean
-+ setResolution(ScreenResolution) void
+- double sfxVolume
+- boolean isFullscreen
+- boolean vsyncEnabled
 + save() void
-+ getMusicVolume() double
 + load() void
-+ getSfxVolume() double
-+ isVsyncEnabled() boolean
-+ setMusicVolume(double) void
-+ setSfxVolume(double) void
+  DefaultGameConfig instance
+  boolean isFullscreen
+  ScreenResolution resolution
+  double sfxVolume
+  boolean vsyncEnabled
+  double musicVolume
+  }
+  class DesktopIcon {
++ DesktopIcon(String, String, Runnable)
+  }
+  class DesktopScreen {
++ DesktopScreen(double, int, ChatSystem, RequestManager, VPSManager, Company, GameplayContentPane, GameTimeManager)
+- openChatWindow() void
+- openMarketWindow() void
++ addExitButton(Runnable) void
+- openDashboardWindow() void
+- setupUI() void
+- closeChatWindow() void
+  }
+  class EventEffect {
+  <<Interface>>
++ apply(Company) String
   }
   class EventListener~T~ {
   <<Interface>>
 + onEvent(T) void
   }
+  class EventType {
+  <<enumeration>>
+- EventType(String, String, long, double)
+- double scaleFactor
+- String solution
+- String displayName
+- long baseCost
++ values() EventType[]
++ valueOf(String) EventType
++ calculateCost(Random) long
+  double scaleFactor
+  String displayName
+  String solution
+  long baseCost
+  }
+  class EventType {
+  <<enumeration>>
++ EventType()
++ values() EventType[]
++ valueOf(String) EventType
+  }
+  class FileRecoveryTask {
++ FileRecoveryTask()
+# initializeTaskSpecifics() void
+}
+class FirewallDefenseTask {
++ FirewallDefenseTask()
+# initializeTaskSpecifics() void
+- stopAllTimelines() void
+- createRandomAttack(Pane) AttackNode
+- decreaseFirewallIntegrity(Rectangle, Text) void
+  }
+  class FontLoader {
++ FontLoader()
++ loadFont(double) Font
+  }
   class GameApplication {
-- ScreenManager screenManager
-- Stage primaryStage
-- GameplayScreen gameplayScreen
-- GameManager gameManager
-- MainMenuScreen mainMenuScreen
-- PlayMenuScreen playMenuScreen
-- GameConfig gameConfig
-- GameSaveManager saveManager
-- SettingsScreen settingsScreen
-- loadGameState(GameState) void
++ GameApplication()
+- initializeGame() void
+- startGame(GameState) void
+- shutdown() void
+- showAlert(String, String) void
++ start(Stage) void
++ continueGame() void
++ showInGameSettings() void
 - createGameConfig() GameConfig
+- loadGameState(GameState) void
+- showCutscene() void
 - createScreens() void
 + showMainMenu() void
 + showSettings() void
-+ main(String[]) void
-+ startNewGame() void
-+ continueGame() void
-- shutdown() void
-- initializeGame() void
-- startGame(GameState) void
 + showPlayMenu() void
 + showLoadGame() void
-- showAlert(String, String) void
-+ start(Stage) void
++ startNewGame() void
++ main(String[]) void
   }
   class GameConfig {
   <<Interface>>
-+ setResolution(ScreenResolution) void
-+ setFullscreen(boolean) void
-+ load() void
-+ isVsyncEnabled() boolean
-+ setMusicVolume(double) void
 + save() void
-+ getMusicVolume() double
-+ getSfxVolume() double
-+ getResolution() ScreenResolution
-+ setSfxVolume(double) void
-+ setVsyncEnabled(boolean) void
-+ isFullscreen() boolean
++ load() void
+  ScreenResolution resolution
+  double sfxVolume
+  boolean vsyncEnabled
+  double musicVolume
+  boolean fullscreen
+  }
+  class GameEvent {
++ GameEvent(GameplayContentPane, GameState)
+- int completedTaskCount
+- int failedTaskCount
+- boolean debugMode
+- boolean isRunning
+- StackPane taskOverlay
+- showTask(GameTask) void
++ debugTriggerTask() void
+- initializeTaskOverlay() void
+- formatTime(long) String
+- triggerRandomTask() void
++ debugTriggerSpecificTask(int) void
++ run() void
++ stopEvent() void
+  long timeUntilNextTask
+  int failedTaskCount
+  int completedTaskCount
+  boolean debugMode
+  StackPane taskOverlay
+  boolean isRunning
   }
   class GameEventBus {
-- Map~Class~?~, List~EventListener~?~~~ listeners
+- GameEventBus()
 - GameEventBus instance
++ publish(T) void
 + unsubscribe(Class~T~, EventListener~T~) void
 + subscribe(Class~T~, EventListener~T~) void
-+ getInstance() GameEventBus
-+ publish(T) void
+  GameEventBus instance
+  }
+  class GameFlowManager {
++ GameFlowManager(GameSaveManager, List~GameObject~)
++ saveGame() void
++ stopAllGameObjects() void
   }
   class GameManager {
-- ObjectMapper objectMapper
+- GameManager()
+- RequestGenerator requestGenerator
+- List~VPSOptimization~ installedServers
+- VPSInventory vpsInventory
+- boolean gameRunning
+- RequestManager requestManager
 - GameManager instance
-- String SAVE_FILE
-- GameState currentState
-+ getInstance() GameManager
-+ loadState(GameState) void
-+ getCurrentState() GameState
-+ hasSavedGame() boolean
+- GameTimeManager timeManager
 + saveState() void
-+ loadSavedState() GameState
++ installServer(String) boolean
 + deleteSavedGame() void
++ initializeNewGame(Company) void
++ buyServer(int, int, int, long) boolean
++ loadState() void
++ hasSavedGame() boolean
++ uninstallServer(VPSOptimization) boolean
+  GameTimeManager timeManager
+  GameState currentState
+  VPSInventory vpsInventory
+  RequestManager requestManager
+  boolean gameRunning
+  RequestGenerator requestGenerator
+  List~VPSOptimization~ installedServers
+  GameManager instance
+  }
+  class GameMenuBar {
++ GameMenuBar(GameplayContentPane)
+- createStatusButton(String, Color, Color) VBox
+- initializeStatusButtons() void
   }
   class GameObject {
-- String type
-- String id
++ GameObject(String, int, int)
++ GameObject(String, String, int, int)
++ GameObject()
++ GameObject(String, int)
+- Company company
 - boolean active
-- String status
-- double x
-- long serialVersionUID
 - Map~String, Object~ properties
-- int level
-- double y
+- String status
+- int gridX
+- String id
+- int gridY
 - String name
-+ getId() String
-+ getY() double
-+ getProperty(String) Object
+- String type
+- int level
++ stop() void
 + upgrade(GameState) void
-+ getStatus() String
-+ getProperties() Map~String, Object~
-+ setActive(boolean) void
-+ getName() String
-+ getLevel() int
-+ setY(double) void
-+ getX() double
++ setGridPosition(int, int) void
 + setProperty(String, Object) void
-+ setX(double) void
-+ setStatus(String) void
-+ getType() String
-+ isActive() boolean
-+ setName(String) void
-+ setLevel(int) void
++ getProperty(String) Object
+  String name
+  Company company
+  int gridX
+  String type
+  int gridY
+  boolean active
+  int level
+  String status
+  Map~String, Object~ properties
+  String id
+  double x
+  double y
+  }
+  class GameObjectDetailsModal {
++ GameObjectDetailsModal()
++ show(StackPane, GameObject, GameFlowManager) void
   }
   class GameObjectView {
-- Rectangle background
-- GameObject gameObject
++ GameObjectView(GameObject)
   }
   class GameSaveManager {
-- String BACKUP_DIR
-- ObjectMapper mapper
-- String SAVE_FILE
++ GameSaveManager()
++ deleteGame() void
++ saveExists() boolean
+- createBackupDirectory() void
 - createCorruptedFileBackup(File) void
 + saveGame(GameState) void
-- createBackupDirectory() void
-+ saveExists() boolean
 - createBackup() void
-+ deleteGame() void
 + loadGame() GameState
   }
   class GameScreen {
-# ScreenManager screenManager
-# GameConfig config
-+ show() void
-# enforceResolution(Region) void
-# createContent() Region
-}
-class GameScreen {
-- GameConfig gameConfig
-- GameState gameState
-- Navigator navigator
++ GameScreen(Navigator, GameConfig, GameState)
 - initializeUI() void
   }
+  class GameScreen {
++ GameScreen(GameConfig, ScreenManager)
+# createContent() Region
+# enforceResolution(Region) void
++ show() void
++ hide() void
+  }
   class GameState {
-- Map~String, Integer~ resources
-- long serialVersionUID
++ GameState(Company, List~GameObject~)
++ GameState()
++ GameState(ArrayList~GameObject~)
++ GameState(Company)
+- Map~CustomerRequest, List~ChatMessage~~ chatHistory
+- List~CustomerRequest~ completedRequests
+- int freeVmCount
 - List~GameObject~ gameObjects
-- long lastSaveTime
-- long money
+- Map~String, Object~ vpsInventoryData
+- Company company
+- long gameTimeMs
+- Map~String, Integer~ resources
+- ObjectProperty~LocalDateTime~ localDateTime
 - Map~String, Boolean~ upgrades
-+ getGameObjects() List~GameObject~
-+ setLastSaveTime(long) void
-+ getUpgrades() Map~String, Boolean~
-+ getMoney() long
-+ getLastSaveTime() long
+- Map~String, Object~ rackConfiguration
+- List~CustomerRequest~ pendingRequests
+- long lastSaveTime
+- Map~String, String~ vmAssignments
 + removeGameObject(GameObject) void
-+ setMoney(long) void
 + addGameObject(GameObject) void
-+ getResources() Map~String, Integer~
-+ setGameObjects(List~GameObject~) void
+- readObject(ObjectInputStream) void
+- writeObject(ObjectOutputStream) void
++ localDateTimeProperty() ObjectProperty~LocalDateTime~
+  Company company
+  List~CustomerRequest~ completedRequests
+  Map~String, Object~ rackConfiguration
+  Map~CustomerRequest, List~ChatMessage~~ chatHistory
+  int freeVmCount
+  long lastSaveTime
+  List~GameObject~ gameObjects
+  Map~String, Object~ vpsInventoryData
+  LocalDateTime localDateTime
+  Map~String, Integer~ resources
+  Map~String, String~ vmAssignments
+  long gameTimeMs
+  List~CustomerRequest~ pendingRequests
+  Map~String, Boolean~ upgrades
+  }
+  class GameTask {
++ GameTask(String, String, String, int, int, int, int)
+- int difficultyLevel
+# boolean failed
+# boolean completed
+# StackPane taskContainer
+- int timeLimit
+- String taskName
+- int rewardAmount
+- int penaltyRating
+- String taskDescription
+# applyReward() void
+# applyPenalty() void
+- cleanupTask() void
+# completeTask() void
++ showTask(Runnable) void
+# initializeTaskSpecifics() void
+# log(String) void
+# initializeUI() void
+# debugEvent(String, int) void
+# startTimer() void
+# failTask() void
+boolean failed
+boolean completed
+int difficultyLevel
+StackPane taskContainer
+boolean taskActive
+double penaltyRating
+String taskDescription
+String taskImage
+String taskName
+long rewardAmount
+int timeLimit
+}
+class GameTimeController {
++ GameTimeController(Company, RequestManager, Rack, LocalDateTime)
++ addTimeListener(GameTimeListener) void
++ startTime() void
++ stopTime() void
++ removeTimeListener(GameTimeListener) void
+  long gameTimeMs
+  GameTimeManager gameTimeManager
+  LocalDateTime gameDateTime
+  }
+  class GameTimeListener {
+  <<Interface>>
++ onTimeChanged(LocalDateTime, long) void
++ onRentalPeriodCheck(CustomerRequest, RentalPeriodType) void
+  }
+  class GameTimeManager {
++ GameTimeManager(Company, RequestManager, Rack, LocalDateTime)
+- LocalDateTime gameDateTime
++ addVPSServer(VPSOptimization) void
++ removeTimeListener(GameTimeListener) void
+- processMonthlyKeepUp() void
++ start() void
+- checkRentalExpirations(long) void
+- notifyTimeListeners() void
++ removeVPSServer(VPSOptimization) void
++ stop() void
++ addTimeListener(GameTimeListener) void
+  long gameTimeMs
+  LocalDateTime gameDateTime
+  }
+  class GameplayContentPane {
++ GameplayContentPane(List~GameObject~, Navigator, ChatSystem, RequestManager, VPSManager, GameFlowManager, DebugOverlayManager, Company, Rack)
+- DateView dateView
+- Company company
+- VPSManager vpsManager
+- Navigator navigator
+- RequestManager requestManager
+- boolean showDebug
+- VPSInventory vpsInventory
+- StackPane gameArea
+- SkillPointsSystem skillPointsSystem
+- Rack rack
+- InGameMarketMenuBar inGameMarketMenuBar
+- ChatSystem chatSystem
+- MoneyUI moneyUI
+- GameMenuBar menuBar
+- GameTimeController gameTimeController
+- StackPane rootStack
++ uninstallVPSToInventory(VPSOptimization) boolean
++ showVMSelectionDialog() void
++ openCreateVPSPage() void
++ openSkillPointsWindow() void
++ openRackInfo() void
++ openMarket() void
++ openCreateVMPage(VPSOptimization) void
++ openMusicBox() void
+- setupDebugFeatures() void
++ openVPSInventory() void
+- createBackgroundLayer() Pane
+- setupUI() void
++ pushCenterNotification(String, String, String) void
+- syncWithGameManager() void
++ installVPSFromInventory(String) boolean
++ hideMenus() void
++ openSimulationDesktop() void
++ pushMouseNotification(String) void
++ openVPSInfoPage(VPSOptimization) void
++ pushNotification(String, String) void
++ openMusicStop() void
++ openKeroro() void
++ openEditVMPage(VM, VPSOptimization) void
+- initializeBasicRack() void
++ pushCenterNotification(String, String) void
++ openVMInfoPage(VM, VPSOptimization) void
++ returnToRoom() void
+  Company company
+  List~VPSOptimization~ vpsList
+  StackPane gameArea
+  int occupiedSlots
+  int allAvailableSlots
+  VPSManager vpsManager
+  InGameMarketMenuBar inGameMarketMenuBar
+  SkillPointsSystem skillPointsSystem
+  int availableSlot
+  GameTimeController gameTimeController
+  ChatSystem chatSystem
+  VPSInventory vpsInventory
+  Navigator navigator
+  RequestManager requestManager
+  MoneyUI moneyUI
+  int totalSlots
+  boolean showDebug
+  Rack rack
+  StackPane rootStack
+  DateView dateView
+  GameMenuBar menuBar
   }
   class GameplayScreen {
-- List~GameObject~ gameObjects
-- StackPane gameArea
-- Navigator navigator
-- GameSaveManager saveManager
-- showConfirmationDialog(String, String, Runnable) void
++ GameplayScreen(GameConfig, ScreenManager, Navigator, GameState)
++ GameplayScreen(GameConfig, ScreenManager, Navigator)
 - loadGame() void
-# createContent() Region
-- showObjectDetails(GameObject) void
+- loadGame(GameState) void
 - initializeGameObjects() void
-- createModalButton(String) Button
-- createButton(String) Button
-- saveGame() void
+# createContent() Region
+}
+class InGameMarketMenuBar {
++ InGameMarketMenuBar(GameplayContentPane, VPSManager)
+- openMarketWindow() void
   }
   class JavaFXScreenManager {
-- Stage stage
-- GameConfig config
-+ setResolution(ScreenResolution) void
-+ setFullscreen(boolean) void
-+ applySettings(Stage, Scene) void
++ JavaFXScreenManager(GameConfig, Stage)
 + switchScreen(Node) void
++ applySettings(Stage, Scene) void
+  boolean fullscreen
+  ScreenResolution resolution
+  }
+  class KeyEventHandler {
++ KeyEventHandler(GameplayContentPane, DebugOverlayManager)
+- boolean resumeScreenShowing
+- boolean settingsScreenShowing
++ setup() void
++ showSettingsScreen() void
+- showResumeScreen() void
+- hideSettingsScreen() void
+- hideResumeScreen() void
+- toggleDebug() void
+  boolean settingsScreenShowing
+  boolean resumeScreenShowing
   }
   class MainMenuScreen {
-- double BUTTON_WIDTH
-- double BUTTON_HEIGHT
-- PlayMenuScreen playMenuScreen
++ MainMenuScreen(GameConfig, ScreenManager, Navigator)
 - SettingsScreen settingsScreen
-- Navigator navigator
-+ setPlayMenuScreen(PlayMenuScreen) void
 # createContent() Region
-+ setSettingsScreen(SettingsScreen) void
+SettingsScreen settingsScreen
+}
+class MarketWindow {
++ MarketWindow(Runnable, Runnable, VPSManager, GameplayContentPane)
+- createRackProductCard(RackProduct) VBox
+- createVPSProductCard(VPSProduct) VBox
+- highlightActiveButton(Button, Button[]) void
+- updateMoneyDisplay() void
+- styleButton(Button) void
+- createLeftMenu() VBox
+- updateProductDisplay() void
+- createRackSection() VBox
+- createVPSSection() VBox
   }
   class MenuButton {
-- double WIDTH
-- double HEIGHT
-- MenuButtonType type
++ MenuButton(MenuButtonType)
 - render() void
 - neon() Effect
   }
   class MenuButtonType {
   <<enumeration>>
-+  SETTINGS
-+  NEW_GAME
-+  QUIT
-+  PLAY
-+  APPLY
-+  DELETEGAME
-+  BACK
+- MenuButtonType(String)
 - String value
-+  CONTINUE
-+ values() MenuButtonType[]
 + valueOf(String) MenuButtonType
-+ getValue() String
++ values() MenuButtonType[]
+  String value
+  }
+  class MessageType {
+  <<enumeration>>
++ MessageType()
++ values() MessageType[]
++ valueOf(String) MessageType
+  }
+  class MessengerController {
++ MessengerController(RequestManager, VPSManager, Company, ChatHistoryManager, StackPane, GameTimeManager, Runnable)
+- RequestManager requestManager
+- MessengerWindow messengerWindow
+- Runnable onClose
+- validateVMConsistency() void
+- isRequestAssigned(CustomerRequest) boolean
+- generateRandomIp() String
+- loadSkillLevels() void
+- cleanup() void
+- createVirtualMachines(int, int) void
+- loadVPSFromGameState() void
++ releaseVM(VM, boolean) void
+- checkAndUpdateFromRack() boolean
+- updateRequestList() void
++ findMatchingCustomerRequest(CustomerRequest) CustomerRequest
+- updateChatWithRequestDetails(CustomerRequest) void
+- completeVMProvisioning(CustomerRequest, VM) void
+- updateDashboard() void
+- findAssignedCustomerFromGameState(String) CustomerRequest?
+- archiveRequest(CustomerRequest) void
+- setupListeners() void
+- releaseExpiredVMs() void
++ close() void
+  Runnable onClose
+  MessengerWindow messengerWindow
+  RequestManager requestManager
+  }
+  class MessengerWindow {
++ MessengerWindow(ChatHistoryManager)
+- DashboardView dashboardView
+- RequestListView requestListView
+- ChatAreaView chatAreaView
+- createTitleBar() HBox
+  RequestListView requestListView
+  Button closeButton
+  ChatAreaView chatAreaView
+  DashboardView dashboardView
+  }
+  class MoneyController {
++ MoneyController(MoneyModel, MoneyUI)
+- update() void
+  }
+  class MoneyModel {
++ MoneyModel(long, double)
+- LongProperty money
+- DoubleProperty rating
++ moneyProperty() LongProperty
++ ratingProperty() DoubleProperty
+  double rating
+  long money
+  }
+  class MoneyUI {
++ MoneyUI(GameplayContentPane, MoneyModel)
+  }
+  class MonitoringSystem {
+  <<enumeration>>
+- MonitoringSystem(double)
+- double score
++ valueOf(String) MonitoringSystem
++ values() MonitoringSystem[]
+  double score
+  }
+  class MouseNotificationController {
++ MouseNotificationController(MouseNotificationModel, MouseNotificationView)
+- MouseNotificationView view
++ addNotification(String) void
+  MouseNotificationView view
+  }
+  class MouseNotificationModel {
++ MouseNotificationModel()
+- List~Notification~ notifications
++ addNotification(Notification) void
+  List~Notification~ notifications
+  }
+  class MouseNotificationView {
++ MouseNotificationView()
+- AudioManager audioManager
+- createNotificationPane(String) Pane
++ addNotificationPane(String, double, double) void
+  AudioManager audioManager
   }
   class Navigator {
   <<Interface>>
-+ showMainMenu() void
-+ showPlayMenu() void
-+ startNewGame() void
-+ showLoadGame() void
-+ showSettings() void
 + continueGame() void
++ showLoadGame() void
++ showMainMenu() void
++ showSettings() void
++ startNewGame() void
++ showInGameSettings() void
+  }
+  class NetworkNode {
++ NetworkNode(Color, double, double)
+- double x
+- Color color
+- double y
+- boolean connected
+- Circle circle
+  Color color
+  boolean connected
+  Circle circle
+  double x
+  double y
+  }
+  class NetworkRoutingTask {
++ NetworkRoutingTask()
+- colorToString(Color) String
+- checkTaskCompletion(List~NetworkNode~) void
+# initializeTaskSpecifics() void
+}
+class Notification {
++ Notification(String, String)
+- String title
+- String content
+  String content
+  String title
+  }
+  class Notification {
++ Notification(String, String)
++ Notification(String, String, String)
+- String title
+- String content
+- String image
+  String content
+  Image image
+  String title
+  }
+  class Notification {
++ Notification(String)
+- String content
+  String content
+  }
+  class NotificationController {
++ NotificationController(NotificationModel, NotificationView)
+- NotificationView view
++ push(String, String) void
+  NotificationView view
+  }
+  class NotificationModel {
++ NotificationModel()
+- List~Notification~ notifications
++ addNotification(Notification) void
+  List~Notification~ notifications
+  }
+  class NotificationView {
++ NotificationView()
+- AudioManager audioManager
+- createNotificationPane(String, String) Pane
++ addNotificationPane(String, String) void
+  AudioManager audioManager
+  }
+  class OperatingSystem {
+  <<enumeration>>
+- OperatingSystem(String, double)
+- double performanceMultiplier
+- String name
++ valueOf(String) OperatingSystem
++ values() OperatingSystem[]
+  String name
+  double performanceMultiplier
+  }
+  class PasswordCrackingTask {
++ PasswordCrackingTask()
+# initializeTaskSpecifics() void
+}
+class PerformanceLevel {
+<<enumeration>>
+- PerformanceLevel(double)
+- double score
++ valueOf(String) PerformanceLevel
++ values() PerformanceLevel[]
+  double score
   }
   class PlayMenuScreen {
-- Button continueButton
-- StackPane root
-- String SAVE_FILE
-- GameSaveManager saveManager
-- double SPACING
-- Navigator navigator
++ PlayMenuScreen(Navigator)
 # createContent() Region
-- continueGame() void
-- saveGameExists() boolean
-+ refreshContinueButton() void
 - showNewGameConfirmation() void
 - startNewGame() void
++ refreshContinueButton() void
+- saveGameExists() boolean
+- continueGame() void
+  }
+  class Rack {
++ Rack()
+- int currentRackIndex
+- int unlockedSlotUnits
+- List~Integer~ unlockedSlotUnitsList
+- int maxSlotUnits
+- int occupiedSlotUnits
+- createSlot() VBox
++ loadFromGameState(GameState, VPSInventory) boolean
++ removeVPSFromSlot(int) void
+- navigateToNextRack() void
+- readObject(ObjectInputStream) void
++ upgrade() boolean
+- showCurrentRack() void
++ nextRack() boolean
+- writeObject(ObjectOutputStream) void
++ uninstallVPS(VPSOptimization) boolean
+- initializeTransientFields() void
+- updateVPSDisplay(VBox) void
++ addRack(int) void
+- navigateToPreviousRack() void
++ addVPSToSlot(VPSOptimization, int) void
++ prevRack() boolean
++ goToLatestRack() boolean
++ installVPS(VPSOptimization) boolean
++ syncRackWithGameState(GameState) void
+- createRackUI(int) VBox
+  List~Integer~ uninstalledSlots
+  Map~Integer, Map~Integer, Integer~~ allRacksSlotStatus
+  int rackIndex
+  int availableSlotUnits
+  Map~Integer, VPSOptimization~ installedSlotsWithVPS
+  List~Integer~ unlockedSlotUnitsList
+  List~VPSOptimization~ allInstalledVPS
+  int maxRacks
+  VBox currentRack
+  List~VPSOptimization~ installedVPS
+  Map~Integer, Integer~ allSlotStatus
+  int occupiedSlotUnits
+  int maxSlotUnits
+  int currentRackIndex
+  int unlockedSlotUnits
+  }
+  class RackManagementUI {
++ RackManagementUI(GameplayContentPane)
+- int MAX_SLOTS
+- createEnhancedRackSlot(int, VPSOptimization, boolean, int) Pane
++ openRackInfo() void
+- createCyberLabel(String) Label
+- animateRackUpgrade() void
+- updateUI() void
+- calculateUpgradeCost() int
++ syncWithGameState() void
+- animateRackTransition(boolean) void
+- createStatusLabel(String) Label
+- createPixelButton(String, String) Button
+- createCyberButton(String) Button
+- createEnhancedRackSlots(GridPane, int) void
+  int MAX_SLOTS
+  String cyberButtonStyle
+  }
+  class RackObject {
++ RackObject()
++ RackObject(String, String, int, int)
++ RackObject(String, int)
++ RackObject(String, int, int)
++ upgrade(GameState) void
+- calculateUpgradeCost() long
++ click() void
+  Runnable onClick
+  }
+  class RackProduct {
+  <<enumeration>>
+- RackProduct(int, int, int)
+- int maintenanceCost
+- int slots
+- int price
++ values() RackProduct[]
++ valueOf(String) RackProduct
+  String keepUpDisplay
+  String name
+  String description
+  int price
+  int maintenanceCost
+  int slots
+  String priceDisplay
+  }
+  class RackProduct {
+  <<enumeration>>
+- RackProduct(String, int, int, int)
+- int price
+- String name
+- int slots
+- int keepUp
++ valueOf(String) RackProduct
++ values() RackProduct[]
+  String keepUpDisplay
+  String name
+  String description
+  int price
+  int slots
+  int keepUp
+  String priceDisplay
+  }
+  class RackStatus {
++ RackStatus(Rack)
+- updateUI() void
+- calculateUpgradeCost() int
+  }
+  class RackUpgradeWindow {
++ RackUpgradeWindow(GameplayContentPane, Runnable)
+- setupUI() void
++ updateUI() void
++ increaseMaxSlotUnits(int) void
+- styleWindow() void
+- upgradeRoom() void
+- createUpgradeOption(String, String, String, boolean) BorderPane
+- buyNewRack() void
+  }
+  class RandomEvent {
++ RandomEvent(String, String, EventType, EventEffect)
+- String title
+- EventType type
+- EventEffect effect
+- String description
+  String description
+  String title
+  EventEffect effect
+  EventType type
+  }
+  class RandomEventSystem {
++ RandomEventSystem(GameplayContentPane, GameState)
++ start() void
+- triggerRandomEvent() void
++ stop() void
+- initializeEvents() void
+  long initialDelay
+  long eventInterval
+  }
+  class RandomGenerateName {
++ RandomGenerateName()
++ generateRandomName() String
+- generateRealisticName(int) String
+  }
+  class RatingObserver {
+  <<Interface>>
++ onRatingChanged(double) void
+  }
+  class RentalManager {
++ RentalManager(ChatHistoryManager, ChatAreaView, Company, GameTimeManager)
+- Runnable onArchiveRequest
+- Runnable onUpdateDashboard
+- setupTimeListener() void
++ detachFromTimeManager() void
++ setupRentalPeriod(CustomerRequest, VM) void
+- getAssignedVM(CustomerRequest) VM?
+- handleRentalExpiration(CustomerRequest, RentalPeriodType) void
+- calculateRenewalProbability() double
+  Runnable onArchiveRequest
+  Runnable onUpdateDashboard
+  Map~VM, CustomerRequest~ VMAssignment
+  RentalPeriodType randomPeriod
+  }
+  class RentalPeriodType {
+  <<enumeration>>
+- RentalPeriodType(int, String)
+- int days
+- String displayName
++ values() RentalPeriodType[]
++ valueOf(String) RentalPeriodType
+  String displayName
+  int days
+  }
+  class RequestGenerator {
++ RequestGenerator(RequestManager)
+- int maxPendingRequests
++ stopGenerator() void
+- updateRequestRateMultiplier() void
++ run() void
+  int maxPendingRequests
+  }
+  class RequestListView {
++ RequestListView()
+- ListView~CustomerRequest~ requestView
++ updateRequestList(List~CustomerRequest~) void
+  CustomerRequest selectedRequest
+  ListView~CustomerRequest~ requestView
+  }
+  class RequestManager {
++ RequestManager(Company)
+- VMProvisioningManager vmProvisioningManager
+- List~CustomerRequest~ completedRequests
++ generateRandomRequest() CustomerRequest
++ acceptRequest(CustomerRequest, VPSOptimization, int, int, int) CompletableFuture~VM~
++ completeRequest(CustomerRequest, VPSOptimization) boolean
++ processPayments(long) void
+- initializeSampleRequests() void
+- getRandomBudget(CustomerType) double
++ realTimeToGameDays(long) int
++ gameDaysToRealTime(int) long
++ addRequest(CustomerRequest) void
++ addCompletedRequests(List~CustomerRequest~) void
+  VMProvisioningManager vmProvisioningManager
+  CustomerType randomCustomerType
+  ObservableList~CustomerRequest~ requests
+  Map~CustomerRequest, VM~ activeRequests
+  List~CustomerRequest~ completedRequests
+  }
+  class RequestType {
+  <<enumeration>>
++ RequestType()
++ valueOf(String) RequestType
++ values() RequestType[]
   }
   class ResourceManager {
-- Map~String, Image~ imageCache
+- ResourceManager()
+- MouseNotificationView mouseNotificationView
+- SkillPointsSystem skillPointsSystem
+- CenterNotificationController centerNotificationController
+- Rack rack
+- NotificationController notificationController
+- GameTimeController gameTimeController
+- NotificationModel notificationModel
+- MouseNotificationModel mouseNotificationModel
+- GameState currentState
+- NotificationView notificationView
+- CenterNotificationView centerNotificationView
+- GameEvent gameEvent
+- boolean musicRunning
+- RequestManager requestManager
+- AudioManager audioManager
 - ResourceManager instance
-- String TEXT_PATH
-- String MUSIC_PATH
-- Map~String, String~ textCache
-- String SOUNDS_PATH
-- String IMAGES_PATH
+- MouseNotificationController mouseNotificationController
+- Company company
+- CenterNotificationModel centerNotificationModel
++ pushNotification(String, String) void
++ getText(String) String
+- createBackupDirectory() void
++ createGameObject(String, String, int, int) GameObject
++ getResource(String) URL
++ loadRackDataFromGameState(GameState) boolean
+- createCorruptedFileBackup(File) void
+- initiaizeGameTimeController() void
++ deleteSaveFile() void
++ getMusicPath(String) String
+- initializeNotifications() void
++ pushCenterNotification(String, String, String) void
++ pushCenterNotification(String, String) void
++ initializeGameEvent(GameplayContentPane) void
++ saveGameState(GameState) void
++ clearCache() void
+- initiaizeSkillPointsSystem() void
++ loadImage(String) Image
++ hasSaveFile() boolean
+- initiaizeRequestManager() void
++ loadGameState() GameState
++ getTextPath(String) String
++ pushCenterNotificationAutoClose(String, String, String, long) void
++ getResourceAsStream(String) InputStream
++ pushMouseNotification(String) void
 + getImagePath(String) String
 + getSoundPath(String) String
-+ loadImage(String) Image
-+ getTextPath(String) String
-+ getResourceAsStream(String) InputStream
-+ getText(String) String
-+ clearCache() void
-+ getMusicPath(String) String
-+ getResource(String) URL
-+ getInstance() ResourceManager
+  Company company
+  GameState currentState
+  boolean musicRunning
+  NotificationController notificationController
+  CenterNotificationController centerNotificationController
+  GameEvent gameEvent
+  GameTimeManager gameTimeManager
+  MouseNotificationView mouseNotificationView
+  NotificationModel notificationModel
+  MouseNotificationController mouseNotificationController
+  AudioManager audioManager
+  SkillPointsSystem skillPointsSystem
+  GameTimeController gameTimeController
+  RequestManager requestManager
+  CenterNotificationModel centerNotificationModel
+  Rack rack
+  ResourceManager instance
+  CenterNotificationView centerNotificationView
+  MouseNotificationModel mouseNotificationModel
+  NotificationView notificationView
+  }
+  class ResourceOptimizationTask {
++ ResourceOptimizationTask()
+# initializeTaskSpecifics() void
+}
+class ResumeScreen {
++ ResumeScreen(Navigator, Runnable, Runnable)
++ ResumeScreen(Navigator, Runnable)
+- styleButton(MenuButton) void
+- setupUI() void
+  }
+  class RoomObjectsLayer {
++ RoomObjectsLayer(Runnable, Runnable, Runnable, Runnable, Runnable)
+- Pane serverLayer
+- Pane musicStopLayer
+- Pane monitorLayer
+- Pane tableLayer
+- boolean run
+- Pane musicBoxLayer
+- Pane keroroLayer
+- createMonitorLayer() Pane
+- createKeroroLayer() Pane
+- createMusicBoxLayer() Pane
+- createTableLayer() Pane
+- createMusicStopLayer() Pane
+- createServerLayer() Pane
+  Pane serverLayer
+  Pane keroroLayer
+  Pane monitorLayer
+  Pane tableLayer
+  Pane musicBoxLayer
+  Pane musicStopLayer
+  boolean run
   }
   class SceneController {
+- SceneController(Stage, GameConfig, ScreenManager)
 - SceneController instance
-- Scene mainScene
-- ScreenManager screenManager
-- StackPane rootContainer
-- Stage stage
-- GameConfig config
-+ getInstance() SceneController
-- initializeScene() void
-+ setContent(Parent) void
 + initialize(Stage, GameConfig, ScreenManager) void
 + updateResolution() void
+- initializeScene() void
+  SceneController instance
+  Parent content
   }
   class ScreenManager {
   <<Interface>>
-+ setFullscreen(boolean) void
 + switchScreen(Node) void
-+ setResolution(ScreenResolution) void
 + applySettings(Stage, Scene) void
+  boolean fullscreen
+  ScreenResolution resolution
   }
   class ScreenResolution {
   <<enumeration>>
-+  RES_3440x1440
-- String displayName
-+  RES_1600x900
-+  RES_2560x1440
-+  RES_1920x1080
-- int height
-+  RES_1280x720
-+  RES_1366x768
-+  RES_3840x2160
-+  RES_2048x1152
+- ScreenResolution(int, int, String)
 - int width
-+ getHeight() int
-+ getMaxSupportedResolution() ScreenResolution
+- int height
 + values() ScreenResolution[]
-+ getWidth() int
 + valueOf(String) ScreenResolution
 + toString() String
+  ScreenResolution maxSupportedResolution
+  int width
+  int height
+  }
+  class SecurityLevel {
+  <<enumeration>>
+- SecurityLevel(double)
+- double score
++ valueOf(String) SecurityLevel
++ values() SecurityLevel[]
+  double score
+  }
+  class ServerCoolingTask {
++ ServerCoolingTask()
+# initializeTaskSpecifics() void
+- checkTaskCompletion() void
   }
   class SettingsChangedEvent {
++ SettingsChangedEvent(GameConfig)
 - GameConfig newConfig
-+ getNewConfig() GameConfig
+  GameConfig newConfig
   }
   class SettingsScreen {
-- Slider sfxVolumeSlider
-- CheckBox vsyncCheckBox
-- Slider musicVolumeSlider
-- CheckBox fullscreenCheckBox
-- Navigator navigator
-- ComboBox~ScreenResolution~ resolutionComboBox
-- createTitleLabel(String) Label
-- createSliderControl(String, double, SliderInitializer) HBox
-- createStyledCheckBox(CheckBox) CheckBox
-- createSettingsContainer() VBox
-- createLabeledControl(String, Control) HBox
-# createContent() Region
-- createSectionLabel(String) Label
-- createBackButton() MenuButton
++ SettingsScreen(GameConfig, Navigator, Runnable)
++ SettingsScreen(GameConfig, ScreenManager, Navigator, Runnable)
 - createVolumeControls() VBox
 - createApplyButton() MenuButton
+- createSettingsContainer() VBox
+- createSliderControl(String, double, SliderInitializer) HBox
+- setupUI() void
 - createDisplayControls() VBox
++ show() void
+- createBackButton() MenuButton
+- styleMenuButton(MenuButton) void
+- createLabeledControl(String, Control) HBox
+- createTitleLabel(String) Label
+- createStyledCheckBox(CheckBox) CheckBox
+- createSectionLabel(String) Label
   }
   class SettingsViewModel {
-- ObjectProperty~ScreenResolution~ resolution
-- DoubleProperty musicVolume
-- BooleanProperty fullscreen
-- DoubleProperty sfxVolume
-- GameConfig config
-- BooleanProperty vsync
-- setupBindings() void
++ SettingsViewModel(GameConfig)
 + musicVolumeProperty() DoubleProperty
-+ resolutionProperty() ObjectProperty~ScreenResolution~
-+ sfxVolumeProperty() DoubleProperty
-+ vsyncProperty() BooleanProperty
-+ saveSettings() void
-+ fullscreenProperty() BooleanProperty
 - showErrorDialog(String) void
++ fullscreenProperty() BooleanProperty
++ sfxVolumeProperty() DoubleProperty
++ saveSettings() void
++ vsyncProperty() BooleanProperty
++ resolutionProperty() ObjectProperty~ScreenResolution~
+- setupBindings() void
   }
-  class VPSObject {
-+ upgrade(GameState) void
-- calculateUpgradeCost() long
+  class SimulationDesktopUI {
++ SimulationDesktopUI(GameplayContentPane)
++ openSimulationDesktop() void
+  }
+  class SkillPointsManager {
++ SkillPointsManager(ChatHistoryManager, ChatAreaView, SkillPointsSystem)
++ awardSkillPoints(CustomerRequest, double) void
+  }
+  class SkillPointsSystem {
++ SkillPointsSystem(Company)
++ calculateUpgradeCost(int) int
++ canUnlockVPS(VPSProduct) boolean
+- readObject(ObjectInputStream) void
+- initializeSkillLevels() void
++ upgradeSkill(SkillType) boolean
++ getSkillLevelDescription(SkillType, int) String
++ addPoints(int) void
++ getSkillLevel(SkillType) int
+  double managementEfficiency
+  int availablePoints
+  double marketingBonus
+  double securityLevel
+  int availableRackSlots
+  double serverEfficiencyMultiplier
+  double networkSpeedMultiplier
+  boolean firewallManagementUnlocked
+  }
+  class SkillPointsWindow {
++ SkillPointsWindow(SkillPointsSystem, Runnable)
+- styleWindow() void
++ updateUI() void
+- createSkillCard(SkillType) BorderPane
+- setupUI() void
+  }
+  class SkillType {
+  <<enumeration>>
+- SkillType(String, String, int)
+- int maxLevel
+- String description
+- String name
++ values() SkillType[]
++ valueOf(String) SkillType
+  String name
+  String description
+  int maxLevel
+  }
+  class SliderInitializer {
+  <<Interface>>
++ initialize(Slider) void
+  }
+  class TaskManager {
++ TaskManager(StackPane)
+- int completedTaskCount
+- boolean isRunning
+- int failedTaskCount
++ debugTriggerSpecificTask(int) void
+- taskLoop() void
++ start() void
+- triggerRandomTask() void
+- showTask(GameTask) void
++ stop() void
++ debugTriggerTask() void
+  String formattedTimeUntilNextTask
+  long timeUntilNextTask
+  int failedTaskCount
+  int completedTaskCount
+  boolean isRunning
+  }
+  class UIUtils {
++ UIUtils()
++ createCard() HBox
++ createModernButton(String, String) Button
++ createSection(String) VBox
+  }
+  class VM {
++ VM(String, int, int, int)
+- String id
+- boolean assignedToCustomer
+- String status
+- long assignedTime
+- String name
+- String customerId
+- String customerName
++ assignToCustomer(String, String, long) void
+- generateRandomIp() String
++ releaseFromCustomer() void
+  String name
+  String ip
+  String customerId
+  String customerName
+  long assignedTime
+  String disk
+  String status
+  boolean assignedToCustomer
+  String ram
+  String id
+  int vcpu
+  }
+  class VMCreationUI {
++ VMCreationUI(GameplayContentPane)
+- createCyberButton(String, String) Button
+- createResourceBar(String, String, int) VBox
++ openCreateVMPage(VPSOptimization) void
+- createCyberSection(String) VBox
+- getNextAvailableIP(VPSOptimization) String
+- createCyberCard(String) HBox
+- createCyberComboBox(ObservableList~T~) ComboBox~T~
+- createCyberTextField(String) TextField
+- showValidationError(String, String) void
+  }
+  class VMEditUI {
++ VMEditUI(GameplayContentPane)
++ openEditVMPage(VM, VPSOptimization) void
+- createCyberTextField(String) TextField
+- createCyberSection(String) VBox
+- createCyberButton(String, String, String) Button
+  }
+  class VMInfoUI {
++ VMInfoUI(GameplayContentPane)
++ openVMInfoPage(VM, VPSOptimization) void
+- showActionMessage(String) void
+- getProgressBarStyle(double) String
+- generateRandomValue(int, int) double
+- createCyberButton(String, String) Button
+- generateRandomUptime() String
+- addResourceMonitor(GridPane, String, double, int) void
+- addInfoField(GridPane, String, String, int) void
+  }
+  class VMProvisioningManager {
++ VMProvisioningManager(Company)
+- Company company
+- Map~CustomerRequest, VM~ activeRequests
++ provisionVM(CustomerRequest, VPSOptimization, int, int, int) CompletableFuture~VM~
++ getRequestForVM(VM) CustomerRequest
+- generateRandomIp() String
++ processPayments(long) double
++ terminateVM(VM, VPSOptimization) boolean
+- calculateRatingChange(CustomerRequest, int, int, int) double
++ getVMForRequest(CustomerRequest) VM
+  Company company
+  Map~CustomerRequest, VM~ activeRequests
+  }
+  class VMProvisioningManager {
++ VMProvisioningManager(ChatHistoryManager, ChatAreaView, Map~CustomerRequest, ProgressBar~)
+- int deployLevel
+- calculateProvisioningDelay() int
+- sendVMDetails(CustomerRequest, VM) void
+- parseDiskValue(String) int
+- generateRandomPassword() String
+- findVPSForVM(VM) VPSOptimization?
+- sendInitialMessages(CustomerRequest) void
++ startVMProvisioning(CustomerRequest, VM, Runnable) void
+- parseRAMValue(String) int
+  int deployLevel
+  }
+  class VMSelectionDialog {
++ VMSelectionDialog(List~VM~, StackPane)
+- VM selectedVM
+- Runnable onConfirm
+- createDigitalLine() Line
+- closeDialog() void
+  Runnable onConfirm
+  VM selectedVM
+  }
+  class VPSCreationUI {
++ VPSCreationUI(GameplayContentPane)
++ openCreateVPSPage() void
+  }
+  class VPSInfoUI {
++ VPSInfoUI(GameplayContentPane)
++ openVPSInfoPage(VPSOptimization) void
+- uninstallVPS(VPSOptimization) void
+- createHardwareInfoRow(String, int, int) HBox
+- createStatusLED(String, boolean) Circle
+- calculateUtilization(VPSOptimization, int, int, int) double
+- createPhysicalServerView(VPSOptimization, int, int, int) HBox
+- createVMEntry(VM, VPSOptimization) HBox
+  }
+  class VPSInventory {
++ VPSInventory()
++ addVPS(String, VPSOptimization) void
++ removeVPS(String) VPSOptimization
++ getVPS(String) VPSOptimization
++ clear() void
+  List~VPSOptimization~ allVPS
+  int size
+  boolean empty
+  List~String~ allVPSIds
+  Map~String, VPSOptimization~ inventoryMap
+  }
+  class VPSInventoryUI {
++ VPSInventoryUI(GameplayContentPane)
+- installVPS(String, VPSOptimization) void
+- createInventoryItemRow(String, VPSOptimization, boolean) HBox
++ openInventory() void
+- showVPSDetails(String, VPSOptimization) void
+- createInventoryList() VBox
+  }
+  class VPSManager {
++ VPSManager()
++ createVPS(String) void
++ getVPS(String) VPSOptimization
++ addVPS(String, VPSOptimization) void
+  List~VPSOptimization~ VPSList
+  Map~String, VPSOptimization~ VPSMap
+  }
+  class VPSOptimization {
++ VPSOptimization()
++ VPSOptimization(String, int, int, VPSSize)
++ VPSOptimization(int, int, VPSSize)
+- int diskInGB
+- List~VM~ vms
+- double cpuUsage
+- String vpsId
+- VPSSize size
+- double ramUsage
+- VPSStatus status
+- double diskUsage
+- int ramInGB
+- int optimizationLevel
+- double networkUsage
+- int maxVMs
+- boolean installed
++ hasAutoScaling() boolean
++ calculateOptimizationScore() double
++ hasBackupSystem() boolean
+- updateResourceUsage() void
++ equals(Object) boolean
++ optimize() boolean
++ hasMonitoringSystem() boolean
++ removeVM(VM) void
++ addVM(VM) void
++ hashCode() int
+  double cpuUsage
+  int optimizationLevel
+  VPSSize size
+  double diskUsage
+  double networkUsage
+  String vpsId
+  VPSStatus VPSStatus
+  int VCPUs
+  int slotsRequired
+  int maxVMs
+  int ramInGB
+  int diskInGB
+  boolean installed
+  double ramUsage
+  boolean monitoringSystem
+  boolean backupSystem
+  List~VM~ vms
+  String status
+  boolean autoScaling
+  }
+  class VPSProduct {
+  <<enumeration>>
+- VPSProduct(String, int, int, int, int, int, VPSSize)
+- int ram
+- int cpu
+- String name
+- int storage
+- VPSSize size
+- int keepUp
+- int price
++ isUnlocked(int) boolean
++ valueOf(String) VPSProduct
++ values() VPSProduct[]
+  String keepUpDisplay
+  String name
+  String description
+  int price
+  VPSSize size
+  int cpu
+  int keepUp
+  int ram
+  int storage
+  String priceDisplay
+  }
+  class VPSSize {
+  <<enumeration>>
+- VPSSize(String, int, double)
+- VPSSize(String, int)
+- int slotsRequired
+- double performanceMultiplier
+- String displayName
++ valueOf(String) VPSSize
++ values() VPSSize[]
+  String displayName
+  int slotsRequired
+  double performanceMultiplier
+  }
+  class VPSStatus {
+  <<enumeration>>
+- VPSStatus(String)
+- String displayName
++ valueOf(String) VPSStatus
++ values() VPSStatus[]
++ toString() String
+  String displayName
+  }
+  class WireTask {
++ WireTask()
++ WireTask(int)
+# initializeTaskSpecifics() void
+- shuffleArray(String[]) void
+- updateConnection(MouseEvent, int, Line[]) void
+- getRandomColors(int) String[]
+- finishConnection(MouseEvent, int, Circle[], Line[], String[]) void
+- startConnection(int, Circle[], Line[]) void
+  }
+  class ZoomPanHandler {
++ ZoomPanHandler(Group, StackPane, DebugOverlayManager, boolean)
+- boolean showDebug
+- setupZoomHandlers() void
+- updateDebugInfoIfNeeded() void
+- setupPanHandlers() void
++ setup() void
+- setupResetHandler() void
+  boolean showDebug
   }
 
+FirewallDefenseTask  -->  AttackNode
+CalibrationTask  -->  GameTask
+VMSelectionDialog  -->  Circle
+CustomerRequest  -->  Customer
+DataDecryptionTask  -->  GameTask
+DataSortingTask  -->  DataPacket
+DataSortingTask  -->  GameTask
+DateController  ..>  GameTimeListener
+DebugOverlayManager  -->  GameState
 DefaultGameConfig  ..>  GameConfig
+RandomEventSystem  -->  EventEffect
+RandomEventSystem  -->  EventType
+FileRecoveryTask  -->  GameTask
+FirewallDefenseTask  -->  GameTask
 GameApplication  ..>  Navigator
+GameTimeManager  -->  GameTimeListener
 GameplayScreen  -->  GameScreen
 JavaFXScreenManager  ..>  ScreenManager
 MainMenuScreen  -->  GameScreen
-SettingsScreen  -->  GameScreen
-VPSObject  -->  GameObject
-
+NetworkRoutingTask  -->  NetworkNode
+NetworkRoutingTask  -->  GameTask
+CenterNotificationModel  -->  Notification
+MouseNotificationModel  -->  Notification
+NotificationModel  -->  Notification
+PasswordCrackingTask  -->  GameTask
+RackObject  -->  GameObject
+RandomEventSystem  -->  RandomEvent
+Company  -->  RatingObserver
+CustomerRequest  -->  RentalPeriodType
+ResourceOptimizationTask  -->  GameTask
+ServerCoolingTask  -->  GameTask
+SkillPointsSystem  -->  SkillType
+SettingsScreen  -->  SliderInitializer
+VPSOptimization  -->  VM
+VPSOptimization  -->  GameObject
+WireTask  -->  GameTask 
 ```
-
----
-
-## ToDo
-- [x] Main Menu
-- [x] Pause Menu
-    - [x] New Game btn
-    - [x] Resume btn
-- [x] Setting Screen
-    - [x] Resolution
-    - [x] Fullscreen 
-- [x] Empty Screen
-
-
