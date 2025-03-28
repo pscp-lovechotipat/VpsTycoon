@@ -46,8 +46,8 @@ public class GameState implements Serializable {
     private Map<CustomerRequest, List<ChatMessage>> chatHistory;
     
     // เพิ่มฟิลด์สำหรับเก็บข้อมูล pendingRequests และ completedRequests
-    private List<CustomerRequest> pendingRequests;
-    private List<CustomerRequest> completedRequests;
+    private ArrayList<CustomerRequest> pendingRequests;
+    private ArrayList<CustomerRequest> completedRequests;
     
     // เพิ่มฟิลด์สำหรับเก็บการเชื่อมโยงระหว่าง VM และ CustomerRequest
     private Map<String, String> vmAssignments; // vmId -> requestId
@@ -152,7 +152,12 @@ public class GameState implements Serializable {
     }
     
     public void setPendingRequests(List<CustomerRequest> pendingRequests) {
-        this.pendingRequests = pendingRequests;
+        // สร้าง ArrayList ใหม่ในกรณีที่ได้รับ ObservableList เข้ามา
+        if (pendingRequests != null) {
+            this.pendingRequests = new ArrayList<>(pendingRequests);
+        } else {
+            this.pendingRequests = new ArrayList<>();
+        }
     }
     
     public List<CustomerRequest> getCompletedRequests() {
@@ -160,7 +165,12 @@ public class GameState implements Serializable {
     }
     
     public void setCompletedRequests(List<CustomerRequest> completedRequests) {
-        this.completedRequests = completedRequests;
+        // สร้าง ArrayList ใหม่ในกรณีที่ได้รับ ObservableList เข้ามา
+        if (completedRequests != null) {
+            this.completedRequests = new ArrayList<>(completedRequests);
+        } else {
+            this.completedRequests = new ArrayList<>();
+        }
     }
 
     // Getter และ Setter สำหรับ vmAssignments

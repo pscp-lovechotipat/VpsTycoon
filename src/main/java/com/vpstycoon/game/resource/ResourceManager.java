@@ -43,6 +43,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ResourceManager implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -318,13 +320,34 @@ public class ResourceManager implements Serializable {
             state.setSkillLevels(this.skillPointsSystem.getSkillLevelsMap());
         }
         
+        // เก็บข้อมูล pendingRequests และ completedRequests ถ้ามี
+        try {
+            if (requestManager != null) {
+                // อัพเดตข้อมูล pendingRequests และ completedRequests ใน GameState ก่อนบันทึก
+                if (requestManager.getRequests() != null) {
+                    state.setPendingRequests(new ArrayList<>(requestManager.getRequests()));
+                    System.out.println("บันทึกข้อมูล pendingRequests: " + requestManager.getRequests().size() + " รายการ");
+                }
+                
+                if (requestManager.getCompletedRequests() != null) {
+                    state.setCompletedRequests(new ArrayList<>(requestManager.getCompletedRequests()));
+                    System.out.println("บันทึกข้อมูล completedRequests: " + requestManager.getCompletedRequests().size() + " รายการ");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูล Requests: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
         // บันทึกข้อมูล Chat History จาก ChatHistoryManager ลงใน GameState (ถ้ามี)
         try {
-            ChatHistoryManager chatManager =
-                getChatHistory();
+            ChatHistoryManager chatManager = getChatHistory();
             if (chatManager != null) {
                 // บันทึกข้อมูลลงใน GameState โดยตรง (ไม่ต้องเรียก saveChatHistory เพราะเดี๋ยวจะเรียกวนกัน)
                 System.out.println("กำลังบันทึกข้อมูล Chat History ลงใน GameState...");
+                
+                // บันทึกลงใน save.dat ด้วย (ใช้ ChatHistoryManager จัดการ)
+                chatManager.saveChatHistory();
             }
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูล Chat History: " + e.getMessage());

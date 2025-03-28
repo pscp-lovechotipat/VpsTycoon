@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ChatHistoryManager {
+public class ChatHistoryManager implements Serializable{
     private static ChatHistoryManager instance;
     private Map<CustomerRequest, List<ChatMessage>> customerChatHistory;
-    private static final String CHAT_HISTORY_FILE = "chat_history.dat";
-    private MessengerController messengerController;
+    private static final String CHAT_HISTORY_FILE = "save.dat";
+    private transient MessengerController messengerController;
 
     public ChatHistoryManager() {
         // โหลดประวัติแชทจาก GameState ก่อน ถ้าไม่มีค่อยโหลดจากไฟล์แยก
@@ -178,6 +178,8 @@ public class ChatHistoryManager {
      */
     public void saveChatHistory() {
         saveChatHistoryToGameState();
+        // เพิ่มการบันทึกลงไฟล์ save.dat ด้วยเสมอ ไม่ว่าการบันทึกลง GameState จะสำเร็จหรือไม่
+        saveChatHistoryToFile();
     }
     
     /**
@@ -188,6 +190,23 @@ public class ChatHistoryManager {
             GameState currentState = ResourceManager.getInstance().getCurrentState();
             if (currentState != null) {
                 currentState.setChatHistory(customerChatHistory);
+                
+                // บันทึกข้อมูล pendingRequests และ completedRequests ถ้ามี
+                if (messengerController != null && messengerController.getRequestManager() != null) {
+                    currentState.setPendingRequests(messengerController.getRequestManager().getRequests());
+                    currentState.setCompletedRequests(messengerController.getRequestManager().getCompletedRequests());
+                    
+                    // สร้าง Map ของการจับคู่ VM กับ Request
+                    Map<String, String> vmAssignments = new HashMap<>();
+                    for (CustomerRequest request : customerChatHistory.keySet()) {
+                        if (request.isAssignedToVM()) {
+                            vmAssignments.put(request.getAssignedVmId(), request.getName());
+                        }
+                    }
+                    
+                    currentState.setVmAssignments(vmAssignments);
+                }
+                
                 System.out.println("Chat history saved successfully to GameState with " + 
                       customerChatHistory.size() + " conversations");
             } else {
@@ -204,12 +223,38 @@ public class ChatHistoryManager {
     }
     
     /**
-     * บันทึกประวัติแชทลงไฟล์แยก (ใช้เป็น fallback)
+     * บันทึกประวัติแชทลงไฟล์ save.dat
      */
     private void saveChatHistoryToFile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CHAT_HISTORY_FILE))) {
-            oos.writeObject(customerChatHistory);
-            System.out.println("Chat history saved successfully to file " + new File(CHAT_HISTORY_FILE).getAbsolutePath());
+        try {
+            // สร้าง ChatHistorySaveData เพื่อเก็บข้อมูลทั้งหมด
+            ChatHistorySaveData saveData = new ChatHistorySaveData();
+            saveData.setChatHistory(customerChatHistory);
+            
+            // เพิ่มข้อมูล pendingRequests และ completedRequests ถ้ามี
+            if (messengerController != null && messengerController.getRequestManager() != null) {
+                // ใช้ ArrayList แทน ObservableList เพื่อให้ serializable ได้
+                List<CustomerRequest> pendingRequestsList = new ArrayList<>(messengerController.getRequestManager().getRequests());
+                saveData.setPendingRequests(pendingRequestsList);
+                
+                List<CustomerRequest> completedRequestsList = new ArrayList<>(messengerController.getRequestManager().getCompletedRequests());
+                saveData.setCompletedRequests(completedRequestsList);
+                
+                // สร้าง Map ของการจับคู่ VM กับ Request
+                Map<String, String> vmAssignments = new HashMap<>();
+                for (CustomerRequest request : customerChatHistory.keySet()) {
+                    if (request.isAssignedToVM()) {
+                        vmAssignments.put(request.getAssignedVmId(), request.getName());
+                    }
+                }
+                
+                saveData.setVmAssignments(vmAssignments);
+            }
+            
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CHAT_HISTORY_FILE))) {
+                oos.writeObject(saveData);
+                System.out.println("Chat history saved successfully to file " + new File(CHAT_HISTORY_FILE).getAbsolutePath());
+            }
         } catch (IOException e) {
             System.err.println("Error saving chat history to file: " + e.getMessage());
             e.printStackTrace();
@@ -225,6 +270,37 @@ public class ChatHistoryManager {
             GameState currentState = ResourceManager.getInstance().getCurrentState();
             if (currentState != null && currentState.getChatHistory() != null) {
                 Map<CustomerRequest, List<ChatMessage>> history = currentState.getChatHistory();
+                
+                // โหลดข้อมูล pendingRequests และ completedRequests ถ้ามี
+                if (currentState.getPendingRequests() != null && 
+                    messengerController != null && 
+                    messengerController.getRequestManager() != null) {
+                    
+                    // อัพเดต pendingRequests ใน RequestManager
+                    messengerController.getRequestManager().setRequests(currentState.getPendingRequests());
+                    
+                    // อัพเดต completedRequests ใน RequestManager
+                    if (currentState.getCompletedRequests() != null) {
+                        messengerController.getRequestManager().setCompletedRequests(currentState.getCompletedRequests());
+                    }
+                    
+                    // อัพเดตการจับคู่ VM กับ Request
+                    if (currentState.getVmAssignments() != null) {
+                        for (Map.Entry<String, String> entry : currentState.getVmAssignments().entrySet()) {
+                            String vmId = entry.getKey();
+                            String requestName = entry.getValue();
+                            
+                            // หา request ที่มีชื่อตรงกับ requestName
+                            for (CustomerRequest request : history.keySet()) {
+                                if (request.getName().equals(requestName)) {
+                                    request.assignToVM(vmId);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                
                 System.out.println("Chat history loaded successfully from GameState with " + 
                       history.size() + " conversations");
                 return history;
@@ -240,7 +316,7 @@ public class ChatHistoryManager {
     }
 
     /**
-     * โหลดประวัติแชทจากไฟล์แยก (ใช้เป็น fallback)
+     * โหลดประวัติแชทจากไฟล์ save.dat
      */
     @SuppressWarnings("unchecked")
     private Map<CustomerRequest, List<ChatMessage>> loadChatHistoryFromFile() {
@@ -251,7 +327,59 @@ public class ChatHistoryManager {
         }
         
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            Map<CustomerRequest, List<ChatMessage>> history = (Map<CustomerRequest, List<ChatMessage>>) ois.readObject();
+            Object obj = ois.readObject();
+            Map<CustomerRequest, List<ChatMessage>> history;
+            
+            // ตรวจสอบว่าเป็น ChatHistorySaveData หรือไม่
+            if (obj instanceof ChatHistorySaveData) {
+                ChatHistorySaveData saveData = (ChatHistorySaveData) obj;
+                history = saveData.getChatHistory();
+                
+                // โหลดข้อมูล pendingRequests และ completedRequests
+                if (messengerController != null && messengerController.getRequestManager() != null) {
+                    RequestManager requestManager = messengerController.getRequestManager();
+                    
+                    if (saveData.getPendingRequests() != null) {
+                        // สร้าง ArrayList ขึ้นมาใหม่แทนการใช้ ObservableList โดยตรง
+                        List<CustomerRequest> pendingList = new ArrayList<>(saveData.getPendingRequests());
+                        requestManager.setRequests(pendingList);
+                    }
+                    
+                    if (saveData.getCompletedRequests() != null) {
+                        // สร้าง ArrayList ขึ้นมาใหม่แทนการใช้ ObservableList โดยตรง
+                        List<CustomerRequest> completedList = new ArrayList<>(saveData.getCompletedRequests());
+                        requestManager.setCompletedRequests(completedList);
+                    }
+                    
+                    // อัพเดตการจับคู่ VM กับ Request
+                    if (saveData.getVmAssignments() != null) {
+                        for (Map.Entry<String, String> entry : saveData.getVmAssignments().entrySet()) {
+                            String vmId = entry.getKey();
+                            String requestName = entry.getValue();
+                            
+                            // หา request ที่มีชื่อตรงกับ requestName
+                            for (CustomerRequest request : history.keySet()) {
+                                if (request.getName().equals(requestName)) {
+                                    request.assignToVM(vmId);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if (obj instanceof Map) {
+                // รูปแบบเก่า (ถ้ามี)
+                try {
+                    history = (Map<CustomerRequest, List<ChatMessage>>) obj;
+                } catch (ClassCastException e) {
+                    System.err.println("Cannot cast saved object to Map<CustomerRequest, List<ChatMessage>>: " + e.getMessage());
+                    return new HashMap<>();
+                }
+            } else {
+                System.err.println("Unknown object type in chat history file: " + obj.getClass().getName());
+                return new HashMap<>();
+            }
+            
             System.out.println("Chat history loaded successfully from file " + file.getAbsolutePath() + 
                   " with " + history.size() + " conversations");
             return history;

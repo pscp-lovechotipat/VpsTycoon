@@ -1,5 +1,8 @@
 package com.vpstycoon.game;
 
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistorySaveData;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -8,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 
 public class GameSaveManager {
     private static final String SAVE_FILE = "savegame.dat"; // ไฟล์หลักสำหรับบันทึก
+    private static final String CHAT_SAVE_FILE = "save.dat"; // ไฟล์สำหรับบันทึกประวัติแชท
     private static final String BACKUP_DIR = "backups";     // โฟลเดอร์สำหรับเก็บไฟล์สำรอง
 
     public GameSaveManager() {
@@ -32,6 +36,9 @@ public class GameSaveManager {
                 createBackup();
             }
 
+            // บันทึกประวัติแชทแยกไว้ใน save.dat
+            saveChatHistory(state);
+
             // ใช้ ObjectOutputStream เพื่อบันทึกอ็อบเจ็กต์
             try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(saveFile))) {
                 oos.writeObject(state);
@@ -41,6 +48,17 @@ public class GameSaveManager {
         } catch (IOException e) {
             System.err.println("บันทึกเกมล้มเหลว: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    // บันทึกประวัติแชทแยกไว้ใน save.dat
+    private void saveChatHistory(GameState state) {
+        // บันทึกประวัติแชทผ่าน ChatHistoryManager
+        ChatHistoryManager chatManager = ChatHistoryManager.getInstance();
+        if (chatManager != null) {
+            // บันทึกประวัติแชทลง save.dat
+            chatManager.saveChatHistory();
+            System.out.println("บันทึกประวัติแชทสำเร็จ: " + new File(CHAT_SAVE_FILE).getAbsolutePath());
         }
     }
 
@@ -55,6 +73,17 @@ public class GameSaveManager {
                 System.err.println("ลบไฟล์บันทึกไม่สำเร็จ: " + saveFile.getAbsolutePath());
             }
         }
+        
+        // ลบไฟล์ save.dat ด้วย
+        File chatSaveFile = new File(CHAT_SAVE_FILE);
+        if (chatSaveFile.exists()) {
+            boolean deleted = chatSaveFile.delete();
+            if (deleted) {
+                System.out.println("ลบไฟล์บันทึกประวัติแชทสำเร็จ: " + chatSaveFile.getAbsolutePath());
+            } else {
+                System.err.println("ลบไฟล์บันทึกประวัติแชทไม่สำเร็จ: " + chatSaveFile.getAbsolutePath());
+            }
+        }
     }
 
     // สร้างไฟล์สำรองก่อนบันทึกทับ
@@ -64,6 +93,13 @@ public class GameSaveManager {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
             File backupFile = new File(BACKUP_DIR + "/savegame_" + timestamp + ".bak");
             Files.copy(sourceFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            
+            // สำรองไฟล์ save.dat ด้วย
+            File chatSourceFile = new File(CHAT_SAVE_FILE);
+            if (chatSourceFile.exists()) {
+                File chatBackupFile = new File(BACKUP_DIR + "/save_" + timestamp + ".bak");
+                Files.copy(chatSourceFile.toPath(), chatBackupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -88,6 +124,12 @@ public class GameSaveManager {
                     return new GameState();
                 }
                 System.out.println("โหลดเกมสำเร็จ: " + saveFile.getAbsolutePath());
+                
+                // โหลดประวัติแชทจาก save.dat (จะถูกโหลดโดยอัตโนมัติเมื่อสร้าง ChatHistoryManager)
+                System.out.println("กำลังโหลดประวัติแชทจาก " + CHAT_SAVE_FILE);
+                ChatHistoryManager.resetInstance(); // รีเซ็ต instance เพื่อให้สร้างใหม่และโหลดข้อมูล
+                ChatHistoryManager chatManager = ChatHistoryManager.getInstance();
+                
                 return state;
             }
 
