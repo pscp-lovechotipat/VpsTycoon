@@ -356,6 +356,7 @@ public abstract class GameTask {
             if (taskContainer != null) {
                 taskContainer.getChildren().remove(mainContainer);
             }
+            cleanupTask();
             if (onCompleteCallback != null) {
                 onCompleteCallback.run();
             }
