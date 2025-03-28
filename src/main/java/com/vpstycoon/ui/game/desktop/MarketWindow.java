@@ -43,26 +43,34 @@ public class MarketWindow extends BorderPane {
         
         // บันทึก runnable ที่ใช้เมื่อปิด window และจะคืนค่า UI ตามสถานะเดิม
         this.onClose = () -> {
-            // 1. ลบ MarketWindow ออกจาก gameArea
-            parent.getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
-            
-            // 2. คืนค่าสถานะการแสดงผลของ UI elements
-            parent.getDateView().setVisible(dateViewWasVisible);
-            parent.getMoneyUI().setVisible(moneyUIWasVisible);
-            parent.getMenuBar().setVisible(menuBarWasVisible);
-            parent.getInGameMarketMenuBar().setVisible(marketMenuBarWasVisible);
-            
-            // 3. ให้ UI ค่อยๆ ปรากฏด้วย fade-in
-            javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
-                javafx.util.Duration.millis(300), parent.getGameArea());
-            fadeIn.setFromValue(0.8);
-            fadeIn.setToValue(1.0);
-            fadeIn.play();
-            
-            // 4. เรียก callback เดิมถ้ามี
-            if (onClose != null) {
-                onClose.run();
-            }
+            // ให้หน้าต่างค่อยๆ จางหายไปด้วย fade-out animation
+            javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                javafx.util.Duration.millis(300), this);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0);
+            fadeOut.setOnFinished(event -> {
+                // 1. ลบ MarketWindow ออกจาก gameArea
+                parent.getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
+                
+                // 2. คืนค่าสถานะการแสดงผลของ UI elements
+                parent.getDateView().setVisible(dateViewWasVisible);
+                parent.getMoneyUI().setVisible(moneyUIWasVisible);
+                parent.getMenuBar().setVisible(menuBarWasVisible);
+                parent.getInGameMarketMenuBar().setVisible(marketMenuBarWasVisible);
+                
+                // 3. ให้ UI ค่อยๆ ปรากฏด้วย fade-in
+                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                    javafx.util.Duration.millis(300), parent.getGameArea());
+                fadeIn.setFromValue(0.8);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+                
+                // 4. เรียก callback เดิมถ้ามี
+                if (onClose2 != null) {
+                    onClose2.run();
+                }
+            });
+            fadeOut.play();
         };
 
         // ซ่อน parent menus เมื่อเปิด market window
@@ -79,6 +87,9 @@ public class MarketWindow extends BorderPane {
         // Set maximum size to use full available space
         setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         setPrefSize(1200, 800); // Set preferred size larger
+        
+        // Set z-index to ensure window stays on top
+        setViewOrder(-10);
         
         // Reduce padding to utilize more space
         setPadding(new Insets(10, 10, 10, 10));

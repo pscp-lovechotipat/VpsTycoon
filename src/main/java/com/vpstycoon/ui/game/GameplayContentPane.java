@@ -377,6 +377,20 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public void openMarket() {
+        // Check if market window is already open
+        boolean marketAlreadyOpen = false;
+        for (javafx.scene.Node node : getGameArea().getChildren()) {
+            if (node instanceof MarketWindow) {
+                marketAlreadyOpen = true;
+                break;
+            }
+        }
+        
+        if (marketAlreadyOpen) {
+            // Market window already open, no need to create a new one
+            return;
+        }
+        
         // Store current UI visibility state
         final boolean menuBarWasVisible = menuBar.isVisible();
         final boolean marketMenuBarWasVisible = inGameMarketMenuBar.isVisible();
@@ -405,7 +419,17 @@ public class GameplayContentPane extends BorderPane {
             vpsManager,
             this
         );
+        
+        // Add the market window to the scene with a fade-in animation
+        marketWindow.setOpacity(0);
         getGameArea().getChildren().add(marketWindow);
+        
+        // Create and play fade-in animation
+        javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+            javafx.util.Duration.millis(300), marketWindow);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1.0);
+        fadeIn.play();
     }
 
     public void openSimulationDesktop() {

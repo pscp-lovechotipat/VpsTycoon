@@ -776,7 +776,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
             Button marketButton = createPixelButton("ACCESS MARKET TERMINAL", "#6a00ff");
             marketButton.setOnAction(e -> {
-                parent.returnToRoom();
                 parent.openMarket();
             });
 
@@ -1106,7 +1105,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             Button marketButton = createPixelButton("MARKET", "#6a00ff");
             marketButton.setMaxWidth(Double.MAX_VALUE);
             marketButton.setOnAction(e -> {
-                parent.returnToRoom();
                 parent.openMarket();
             });
 
@@ -1581,7 +1579,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             Button marketButton = createPixelButton("MARKET", "#6a00ff");
             marketButton.setMaxWidth(Double.MAX_VALUE);
             marketButton.setOnAction(e -> {
-                parent.returnToRoom();
                 parent.openMarket();
             });
             infoPane.getChildren().add(marketButton);
