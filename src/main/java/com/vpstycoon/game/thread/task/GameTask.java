@@ -226,47 +226,109 @@ public abstract class GameTask {
      * @param onComplete Callback for when the task is completed/failed
      */
     public void showTask(Runnable onComplete) {
-        // ตรวจสอบว่ามี task กำลังแสดงอยู่หรือไม่
-        synchronized(taskLock) {
-            if (isTaskActive) {
-                log("Cannot show task. Another task is currently active.");
-                return;
+        try {
+            // ตรวจสอบว่ามี task กำลังแสดงอยู่หรือไม่
+            synchronized(taskLock) {
+                if (isTaskActive) {
+                    log("Cannot show task. Another task is currently active.");
+                    return;
+                }
+                
+                // ตรวจสอบ container
+                if (taskContainer == null) {
+                    log("Task container is null. Cannot show task.");
+                    return;
+                }
+                
+                // ตั้งค่าสถานะ task เป็นกำลังทำงาน
+                isTaskActive = true;
             }
             
-            // ตรวจสอบ container
-            if (taskContainer == null) {
-                log("Task container is null. Cannot show task.");
-                return;
+            log("Starting task: " + getTaskName());
+            this.onCompleteCallback = onComplete;
+            
+            // Play task start sound
+            safePlaySound(taskStartSound, 0.8);
+            
+            // Initialize UI on JavaFX thread
+            Platform.runLater(() -> {
+                try {
+                    System.out.println("[GAMETASK] Initializing task UI for: " + getTaskName());
+                    
+                    // Verify container is accessible
+                    if (taskContainer == null) {
+                        System.err.println("[GAMETASK] Error: taskContainer became null, aborting");
+                        cleanupTask();
+                        return;
+                    }
+                    
+                    // Clear the container first
+                    taskContainer.getChildren().clear();
+                    
+                    // Initialize the base UI components
+                    initializeUI();
+                    
+                    // Initialize task-specific UI elements
+                    initializeTaskSpecifics();
+                    
+                    // Verify taskPane was created successfully
+                    if (taskPane == null) {
+                        System.err.println("[GAMETASK] Error: taskPane is null after initialization");
+                        cleanupTask();
+                        return;
+                    }
+                    
+                    // Add the task UI to the container with proper centering
+                    StackPane.setAlignment(taskPane, Pos.CENTER);
+                    
+                    // Report task dimensions for debugging
+                    System.out.println("[GAMETASK] Task pane size: " + 
+                                      taskPane.getPrefWidth() + "x" + taskPane.getPrefHeight());
+                    
+                    // Add task to container
+                    taskContainer.getChildren().add(taskPane);
+                    
+                    // Make sure container is visible
+                    taskContainer.setVisible(true);
+                    
+                    // Make sure the task is properly sized and positioned
+                    taskPane.setVisible(true);
+                    
+                    // เริ่มจับเวลา
+                    startTimer();
+                    
+                    debugEvent("Task timeout", getTimeLimit());
+                    
+                    System.out.println("[GAMETASK] Task UI successfully displayed for: " + getTaskName());
+                } catch (Exception e) {
+                    System.err.println("[GAMETASK] Error initializing task UI: " + e.getMessage());
+                    e.printStackTrace();
+                    cleanupTask();
+                    
+                    // Ensure callback is executed to prevent blocking the game flow
+                    if (onCompleteCallback != null) {
+                        onCompleteCallback.run();
+                    }
+                }
+            });
+        } catch (Exception e) {
+            System.err.println("[GAMETASK] Error showing task: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Reset task active state
+            synchronized(taskLock) {
+                isTaskActive = false;
             }
             
-            // ตั้งค่าสถานะ task เป็นกำลังทำงาน
-            isTaskActive = true;
+            // Ensure callback is executed to prevent blocking
+            if (onCompleteCallback != null) {
+                try {
+                    onCompleteCallback.run();
+                } catch (Exception ignored) {
+                    // Ignore callback errors
+                }
+            }
         }
-        
-        log("Starting task: " + getTaskName());
-        this.onCompleteCallback = onComplete;
-        
-        // Play task start sound
-        safePlaySound(taskStartSound, 0.8);
-        
-        // ล้าง container ก่อนเริ่ม task ใหม่
-         Platform.runLater(() -> {
-            taskContainer.getChildren().clear();
-            
-            // Initialize the base UI components
-            initializeUI();
-            
-            // Initialize task-specific UI elements
-            initializeTaskSpecifics();
-            
-            // เพิ่ม task เข้าใน container
-            taskContainer.getChildren().add(taskPane);
-            
-            // เริ่มจับเวลา
-            startTimer();
-            
-            debugEvent("Task timeout", getTimeLimit());
-        });
     }
     
     /**
@@ -276,7 +338,11 @@ public abstract class GameTask {
         // Create a main container that will hold both the task content and the footer
         StackPane mainContainer = new StackPane();
         mainContainer.setAlignment(Pos.CENTER);
+        
+        // Set fixed size to ensure consistent layout
         mainContainer.setPrefSize(800, 600);
+        mainContainer.setMaxSize(800, 600);
+        mainContainer.setMinSize(800, 600);
         
         // Create main content pane with cyberpunk theme (without footer)
         contentPane = new BorderPane();
@@ -351,12 +417,19 @@ public abstract class GameTask {
         // Abort button with enhanced styling
         Button closeButton = CyberpunkEffects.createCyberpunkButton("ABORT TASK", false);
         closeButton.setOnAction(e -> {
+            // Mark the task as failed
             failed = true;
+            
+            // Apply failure effect
+            CyberpunkEffects.styleFailureEffect(gamePane);
+            
+            // Apply penalty
             applyPenalty();
-            if (taskContainer != null) {
-                taskContainer.getChildren().remove(mainContainer);
-            }
+            
+            // Clean up resources
             cleanupTask();
+            
+            // Call completion callback to close the task overlay
             if (onCompleteCallback != null) {
                 onCompleteCallback.run();
             }
@@ -433,10 +506,20 @@ public abstract class GameTask {
         // Add the BorderPane and footer to the main container
         mainContainer.getChildren().addAll(contentPane, footerPane);
         
+        // Center the task in the screen
+        StackPane.setAlignment(mainContainer, Pos.CENTER);
+        
         // Enable scaling to fit content
         mainContainer.setScaleX(0.99);
         mainContainer.setScaleY(0.99);
         mainContainer.setPadding(new Insets(20));
+        
+        // Add drop shadow for better visibility
+        DropShadow shadow = new DropShadow();
+        shadow.setRadius(15);
+        shadow.setSpread(0.2);
+        shadow.setColor(Color.BLACK);
+        mainContainer.setEffect(shadow);
         
         // Add CSS styles
         contentPane.getStyleClass().add("cyberpunk-task");
@@ -712,20 +795,25 @@ public abstract class GameTask {
     }
 
     /**
-     * ทำความสะอาด resources ทั้งหมดและเตรียมสำหรับ task ถัดไป
+     * Clean up resources and reset task state
      */
     protected void cleanupTask() {
-        // ล้าง UI
-        if (taskContainer != null) {
-            taskContainer.getChildren().clear();
-        }
-        
-        // หยุด timer thread
+        // Stop the timer thread if it's running
         if (timerThread != null && timerThread.isAlive()) {
             timerThread.interrupt();
         }
         
-        // คืนสถานะ task
-        setTaskActive(false);
+        // Reset static task active flag
+        synchronized(taskLock) {
+            isTaskActive = false;
+        }
+        
+        // Clear references to UI elements
+        timerBar = null;
+        timerLabel = null;
+        gamePane = null;
+        controlPane = null;
+        contentPane = null;
+        taskPane = null;
     }
 } 

@@ -59,7 +59,7 @@ public class CenterNotificationView extends StackPane {
     }
 
     /**
-     * สร้าง Task notification พร้อมปุ่มเริ่มเกม
+     * สร้าง Task notification พร้อมปุ่มเริ่มเกมและปุ่มยกเลิก
      * 
      * @param title หัวข้อการแจ้งเตือน
      * @param content เนื้อหาการแจ้งเตือน
@@ -67,46 +67,87 @@ public class CenterNotificationView extends StackPane {
      * @param onStartTask callback เมื่อกดปุ่มเริ่มเกม
      */
     public void createAndShowTaskNotification(String title, String content, String image, Runnable onStartTask) {
-        if (currentOverlay != null) {
-            // ถ้ามี notification แสดงอยู่แล้ว รอให้มันปิดก่อน แล้วค่อยแสดงอันใหม่
-            model.addNotification(new CenterNotificationModel.Notification(title, content, image));
-            return;
-        }
-        
-        // สร้าง overlay background
-        StackPane overlay = new StackPane();
-        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
-        overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        createAndShowTaskNotification(title, content, image, onStartTask, onStartTask);
+    }
 
-        // สร้าง notification pane สำหรับ task
-        VBox notificationPane = createTaskNotificationPane(title, content, 
-                                 (image != null) ? new CenterNotificationModel.Notification(title, content, image).getImage() : null, 
-                                 onStartTask);
+    /**
+     * สร้าง Task notification พร้อมปุ่มเริ่มเกมและปุ่มยกเลิกแยกกัน
+     * 
+     * @param title หัวข้อการแจ้งเตือน
+     * @param content เนื้อหาการแจ้งเตือน
+     * @param image ภาพประกอบการแจ้งเตือน
+     * @param onStartTask callback เมื่อกดปุ่มเริ่มเกม
+     * @param onAbortTask callback เมื่อกดปุ่มยกเลิกเกม
+     */
+    public void createAndShowTaskNotification(String title, String content, String image, Runnable onStartTask, Runnable onAbortTask) {
+        try {
+            // Queue notification if another one is active
+            if (currentOverlay != null) {
+                if (model != null) {
+                    model.addNotification(new CenterNotificationModel.Notification(title, content, image));
+                    System.out.println("Task notification queued: " + title);
+                } else {
+                    System.err.println("Cannot queue notification: model is null");
+                }
+                return;
+            }
+            
+            // สร้าง overlay background
+            StackPane overlay = new StackPane();
+            overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+            overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            
+            // Prepare image object
+            Image imageObj = null;
+            if (image != null) {
+                try {
+                    // Try getting from model first
+                    if (model != null) {
+                        imageObj = new CenterNotificationModel.Notification(title, content, image).getImage();
+                    } 
+                    
+                    // If still null, try to load directly
+                    if (imageObj == null) {
+                        imageObj = new Image(image);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error loading notification image: " + e.getMessage());
+                }
+            }
 
-        // เพิ่ม notificationPane ลงใน overlay
-        overlay.getChildren().add(notificationPane);
-        StackPane.setAlignment(notificationPane, Pos.CENTER);
+            // สร้าง notification pane สำหรับ task
+            VBox notificationPane = createTaskNotificationPane(title, content, imageObj, onStartTask, onAbortTask);
 
-        // ป้องกันการคลิกใน notificationPane ส่งผลให้ปิด
-        notificationPane.setOnMouseClicked(e -> e.consume());
+            // เพิ่ม notificationPane ลงใน overlay
+            overlay.getChildren().add(notificationPane);
+            StackPane.setAlignment(notificationPane, Pos.CENTER);
 
-        // เพิ่ม overlay ลงใน view
-        getChildren().add(overlay);
-        currentOverlay = overlay;
+            // ป้องกันการคลิกใน notificationPane ส่งผลให้ปิด
+            notificationPane.setOnMouseClicked(e -> e.consume());
 
-        // เล่น animation fade in
-        playFadeInAnimation(notificationPane);
-        
-        // เล่นเสียงแจ้งเตือน
-        if (audioManager != null) {
-            audioManager.playSoundEffect("notification.mp3");
+            // เพิ่ม overlay ลงใน view
+            getChildren().add(overlay);
+            currentOverlay = overlay;
+
+            // เล่น animation fade in
+            playFadeInAnimation(notificationPane);
+            
+            // เล่นเสียงแจ้งเตือน
+            if (audioManager != null) {
+                audioManager.playSoundEffect("notification.mp3");
+            }
+            
+            System.out.println("Task notification displayed: " + title);
+        } catch (Exception e) {
+            System.err.println("Error creating task notification: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
     /**
      * สร้าง VBox สำหรับแสดง notification ของ task พร้อมปุ่มเริ่มเกม
      */
-    private VBox createTaskNotificationPane(String title, String content, Image image, Runnable onStartTask) {
+    private VBox createTaskNotificationPane(String title, String content, Image image, Runnable onStartTask, Runnable onAbortTask) {
         VBox pane = new VBox(10);
         pane.setPadding(new Insets(20));
         pane.setAlignment(Pos.CENTER);
@@ -124,15 +165,47 @@ public class CenterNotificationView extends StackPane {
         """);
 
         // Close button ด้านมุมบน
-        Button closeButton = new Button("X");
+        Button closeButton = new Button("Abort Task");
         closeButton.setStyle("""
-            -fx-background-color: transparent;
+            -fx-background-color: rgba(255, 0, 0, 0.3);
             -fx-text-fill: #ff5555;
             -fx-font-weight: bold;
-            -fx-font-size: 14px;
-            -fx-padding: 0 5 0 5;
+            -fx-font-size: 12px;
+            -fx-padding: 3 8;
+            -fx-border-color: #ff5555;
+            -fx-border-width: 1px;
+            -fx-border-radius: 3;
+            -fx-background-radius: 3;
         """);
-        closeButton.setOnAction(e -> fadeOutAndRemove((StackPane) pane.getParent()));
+        closeButton.setOnAction(e -> {
+            try {
+                // Safety check for null parent
+                StackPane parent = (StackPane) pane.getParent();
+                if (parent != null) {
+                    // Close the notification
+                    fadeOutAndRemove(parent);
+                } else {
+                    System.err.println("Warning: Abort button clicked but parent pane is null");
+                }
+                
+                // If we have an abort callback, execute it
+                if (onAbortTask != null) {
+                    onAbortTask.run();
+                }
+            } catch (Exception ex) {
+                System.err.println("Error processing abort button click: " + ex.getMessage());
+                ex.printStackTrace();
+                
+                // Try to run the abort callback even if removing the UI failed
+                if (onAbortTask != null) {
+                    try {
+                        onAbortTask.run();
+                    } catch (Exception ignored) {
+                        // Ignore exceptions in callback as a last resort
+                    }
+                }
+            }
+        });
         StackPane closePane = new StackPane(closeButton);
         StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
 
@@ -162,11 +235,27 @@ public class CenterNotificationView extends StackPane {
             -fx-background-radius: 5;
         """);
         startTaskButton.setOnAction(e -> {
-            // ปิด notification
-            fadeOutAndRemove((StackPane) pane.getParent());
-            // เรียก callback
-            if (onStartTask != null) {
-                onStartTask.run();
+            try {
+                // ปิด notification safely
+                StackPane parent = (StackPane) pane.getParent();
+                if (parent != null) {
+                    fadeOutAndRemove(parent);
+                } else {
+                    System.err.println("Warning: START TASK clicked but parent pane is null");
+                }
+                
+                // เรียก callback
+                if (onStartTask != null) {
+                    try {
+                        onStartTask.run();
+                    } catch (Exception callbackEx) {
+                        System.err.println("Error in START TASK callback: " + callbackEx.getMessage());
+                        callbackEx.printStackTrace();
+                    }
+                }
+            } catch (Exception ex) {
+                System.err.println("Error processing START TASK button: " + ex.getMessage());
+                ex.printStackTrace();
             }
         });
         
@@ -221,38 +310,48 @@ public class CenterNotificationView extends StackPane {
     }
 
     private void showNextNotification() {
-        if (model.hasNotifications() && currentOverlay == null) {
-            CenterNotificationModel.Notification next = model.getNextNotification();
-            if (next != null) {
-                // สร้าง overlay background
-                StackPane overlay = new StackPane();
-                overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
-                overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
-
-                // สร้าง notification pane
-                VBox notificationPane = createNotificationPane(next.getTitle(), next.getContent(), next.getImage());
-
-                // เพิ่ม notificationPane ลงใน overlay
-                overlay.getChildren().add(notificationPane);
-                StackPane.setAlignment(notificationPane, Pos.CENTER);
-
-                // ตั้งค่าให้คลิก overlay เพื่อปิด
-                overlay.setOnMouseClicked(e -> {
-                    if (!notificationPane.getBoundsInParent().contains(e.getX(), e.getY())) {
-                        fadeOutAndRemove(overlay);
-                    }
-                });
-
-                // ป้องกันการคลิกใน notificationPane ส่งผลให้ปิด
-                notificationPane.setOnMouseClicked(e -> e.consume());
-
-                // เพิ่ม overlay ลงใน view
-                getChildren().add(overlay);
-                currentOverlay = overlay;
-
-                // เล่น animation fade in
-                playFadeInAnimation(notificationPane);
+        try {
+            // Skip if already showing an overlay or if the model is null
+            if (currentOverlay != null || model == null) {
+                return;
             }
+            
+            if (model.hasNotifications()) {
+                CenterNotificationModel.Notification next = model.getNextNotification();
+                if (next != null) {
+                    // สร้าง overlay background
+                    StackPane overlay = new StackPane();
+                    overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+                    overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
+    
+                    // สร้าง notification pane
+                    VBox notificationPane = createNotificationPane(next.getTitle(), next.getContent(), next.getImage());
+    
+                    // เพิ่ม notificationPane ลงใน overlay
+                    overlay.getChildren().add(notificationPane);
+                    StackPane.setAlignment(notificationPane, Pos.CENTER);
+    
+                    // ตั้งค่าให้คลิก overlay เพื่อปิด
+                    overlay.setOnMouseClicked(e -> {
+                        if (!notificationPane.getBoundsInParent().contains(e.getX(), e.getY())) {
+                            fadeOutAndRemove(overlay);
+                        }
+                    });
+    
+                    // ป้องกันการคลิกใน notificationPane ส่งผลให้ปิด
+                    notificationPane.setOnMouseClicked(e -> e.consume());
+    
+                    // เพิ่ม overlay ลงใน view
+                    getChildren().add(overlay);
+                    currentOverlay = overlay;
+    
+                    // เล่น animation fade in
+                    playFadeInAnimation(notificationPane);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error showing next notification: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -329,13 +428,17 @@ public class CenterNotificationView extends StackPane {
         """);
 
         // Close button
-        Button closeButton = new Button("X");
+        Button closeButton = new Button("Close");
         closeButton.setStyle("""
-            -fx-background-color: transparent;
+            -fx-background-color: rgba(255, 0, 0, 0.3);
             -fx-text-fill: #ff5555;
             -fx-font-weight: bold;
-            -fx-font-size: 14px;
-            -fx-padding: 0 5 0 5;
+            -fx-font-size: 12px;
+            -fx-padding: 3 8;
+            -fx-border-color: #ff5555;
+            -fx-border-width: 1px;
+            -fx-border-radius: 3;
+            -fx-background-radius: 3;
         """);
         closeButton.setOnAction(e -> fadeOutAndRemove((StackPane) pane.getParent()));
         StackPane closePane = new StackPane(closeButton);
@@ -380,14 +483,53 @@ public class CenterNotificationView extends StackPane {
     }
 
     private void fadeOutAndRemove(StackPane overlay) {
-        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.3), overlay);
-        fadeOut.setFromValue(1.0);
-        fadeOut.setToValue(0.0);
-        fadeOut.setOnFinished(e -> {
-            getChildren().remove(overlay);
-            currentOverlay = null;
-            showNextNotification(); // แสดง notification ถัดไปเมื่ออันปัจจุบันปิด
-        });
-        fadeOut.play();
+        if (overlay == null) {
+            System.err.println("Warning: Attempted to fade out a null overlay");
+            return;
+        }
+        
+        try {
+            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.3), overlay);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+            fadeOut.setOnFinished(e -> {
+                try {
+                    if (getChildren().contains(overlay)) {
+                        getChildren().remove(overlay);
+                    }
+                    
+                    // Reset the current overlay reference if it's this one
+                    if (currentOverlay == overlay) {
+                        currentOverlay = null;
+                    }
+                    
+                    // Try to show the next notification
+                    showNextNotification();
+                } catch (Exception ex) {
+                    System.err.println("Error in fadeOut completion: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            });
+            fadeOut.play();
+        } catch (Exception e) {
+            System.err.println("Error starting fadeOut animation: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Fallback: try direct removal
+            try {
+                if (getChildren().contains(overlay)) {
+                    getChildren().remove(overlay);
+                }
+                
+                if (currentOverlay == overlay) {
+                    currentOverlay = null;
+                }
+                
+                showNextNotification();
+            } catch (Exception ex) {
+                System.err.println("Error in fadeOut fallback removal: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
     }
 }

@@ -119,23 +119,55 @@ public class GameEvent implements Runnable {
      * @param gameState The game state
      */
     public GameEvent(GameplayContentPane gameplayContentPane, GameState gameState) {
-        this.gameplayContentPane = gameplayContentPane;
-        this.gameState = gameState;
-        this.isRunning = false;
-        this.resourceManager = ResourceManager.getInstance();
-        
-        // Initialize task overlay
-        initializeTaskOverlay();
-        
-        // Check if debug mode is enabled
-        this.debugMode = gameplayContentPane.isShowDebug();
-        
-        // Set up debug logging
-        if (debugMode) {
-            LOGGER.setLevel(Level.INFO);
-            LOGGER.info("GameEvent initialized with debug logging enabled");
-        } else {
-            LOGGER.setLevel(Level.WARNING);
+        try {
+            System.out.println("[GAMEEVENT] Initializing GameEvent system");
+            
+            if (gameplayContentPane == null) {
+                throw new IllegalArgumentException("gameplayContentPane cannot be null");
+            }
+            
+            if (gameState == null) {
+                throw new IllegalArgumentException("gameState cannot be null");
+            }
+            
+            this.gameplayContentPane = gameplayContentPane;
+            this.gameState = gameState;
+            this.isRunning = false;
+            this.resourceManager = ResourceManager.getInstance();
+            
+            if (this.resourceManager == null) {
+                System.err.println("[GAMEEVENT] Warning: ResourceManager is null");
+            }
+            
+            // Initialize debug label
+            this.debugLabel = new Label("Initializing task system...");
+            this.debugLabel.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7); -fx-text-fill: white; -fx-padding: 5;");
+            
+            // Initialize debug overlay
+            this.debugOverlay = new StackPane(debugLabel);
+            this.debugOverlay.setAlignment(Pos.TOP_RIGHT);
+            this.debugOverlay.setPadding(new Insets(10));
+            this.debugOverlay.setMouseTransparent(true);
+            
+            // Initialize task overlay
+            initializeTaskOverlay();
+            
+            // Check if debug mode is enabled
+            this.debugMode = gameplayContentPane.isShowDebug();
+            
+            // Set up debug logging
+            if (debugMode) {
+                LOGGER.setLevel(Level.INFO);
+                LOGGER.info("GameEvent initialized with debug logging enabled");
+            } else {
+                LOGGER.setLevel(Level.WARNING);
+            }
+            
+            System.out.println("[GAMEEVENT] GameEvent system successfully initialized");
+        } catch (Exception e) {
+            System.err.println("[GAMEEVENT] Error initializing GameEvent: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to notify calling code
         }
     }
     
@@ -143,37 +175,72 @@ public class GameEvent implements Runnable {
      * Initialize the task overlay that will be added to the game UI
      */
     private void initializeTaskOverlay() {
-        taskOverlay = new StackPane();
-        taskOverlay.setVisible(false);
-        taskOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); // More opaque for cyberpunk look
-        taskOverlay.setAlignment(Pos.CENTER);
-        taskOverlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE); // Cover entire area
-        taskOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        taskOverlay.setMinSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
-        
-        // Add viewport constraints to ensure content stays within the screen
-        taskOverlay.setClip(new Rectangle(taskOverlay.getWidth(), taskOverlay.getHeight()));
-        
-        // Ensure the overlay adapts to window size
-        taskOverlay.layoutBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
-            Rectangle clip = new Rectangle(
-                newBounds.getWidth(), 
-                newBounds.getHeight()
-            );
-            taskOverlay.setClip(clip);
-        });
-        
-        // Add cyberpunk-styled glitch effects to overlay
-        addGlitchEffect(taskOverlay);
-        
-        // Add the overlay to the main UI stack
-        Platform.runLater(() -> {
-            gameplayContentPane.getRootStack().getChildren().add(taskOverlay);
+        try {
+            System.out.println("[GAMEEVENT] Initializing task overlay");
             
-            // Ensure the overlay is resized to match the parent container
-            taskOverlay.prefWidthProperty().bind(gameplayContentPane.getRootStack().widthProperty());
-            taskOverlay.prefHeightProperty().bind(gameplayContentPane.getRootStack().heightProperty());
-        });
+            taskOverlay = new StackPane();
+            taskOverlay.setVisible(false);
+            taskOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);"); // More opaque for cyberpunk look
+            taskOverlay.setAlignment(Pos.CENTER); // Ensure everything is centered
+            taskOverlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE); // Cover entire area
+            taskOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+            taskOverlay.setMinSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
+            
+            // Add cyberpunk-styled glitch effects to overlay
+            addGlitchEffect(taskOverlay);
+            
+            // Add the overlay to the main UI stack
+            Platform.runLater(() -> {
+                try {
+                    // First check if the rootStack exists
+                    if (gameplayContentPane == null) {
+                        System.err.println("[GAMEEVENT] Error: gameplayContentPane is null");
+                        return;
+                    }
+                    
+                    StackPane rootStack = gameplayContentPane.getRootStack();
+                    if (rootStack == null) {
+                        System.err.println("[GAMEEVENT] Error: rootStack is null");
+                        return;
+                    }
+                    
+                    // Remove the overlay if it already exists
+                    if (rootStack.getChildren().contains(taskOverlay)) {
+                        rootStack.getChildren().remove(taskOverlay);
+                    }
+                    
+                    // Add to the top layer to ensure it's visible above other UI elements
+                    rootStack.getChildren().add(taskOverlay);
+                    
+                    // Ensure the overlay is resized to match the parent container
+                    taskOverlay.prefWidthProperty().bind(rootStack.widthProperty());
+                    taskOverlay.prefHeightProperty().bind(rootStack.heightProperty());
+                    
+                    // Set layer priority to ensure it appears on top
+                    StackPane.setAlignment(taskOverlay, Pos.CENTER);
+                    
+                    // Add viewport constraints to ensure content stays within the screen
+                    taskOverlay.setClip(new Rectangle(taskOverlay.getWidth(), taskOverlay.getHeight()));
+                    
+                    // Ensure the overlay adapts to window size
+                    taskOverlay.layoutBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
+                        Rectangle clip = new Rectangle(
+                            newBounds.getWidth(), 
+                            newBounds.getHeight()
+                        );
+                        taskOverlay.setClip(clip);
+                    });
+                    
+                    System.out.println("[GAMEEVENT] Task overlay successfully initialized and added to UI");
+                } catch (Exception e) {
+                    System.err.println("[GAMEEVENT] Error initializing task overlay: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+        } catch (Exception e) {
+            System.err.println("[GAMEEVENT] Error creating task overlay: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -329,40 +396,141 @@ public class GameEvent implements Runnable {
     }
     
     /**
+     * Show enhanced notification with separate callbacks for starting and aborting tasks
+     */
+    private void showTaskNotification(String title, String message, String imagePath, Runnable startCallback, Runnable abortCallback) {
+        // Check if resource manager is available
+        if (resourceManager == null) {
+            LOGGER.warning("Cannot show task notification: ResourceManager is null");
+            System.out.println("[GAMEEVENT] Cannot show task notification: ResourceManager is null");
+            return;
+        }
+        
+        // Use the built-in notification system
+        CenterNotificationView notificationView = resourceManager.getCenterNotificationView();
+        
+        // Check if notification view is available
+        if (notificationView == null) {
+            LOGGER.warning("Cannot show task notification: CenterNotificationView is null");
+            System.out.println("[GAMEEVENT] Cannot show task notification: CenterNotificationView is null");
+            return;
+        }
+        
+        // Show notification with proper null checks for callbacks
+        notificationView.createAndShowTaskNotification(
+            title,
+            message,
+            imagePath,
+            startCallback != null ? startCallback : () -> {},
+            abortCallback != null ? abortCallback : () -> {}
+        );
+    }
+    
+    /**
+     * Handle task abortion - called when the user aborts a task from the notification
+     */
+    private void handleTaskAbort() {
+        try {
+            LOGGER.info("Task aborted from notification.");
+            System.out.println("[GAMEEVENT] Task aborted from notification.");
+            
+            // Play failure sound if available
+            if (resourceManager != null && resourceManager.getAudioManager() != null) {
+                resourceManager.getAudioManager().playSoundEffect("task-fail.mp3");
+            }
+            
+            // Show notification if resource manager is available
+            if (resourceManager != null) {
+                resourceManager.pushCenterNotificationAutoClose(
+                    "Task Aborted",
+                    "You decided to skip this task.\nAnother task will be available soon.",
+                    "/images/notification/failure.png",
+                    3000 // หายไปเองหลัง 3 วินาที
+                );
+            }
+            
+            // Schedule the next task
+            scheduleNextTask();
+            
+            // Update debug overlay
+            updateDebugLabel();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error handling task abort", e);
+            System.out.println("[GAMEEVENT] Error handling task abort: " + e.getMessage());
+            
+            // Make sure to reset task active state in case of error
+            if (taskActive != null) {
+                taskActive.set(false);
+            }
+        }
+    }
+    
+    /**
      * Trigger a random task for the player
      */
     private void triggerRandomTask() {
-        // Set task active flag to prevent new tasks from being triggered
+        // Don't trigger a new task if one is already active
+        if (taskActive.get()) {
+            LOGGER.info("Cannot trigger new task. A task is already active.");
+            System.out.println("[GAMEEVENT] Cannot trigger new task. A task is already active.");
+            return;
+        }
+        
+        // Check if taskFactories array is properly initialized
+        if (taskFactories == null || taskFactories.length == 0) {
+            LOGGER.warning("Cannot trigger task: No task factories available");
+            System.out.println("[GAMEEVENT] Cannot trigger task: No task factories available");
+            return;
+        }
+        
+        // Set task active flag to prevent additional tasks
         taskActive.set(true);
         
-        // อัพเดต debug เมื่อสถานะ task เปลี่ยน
-        updateDebugLabel();
-        
+        // Select a random task
         int taskIndex = random.nextInt(taskFactories.length);
         GameTask task = taskFactories[taskIndex].get();
         
-        // Log task details
+        if (task == null) {
+            LOGGER.warning("Failed to create task: Task factory returned null");
+            System.out.println("[GAMEEVENT] Failed to create task: Task factory returned null");
+            taskActive.set(false); // Reset the flag since we're not proceeding
+            return;
+        }
+        
         LOGGER.info("Triggering task: " + task.getTaskName() + 
-                   ", difficulty: " + task.getDifficultyLevel() + 
-                   ", reward: $" + task.getRewardAmount() + 
-                   ", time limit: " + task.getTimeLimit() + "s");
+                  ", difficulty: " + task.getDifficultyLevel() + 
+                  ", reward: $" + task.getRewardAmount() + 
+                  ", time limit: " + task.getTimeLimit() + "s");
         
         System.out.println("[GAMEEVENT] Triggering task: " + task.getTaskName() + 
                           ", difficulty: " + task.getDifficultyLevel() + 
                           ", reward: $" + task.getRewardAmount() + 
                           ", time limit: " + task.getTimeLimit() + "s");
         
+        // Store the task for access in closure
+        final GameTask finalTask = task;
+        
         Platform.runLater(() -> {
-            // Play alert sound
-            resourceManager.getAudioManager().playSoundEffect("task-alert.mp3");
-            
-            // Show enhanced cyberpunk notification
-            showEnhancedNotification(
-                "INCOMING TASK: " + task.getTaskName(),
-                "A system task requires your attention!\nCompleting this will earn you rewards.",
-                "/images/notification/task_alert.png",
-                () -> showTask(task) // callback เมื่อคลิกที่ notification
-            );
+            try {
+                // Check if resource manager is available
+                if (resourceManager != null && resourceManager.getAudioManager() != null) {
+                    // Play alert sound
+                    resourceManager.getAudioManager().playSoundEffect("task-alert.mp3");
+                }
+                
+                // Show task notification with separate callbacks for START and ABORT
+                showTaskNotification(
+                    "INCOMING TASK: " + finalTask.getTaskName(),
+                    "A system task requires your attention!\nCompleting this will earn you rewards.",
+                    "/images/notification/task_alert.png",
+                    () -> showTask(finalTask),  // START TASK callback
+                    this::handleTaskAbort      // ABORT TASK callback
+                );
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Error showing task notification", e);
+                System.out.println("[GAMEEVENT] Error showing task notification: " + e.getMessage());
+                taskActive.set(false); // Reset flag on error
+            }
         });
     }
     
@@ -372,58 +540,84 @@ public class GameEvent implements Runnable {
      * @param task The task to show
      */
     private void showTask(GameTask task) {
-        // Clear any previous content
-        taskOverlay.getChildren().clear();
-        
-        // Configure the task to use our overlay instead of creating its own window
-        task.setTaskContainer(taskOverlay);
-        
-        // Show the overlay with a fade-in animation
-        taskOverlay.setOpacity(0);
-        taskOverlay.setVisible(true);
-        
-        // Start the task in the overlay with callback that will run when the task is completed/failed
-        task.showTask(() -> {
-            // Hide the overlay with a fade-out animation
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(250), taskOverlay);
-            fadeOut.setFromValue(1);
-            fadeOut.setToValue(0);
-            fadeOut.setOnFinished(e -> {
-                taskOverlay.setVisible(false);
-                taskOverlay.getChildren().clear(); // Remove task UI
-                processTaskCompletion(task);
+        try {
+            // Log attempt to show task
+            LOGGER.info("Attempting to show task UI: " + task.getTaskName());
+            System.out.println("[GAMEEVENT] Attempting to show task UI: " + task.getTaskName());
+            
+            // Clear any previous content
+            Platform.runLater(() -> {
+                taskOverlay.getChildren().clear();
+                
+                // Configure the task to use our overlay instead of creating its own window
+                task.setTaskContainer(taskOverlay);
+                
+                // Show the overlay with a fade-in animation
+                taskOverlay.setOpacity(0);
+                taskOverlay.setVisible(true);
+                
+                // Ensure taskOverlay is at the front (top of stack)
+                if (gameplayContentPane.getRootStack().getChildren().contains(taskOverlay)) {
+                    gameplayContentPane.getRootStack().getChildren().remove(taskOverlay);
+                }
+                gameplayContentPane.getRootStack().getChildren().add(taskOverlay);
+                
+                // Start the task in the overlay with callback that will run when the task is completed/failed
+                task.showTask(() -> {
+                    // Hide the overlay with a fade-out animation
+                    FadeTransition fadeOut = new FadeTransition(Duration.millis(250), taskOverlay);
+                    fadeOut.setFromValue(1);
+                    fadeOut.setToValue(0);
+                    fadeOut.setOnFinished(e -> {
+                        // Completely clear and hide the overlay
+                        taskOverlay.setVisible(false);
+                        taskOverlay.getChildren().clear(); // Remove task UI
+                        
+                        // Process the task completion
+                        processTaskCompletion(task);
+                        
+                        // Ensure the taskActive flag is set to false
+                        taskActive.set(false);
+                    });
+                    fadeOut.play();
+                });
+                
+                // Apply fade-in animation
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(250), taskOverlay);
+                fadeIn.setFromValue(0);
+                fadeIn.setToValue(1);
+                fadeIn.play();
+                
+                // Log successful display
+                LOGGER.info("Task UI displayed successfully: " + task.getTaskName());
+                System.out.println("[GAMEEVENT] Task UI displayed successfully: " + task.getTaskName());
             });
-            fadeOut.play();
-        });
-        
-        // Only set margin if there are children after the task has been added
-        if (!taskOverlay.getChildren().isEmpty()) {
-            StackPane.setMargin(taskOverlay.getChildren().get(0), new Insets(20));
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error showing task UI", e);
+            System.out.println("[GAMEEVENT] Error showing task UI: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Reset task active state to prevent blocking future tasks
+            taskActive.set(false);
         }
-        
-        // Fade in animation
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(250), taskOverlay);
-        fadeIn.setFromValue(0);
-        fadeIn.setToValue(1);
-        fadeIn.play();
     }
     
     /**
-     * Process the completion or failure of a task
+     * Process task completion
      * 
-     * @param task The completed/failed task
+     * @param task The completed task
      */
     private void processTaskCompletion(GameTask task) {
-        // Handle task result
+        // Check if the task was completed or failed
         if (task.isCompleted()) {
-            completedTaskCount++;
-            LOGGER.info("Task completed: " + task.getTaskName() + 
-                        ", reward: $" + task.getRewardAmount() + 
-                        ", total completed: " + completedTaskCount);
+            LOGGER.info("Task completed: " + task.getTaskName());
+            System.out.println("[GAMEEVENT] Task completed: " + task.getTaskName());
             
-            System.out.println("[GAMEEVENT] Task completed: " + task.getTaskName() + 
-                                ", reward: $" + task.getRewardAmount() + 
-                                ", total completed: " + completedTaskCount);
+            // Increment completed task count
+            completedTaskCount++;
+            
+            // Play completion sound
+            resourceManager.getAudioManager().playSoundEffect("task-complete.mp3");
             
             // Apply reward
             GameState gameState = resourceManager.getCurrentState();
@@ -466,10 +660,15 @@ public class GameEvent implements Runnable {
                 bonusThread.setDaemon(true);
                 bonusThread.start();
             }
-        } else {
+        } else if (task.isFailed()) {
+            LOGGER.info("Task failed: " + task.getTaskName());
+            System.out.println("[GAMEEVENT] Task failed: " + task.getTaskName());
+            
+            // Increment failed task count
             failedTaskCount++;
-            LOGGER.info("Task failed: " + task.getTaskName() + ", total failed: " + failedTaskCount);
-            System.out.println("[GAMEEVENT] Task failed: " + task.getTaskName() + ", total failed: " + failedTaskCount);
+            
+            // Play failure sound
+            resourceManager.getAudioManager().playSoundEffect("task-fail.mp3");
             
             // Apply penalty if exists
             if (task.getPenaltyRating() > 0) {
@@ -490,7 +689,7 @@ public class GameEvent implements Runnable {
             );
         }
         
-        // Now that the task is complete, schedule the next task
+        // Schedule the next task
         scheduleNextTask();
         
         // Update debug overlay
@@ -501,24 +700,31 @@ public class GameEvent implements Runnable {
      * Schedule the next task after a completed/failed task
      */
     private void scheduleNextTask() {
-        // Calculate next task time with safety check
-        int interval;
-        if (MAX_TASK_INTERVAL > MIN_TASK_INTERVAL) {
-            interval = MIN_TASK_INTERVAL + random.nextInt(MAX_TASK_INTERVAL - MIN_TASK_INTERVAL);
-        } else {
-            // Fallback if MAX <= MIN
-            interval = MIN_TASK_INTERVAL;
+        try {
+            // Calculate next task time with safety check
+            int interval;
+            if (MAX_TASK_INTERVAL > MIN_TASK_INTERVAL) {
+                interval = MIN_TASK_INTERVAL + random.nextInt(MAX_TASK_INTERVAL - MIN_TASK_INTERVAL);
+            } else {
+                // Fallback if MAX <= MIN
+                interval = MIN_TASK_INTERVAL;
+            }
+            nextTaskTime = System.currentTimeMillis() + interval;
+            
+            LOGGER.info("Task completed/failed. Next task in " + formatTime(interval));
+            System.out.println("[GAMEEVENT] Task completed/failed. Next task in " + formatTime(interval));
+            
+            // Set task active flag to false to allow new tasks
+            taskActive.set(false);
+            
+            // อัพเดตทันทีหลังจากกำหนดเวลา task ถัดไป 
+            updateDebugLabel();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error scheduling next task", e);
+            System.out.println("[GAMEEVENT] Error scheduling next task: " + e.getMessage());
+            // Ensure task active is reset even in case of error
+            taskActive.set(false);
         }
-        nextTaskTime = System.currentTimeMillis() + interval;
-        
-        LOGGER.info("Task completed/failed. Next task in " + formatTime(interval));
-        System.out.println("[GAMEEVENT] Task completed/failed. Next task in " + formatTime(interval));
-        
-        // Set task active flag to false to allow new tasks
-        taskActive.set(false);
-        
-        // อัพเดตทันทีหลังจากกำหนดเวลา task ถัดไป 
-        updateDebugLabel();
     }
     
     /**
