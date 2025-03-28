@@ -1,12 +1,9 @@
 package com.vpstycoon.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.screen.ScreenResolution;
 
 public class DefaultGameConfig implements GameConfig {
-    @JsonIgnore
     private static DefaultGameConfig instance;
     private ScreenResolution selectedResolution = ScreenResolution.RES_1280x720;
     private boolean isFullscreen = false;
@@ -16,7 +13,6 @@ public class DefaultGameConfig implements GameConfig {
     
     private DefaultGameConfig() {}
     
-    @JsonIgnore
     public static DefaultGameConfig getInstance() {
         if (instance == null) {
             instance = new DefaultGameConfig();

@@ -1,18 +1,25 @@
 package com.vpstycoon.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Properties;
+import com.vpstycoon.screen.ScreenResolution;
 
 public class ConfigSerializer {
-    private static final String CONFIG_FILE = "game_config.json";
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final String CONFIG_FILE = "game_config.properties";
 
     public static void saveToFile(GameConfig config) {
-        try {
-            File configFile = new File(CONFIG_FILE);
-            mapper.writeValue(configFile, config);
+        Properties properties = new Properties();
+        properties.setProperty("resolution", config.getResolution().toString());
+        properties.setProperty("fullscreen", String.valueOf(config.isFullscreen()));
+        properties.setProperty("musicVolume", String.valueOf(config.getMusicVolume()));
+        properties.setProperty("sfxVolume", String.valueOf(config.getSfxVolume()));
+        properties.setProperty("vsyncEnabled", String.valueOf(config.isVsyncEnabled()));
+
+        try (FileOutputStream out = new FileOutputStream(CONFIG_FILE)) {
+            properties.store(out, "Game Configuration");
         } catch (IOException e) {
             throw new RuntimeException("Failed to save config: " + e.getMessage(), e);
         }
@@ -23,8 +30,51 @@ public class ConfigSerializer {
         if (!configFile.exists()) {
             return DefaultGameConfig.getInstance();
         }
-        try {
-            return mapper.readValue(configFile, DefaultGameConfig.class);
+
+        Properties properties = new Properties();
+        try (FileInputStream in = new FileInputStream(configFile)) {
+            properties.load(in);
+            
+            DefaultGameConfig config = DefaultGameConfig.getInstance();
+            
+            String resolutionStr = properties.getProperty("resolution");
+            if (resolutionStr != null) {
+                try {
+                    config.setResolution(ScreenResolution.valueOf(resolutionStr));
+                } catch (IllegalArgumentException e) {
+                    // ถ้าไม่พบค่า resolution ที่ถูกต้อง ให้ใช้ค่าเริ่มต้น
+                }
+            }
+            
+            String fullscreenStr = properties.getProperty("fullscreen");
+            if (fullscreenStr != null) {
+                config.setFullscreen(Boolean.parseBoolean(fullscreenStr));
+            }
+            
+            String musicVolumeStr = properties.getProperty("musicVolume");
+            if (musicVolumeStr != null) {
+                try {
+                    config.setMusicVolume(Double.parseDouble(musicVolumeStr));
+                } catch (NumberFormatException e) {
+                    // ถ้าแปลงค่าไม่ได้ ใช้ค่าเริ่มต้น
+                }
+            }
+            
+            String sfxVolumeStr = properties.getProperty("sfxVolume");
+            if (sfxVolumeStr != null) {
+                try {
+                    config.setSfxVolume(Double.parseDouble(sfxVolumeStr));
+                } catch (NumberFormatException e) {
+                    // ถ้าแปลงค่าไม่ได้ ใช้ค่าเริ่มต้น
+                }
+            }
+            
+            String vsyncEnabledStr = properties.getProperty("vsyncEnabled");
+            if (vsyncEnabledStr != null) {
+                config.setVsyncEnabled(Boolean.parseBoolean(vsyncEnabledStr));
+            }
+            
+            return config;
         } catch (IOException e) {
             return DefaultGameConfig.getInstance();
         }
