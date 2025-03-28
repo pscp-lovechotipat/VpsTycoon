@@ -28,6 +28,7 @@ import java.util.List;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 
+// Good Morning
 public class GameApplication extends Application implements Navigator {
     private Stage primaryStage;
     private GameConfig gameConfig;
