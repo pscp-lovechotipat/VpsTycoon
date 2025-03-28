@@ -59,13 +59,13 @@ public class RequestManager implements Serializable {
     }
 
     private void initializeSampleRequests() {
-        // Add initial requests with random requirements
-        pendingRequests.add(new CustomerRequest(CustomerType.INDIVIDUAL, RequestType.WEB_HOSTING,
-                100.0, 30));
-        pendingRequests.add(new CustomerRequest(CustomerType.SMALL_BUSINESS, RequestType.DATABASE,
-                500.0, 60));
-        pendingRequests.add(new CustomerRequest(CustomerType.MEDIUM_BUSINESS, RequestType.APP_SERVER,
-                1000.0, 90));
+//        // Add initial requests with random requirements
+//        pendingRequests.add(new CustomerRequest(CustomerType.INDIVIDUAL, RequestType.WEB_HOSTING,
+//                100.0, 30));
+//        pendingRequests.add(new CustomerRequest(CustomerType.SMALL_BUSINESS, RequestType.DATABASE,
+//                500.0, 60));
+//        pendingRequests.add(new CustomerRequest(CustomerType.MEDIUM_BUSINESS, RequestType.APP_SERVER,
+//                1000.0, 90));
     }
 
     /**
