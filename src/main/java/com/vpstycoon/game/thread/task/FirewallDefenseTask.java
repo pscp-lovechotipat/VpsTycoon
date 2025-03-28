@@ -15,9 +15,12 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import javafx.scene.effect.Glow;
+import javafx.scene.effect.DropShadow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import com.vpstycoon.FontLoader;
 
 /**
  * Firewall Defense Task - Placeholder class
@@ -49,11 +52,17 @@ public class FirewallDefenseTask extends GameTask {
         placeholderPane.setStyle("-fx-background-color: rgba(5, 10, 25, 0.9);");
         
         Text placeholderText = new Text("FIREWALL DEFENSE SYSTEM");
-        placeholderText.setFont(Font.font("Orbitron", FontWeight.BOLD, 24));
+        placeholderText.setFont(FontLoader.SECTION_FONT);
         placeholderText.setFill(Color.web("#00ffff"));
         
+        // Add glowing effect to title
+        DropShadow shadow = new DropShadow();
+        shadow.setColor(Color.rgb(0, 255, 255, 0.7));
+        shadow.setRadius(10);
+        placeholderText.setEffect(shadow);
+        
         Text descText = new Text("Scan and neutralize malicious attacks by clicking them.");
-        descText.setFont(Font.font("Share Tech Mono", FontWeight.NORMAL, 16));
+        descText.setFont(FontLoader.LABEL_FONT);
         descText.setFill(Color.LIGHTCYAN);
         
         // Main game area
@@ -62,16 +71,19 @@ public class FirewallDefenseTask extends GameTask {
         defenseGrid.setPadding(new Insets(20));
         defenseGrid.setStyle("-fx-background-color: #0a1520; -fx-border-color: #3a4a5a; -fx-border-width: 2px;");
         
-        // Firewall status bar
-        Rectangle statusBar = new Rectangle(580, 30);
+        // Calculate the full width for the status bar (container width - padding)
+        double statusBarWidth = defenseGrid.getPrefWidth() + 115;
+        
+        // Firewall status bar - Use the full width of the container
+        Rectangle statusBar = new Rectangle(statusBarWidth, 30);
         statusBar.setFill(Color.GREEN);
         statusBar.setX(10);
         statusBar.setY(10);
         
         Text statusText = new Text("Firewall Integrity: 100%");
-        statusText.setFont(Font.font("Share Tech Mono", FontWeight.BOLD, 14));
+        statusText.setFont(FontLoader.LABEL_FONT);
         statusText.setFill(Color.WHITE);
-        statusText.setX(220);
+        statusText.setX(statusBarWidth / 2 - 100); // Center the text
         statusText.setY(30);
         
         defenseGrid.getChildren().addAll(statusBar, statusText);
@@ -86,11 +98,11 @@ public class FirewallDefenseTask extends GameTask {
         statsBox.setPadding(new Insets(20));
         
         Text attacksRemainingText = new Text("Remaining Attacks: " + attacksToDefend[0]);
-        attacksRemainingText.setFont(Font.font("Share Tech Mono", FontWeight.NORMAL, 14));
+        attacksRemainingText.setFont(FontLoader.LABEL_FONT);
         attacksRemainingText.setFill(Color.LIGHTCYAN);
         
         Text attacksBlockedText = new Text("Attacks Neutralized: 0");
-        attacksBlockedText.setFont(Font.font("Share Tech Mono", FontWeight.NORMAL, 14));
+        attacksBlockedText.setFont(FontLoader.LABEL_FONT);
         attacksBlockedText.setFill(Color.LIGHTCYAN);
         
         statsBox.getChildren().addAll(attacksRemainingText, attacksBlockedText);
@@ -112,7 +124,7 @@ public class FirewallDefenseTask extends GameTask {
                         new KeyFrame(Duration.seconds(5), e -> {
                             if (!attack.isNeutralized()) {
                                 // Attack hit firewall and caused damage
-                                decreaseFirewallIntegrity(statusBar, statusText);
+                                decreaseFirewallIntegrity(statusBar, statusText, statusBarWidth);
                                 
                                 // Remove attack
                                 defenseGrid.getChildren().remove(attack.getStackPane());
@@ -156,9 +168,19 @@ public class FirewallDefenseTask extends GameTask {
     private AttackNode createRandomAttack(Pane container) {
         Random rand = random;
         
-        // Random position within the container
-        double x = rand.nextDouble() * (container.getPrefWidth() - 60) + 30;
-        double y = rand.nextDouble() * (container.getPrefHeight() - 100) + 50;
+        // Get the visible area dimensions (accounting for the shape size)
+        double attackSize = 40; // Maximum size of an attack node
+        double safeMargin = 50; // Safe margin to avoid UI elements
+        
+        // Restrict the spawn area to avoid UI elements and stay within visible bounds
+        double minX = safeMargin;
+        double maxX = container.getPrefWidth() - safeMargin - attackSize;
+        double minY = safeMargin;
+        double maxY = container.getPrefHeight() - safeMargin - attackSize;
+        
+        // Random position within the safe area
+        double x = minX + rand.nextDouble() * (maxX - minX);
+        double y = minY + rand.nextDouble() * (maxY - minY);
         
         // Random attack type
         int attackType = rand.nextInt(3);
@@ -204,16 +226,16 @@ public class FirewallDefenseTask extends GameTask {
     }
     
     // Decrease firewall integrity
-    private void decreaseFirewallIntegrity(Rectangle statusBar, Text statusText) {
+    private void decreaseFirewallIntegrity(Rectangle statusBar, Text statusText, double fullWidth) {
         // Current width is proportional to integrity
         double currentWidth = statusBar.getWidth();
         
         // Decrease by 10%
-        double newWidth = Math.max(0, currentWidth - 58); // 10% of 580
+        double newWidth = Math.max(0, currentWidth - (fullWidth * 0.1)); // 10% of full width
         statusBar.setWidth(newWidth);
         
         // Update percentage text
-        int percentage = (int) (newWidth / 580 * 100);
+        int percentage = (int) (newWidth / fullWidth * 100);
         statusText.setText("Firewall Integrity: " + percentage + "%");
         
         log("Firewall integrity decreased to " + percentage + "%");
@@ -247,10 +269,14 @@ public class FirewallDefenseTask extends GameTask {
             this.shape = shape;
             this.type = type;
             
-            // Create label
+            // Create label with proper styling
             Text label = new Text(type);
-            label.setFont(Font.font("Share Tech Mono", FontWeight.BOLD, 10));
+            label.setFont(FontLoader.loadFont(10));
             label.setFill(Color.WHITE);
+            
+            // Add glow to the label
+            Glow glow = new Glow(0.5);
+            label.setEffect(glow);
             
             // Create stack pane to hold shape and label
             stackPane = new StackPane(shape, label);

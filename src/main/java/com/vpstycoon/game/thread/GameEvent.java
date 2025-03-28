@@ -40,15 +40,15 @@ public class GameEvent implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(GameEvent.class.getName());
     
     // Timing constants for tasks
-//    private static final int INITIAL_TASK_DELAY = 5 * 1000; // 20 seconds initial delay before tasks start
-//    private static final int MIN_TASK_INTERVAL = 5 * 1000; // Minimum 30 seconds between tasks
-//    private static final int MAX_TASK_INTERVAL = 5 * 1000; // Maximum 90 seconds between tasks
-//    private static final int DEBUG_INTERVAL = 1 * 1000;
+    private static final int INITIAL_TASK_DELAY = 5 * 1000; // 20 seconds initial delay before tasks start
+    private static final int MIN_TASK_INTERVAL = 5 * 1000; // Minimum 30 seconds between tasks
+    private static final int MAX_TASK_INTERVAL = 5 * 1000; // Maximum 90 seconds between tasks
+    private static final int DEBUG_INTERVAL = 1 * 1000;
 
-    private static final int INITIAL_TASK_DELAY = 5 * 60 * 1000; // 20 seconds initial delay before tasks start
-    private static final int MIN_TASK_INTERVAL = 3 * 60 * 1000; // Minimum 30 seconds between tasks
-    private static final int MAX_TASK_INTERVAL = 7 * 60 * 1000; // Maximum 90 seconds between tasks
-    private static final int DEBUG_INTERVAL = 5 * 1000; // Debug output every 5 seconds
+//    private static final int INITIAL_TASK_DELAY = 5 * 60 * 1000; // 20 seconds initial delay before tasks start
+//    private static final int MIN_TASK_INTERVAL = 3 * 60 * 1000; // Minimum 30 seconds between tasks
+//    private static final int MAX_TASK_INTERVAL = 7 * 60 * 1000; // Maximum 90 seconds between tasks
+//    private static final int DEBUG_INTERVAL = 5 * 1000; // Debug output every 5 seconds
 
     private final GameplayContentPane gameplayContentPane;
     private final ResourceManager resourceManager;
