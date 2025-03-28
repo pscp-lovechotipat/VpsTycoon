@@ -8,6 +8,7 @@ import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.desktop.messenger.controllers.MessengerController;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -67,7 +68,7 @@ public class DesktopScreen extends StackPane {
     private void openChatWindow() {
         if (chatWindow == null) {
             // สร้าง ChatHistoryManager
-            ChatHistoryManager chatHistoryManager = ChatHistoryManager.getInstance();
+            ChatHistoryManager chatHistoryManager = ResourceManager.getInstance().getChatHistory();
 
             // สร้าง MessengerController และส่ง ChatHistoryManager เข้าไป
             chatController = new MessengerController(requestManager, vpsManager, company, chatHistoryManager,

@@ -321,7 +321,7 @@ public class ResourceManager implements Serializable {
         // บันทึกข้อมูล Chat History จาก ChatHistoryManager ลงใน GameState (ถ้ามี)
         try {
             ChatHistoryManager chatManager =
-                ChatHistoryManager.getInstance();
+                getChatHistory();
             if (chatManager != null) {
                 // บันทึกข้อมูลลงใน GameState โดยตรง (ไม่ต้องเรียก saveChatHistory เพราะเดี๋ยวจะเรียกวนกัน)
                 System.out.println("กำลังบันทึกข้อมูล Chat History ลงใน GameState...");
@@ -963,6 +963,14 @@ public class ResourceManager implements Serializable {
 
     public AudioManager getAudioManager() {
         return audioManager;
+    }
+
+    /**
+     * ดึงข้อมูล ChatHistoryManager
+     * @return ChatHistoryManager instance
+     */
+    public ChatHistoryManager getChatHistory() {
+        return ChatHistoryManager.getInstance();
     }
 
     public GameObject createGameObject(String id, String type, int gridX, int gridY) {

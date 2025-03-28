@@ -300,7 +300,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
             try {
                 // 1. ลบและรีเซ็ตประวัติแชท
                 try {
-                    ChatHistoryManager chatManager = ChatHistoryManager.getInstance();
+                    ChatHistoryManager chatManager = ResourceManager.getInstance().getChatHistory();
                     
                     // เคลียร์ประวัติแชททั้งหมด
                     ChatHistoryManager.resetInstance();
