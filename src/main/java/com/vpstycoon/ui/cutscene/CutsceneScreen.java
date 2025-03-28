@@ -48,6 +48,9 @@ public class CutsceneScreen extends StackPane {
         this.screenManager = screenManager;
         this.navigator = navigator;
         
+        // Apply the enhanced background first
+        CutsceneBackground.applyDynamicBackground(this);
+        
         setupUI();
         setupSkipButton();
         playCutscene();
@@ -67,6 +70,13 @@ public class CutsceneScreen extends StackPane {
                             """);
         logoLabel.setTranslateY(-50);
         logoLabel.setOpacity(0);
+        
+        // Add glow effect to logo
+        javafx.scene.effect.DropShadow glow = new javafx.scene.effect.DropShadow();
+        glow.setColor(Color.web("#8A2BE2"));
+        glow.setRadius(20);
+        glow.setSpread(0.2);
+        logoLabel.setEffect(glow);
 
         // Create subtitle label
         subtitleLabel = new Label("Your Journey Begins...");
@@ -89,6 +99,12 @@ public class CutsceneScreen extends StackPane {
         creditsTitle.setStyle("-fx-font-size: 28px;");
         creditsTitle.setTextAlignment(TextAlignment.CENTER);
         
+        // Add neon glow effect to title
+        javafx.scene.effect.Glow titleGlow = new javafx.scene.effect.Glow(0.5);
+        javafx.scene.effect.DropShadow titleShadow = new javafx.scene.effect.DropShadow(10, Color.web("#00FFFF"));
+        titleGlow.setInput(titleShadow);
+        creditsTitle.setEffect(titleGlow);
+        
         // เพิ่มหัวข้อเข้าไปใน VBox
         creditsBox.getChildren().add(creditsTitle);
         
@@ -106,8 +122,7 @@ public class CutsceneScreen extends StackPane {
         // Add elements to the scene
         getChildren().addAll(logoLabel, subtitleLabel, creditsBox);
         
-        // Set background color
-        setStyle("-fx-background-color: black;");
+        // No need for background color as we have a dynamic background
     }
     
     private void setupSkipButton() {
@@ -115,10 +130,10 @@ public class CutsceneScreen extends StackPane {
         skipButton = new Button("SKIP >");
         skipButton.setFont(FontLoader.TITLE_FONT);
         skipButton.setStyle("""
-                -fx-background-color: transparent;
+                -fx-background-color: rgba(58, 19, 97, 0.5);
                 -fx-text-fill: white;
                 -fx-font-size: 18px;
-                -fx-border-color: white;
+                -fx-border-color: #8A2BE2;
                 -fx-border-width: 1px;
                 -fx-padding: 5px 10px;
                 """);
@@ -130,10 +145,10 @@ public class CutsceneScreen extends StackPane {
         // Add hover effect
         skipButton.setOnMouseEntered(e -> 
             skipButton.setStyle("""
-                -fx-background-color: rgba(255, 255, 255, 0.2);
+                -fx-background-color: rgba(138, 43, 226, 0.5);
                 -fx-text-fill: white;
                 -fx-font-size: 18px;
-                -fx-border-color: white;
+                -fx-border-color: #00FFFF;
                 -fx-border-width: 1px;
                 -fx-padding: 5px 10px;
                 """)
@@ -141,10 +156,10 @@ public class CutsceneScreen extends StackPane {
         
         skipButton.setOnMouseExited(e -> 
             skipButton.setStyle("""
-                -fx-background-color: transparent;
+                -fx-background-color: rgba(58, 19, 97, 0.5);
                 -fx-text-fill: white;
                 -fx-font-size: 18px;
-                -fx-border-color: white;
+                -fx-border-color: #8A2BE2;
                 -fx-border-width: 1px;
                 -fx-padding: 5px 10px;
                 """)
@@ -174,6 +189,13 @@ public class CutsceneScreen extends StackPane {
         FadeTransition logoFadeIn = new FadeTransition(Duration.seconds(1.5), logoLabel);
         logoFadeIn.setFromValue(0);
         logoFadeIn.setToValue(1);
+        
+        // Add scale transition for logo
+        ScaleTransition logoScale = new ScaleTransition(Duration.seconds(2), logoLabel);
+        logoScale.setFromX(0.8);
+        logoScale.setFromY(0.8);
+        logoScale.setToX(1.0);
+        logoScale.setToY(1.0);
 
         // Create fade in for subtitle
         FadeTransition subtitleFadeIn = new FadeTransition(Duration.seconds(1), subtitleLabel);
@@ -182,7 +204,10 @@ public class CutsceneScreen extends StackPane {
         subtitleFadeIn.setDelay(Duration.seconds(0.5));
 
         // Create parallel transition for both elements
-        ParallelTransition firstSceneIn = new ParallelTransition(logoFadeIn, subtitleFadeIn);
+        ParallelTransition firstSceneIn = new ParallelTransition(logoFadeIn, logoScale, subtitleFadeIn);
+        
+        // Add spotlight effect to logo during first scene
+        firstSceneIn.setOnFinished(e -> CutsceneBackground.applySpotlight(logoLabel, this));
         
         // First scene to second scene transition
         FadeTransition firstSceneOut = new FadeTransition(Duration.seconds(1));
@@ -217,14 +242,24 @@ public class CutsceneScreen extends StackPane {
             highlight.setFromValue(0.7);
             highlight.setToValue(1.0);
             
+            // Add slight movement for each name
+            TranslateTransition moveIn = new TranslateTransition(Duration.seconds(0.4), nameLabel);
+            moveIn.setFromX(-5);
+            moveIn.setToX(0);
+            
             // สร้าง sequenceลำดับการเปลี่ยนสี
             SequentialTransition nameSequence = new SequentialTransition(
                 new javafx.animation.PauseTransition(Duration.seconds(0.3)),
-                highlight
+                new ParallelTransition(highlight, moveIn)
             );
             
             // ตั้งค่าให้เปลี่ยนสีเป็นสีขาวเมื่อ highlight
-            nameSequence.setOnFinished(event -> nameLabel.setTextFill(Color.WHITE));
+            nameSequence.setOnFinished(event -> {
+                nameLabel.setTextFill(Color.WHITE);
+                // Add subtle glow effect to highlighted names
+                javafx.scene.effect.Glow glow = new javafx.scene.effect.Glow(0.3);
+                nameLabel.setEffect(glow);
+            });
             
             // เพิ่มลงในลำดับการแสดงชื่อ
             nameHighlights.getChildren().add(nameSequence);
