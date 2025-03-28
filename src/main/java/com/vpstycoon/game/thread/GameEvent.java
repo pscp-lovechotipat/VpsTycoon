@@ -127,9 +127,6 @@ public class GameEvent implements Runnable {
         // Initialize task overlay
         initializeTaskOverlay();
         
-        // Initialize debug overlay
-        initializeDebugOverlay();
-        
         // Check if debug mode is enabled
         this.debugMode = gameplayContentPane.isShowDebug();
         
@@ -218,48 +215,6 @@ public class GameEvent implements Runnable {
         glitchEffect.play();
     }
     
-    /**
-     * Initialize debug overlay for showing task timer
-     */
-    private void initializeDebugOverlay() {
-        debugOverlay = new StackPane();
-        debugOverlay.setMouseTransparent(true); // Don't capture mouse events
-        debugOverlay.setPickOnBounds(false);
-        debugOverlay.setAlignment(Pos.TOP_RIGHT);
-        debugOverlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        StackPane.setMargin(debugOverlay, new Insets(40,40,0,0));
-        
-        // Create debug label with improved cyberpunk style
-        debugLabel = new Label("NEXT TASK: --:--");
-        debugLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 14));
-        debugLabel.setTextFill(Color.web("#00F6FF")); // ใช้สีเดียวกับ VMCreationUI
-        debugLabel.setEffect(new Glow(0.8));
-        debugLabel.setStyle("-fx-background-color: rgba(42, 27, 61, 0.8); " +
-                           "-fx-padding: 8 15; " +
-                           "-fx-background-radius: 5; " +
-                           "-fx-border-color: #8A2BE2; " + // ใช้สีเดียวกับ VMCreationUI
-                           "-fx-border-width: 1; " +
-                           "-fx-border-radius: 5;" +
-                           "-fx-effect: dropshadow(gaussian, rgba(120, 0, 255, 0.4), 10, 0, 0, 5);");
-        
-        // เพิ่ม label เข้าไปใน overlay
-        debugOverlay.getChildren().add(debugLabel);
-        
-        // ตั้งค่าการแสดงผลตาม debugMode
-        debugOverlay.setVisible(debugMode);
-        
-        // Add to UI on JavaFX thread
-        Platform.runLater(() -> {
-            // ตรวจสอบว่า debugOverlay ยังไม่ได้ถูกเพิ่มแล้ว
-            if (!gameplayContentPane.getRootStack().getChildren().contains(debugOverlay)) {
-                gameplayContentPane.getRootStack().getChildren().add(debugOverlay);
-                
-                // เรียก updateDebugLabel หลังจากเพิ่ม overlay
-                updateDebugLabel();
-            }
-        });
-    }
-
     /**
      * Format time in mm:ss format
      * 
