@@ -51,7 +51,30 @@ public class VPSCreationUI {
                             -fx-font-weight: bold;
                             """);
         Button backButton = UIUtils.createModernButton("Back", "#F44336");
-        backButton.setOnAction(e -> parent.openRackInfo());
+        backButton.setOnAction(e -> {
+            // บันทึกสถานะการแสดงผลของ UI elements ก่อนที่จะกลับไปหน้า Rack
+            javafx.application.Platform.runLater(() -> {
+                try {
+                    // ล้าง createVPSPane ออกจาก gameArea
+                    parent.getGameArea().getChildren().removeIf(node -> node instanceof BorderPane && node != parent);
+                    
+                    // คืนสถานะการแสดงผลของ UI elements ก่อนเรียก openRackInfo
+                    parent.getMenuBar().setVisible(true);
+                    parent.getInGameMarketMenuBar().setVisible(true);
+                    parent.getMoneyUI().setVisible(true);
+                    parent.getDateView().setVisible(true);
+                    
+                    // เปิดหน้า Rack Info โดยไม่ต้องทำ returnToRoom เพื่อป้องกันการล้าง UI
+                    parent.openRackInfo();
+                    
+                    System.out.println("กลับไปหน้า Rack และคืนค่า UI เรียบร้อย");
+                } catch (Exception ex) {
+                    System.err.println("เกิดข้อผิดพลาดในการกลับไปหน้า Rack: " + ex.getMessage());
+                    ex.printStackTrace();
+                    parent.openRackInfo(); // ใช้วิธีเดิมเป็นแผนสำรอง
+                }
+            });
+        });
         topBar.getChildren().addAll(backButton, titleLabel);
 
         // ฟอร์มสำหรับกรอกข้อมูล
@@ -116,6 +139,7 @@ public class VPSCreationUI {
             if (nameField.getText().isEmpty() || ipField.getText().isEmpty() || vcpuField.getText().isEmpty() ||
                     ramField.getText().isEmpty() || diskField.getText().isEmpty()) {
                 System.out.println("Validation Error: All fields are required.");
+                parent.pushNotification("Validation Error", "All fields are required.");
             } else {
                 try {
                     // สร้าง VPS ใหม่
@@ -128,9 +152,35 @@ public class VPSCreationUI {
                     parent.getVpsManager().getVPSMap().put(vpsId, newVPS);
                     parent.getVpsList().add(newVPS);
                     System.out.println("Success: Server created: " + vpsId);
-                    parent.openRackInfo();
+                    
+                    // คืนค่า UI elements ก่อนเรียก openRackInfo
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            // ล้าง createVPSPane ออกจาก gameArea
+                            parent.getGameArea().getChildren().removeIf(node -> node instanceof BorderPane && node != parent);
+                            
+                            // คืนสถานะการแสดงผลของ UI elements ก่อนเรียก openRackInfo
+                            parent.getMenuBar().setVisible(true);
+                            parent.getInGameMarketMenuBar().setVisible(true);
+                            parent.getMoneyUI().setVisible(true);
+                            parent.getDateView().setVisible(true);
+                            
+                            // แสดงผลการสร้าง VPS สำเร็จ
+                            parent.pushNotification("Success", "Server created: " + vpsId);
+                            
+                            // เปิดหน้า Rack Info
+                            parent.openRackInfo();
+                            
+                            System.out.println("สร้าง Server สำเร็จและคืนค่า UI เรียบร้อย");
+                        } catch (Exception ex) {
+                            System.err.println("เกิดข้อผิดพลาดในการเปิดหน้า Rack หลังสร้าง VPS: " + ex.getMessage());
+                            ex.printStackTrace();
+                            parent.openRackInfo(); // ใช้วิธีเดิมเป็นแผนสำรอง
+                        }
+                    });
                 } catch (NumberFormatException ex) {
                     System.out.println("Error: Invalid numeric input for vCPUs, RAM, or Disk.");
+                    parent.pushNotification("Input Error", "Invalid numeric input for vCPUs, RAM, or Disk.");
                 }
             }
         });

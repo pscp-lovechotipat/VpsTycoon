@@ -21,15 +21,25 @@ import com.vpstycoon.ui.screen.GameScreen;
 import com.vpstycoon.ui.settings.SettingsScreen;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.image.Image;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.time.LocalDateTime;
 import java.util.List;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 // Good Morning
-public class GameApplication extends Application implements Navigator {
+public class GameApplication extends Application implements Navigator, ResourceManager.ResourceLoadingListener {
     private Stage primaryStage;
     private GameConfig gameConfig;
     private ScreenManager screenManager;
@@ -39,47 +49,185 @@ public class GameApplication extends Application implements Navigator {
     private GameSaveManager saveManager;
     private GameManager gameManager;
     private AudioManager audioManager;
+    private Stage loadingStage;
+    private Label loadingDetailsLabel;
+    private javafx.scene.control.ProgressIndicator progressIndicator;
+    private VBox loadingDetailsPane;
+    private Label statusLabel;
 
     @Override
     public void start(Stage primaryStage) {
         System.out.println("Debug: Starting GameApplication");
-        // Get basic stage properties
-        System.out.println("Stage Details:");
-        System.out.println("Width: " + primaryStage.getWidth());
-        System.out.println("Height: " + primaryStage.getHeight());
-        System.out.println("X Position: " + primaryStage.getX());
-        System.out.println("Y Position: " + primaryStage.getY());
-        System.out.println("Is Showing: " + primaryStage.isShowing());
-        System.out.println("Is Resizable: " + primaryStage.isResizable());
-
-        // Get scene information
-        if (primaryStage.getScene() != null) {
-            System.out.println("\nScene Details:");
-            System.out.println("Scene Width: " + primaryStage.getScene().getWidth());
-            System.out.println("Scene Height: " + primaryStage.getScene().getHeight());
-            System.out.println("Root Node: " + primaryStage.getScene().getRoot().getClass().getSimpleName());
-        }
-
-        // Get window properties
-        System.out.println("\nWindow Properties:");
-        System.out.println("Title: " + primaryStage.getTitle());
-        System.out.println("Style: " + primaryStage.getStyle());
-
-        // Load font test
-        System.out.println("Font Loader: " + FontLoader.TITLE_FONT);
-
+        
+        // Set up basic application properties
         this.primaryStage = primaryStage;
         this.gameConfig = createGameConfig();
         this.screenManager = new JavaFXScreenManager(gameConfig, primaryStage);
         this.gameManager = GameManager.getInstance();
 
-        ResourceManager.getInstance().getAudioManager().playMusic("Buckshot_Roulette_OST.mp3");
+        // Show loading screen while resources load
+        initializeLoadingScreen();
         
-        initializeGame();
-        showCutscene();
+        // Initialize the game in a separate thread
+        Thread initThread = new Thread(() -> {
+            try {
+                // Set up the resource loading listener first
+                ResourceManager resourceManager = ResourceManager.getInstance();
+                resourceManager.setResourceLoadingListener(GameApplication.this);
+                
+                // Start our custom resource preloader which will show loading progress
+                initResourceLoadingListener();
+                
+                // Then start the ResourceManager's built-in preloading
+                resourceManager.preloadAssets();
+                
+                // Wait for ResourceManager preloading to complete with a timeout
+                // This ensures we don't hang indefinitely
+                boolean preloadComplete = resourceManager.waitForPreload(60000);
+                
+                if (!preloadComplete) {
+                    System.err.println("Warning: Resource preloading timed out after 60 seconds");
+                    // Continue anyway to avoid hanging
+                }
+                
+                // Update status before initialization
+                Platform.runLater(() -> {
+                    if (statusLabel != null) {
+                        statusLabel.setText("เริ่มเตรียมเกม กรุณารอสักครู่...");
+                    }
+                });
+                
+                // Finalize initialization
+                finishInitialization();
+                
+            } catch (Exception e) {
+                System.err.println("Error during game initialization: " + e.getMessage());
+                e.printStackTrace();
+                
+                // Show error on JavaFX thread
+                Platform.runLater(() -> {
+                    hideLoadingScreen();
+                    showAlert("Error", "Failed to initialize game: " + e.getMessage());
+                    primaryStage.show();
+                });
+            }
+        });
+        
+        initThread.setDaemon(true);
+        initThread.start();
+    }
 
-        // Starting Window
-        primaryStage.show();
+    /**
+     * Finalize game initialization after resources are loaded
+     */
+    private void finishInitialization() {
+        try {
+            // Initialize the game (non-UI operations can happen off JavaFX thread)
+            initializeGame();
+            
+            // All UI operations must be on the JavaFX thread
+            Platform.runLater(() -> {
+                try {
+                    // Play music after resources are loaded
+                    ResourceManager.getInstance().getAudioManager().playMusic("Buckshot_Roulette_OST.mp3");
+                    
+                    // Update loading screen to show we're ready
+                    if (statusLabel != null) {
+                        statusLabel.setText("โหลดเสร็จสมบูรณ์ กำลังเตรียมเริ่มเข้าสู่เกม...");
+                        statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #2ECC71;");
+                    }
+                    
+                    // 1. เตรียม CutsceneScreen ก่อนจะซ่อนหน้า Loading
+                    System.out.println("กำลังเตรียม CutsceneScreen...");
+                    CutsceneScreen cutsceneScreen = new CutsceneScreen(gameConfig, screenManager, this);
+                    
+                    // 2. เพิ่มการเช็คว่า CutsceneScreen โหลดเสร็จ (อาจใช้ตรงนี้ได้เลย เพราะเป็น synchronous)
+                    System.out.println("CutsceneScreen พร้อมแล้ว");
+                    
+                    // 3. แสดง Loading ต่อไปอีกสักพักด้วย PauseTransition
+                    PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
+                    pause.setOnFinished(e -> {
+                        // 4. สร้าง callback ที่จะเปลี่ยนไปหน้า Cutscene หลังจาก Loading ถูกซ่อนเรียบร้อยแล้ว
+                        Runnable afterLoadingHidden = () -> {
+                            // 5. ตั้งค่า callback ให้ CutsceneScreen 
+                            System.out.println("กำลังแสดง CutsceneScreen...");
+                            
+                            // 6. ใช้ ScreenManager เพื่อเปลี่ยนหน้าจอ (มี fadeout/fadein ในตัว)
+                            screenManager.switchScreen(cutsceneScreen);
+                            
+                            // 7. แสดง primary stage
+                            primaryStage.show();
+                        };
+                        
+                        // ซ่อนหน้า Loading พร้อมกับส่ง callback
+                        System.out.println("กำลังซ่อนหน้า Loading...");
+                        hideLoadingScreenWithCallback(afterLoadingHidden);
+                    });
+                    pause.play();
+                    
+                } catch (Exception e) {
+                    System.err.println("Error in JavaFX thread: " + e.getMessage());
+                    e.printStackTrace();
+                    hideLoadingScreen();
+                    showAlert("Error", "Failed to initialize game UI: " + e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            System.err.println("Error during game initialization: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Show error on JavaFX thread
+            Platform.runLater(() -> {
+                hideLoadingScreen();
+                showAlert("Error", "Failed to initialize game: " + e.getMessage());
+                primaryStage.show();
+            });
+        }
+    }
+
+    /**
+     * ซ่อนหน้า Loading และเรียก callback เมื่อเสร็จสิ้น
+     */
+    private void hideLoadingScreenWithCallback(Runnable callback) {
+        // Always use Platform.runLater when updating UI elements
+        Platform.runLater(() -> {
+            try {
+                if (loadingStage != null && loadingStage.isShowing()) {
+                    System.out.println("ปิดหน้าจอโหลด...");
+                    
+                    // สร้าง fade out transition สำหรับหน้า loading
+                    javafx.scene.layout.StackPane root = (javafx.scene.layout.StackPane) loadingStage.getScene().getRoot();
+                    javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(Duration.millis(500), root);
+                    fadeOut.setFromValue(1.0);
+                    fadeOut.setToValue(0.0);
+                    fadeOut.setOnFinished(e -> {
+                        loadingStage.close();
+                        loadingStage = null;
+                        System.out.println("ปิดหน้าจอโหลดเรียบร้อย");
+                        System.out.println("โหลดทรัพยากรเสร็จสมบูรณ์");
+                        
+                        // เรียก callback หลังจากปิดหน้าโหลดเรียบร้อยแล้ว
+                        if (callback != null) {
+                            callback.run();
+                        }
+                    });
+                    fadeOut.play();
+                } else {
+                    // ถ้าไม่มีหน้า loading แสดงอยู่ ให้เรียก callback ทันที
+                    if (callback != null) {
+                        callback.run();
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("เกิดข้อผิดพลาดในการปิดหน้าจอโหลด: " + e.getMessage());
+                e.printStackTrace();
+                
+                // ถึงแม้จะมีข้อผิดพลาด ก็ให้เรียก callback
+                if (callback != null) {
+                    callback.run();
+                }
+            }
+        });
     }
 
     private GameConfig createGameConfig() {
@@ -87,30 +235,38 @@ public class GameApplication extends Application implements Navigator {
     }
 
     private void initializeGame() {
-        // Load configuration
+        // Load configuration (non-UI operation)
         gameConfig.load();
         
-        // Initialize managers
+        // Initialize managers (non-UI operation)
         saveManager = new GameSaveManager();
         
-        // Initialize scene controller
-        SceneController.initialize(primaryStage, gameConfig, screenManager);
-        
-        // Create screens
-        createScreens();
-        
-        // Setup primary stage
-        primaryStage.setTitle("VPS Tycoon");
-        primaryStage.setResizable(false);
-        primaryStage.setOnCloseRequest(e -> shutdown());
-        
-        // Subscribe to settings changes
-        GameEventBus.getInstance().subscribe(
-            SettingsChangedEvent.class,
-            event -> Platform.runLater(() -> 
-                SceneController.getInstance().updateResolution()
-            )
-        );
+        // All UI operations must be on the JavaFX thread
+        Platform.runLater(() -> {
+            try {
+                // Initialize scene controller
+                SceneController.initialize(primaryStage, gameConfig, screenManager);
+                
+                // Create screens
+                createScreens();
+                
+                // Setup primary stage
+                primaryStage.setTitle("VPS Tycoon");
+                primaryStage.setResizable(false);
+                primaryStage.setOnCloseRequest(e -> shutdown());
+                
+                // Subscribe to settings changes
+                GameEventBus.getInstance().subscribe(
+                    SettingsChangedEvent.class,
+                    event -> Platform.runLater(() -> 
+                        SceneController.getInstance().updateResolution()
+                    )
+                );
+            } catch (Exception e) {
+                System.err.println("Error initializing game UI: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
 
     private void createScreens() {
@@ -136,44 +292,148 @@ public class GameApplication extends Application implements Navigator {
     public void startNewGame() {
         System.out.println("=========== STARTING NEW GAME ===========");
         
-        // 1. ลบและรีเซ็ตประวัติแชท
+        // Show a loading screen while game initializes
+        showLoadingScreen("Starting New Game...");
+        
+        // Move initialization operations to background thread
+        new Thread(() -> {
+            try {
+                // 1. ลบและรีเซ็ตประวัติแชท
+                try {
+                    ChatHistoryManager chatManager = ChatHistoryManager.getInstance();
+                    
+                    // เคลียร์ประวัติแชททั้งหมด
+                    ChatHistoryManager.resetInstance();
+                    System.out.println("ล้างประวัติแชทเรียบร้อย");
+                } catch (Exception e) {
+                    System.err.println("เกิดข้อผิดพลาดในการลบประวัติแชท: " + e.getMessage());
+                }
+                
+                // 2. ลบไฟล์เซฟเดิมก่อน
+                ResourceManager.getInstance().deleteSaveFile();
+                System.out.println("ลบไฟล์เซฟเดิมเรียบร้อย");
+                
+                // 3. สร้าง GameState ใหม่ (ไม่อ่านจากไฟล์)
+                GameState newState = new GameState();
+                
+                // 4. สร้าง Company ใหม่และตั้งค่าเริ่มต้น
+                Company newCompany = new Company();
+                newCompany.setMoney(50_000);
+                newCompany.setRating(1.0);
+                newState.setCompany(newCompany);
+                
+                // 5. รีเซ็ตเวลากลับไปที่เริ่มเกม
+                newState.setLocalDateTime(LocalDateTime.of(2000, 1, 1, 0, 0, 0));
+                
+                // 6. อัพเดท currentState ใน ResourceManager
+                ResourceManager.getInstance().setCurrentState(newState);
+                System.out.println("อัพเดท GameState ใน ResourceManager แล้ว");
+                
+                // Force preload images once - this is done in a static initializer of RoomObjectsLayer
+                com.vpstycoon.ui.game.components.RoomObjectsLayer.preloadImages();
+                
+                // Create and show gameplay screen on the JavaFX thread
+                final GameState finalState = newState;
+                Platform.runLater(() -> {
+                    // 7. สร้างและแสดง gameplay screen
+                    // Release previous screen if it exists to free resources
+                    if (gameplayScreen != null) {
+                        gameplayScreen.release();
+                    }
+                    
+                    gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, finalState);
+                    gameplayScreen.show();
+                    
+                    // Close loading screen
+                    hideLoadingScreen();
+                    
+                    // ไม่บันทึกเกมตอนเริ่มใหม่ - ให้ GameplayScreen จัดการ
+                    System.out.println("เริ่มเกมใหม่เรียบร้อย");
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Show error on JavaFX thread
+                Platform.runLater(() -> {
+                    hideLoadingScreen();
+                    showAlert("Error", "Failed to start new game: " + e.getMessage());
+                });
+            }
+        }).start();
+    }
+    
+    // Preload common resources to avoid stutter
+    private void preloadCommonResources() {
         try {
-            ChatHistoryManager chatManager =
-                ChatHistoryManager.getInstance();
+            // Use the static preloading method from RoomObjectsLayer
+            // which already implements a caching mechanism
+            com.vpstycoon.ui.game.components.RoomObjectsLayer.preloadImages();
             
-            // เคลียร์ประวัติแชททั้งหมด
-            ChatHistoryManager.resetInstance();
-            System.out.println("ล้างประวัติแชทเรียบร้อย");
+            System.out.println("Common resources preloaded through RoomObjectsLayer");
         } catch (Exception e) {
-            System.err.println("เกิดข้อผิดพลาดในการลบประวัติแชท: " + e.getMessage());
+            System.err.println("Error preloading resources: " + e.getMessage());
         }
-        
-        // 2. ลบไฟล์เซฟเดิมก่อน
-        ResourceManager.getInstance().deleteSaveFile();
-        System.out.println("ลบไฟล์เซฟเดิมเรียบร้อย");
-        
-        // 3. สร้าง GameState ใหม่ (ไม่อ่านจากไฟล์)
-        GameState newState = new GameState();
-        
-        // 4. สร้าง Company ใหม่และตั้งค่าเริ่มต้น
-        Company newCompany = new Company();
-        newCompany.setMoney(50_000);
-        newCompany.setRating(1.0);
-        newState.setCompany(newCompany);
-        
-        // 5. รีเซ็ตเวลากลับไปที่เริ่มเกม
-        newState.setLocalDateTime(LocalDateTime.of(2000, 1, 1, 0, 0, 0));
-        
-        // 6. อัพเดท currentState ใน ResourceManager
-        ResourceManager.getInstance().setCurrentState(newState);
-        System.out.println("อัพเดท GameState ใน ResourceManager แล้ว");
-        
-        // 7. สร้างและแสดง gameplay screen
-        gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, newState);
-        gameplayScreen.show();
-        
-        // ไม่บันทึกเกมตอนเริ่มใหม่ - ให้ GameplayScreen จัดการ
-        System.out.println("เริ่มเกมใหม่เรียบร้อย");
+    }
+    
+    // Loading screen management
+    private void showLoadingScreen(String message) {
+        Platform.runLater(() -> {
+            try {
+                if (loadingStage == null) {
+                    loadingStage = new Stage();
+                    loadingStage.initOwner(primaryStage);
+                    loadingStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+                    loadingStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+                    
+                    StackPane root = new StackPane();
+                    root.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7); -fx-padding: 20;");
+                    
+                    VBox content = new VBox(15);
+                    content.setAlignment(Pos.CENTER);
+                    
+                    Label loadingLabel = new Label(message);
+                    loadingLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px;");
+                    
+                    javafx.scene.control.ProgressIndicator progress = new javafx.scene.control.ProgressIndicator();
+                    progress.setMaxSize(50, 50);
+                    
+                    content.getChildren().addAll(loadingLabel, progress);
+                    root.getChildren().add(content);
+                    
+                    Scene scene = new Scene(root, 300, 150);
+                    scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+                    loadingStage.setScene(scene);
+                    
+                    // Center on primary stage
+                    loadingStage.setX(primaryStage.getX() + (primaryStage.getWidth() - 300) / 2);
+                    loadingStage.setY(primaryStage.getY() + (primaryStage.getHeight() - 150) / 2);
+                }
+                
+                loadingStage.show();
+            } catch (Exception e) {
+                System.err.println("Error showing loading screen: " + e.getMessage());
+            }
+        });
+    }
+    
+    /**
+     * Hide the loading screen when all resources are loaded
+     */
+    private void hideLoadingScreen() {
+        // Always use Platform.runLater when updating UI elements
+        Platform.runLater(() -> {
+            try {
+                if (loadingStage != null && loadingStage.isShowing()) {
+                    System.out.println("ปิดหน้าจอโหลด...");
+                    loadingStage.close();
+                    loadingStage = null;
+                    System.out.println("ปิดหน้าจอโหลดเรียบร้อย");
+                    System.out.println("โหลดทรัพยากรเสร็จสมบูรณ์");
+                }
+            } catch (Exception e) {
+                System.err.println("เกิดข้อผิดพลาดในการปิดหน้าจอโหลด: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
@@ -345,8 +605,266 @@ public class GameApplication extends Application implements Navigator {
     }
 
     private void showCutscene() {
-        CutsceneScreen cutsceneScreen = new CutsceneScreen(gameConfig, screenManager, this);
-        screenManager.switchScreen(cutsceneScreen);
+        // ไม่ต้องสร้าง CutsceneScreen ใหม่และเปลี่ยนหน้าจอที่นี่
+        // เพราะได้ดำเนินการในส่วนของ finishInitialization แล้ว
+        System.out.println("showCutscene ถูกเรียก - ข้ามเพราะได้จัดการใน finishInitialization แล้ว");
+    }
+
+    /**
+     * Update loading progress text on the loading screen
+     * @param message The current loading details to display
+     */
+    private void updateLoadingProgress(String message) {
+        if (loadingDetailsLabel != null) {
+            Platform.runLater(() -> loadingDetailsLabel.setText(message));
+        }
+    }
+    
+    private void initializeLoadingScreen() {
+        Platform.runLater(() -> {
+            try {
+                // Create a more detailed loading screen
+                StackPane root = new StackPane();
+                root.setStyle("-fx-background-color: #121212;");
+                
+                VBox content = new VBox(20);
+                content.setAlignment(Pos.CENTER);
+                content.setPadding(new Insets(50));
+                
+                Label titleLabel = new Label("VPS Tycoon");
+                titleLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white; -fx-font-weight: bold;");
+                
+                Label loadingLabel = new Label("กำลังโหลดทรัพยากร...");
+                loadingLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: white;");
+                
+                // Create loading details label with a scroll pane to show what's being loaded
+                loadingDetailsLabel = new Label("");
+                loadingDetailsLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #7FDBFF;");
+                
+                // Create a scroll pane for loading details to show multiple files
+                VBox detailsBox = new VBox(5);
+                detailsBox.setPrefHeight(150);
+                detailsBox.setStyle("-fx-background-color: #1E1E1E; -fx-padding: 10;");
+                
+                ScrollPane detailsScrollPane = new ScrollPane(detailsBox);
+                detailsScrollPane.setPrefWidth(600);
+                detailsScrollPane.setPrefHeight(150);
+                detailsScrollPane.setFitToWidth(true);
+                detailsScrollPane.setStyle("-fx-background: #1E1E1E; -fx-border-color: #444;");
+                
+                progressIndicator = new javafx.scene.control.ProgressIndicator();
+                progressIndicator.setMaxSize(60, 60);
+                
+                Label statusLabel = new Label("โปรดรอสักครู่...");
+                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #AAAAAA;");
+                
+                content.getChildren().addAll(titleLabel, loadingLabel, progressIndicator, 
+                                            loadingDetailsLabel, detailsScrollPane, statusLabel);
+                root.getChildren().add(content);
+                
+                // Store references for updating
+                this.loadingDetailsPane = detailsBox;
+                this.statusLabel = statusLabel;
+                
+                // Create scene with the configured resolution
+                int width = gameConfig.getResolution().getWidth();
+                int height = gameConfig.getResolution().getHeight();
+                Scene scene = new Scene(root, width, height);
+                
+                primaryStage.setScene(scene);
+                primaryStage.setTitle("VPS Tycoon - Loading");
+                primaryStage.show();
+                
+                // Initialize the resource loading listener
+                initResourceLoadingListener();
+            } catch (Exception e) {
+                System.err.println("Error showing loading screen: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+    }
+    
+    private void initResourceLoadingListener() {
+        // Prepare a list of important resources to manually preload
+        final String[] imagesToPreload = {
+            "/images/rooms/room.gif",
+            "/images/Moniter/MoniterF2.png",
+            "/images/servers/server2.gif",
+            "/images/Object/Keroro.png",
+            "/images/Object/MusicboxOn.gif",
+            "/images/Object/MusicboxOff.png",
+            "/images/Object/Table.png",
+        };
+
+        final String[] soundFiles = {
+            "hover.wav",
+            "click.wav",
+            "click_app.wav",
+            "server.mp3",
+            "keroro_sound.mp3"
+        };
+        
+        // Force preload all images required for the game
+        com.vpstycoon.ui.game.components.RoomObjectsLayer.preloadImages();
+        
+        // Start a daemon thread to preload additional resources
+        Thread preloadThread = new Thread(() -> {
+            try {
+                ResourceManager resourceManager = ResourceManager.getInstance();
+                int totalPreloaded = 0;
+                
+                // Preload all the images
+                for (String imagePath : imagesToPreload) {
+                    try {
+                        // Update UI safely on JavaFX thread
+                        final String currentPath = imagePath;
+                        Platform.runLater(() -> {
+                            loadingDetailsLabel.setText("กำลังโหลด: " + currentPath);
+                            
+                            // Add to the details list
+                            Label fileLabel = new Label("- " + currentPath);
+                            fileLabel.setStyle("-fx-text-fill: #AAAAAA;");
+                            loadingDetailsPane.getChildren().add(0, fileLabel);
+                        });
+                        
+                        // Actually load the image into cache - this can be done off the JavaFX thread
+                        new Image(imagePath, true);
+                        totalPreloaded++;
+                        Thread.sleep(100); // Give UI time to update
+                    } catch (Exception e) {
+                        System.err.println("ไม่สามารถโหลดรูปภาพ: " + imagePath);
+                    }
+                }
+                
+                // Preload all sound files
+                AudioManager audioManager = resourceManager.getAudioManager();
+                for (String soundFile : soundFiles) {
+                    try {
+                        // Update UI safely on JavaFX thread
+                        final String currentSound = soundFile;
+                        Platform.runLater(() -> {
+                            loadingDetailsLabel.setText("กำลังโหลดเสียง: " + currentSound);
+                            Label fileLabel = new Label("- เสียง: " + currentSound);
+                            fileLabel.setStyle("-fx-text-fill: #AAAAAA;");
+                            loadingDetailsPane.getChildren().add(0, fileLabel);
+                        });
+                        
+                        // Preload the sound - this can be done off the JavaFX thread
+                        audioManager.preloadSoundEffect(soundFile);
+                        totalPreloaded++;
+                        Thread.sleep(100); // Give UI time to update
+                    } catch (Exception e) {
+                        System.err.println("ไม่สามารถโหลดไฟล์เสียง: " + soundFile);
+                    }
+                }
+                
+                // Start a separate thread to monitor ResourceManager loading
+                int totalResources = totalPreloaded;
+                Thread progressMonitor = new Thread(() -> {
+                    try {
+                        // Wait a little bit to make sure ResourceManager preloading has started
+                        Thread.sleep(500);
+                        
+                        // Update progress based on ResourceManager's status
+                        while (true) {
+                            // Sleep briefly to avoid consuming too many resources
+                            Thread.sleep(100);
+                            
+                            // Check if ResourceManager preloading is complete
+                            if (resourceManager.isPreloadComplete()) {
+                                // Update UI safely on JavaFX thread
+                                Platform.runLater(() -> {
+                                    updateProgressStatus("การโหลดเสร็จสมบูรณ์! กำลังเตรียมเริ่มเกม...");
+                                });
+                                
+                                // Give a brief pause to show completion message
+                                Thread.sleep(1000);
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error in progress monitor: " + e.getMessage());
+                    }
+                });
+                
+                progressMonitor.setDaemon(true);
+                progressMonitor.start();
+                
+                // Update final count
+                final int finalCount = totalResources;
+                Platform.runLater(() -> {
+                    statusLabel.setText("โหลดทรัพยากรแล้ว " + finalCount + " รายการ");
+                });
+                
+            } catch (Exception e) {
+                System.err.println("Error in preload thread: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+        
+        preloadThread.setDaemon(true);
+        preloadThread.start();
+    }
+
+    @Override
+    public void onResourceLoading(String resourcePath) {
+        if (resourcePath != null && !resourcePath.trim().isEmpty()) {
+            Platform.runLater(() -> {
+                // Update the main loading label
+                loadingDetailsLabel.setText("กำลังโหลด: " + getSimpleFileName(resourcePath));
+                
+                // Add to the detailed list in the scroll pane
+                Label fileLabel = new Label("- " + resourcePath);
+                fileLabel.setStyle("-fx-text-fill: #AAAAAA;");
+                
+                if (loadingDetailsPane != null) {
+                    loadingDetailsPane.getChildren().add(0, fileLabel);
+                    
+                    // Keep the list at a reasonable size
+                    if (loadingDetailsPane.getChildren().size() > 100) {
+                        loadingDetailsPane.getChildren().remove(100, loadingDetailsPane.getChildren().size());
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onResourceLoadingComplete(int totalLoaded) {
+        Platform.runLater(() -> {
+            loadingDetailsLabel.setText("โหลดทรัพยากรเสร็จสมบูรณ์");
+            
+            if (statusLabel != null) {
+                statusLabel.setText("โหลดทรัพยากรครบถ้วน " + totalLoaded + " รายการ");
+                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #2ECC71;");
+            }
+        });
+    }
+
+    // Helper method to extract a simplified filename from a path
+    private String getSimpleFileName(String path) {
+        if (path == null) return "";
+        int lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+        if (lastSlash >= 0 && lastSlash < path.length() - 1) {
+            return path.substring(lastSlash + 1);
+        }
+        return path;
+    }
+
+    /**
+     * Update the progress status text on the loading screen
+     * @param message The status message to display
+     */
+    private void updateProgressStatus(String message) {
+        // Always use Platform.runLater to update UI elements
+        if (statusLabel != null) {
+            final String statusMessage = message;
+            Platform.runLater(() -> {
+                if (statusLabel != null) {
+                    statusLabel.setText(statusMessage);
+                }
+            });
+        }
     }
 
     public static void main(String[] args) {

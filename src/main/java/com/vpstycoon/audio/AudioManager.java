@@ -147,4 +147,36 @@ public class AudioManager {
         activeSfxPlayers.clear();
         soundCache.clear();
     }
+
+    /**
+     * Preload a sound effect to avoid lag when first played
+     * @param name The name of the sound file to preload
+     */
+    public void preloadSoundEffect(String name) {
+        if (!soundCache.containsKey(name)) {
+            try {
+                // Create final copy for use in lambda
+                final String soundName = name;
+                URL url = ResourceManager.getResource(ResourceManager.getSoundPath(name));
+                if (url != null) {
+                    // Final copy of URL for use in lambda
+                    final URL soundUrl = url;
+                    // Use Platform.runLater to safely create Media objects on JavaFX thread
+                    Platform.runLater(() -> {
+                        try {
+                            Media sound = new Media(soundUrl.toString());
+                            soundCache.put(soundName, sound);
+                            System.out.println("โหลดไฟล์เสียง: " + soundName + " เรียบร้อยแล้ว");
+                        } catch (Exception ex) {
+                            System.err.println("เกิดข้อผิดพลาดในการโหลด Media สำหรับไฟล์เสียง " + soundName + ": " + ex.getMessage());
+                        }
+                    });
+                } else {
+                    System.err.println("ไม่พบไฟล์เสียง: " + name);
+                }
+            } catch (Exception e) {
+                System.err.println("เกิดข้อผิดพลาดในการโหลดไฟล์เสียง " + name + ": " + e.getMessage());
+            }
+        }
+    }
 }

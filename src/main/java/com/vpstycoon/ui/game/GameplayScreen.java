@@ -261,4 +261,37 @@ public class GameplayScreen extends GameScreen {
         
         return contentPane;
     }
+
+    /**
+     * Properly release resources held by this screen when it's no longer needed.
+     * This helps reduce memory usage and improve performance when transitioning between screens.
+     */
+    public void release() {
+        try {
+            System.out.println("Releasing GameplayScreen resources");
+            
+            // Stop any running timers or threads
+            if (gameTimeController != null) {
+                try {
+                    gameTimeController.stopTime();
+                } catch (Exception e) {
+                    System.err.println("Error stopping game time controller: " + e.getMessage());
+                }
+            }
+            
+            // Clear game objects to free memory
+            if (gameObjects != null) {
+                gameObjects.clear();
+            }
+            
+            // Explicitly trigger garbage collection to free memory
+            // (only use this in specific memory-critical scenarios)
+            System.gc();
+            
+            System.out.println("GameplayScreen resources released");
+        } catch (Exception e) {
+            System.err.println("Error releasing GameplayScreen resources: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }

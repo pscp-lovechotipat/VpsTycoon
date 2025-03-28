@@ -56,7 +56,41 @@ public class JavaFXScreenManager implements ScreenManager {
             stage.setScene(scene);
         } else {
             StackPane root = (StackPane) scene.getRoot();
-            root.getChildren().setAll(screen);
+            
+            if (!root.getChildren().isEmpty()) {
+                Node currentScreen = root.getChildren().get(0);
+                
+                javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                    javafx.util.Duration.millis(300), currentScreen);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                
+                screen.setOpacity(0.0);
+                
+                root.getChildren().add(screen);
+                
+                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                    javafx.util.Duration.millis(300), screen);
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                
+                fadeOut.setOnFinished(event -> {
+                    root.getChildren().remove(currentScreen);
+                    
+                    fadeIn.play();
+                });
+                
+                fadeOut.play();
+            } else {
+                root.getChildren().add(screen);
+                
+                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                    javafx.util.Duration.millis(300), screen);
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
+            }
+            
             root.requestLayout();
         }
     }

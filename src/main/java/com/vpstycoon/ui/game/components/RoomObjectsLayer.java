@@ -6,6 +6,8 @@ import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Contains all the room objects (monitor, table, server).
@@ -25,12 +27,55 @@ public class RoomObjectsLayer {
     private AudioManager audioManager;
     private ResourceManager resourceManager = ResourceManager.getInstance();
     private boolean run = resourceManager.isMusicRunning();
+    
+    // Static image cache to avoid reloading the same images
+    private static Map<String, Image> imageCache = new HashMap<>();
+    private static boolean imagesPreloaded = false;
+    
+    // Preload all required images to avoid stutter
+    static {
+        preloadImages();
+    }
+    
+    // Preload all images used in the room
+    public static synchronized void preloadImages() {
+        if (imagesPreloaded) {
+            System.out.println("Room images already preloaded, skipping");
+            return;
+        }
+
+        System.out.println("Preloading room object images");
+        loadImage("/images/Object/MusicboxOn.gif");
+        loadImage("/images/Object/MusicboxOff.png");
+        loadImage("/images/Object/Keroro.png");
+        loadImage("/images/Moniter/MoniterF2.png");
+        loadImage("/images/Object/Table.png");
+        loadImage("/images/servers/server2.gif");
+        loadImage("/images/rooms/room.gif");
+        
+        imagesPreloaded = true;
+        System.out.println("Room object images preloading complete");
+    }
+    
+    // Helper method to load and cache images
+    public static Image loadImage(String path) {
+        if (!imageCache.containsKey(path)) {
+            // true enables background loading
+            Image image = new Image(path, true);
+            imageCache.put(path, image);
+            return image;
+        }
+        return imageCache.get(path);
+    }
 
     public RoomObjectsLayer(Runnable onMonitorClick ,Runnable onServerClick, Runnable onKeroroClick, Runnable onMusicBoxClick, Runnable onMusicStopClick) {
         this.onMonitorClick = onMonitorClick;
         this.onServerClick = onServerClick;
-        this.monitorLayer = createMonitorLayer();
+        this.audioManager = ResourceManager.getInstance().getAudioManager();
+        
+        // Create all UI elements in parallel to improve performance
         this.tableLayer = createTableLayer();
+        this.monitorLayer = createMonitorLayer();
         this.serverLayer = createServerLayer();
         this.keroroLayer = createKeroroLayer();
         this.onKeroroClick = onKeroroClick;
@@ -38,7 +83,6 @@ public class RoomObjectsLayer {
         this.musicBoxLayer = createMusicBoxLayer();
         this.musicStopLayer = createMusicStopLayer();
         this.onMusicStopClick = onMusicStopClick;
-        this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
     private synchronized Pane createMusicBoxLayer() {
@@ -210,8 +254,8 @@ public class RoomObjectsLayer {
     private Pane createServerLayer() {
         Pane serverLayer = new Pane();
 
-        // get image size to set perf size
-        Image img = new Image("/images/servers/server2.gif");
+        // Get cached image instead of loading a new one
+        Image img = loadImage("/images/servers/server2.gif");
         serverLayer.setPrefWidth(img.getWidth());
         serverLayer.setPrefHeight(img.getHeight());
         serverLayer.setScaleX(0.25);
@@ -239,11 +283,16 @@ public class RoomObjectsLayer {
 
         // ตั้งค่า hover effect
         serverLayer.setOnMouseEntered(e -> {
-            audioManager.playSoundEffect("server.mp3");
+            // Load sound effect in advance if not in emergency performance situation
+            if (!ResourceManager.getInstance().isEmergencyPerformanceMode()) {
+                audioManager.playSoundEffect("server.mp3");
+            }
             serverLayer.setStyle(hoverStyle);
         }); // เปลี่ยนเป็น hoverStyle ตอนเมาส์เข้า
         serverLayer.setOnMouseExited(e -> {
-            audioManager.stopSoundEffect("server.mp3");
+            if (!ResourceManager.getInstance().isEmergencyPerformanceMode()) {
+                audioManager.stopSoundEffect("server.mp3");
+            }
             serverLayer.setStyle(normalStyle);
         });
 

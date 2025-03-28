@@ -24,6 +24,7 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Glow;
 import javafx.scene.control.ScrollPane;
 import javafx.util.Duration;
+import javafx.scene.Node;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,12 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
     // Network value labels that need to be updated
     private Label networkValueEmpty;
     private Label networkValuePopulated;
+
+    // Class variable to store previous UI states
+    private boolean[] previousUIStates;
+
+    // Class variable to store original root nodes
+    private List<Node> originalRootNodes;
 
     public RackManagementUI(GameplayContentPane parent) {
         this.parent = parent;
@@ -625,6 +632,20 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
     }
 
     public synchronized void openRackInfo() {
+        // บันทึกรายการของ nodes ใน parent.getRootStack()
+        List<Node> originalRootNodes = new ArrayList<>(parent.getRootStack().getChildren());
+        
+        // บันทึกสถานะการแสดงผลก่อนที่จะซ่อน UI
+        final boolean menuBarWasVisible = parent.getMenuBar().isVisible();
+        final boolean marketMenuBarWasVisible = parent.getInGameMarketMenuBar().isVisible();
+        final boolean moneyUIWasVisible = parent.getMoneyUI().isVisible();
+        final boolean dateViewWasVisible = parent.getDateView().isVisible();
+        
+        // บันทึกสถานะไว้ใน class variable เพื่อใช้ในการคืนค่า
+        this.previousUIStates = new boolean[] {
+            menuBarWasVisible, marketMenuBarWasVisible, moneyUIWasVisible, dateViewWasVisible
+        };
+        
         BorderPane rackPane = new BorderPane();
         rackPane.setPrefSize(800, 600);
         rackPane.getStyleClass().add("rack-pane");
@@ -663,7 +684,13 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
         """);
 
         Button closeButton = createPixelButton("CLOSE", "#F44336");
-        closeButton.setOnAction(e -> parent.returnToRoom());
+        closeButton.setOnAction(e -> {
+            // ล้างการลงทะเบียน listeners และคืนค่า UI ด้วย dispose
+            dispose();
+            
+            // เรียก returnToRoom เพื่อคืนค่าสภาพห้อง
+            parent.returnToRoom();
+        });
 
         // Add navigation buttons with cyber/pixel theme
         Button prevRackButton = createPixelButton("◄ PREV", "#6a00ff");
@@ -2288,7 +2315,56 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
      * Should be called when the UI is no longer needed
      */
     public void dispose() {
+        // แสดงข้อความยืนยันการยกเลิก listener 
+        System.out.println("ยกเลิกการลงทะเบียน RackUIUpdateListener");
+        
         // Unregister from resource manager
         ResourceManager.getInstance().removeRackUIUpdateListener(this);
+        
+        // คืนค่า UI ที่ซ่อนไว้
+        if (originalRootNodes != null && !originalRootNodes.isEmpty()) {
+            // ลบ UI ปัจจุบันที่อาจจะเกี่ยว RackManagementUI ออกก่อน
+            parent.getGameArea().getChildren().removeIf(node -> node instanceof BorderPane);
+            
+            // คืนค่าสถานะ UI ใน parent.getRootStack()
+            StackPane rootStack = parent.getRootStack();
+            
+            // เก็บ child แรก (gameArea) ไว้
+            Node gameArea = rootStack.getChildren().isEmpty() ? null : rootStack.getChildren().get(0);
+            
+            // ล้าง rootStack และเพิ่ม gameArea กลับไป (ถ้ามี)
+            rootStack.getChildren().clear();
+            if (gameArea != null) {
+                rootStack.getChildren().add(gameArea);
+            }
+            
+            // เพิ่ม nodes ที่บันทึกไว้กลับเข้า rootStack
+            for (Node node : originalRootNodes) {
+                if (node != null && node != gameArea && !rootStack.getChildren().contains(node)) {
+                    rootStack.getChildren().add(node);
+                }
+            }
+            
+            System.out.println("คืนค่า nodes ใน rootStack เรียบร้อย (" + rootStack.getChildren().size() + " nodes)");
+        }
+        
+        // คืนสถานะการแสดงผลของ UI elements อย่างชัดเจนทุกครั้งที่ dispose
+        if (parent.getMenuBar() != null) {
+            parent.getMenuBar().setVisible(true);
+        }
+        
+        if (parent.getInGameMarketMenuBar() != null) {
+            parent.getInGameMarketMenuBar().setVisible(true);
+        }
+        
+        if (parent.getMoneyUI() != null) {
+            parent.getMoneyUI().setVisible(true);
+        }
+        
+        if (parent.getDateView() != null) {
+            parent.getDateView().setVisible(true);
+        }
+        
+        System.out.println("ล้างการลงทะเบียน RackManagementUI และคืนค่า UI เรียบร้อย");
     }
 }

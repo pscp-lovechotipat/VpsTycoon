@@ -115,6 +115,8 @@ public class GameplayContentPane extends BorderPane {
 
     private final ResourceManager resourceManager = ResourceManager.getInstance();
 
+    private boolean isTransitioning = false;
+
     // Constructor
     public GameplayContentPane(
             List<GameObject> gameObjects, Navigator navigator, ChatSystem chatSystem,
@@ -217,24 +219,50 @@ public class GameplayContentPane extends BorderPane {
     }
 
     private synchronized void setupUI() {
-        Pane backgroundLayer = createBackgroundLayer();
+        System.out.println("กำลังตั้งค่า UI ใหม่...");
+        
+        // Use cached image to avoid reloading
+        Image backgroundImage = com.vpstycoon.ui.game.components.RoomObjectsLayer.loadImage("/images/rooms/room.gif");
+        
+        Pane backgroundLayer = createBackgroundLayer(backgroundImage);
 
         this.rootStack.getChildren().clear();
+        System.out.println("ล้าง rootStack เรียบร้อย");
 
+        // Create room objects with optimized image loading
         roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo, this::openKeroro, this::openMusicBox, this::openMusicStop);
-        worldGroup = new Group(backgroundLayer, roomObjects.getServerLayer(), roomObjects.getMonitorLayer(), roomObjects.getKeroroLayer(), roomObjects.getMusicBoxLayer(), roomObjects.getMusicStopLayer());
+        System.out.println("สร้าง roomObjects ใหม่เรียบร้อย");
+        
+        // Create the world group with all components
+        worldGroup = new Group(backgroundLayer, roomObjects.getServerLayer(), roomObjects.getMonitorLayer(), 
+                roomObjects.getKeroroLayer(), roomObjects.getMusicBoxLayer(), roomObjects.getMusicStopLayer());
+        System.out.println("สร้าง worldGroup ใหม่เรียบร้อย");
+        
+        // Add world group to game area
         gameArea.getChildren().add(worldGroup);
+        System.out.println("เพิ่ม worldGroup เข้า gameArea เรียบร้อย");
 
+        // Get debug overlay
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
-        rootStack.getChildren().addAll(gameArea,
-                moneyUI, menuBar,dateView,
+        
+        // Add all UI components to root stack
+        rootStack.getChildren().clear();
+        rootStack.getChildren().add(gameArea);
+        
+        // เพิ่มแต่ละ UI element เข้าไปใน rootStack อย่างชัดเจน
+        rootStack.getChildren().addAll(
+                moneyUI, menuBar, dateView,
                 inGameMarketMenuBar,
                 resourceManager.getMouseNotificationView(),
                 resourceManager.getNotificationView(),
                 resourceManager.getCenterNotificationView(),
                 debugOverlay
         );
+        
+        System.out.println("เพิ่ม UI elements เข้า rootStack เรียบร้อย (" + 
+                           (rootStack.getChildren().size() - 1) + " elements)");
 
+        // Configure visibility and properties
         menuBar.setVisible(true);
         menuBar.setPickOnBounds(false);
 
@@ -259,23 +287,28 @@ public class GameplayContentPane extends BorderPane {
         StackPane.setAlignment(resourceManager.getNotificationView(), Pos.TOP_RIGHT);
         StackPane.setAlignment(moneyUI, Pos.TOP_LEFT);
 
+        // Start debug timer
         debugOverlayManager.startTimer();
+        
+        // Setup zoom and pan handler
         zoomPanHandler = new ZoomPanHandler(worldGroup, gameArea, debugOverlayManager, showDebug);
         zoomPanHandler.setup();
 
+        // Initialize game events
         resourceManager.initializeGameEvent(this);
 
+        // Set background color
         setStyle("-fx-background-color: #000000;");
     }
 
-    private Pane createBackgroundLayer() {
+    private Pane createBackgroundLayer(Image backgroundImage) {
         Pane backgroundLayer = new Pane();
-        Image backgroundImage = new Image("/images/rooms/room.gif");
 
         double scaleFactor = 0.26;
         backgroundLayer.setPrefWidth(backgroundImage.getWidth() * scaleFactor);
         backgroundLayer.setPrefHeight(backgroundImage.getHeight() * scaleFactor);
 
+        // Use CSS to set the background with the cached image path
         backgroundLayer.setStyle("""
         -fx-background-image: url("/images/rooms/room.gif");
         -fx-background-size: cover;
@@ -283,6 +316,13 @@ public class GameplayContentPane extends BorderPane {
         -fx-background-position: center;
     """);
         return backgroundLayer;
+    }
+
+    // Overloaded method to support both preloaded and on-demand loading
+    private Pane createBackgroundLayer() {
+        // Use cached image instead of creating a new one
+        Image backgroundImage = com.vpstycoon.ui.game.components.RoomObjectsLayer.loadImage("/images/rooms/room.gif");
+        return createBackgroundLayer(backgroundImage);
     }
 
     private void setupDebugFeatures() {
@@ -337,20 +377,30 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public void openMarket() {
+        // Store current UI visibility state
+        final boolean menuBarWasVisible = menuBar.isVisible();
+        final boolean marketMenuBarWasVisible = inGameMarketMenuBar.isVisible();
+        final boolean moneyUIWasVisible = moneyUI.isVisible();
+        final boolean dateViewWasVisible = dateView.isVisible();
+
         MarketWindow marketWindow = new MarketWindow(
             () -> {
                 getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
-                menuBar.setVisible(true);
-                inGameMarketMenuBar.setVisible(true);
-                moneyUI.setVisible(true);
-                dateView.setVisible(true);
+                
+                // Always restore previous visibility state, not just set to true
+                menuBar.setVisible(menuBarWasVisible);
+                inGameMarketMenuBar.setVisible(marketMenuBarWasVisible);
+                moneyUI.setVisible(moneyUIWasVisible);
+                dateView.setVisible(dateViewWasVisible);
             },
             () -> {
                 getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
-                menuBar.setVisible(true);
-                inGameMarketMenuBar.setVisible(true);
-                moneyUI.setVisible(true);
-                dateView.setVisible(true);
+                
+                // Always restore previous visibility state
+                menuBar.setVisible(menuBarWasVisible);
+                inGameMarketMenuBar.setVisible(marketMenuBarWasVisible);
+                moneyUI.setVisible(moneyUIWasVisible);
+                dateView.setVisible(dateViewWasVisible);
             },
             vpsManager,
             this
@@ -417,16 +467,225 @@ public class GameplayContentPane extends BorderPane {
 
     // === Navigation Methods ===
     public void returnToRoom() {
-        // Dispose rack management UI to unregister listeners
-        if (rackManagementUI != null) {
-            rackManagementUI.dispose();
+        // ทำให้การอ้างถึง rackManagementUI ปลอดภัยขึ้นโดยตรวจสอบก่อนเรียกเมธอด
+        try {
+            if (rackManagementUI != null) {
+                rackManagementUI.dispose();
+                System.out.println("ยกเลิกการลงทะเบียน listeners ของ RackManagementUI เรียบร้อย");
+            }
+        } catch (Exception ex) {
+            System.err.println("เกิดข้อผิดพลาดในการ dispose RackManagementUI: " + ex.getMessage());
+            ex.printStackTrace();
         }
         
-        gameArea.getChildren().clear();
-        setupUI();
+        // Use Platform.runLater to move UI operations off the main thread
+        javafx.application.Platform.runLater(() -> {
+            try {
+                // ป้องกันการเรียกซ้ำโดยการใช้ flag
+                if (isTransitioning) {
+                    System.out.println("กำลังเปลี่ยนแปลง UI อยู่แล้ว กรุณารอสักครู่...");
+                    return;
+                }
+                isTransitioning = true;
+                
+                // ทำความสะอาด rootStack - เก็บเฉพาะ child แรก
+                while (rootStack.getChildren().size() > 1) {
+                    rootStack.getChildren().remove(rootStack.getChildren().size() - 1);
+                }
+                
+                // Create fade transition for smooth visual effect
+                StackPane overlay = new StackPane();
+                overlay.setStyle("-fx-background-color: black;");
+                overlay.setOpacity(0);
+                
+                // Add progress indicator
+                javafx.scene.control.ProgressIndicator progressIndicator = new javafx.scene.control.ProgressIndicator();
+                progressIndicator.setMaxSize(50, 50);
+                progressIndicator.setVisible(false);
+                overlay.getChildren().add(progressIndicator);
+                
+                rootStack.getChildren().add(overlay);
+                
+                // Create fade in transition
+                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(javafx.util.Duration.millis(300), overlay);
+                fadeIn.setFromValue(0);
+                fadeIn.setToValue(0.7);
+                fadeIn.setOnFinished(e -> {
+                    progressIndicator.setVisible(true);
+                    
+                    // Execute UI operations in background thread
+                    Thread setupThread = new Thread(() -> {
+                        try {
+                            // Clear current content
+                            javafx.application.Platform.runLater(() -> {
+                                try {
+                                    // บันทึกข้อมูลสถานะปัจจุบันก่อนล้าง
+                                    gameArea.getChildren().clear();
+                                } catch (Exception ex) {
+                                    System.err.println("เกิดข้อผิดพลาดในการล้าง gameArea: " + ex.getMessage());
+                                }
+                            });
+                            
+                            // Setup UI on JavaFX thread (avoid recreating all UI components)
+                            javafx.application.Platform.runLater(() -> {
+                                try {
+                                    // If world group and room objects already exist, reuse them
+                                    if (worldGroup != null && roomObjects != null) {
+                                        // Just add existing components back to game area
+                                        gameArea.getChildren().add(worldGroup);
+                                    } else {
+                                        // Only setup UI if components don't already exist
+                                        setupUI();
+                                    }
+                                    
+                                    // ถ้า UI elements ไม่อยู่ใน rootStack ให้เพิ่มกลับเข้าไปใหม่
+                                    rootStack.getChildren().removeIf(node -> 
+                                        node instanceof javafx.scene.control.ProgressIndicator ||
+                                        node instanceof StackPane && node != gameArea);
+                                    
+                                    // เพิ่ม UI elements กลับเข้า rootStack ทุกครั้ง
+                                    if (!rootStack.getChildren().contains(menuBar)) {
+                                        rootStack.getChildren().add(menuBar);
+                                        System.out.println("เพิ่ม menuBar เข้า rootStack");
+                                    }
+                                    
+                                    if (!rootStack.getChildren().contains(moneyUI)) {
+                                        rootStack.getChildren().add(moneyUI);
+                                        System.out.println("เพิ่ม moneyUI เข้า rootStack");
+                                    }
+                                    
+                                    if (!rootStack.getChildren().contains(dateView)) {
+                                        rootStack.getChildren().add(dateView);
+                                        System.out.println("เพิ่ม dateView เข้า rootStack");
+                                    }
+                                    
+                                    if (!rootStack.getChildren().contains(inGameMarketMenuBar)) {
+                                        rootStack.getChildren().add(inGameMarketMenuBar);
+                                        System.out.println("เพิ่ม inGameMarketMenuBar เข้า rootStack");
+                                    }
+                                    
+                                    if (!rootStack.getChildren().contains(resourceManager.getNotificationView())) {
+                                        rootStack.getChildren().add(resourceManager.getNotificationView());
+                                    }
+                                    
+                                    if (!rootStack.getChildren().contains(resourceManager.getCenterNotificationView())) {
+                                        rootStack.getChildren().add(resourceManager.getCenterNotificationView());
+                                    }
+                                    
+                                    if (!rootStack.getChildren().contains(resourceManager.getMouseNotificationView())) {
+                                        rootStack.getChildren().add(resourceManager.getMouseNotificationView());
+                                    }
+                                    
+                                    // แสดงผล UI elements โดยตรง
+                                    menuBar.setVisible(true);
+                                    inGameMarketMenuBar.setVisible(true); 
+                                    moneyUI.setVisible(true);
+                                    dateView.setVisible(true);
+                                    
+                                    // ตั้งค่าตำแหน่งของ UI elements
+                                    StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
+                                    StackPane.setAlignment(moneyUI, Pos.TOP_LEFT);
+                                    StackPane.setAlignment(resourceManager.getNotificationView(), Pos.TOP_RIGHT);
+                                    StackPane.setAlignment(resourceManager.getCenterNotificationView(), Pos.CENTER);
+                                    
+                                    // บันทึกจำนวน UI ใน rootStack
+                                    System.out.println("จำนวน elements ใน rootStack: " + rootStack.getChildren().size());
+                                    
+                                    // Create fade out transition
+                                    javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(javafx.util.Duration.millis(500), overlay);
+                                    fadeOut.setFromValue(0.7);
+                                    fadeOut.setToValue(0);
+                                    fadeOut.setOnFinished(event -> {
+                                        try {
+                                            rootStack.getChildren().remove(overlay);
+                                            isTransitioning = false; // คืนค่า flag
+                                        } catch (Exception ex) {
+                                            System.err.println("เกิดข้อผิดพลาดในการลบ overlay: " + ex.getMessage());
+                                            isTransitioning = false; // คืนค่า flag แม้จะมีข้อผิดพลาด
+                                        }
+                                    });
+                                    fadeOut.play();
+                                } catch (Exception ex) {
+                                    System.err.println("เกิดข้อผิดพลาดในการ setup UI: " + ex.getMessage());
+                                    ex.printStackTrace();
+                                    isTransitioning = false; // คืนค่า flag เมื่อเกิดข้อผิดพลาด
+                                }
+                            });
+                        } catch (Exception ex) {
+                            System.err.println("เกิดข้อผิดพลาดใน setupThread: " + ex.getMessage());
+                            ex.printStackTrace();
+                            isTransitioning = false; // คืนค่า flag เมื่อเกิดข้อผิดพลาด
+                        }
+                    });
+                    
+                    setupThread.setDaemon(true);
+                    setupThread.start();
+                });
+                
+                fadeIn.play();
+            } catch (Exception ex) {
+                System.err.println("เกิดข้อผิดพลาดใน returnToRoom: " + ex.getMessage());
+                ex.printStackTrace();
+                isTransitioning = false; // คืนค่า flag เมื่อเกิดข้อผิดพลาด
+                
+                // ในกรณีที่เกิดข้อผิดพลาด ให้พยายามกู้คืนสถานะ UI
+                try {
+                    // ล้าง gameArea และเพิ่ม worldGroup กลับเข้าไป
+                    gameArea.getChildren().clear();
+                    if (worldGroup != null && roomObjects != null) {
+                        gameArea.getChildren().add(worldGroup);
+                    } else {
+                        setupUI();
+                    }
+                    
+                    // เพิ่ม UI elements เข้า rootStack ในกรณีฉุกเฉิน
+                    if (!rootStack.getChildren().contains(menuBar)) {
+                        rootStack.getChildren().add(menuBar);
+                    }
+                    
+                    if (!rootStack.getChildren().contains(moneyUI)) {
+                        rootStack.getChildren().add(moneyUI);
+                    }
+                    
+                    if (!rootStack.getChildren().contains(dateView)) {
+                        rootStack.getChildren().add(dateView);
+                    }
+                    
+                    if (!rootStack.getChildren().contains(inGameMarketMenuBar)) {
+                        rootStack.getChildren().add(inGameMarketMenuBar);
+                    }
+                    
+                    // กำหนดให้แสดงผล UI ทุกอย่าง
+                    menuBar.setVisible(true);
+                    inGameMarketMenuBar.setVisible(true);
+                    moneyUI.setVisible(true);
+                    dateView.setVisible(true);
+                    
+                    // กำหนดตำแหน่งของ UI elements
+                    StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
+                    StackPane.setAlignment(moneyUI, Pos.TOP_LEFT);
+                    
+                    System.out.println("กู้คืนสถานะ UI สำเร็จ (แผนฉุกเฉิน)");
+                    System.out.println("  - menuBar: " + (menuBar != null ? "ok" : "null"));
+                    System.out.println("  - inGameMarketMenuBar: " + (inGameMarketMenuBar != null ? "ok" : "null"));
+                    System.out.println("  - moneyUI: " + (moneyUI != null ? "ok" : "null"));
+                    System.out.println("  - dateView: " + (dateView != null ? "ok" : "null"));
+                    System.out.println("  - จำนวน elements ใน rootStack: " + rootStack.getChildren().size());
+                } catch (Exception recoverEx) {
+                    System.err.println("ไม่สามารถกู้คืน UI ได้: " + recoverEx.getMessage());
+                    recoverEx.printStackTrace();
+                }
+            }
+        });
+    }
 
-        menuBar.setVisible(true);
-        inGameMarketMenuBar.setVisible(true);
+    /**
+     * ตรวจสอบว่า UI element นี้มี parent แล้วหรือยัง
+     * @param node node ที่ต้องการตรวจสอบ
+     * @return true ถ้ามี parent แล้ว
+     */
+    private boolean checkHasParent(javafx.scene.Node node) {
+        return node.getParent() != null;
     }
 
     // === VPS Management Methods ===

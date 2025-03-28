@@ -2,16 +2,18 @@ package com.vpstycoon.game.resource;
 
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.GameObject;
+import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.thread.GameEvent;
 import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.thread.GameTimeManager;
-import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.VPSInventory;
-import com.vpstycoon.game.vps.enums.VPSSize;
+import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 import com.vpstycoon.ui.game.notification.NotificationController;
@@ -30,10 +32,13 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,6 +120,100 @@ public class ResourceManager implements Serializable {
     private GameplayContentPane gameplayContentPane;
 
     private boolean musicRunning = true;
+
+    // Performance optimization flags
+    private boolean emergencyPerformanceMode = false;
+    private long lastPerformanceCheck = 0;
+    private static final long PERFORMANCE_CHECK_INTERVAL = 1000; // ms
+    
+    /**
+     * Checks if the application should run in emergency performance mode
+     * to reduce stuttering and improve responsiveness
+     * @return true if the app is in emergency performance mode
+     */
+    public boolean isEmergencyPerformanceMode() {
+        // Check performance only periodically to avoid overhead
+        long now = System.currentTimeMillis();
+        if (now - lastPerformanceCheck > PERFORMANCE_CHECK_INTERVAL) {
+            lastPerformanceCheck = now;
+            
+            // Check system memory usage
+            Runtime runtime = Runtime.getRuntime();
+            long maxMemory = runtime.maxMemory();
+            long allocatedMemory = runtime.totalMemory();
+            long freeMemory = runtime.freeMemory();
+            
+            // Calculate used memory percentage
+            double usedMemoryPct = (double)(allocatedMemory - freeMemory) / maxMemory * 100;
+            
+            // If memory usage is high, enable emergency mode
+            emergencyPerformanceMode = usedMemoryPct > 80;
+            
+            if (emergencyPerformanceMode) {
+                System.out.println("Warning: High memory usage. Enabling emergency performance mode.");
+            }
+        }
+        
+        return emergencyPerformanceMode;
+    }
+    
+    /**
+     * Force emergency performance mode on or off
+     * @param mode true to enable emergency performance mode
+     */
+    public void setEmergencyPerformanceMode(boolean mode) {
+        this.emergencyPerformanceMode = mode;
+    }
+
+    // Flag to track preloading status
+    private boolean preloadComplete = false;
+    private final Object preloadLock = new Object();
+
+    // Resource loading progress listener
+    public interface ResourceLoadingListener {
+        void onResourceLoading(String resourcePath);
+        void onResourceLoadingComplete(int totalLoaded);
+    }
+    
+    private ResourceLoadingListener resourceLoadingListener;
+    
+    /**
+     * Set a listener to receive notifications about resource loading progress
+     * @param listener The listener to notify
+     */
+    public void setResourceLoadingListener(ResourceLoadingListener listener) {
+        this.resourceLoadingListener = listener;
+    }
+    
+    /**
+     * Notify listener that a resource is being loaded
+     * @param resourcePath Path of the resource being loaded
+     */
+    private void notifyResourceLoading(String resourcePath) {
+        if (resourceLoadingListener != null) {
+            // Create a copy to avoid modifying the parameter in the lambda
+            final String path = resourcePath;
+            // Use Platform.runLater to ensure UI updates happen on the JavaFX application thread
+            javafx.application.Platform.runLater(() -> {
+                resourceLoadingListener.onResourceLoading(path);
+            });
+        }
+    }
+    
+    /**
+     * Notify listener that resource loading is complete
+     * @param totalLoaded Total number of resources loaded
+     */
+    private void notifyResourceLoadingComplete(int totalLoaded) {
+        if (resourceLoadingListener != null) {
+            // Store the value to avoid capture of mutable variable
+            final int total = totalLoaded;
+            // Use Platform.runLater to ensure UI updates happen on the JavaFX application thread
+            javafx.application.Platform.runLater(() -> {
+                resourceLoadingListener.onResourceLoadingComplete(total);
+            });
+        }
+    }
 
     private ResourceManager() {
         this.company = new Company();
@@ -876,5 +975,149 @@ public class ResourceManager implements Serializable {
 
     public void setMusicRunning(boolean running) {
         this.musicRunning = running;
+    }
+
+    /**
+     * Preload common assets to improve performance during transitions
+     */
+    public void preloadAssets() {
+        System.out.println("===== เริ่มโหลดทรัพยากรของเกม =====");
+        preloadComplete = false;
+        
+        // List of resources to preload
+        final String[] imagesToPreload = {
+            "/images/rooms/room.gif",
+            "/images/Moniter/MoniterF2.png",
+            "/images/servers/server2.gif",
+            "/images/Object/Keroro.png",
+            "/images/Object/MusicboxOn.gif",
+            "/images/Object/MusicboxOff.png",
+            "/images/Object/Table.png"
+        };
+        
+        final String[] soundsToPreload = {
+            "hover.wav",
+            "click.wav",
+            "click_app.wav",
+            "server.mp3"
+        };
+        
+        // Run in a separate thread to avoid blocking the UI
+        Thread preloadThread = new Thread(() -> {
+            try {
+                // Preload common images used in transitions
+                for (String imagePath : imagesToPreload) {
+                    System.out.println("กำลังโหลด: " + imagePath);
+                    notifyResourceLoading(imagePath);
+                    preloadImage(imagePath);
+                    
+                    // Small delay to make progress visible and avoid UI thread overload
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                
+                // Preload common sound effects
+                for (String soundPath : soundsToPreload) {
+                    System.out.println("กำลังโหลดเสียง: " + soundPath);
+                    notifyResourceLoading("เสียง: " + soundPath);
+                    audioManager.preloadSoundEffect(soundPath);
+                    
+                    // Small delay to make progress visible and avoid UI thread overload
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                
+                int totalResources = imagesToPreload.length + soundsToPreload.length;
+                System.out.println("===== โหลดทรัพยากรของเกมเสร็จสมบูรณ์ =====");
+                System.out.println("จำนวนทรัพยากรที่โหลด: " + totalResources);
+                
+                notifyResourceLoadingComplete(totalResources);
+                
+                synchronized(preloadLock) {
+                    preloadComplete = true;
+                    preloadLock.notifyAll();
+                }
+            } catch (Exception e) {
+                System.err.println("Error preloading assets: " + e.getMessage());
+                e.printStackTrace();
+                
+                synchronized(preloadLock) {
+                    preloadComplete = true; // Mark as complete even on error so app doesn't hang
+                    preloadLock.notifyAll();
+                }
+            }
+        });
+        
+        preloadThread.setDaemon(true);
+        preloadThread.start();
+    }
+    
+    /**
+     * Wait for preloading to complete
+     * @param timeoutMs maximum time to wait in milliseconds, or 0 for no timeout
+     * @return true if preloading completed, false if timed out
+     */
+    public boolean waitForPreload(long timeoutMs) {
+        if (preloadComplete) {
+            return true;
+        }
+        
+        synchronized(preloadLock) {
+            if (!preloadComplete) {
+                try {
+                    if (timeoutMs > 0) {
+                        preloadLock.wait(timeoutMs);
+                    } else {
+                        preloadLock.wait();
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+        
+        return preloadComplete;
+    }
+    
+    /**
+     * Check if preloading is complete
+     * @return true if preloading is complete
+     */
+    public boolean isPreloadComplete() {
+        return preloadComplete;
+    }
+    
+    /**
+     * Preload an image and store it in the cache
+     * @param path Path to the image resource
+     * @return The loaded image
+     */
+    private Image preloadImage(String path) {
+        if (!imageCache.containsKey(path)) {
+            try {
+                // Load with background loading enabled
+                Image image = new Image(path, true);
+                imageCache.put(path, image);
+                return image;
+            } catch (Exception e) {
+                System.err.println("Error loading image " + path + ": " + e.getMessage());
+            }
+        }
+        return imageCache.get(path);
+    }
+    
+    /**
+     * Get a preloaded image from the cache
+     * @param path Path to the image resource
+     * @return The cached image or null if not found
+     */
+    public Image getPreloadedImage(String path) {
+        return imageCache.get(path);
     }
 }

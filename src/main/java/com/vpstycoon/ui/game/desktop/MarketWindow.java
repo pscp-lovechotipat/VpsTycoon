@@ -34,13 +34,38 @@ public class MarketWindow extends BorderPane {
     public MarketWindow(Runnable onClose, Runnable onClose2, VPSManager vpsManager, GameplayContentPane parent) {
         this.parent = parent;
         this.vpsManager = vpsManager;
-        this.onClose = onClose;
-
-        parent.getDateView().setVisible(false);
-        parent.getMoneyUI().setVisible(false);
-        parent.getMenuBar().setVisible(false);
         
-        // Hide parent menus when opening the market window
+        // เก็บสถานะการแสดงผลปัจจุบันของ UI elements
+        final boolean dateViewWasVisible = parent.getDateView().isVisible();
+        final boolean moneyUIWasVisible = parent.getMoneyUI().isVisible(); 
+        final boolean menuBarWasVisible = parent.getMenuBar().isVisible();
+        final boolean marketMenuBarWasVisible = parent.getInGameMarketMenuBar().isVisible();
+        
+        // บันทึก runnable ที่ใช้เมื่อปิด window และจะคืนค่า UI ตามสถานะเดิม
+        this.onClose = () -> {
+            // 1. ลบ MarketWindow ออกจาก gameArea
+            parent.getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
+            
+            // 2. คืนค่าสถานะการแสดงผลของ UI elements
+            parent.getDateView().setVisible(dateViewWasVisible);
+            parent.getMoneyUI().setVisible(moneyUIWasVisible);
+            parent.getMenuBar().setVisible(menuBarWasVisible);
+            parent.getInGameMarketMenuBar().setVisible(marketMenuBarWasVisible);
+            
+            // 3. ให้ UI ค่อยๆ ปรากฏด้วย fade-in
+            javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                javafx.util.Duration.millis(300), parent.getGameArea());
+            fadeIn.setFromValue(0.8);
+            fadeIn.setToValue(1.0);
+            fadeIn.play();
+            
+            // 4. เรียก callback เดิมถ้ามี
+            if (onClose != null) {
+                onClose.run();
+            }
+        };
+
+        // ซ่อน parent menus เมื่อเปิด market window
         parent.hideMenus();
         
         // Main container setup with enhanced Cyberpunk theme
