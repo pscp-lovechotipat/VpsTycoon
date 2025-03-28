@@ -564,12 +564,12 @@ public class DashboardWindow extends VBox {
 
         double avgRamUsage = vpsManager.getVPSMap().values().stream()
                 .flatMap(vps -> vps.getVms().stream())
-                .mapToDouble(vm -> Double.parseDouble(vm.getRam().split(" ")[0]))
+                .mapToDouble(vm -> Double.parseDouble(vm.getRam().split("GB")[0]))
                 .average().orElse(50.0);
 
         double avgDiskUsage = vpsManager.getVPSMap().values().stream()
                 .flatMap(vps -> vps.getVms().stream())
-                .mapToDouble(vm -> Double.parseDouble(vm.getDisk().split(" ")[0]))
+                .mapToDouble(vm -> Double.parseDouble(vm.getDisk().split("GB")[0]))
                 .average().orElse(50.0);
                 
         XYChart.Data<String, Number> cpuData = new XYChart.Data<>(timeStamp, avgCpuUsage);

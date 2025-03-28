@@ -44,3 +44,4 @@ build/
 savegame.dat
 chat_history.dat
 *.dat
+game_config.properties
