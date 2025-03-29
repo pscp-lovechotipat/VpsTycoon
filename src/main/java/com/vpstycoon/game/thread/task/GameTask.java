@@ -646,12 +646,6 @@ public abstract class GameTask {
                 int bonusPercent = (int)((managementEfficiency - 1.0) * 100);
                 rewardMsg += " (includes " + bonusPercent + "% Management bonus)";
             }
-            
-            resourceManager.pushCenterNotification(
-                "Task Completed: " + taskName,
-                rewardMsg,
-                "/images/notification/success.png"
-            );
         });
     }
     

@@ -152,7 +152,7 @@ public class CenterNotificationView extends StackPane {
         pane.setPadding(new Insets(20));
         pane.setAlignment(Pos.CENTER);
         pane.setMaxWidth(500);
-        pane.setMaxHeight(pane.getHeight());
+        pane.setMaxHeight(300);
 
         // Cyberpunk style
         pane.setStyle("""
@@ -214,6 +214,10 @@ public class CenterNotificationView extends StackPane {
         titleLabel.setFont(FontLoader.TITLE_FONT);
         titleLabel.setTextFill(Color.rgb(0, 255, 255));
         titleLabel.setAlignment(Pos.CENTER);
+        titleLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        titleLabel.setMaxWidth(Double.MAX_VALUE);
+        titleLabel.setWrapText(true);
+        titleLabel.setMaxWidth(460);
 
         // Content
         Label contentLabel = new Label(content);
@@ -415,7 +419,7 @@ public class CenterNotificationView extends StackPane {
         pane.setPadding(new Insets(20));
         pane.setAlignment(Pos.CENTER);
         pane.setMaxWidth(500);
-        pane.setMaxHeight(pane.getHeight());
+        pane.setMaxHeight(260);
 
         // Cyberpunk style
         pane.setStyle("""
@@ -449,6 +453,10 @@ public class CenterNotificationView extends StackPane {
         titleLabel.setFont(FontLoader.TITLE_FONT);
         titleLabel.setTextFill(Color.rgb(0, 255, 255));
         titleLabel.setAlignment(Pos.CENTER);
+        titleLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        titleLabel.setMaxWidth(Double.MAX_VALUE);
+        titleLabel.setWrapText(true);
+        titleLabel.setMaxWidth(460);
 
         // Content
         Label contentLabel = new Label(content);
@@ -457,6 +465,7 @@ public class CenterNotificationView extends StackPane {
         contentLabel.setWrapText(true);
         contentLabel.setMaxWidth(460);
         contentLabel.setAlignment(Pos.CENTER);
+        contentLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
         // Add elements
         if (image != null) { // Check for null image
