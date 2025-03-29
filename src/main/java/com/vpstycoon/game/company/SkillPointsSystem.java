@@ -354,4 +354,32 @@ public class SkillPointsSystem implements Serializable {
             default -> 0.0;
         };
     }
+
+    /**
+     * รีเซ็ตทักษะทั้งหมดให้กลับเป็นค่าเริ่มต้น (ระดับ 1)
+     */
+    public void resetSkills() {
+        // ลบค่าทั้งหมดออกก่อน
+        skillLevels.clear();
+        
+        // สร้างใหม่ด้วยค่าเริ่มต้น
+        initializeSkillLevels();
+        
+        // ตั้งค่า skill points ให้เป็น 0
+        if (company != null) {
+            company.setSkillPointsAvailable(0);
+        }
+        
+        System.out.println("รีเซ็ตทักษะทั้งหมดเป็นค่าเริ่มต้นแล้ว");
+    }
+    
+    /**
+     * Get the bonus to rack network speed based on the NETWORK_SPEED skill
+     * @return Percentage bonus to network speed
+     */
+    public double getNetworkSpeedBonus() {
+        int skillLevel = getSkillLevel(SkillType.NETWORK_SPEED);
+        // Level 1: +0%, Level 2: +10%, Level 3: +20%, Level 4: +30%
+        return skillLevel > 1 ? (skillLevel - 1) * 10 : 0;
+    }
 } 

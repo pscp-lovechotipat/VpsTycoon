@@ -311,4 +311,26 @@ public class RequestManager implements Serializable {
         completedRequests.addAll(requests);
         System.out.println("Updated completedRequests: " + completedRequests.size() + " requests");
     }
+
+    /**
+     * รีเซ็ตข้อมูล requests ทั้งหมด (pendingRequests และ completedRequests)
+     * ใช้เมื่อเริ่มเกมใหม่หรือต้องการล้างข้อมูลทั้งหมด
+     */
+    public void resetRequests() {
+        if (pendingRequests != null) {
+            pendingRequests.clear();
+            System.out.println("รีเซ็ต pendingRequests เรียบร้อย");
+        }
+        
+        if (completedRequests != null) {
+            completedRequests.clear();
+            System.out.println("รีเซ็ต completedRequests เรียบร้อย");
+        }
+        
+        // รีเซ็ตข้อมูล VM ใน VMProvisioningManager
+        if (vmProvisioningManager != null) {
+            vmProvisioningManager.resetAllVMs();
+            System.out.println("รีเซ็ต VMProvisioningManager เรียบร้อย");
+        }
+    }
 }

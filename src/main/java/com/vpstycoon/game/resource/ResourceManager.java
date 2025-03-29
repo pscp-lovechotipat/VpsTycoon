@@ -1,6 +1,7 @@
 package com.vpstycoon.game.resource;
 
 import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
@@ -65,6 +66,7 @@ public class ResourceManager implements Serializable {
     private Company company = new Company();
     private GameState currentState;
     private Rack rack; // เพิ่ม field สำหรับ Rack
+    private GameManager gameManager; // เพิ่ม field สำหรับ GameManager
 
     private RequestManager requestManager;
     private final AudioManager audioManager;
@@ -222,6 +224,7 @@ public class ResourceManager implements Serializable {
         this.company = new Company();
         this.audioManager = new AudioManager();
         this.rack = new Rack(); // สร้าง Rack เริ่มต้นใน ResourceManager
+        this.gameManager = GameManager.getInstance(); // เก็บ instance ของ GameManager
 
         createBackupDirectory();
         if (currentState == null) {
@@ -885,7 +888,7 @@ public class ResourceManager implements Serializable {
      * @return The request generator
      */
     public RequestGenerator getRequestGenerator() {
-        return com.vpstycoon.game.GameManager.getInstance().getRequestGenerator();
+        return getGameManager().getRequestGenerator();
     }
 
     // เมธอดอื่นๆ คงเดิม
@@ -1159,5 +1162,137 @@ public class ResourceManager implements Serializable {
      */
     public Image getPreloadedImage(String path) {
         return imageCache.get(path);
+    }
+
+    /**
+     * รีเซ็ตข้อมูล messenger ทั้งหมด
+     */
+    public void resetMessengerData() {
+        try {
+            System.out.println("กำลังรีเซ็ตข้อมูล Messenger และประวัติแชท...");
+            
+            // ล้างข้อมูลใน ChatHistoryManager
+            ChatHistoryManager chatManager = getChatHistory();
+            if (chatManager != null) {
+                chatManager.resetAllChatData();
+            }
+            
+            // รีเซ็ต ChatHistoryManager เพื่อสร้าง instance ใหม่
+            ChatHistoryManager.resetInstance();
+            
+            // รีเซ็ต RequestManager ถ้ามี
+            if (requestManager != null) {
+                requestManager.resetRequests();
+            } else {
+                System.out.println("ยังไม่มี RequestManager");
+                // สร้าง RequestManager ใหม่ถ้าจำเป็น
+                initiaizeRequestManager();
+                if (requestManager != null) {
+                    requestManager.resetRequests();
+                }
+            }
+            
+            System.out.println("รีเซ็ตข้อมูล Messenger และประวัติแชทเรียบร้อย");
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการรีเซ็ตข้อมูล Messenger: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * รีเซ็ตเวลาของเกมให้กลับไปที่ค่าเริ่มต้น
+     */
+    public void resetGameTime() {
+        try {
+            System.out.println("กำลังรีเซ็ตเวลาเกม...");
+            
+            // หยุดเวลาก่อนถ้า GameTimeController มีอยู่
+            if (gameTimeController != null) {
+                // ใช้ resetTime ของ GameTimeController ซึ่งจะเรียก resetTime ของ GameTimeManager ด้วย
+                LocalDateTime startTime = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
+                gameTimeController.resetTime(startTime);
+                System.out.println("รีเซ็ตเวลาด้วย GameTimeController เรียบร้อย");
+            } else {
+                System.out.println("ไม่พบ GameTimeController จำเป็นต้องสร้างใหม่");
+                
+                // สร้าง GameTimeController ใหม่ถ้าจำเป็น
+                if (currentState != null) {
+                    // รีเซ็ตเวลาใน GameState กลับเป็นค่าเริ่มต้น
+                    LocalDateTime startTime = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
+                    currentState.setLocalDateTime(startTime);
+                    currentState.setGameTimeMs(0);
+                    System.out.println("รีเซ็ตเวลาใน GameState เป็น: " + startTime);
+                    
+                    // สร้าง GameTimeController ใหม่
+                    initiaizeGameTimeController();
+                    System.out.println("สร้าง GameTimeController ใหม่");
+                } else {
+                    System.out.println("ไม่พบ currentState จึงไม่สามารถรีเซ็ตเวลาได้");
+                }
+            }
+            
+            System.out.println("รีเซ็ตเวลาเกมเรียบร้อย");
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการรีเซ็ตเวลาเกม: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * รีเซ็ต Rack และ VPSInventory เมื่อเริ่มเกมใหม่
+     */
+    public void resetRackAndInventory() {
+        try {
+            System.out.println("กำลังรีเซ็ต Rack และ VPSInventory...");
+            // สร้าง Rack ใหม่
+            this.rack = new Rack();
+            System.out.println("รีเซ็ต Rack เรียบร้อย");
+            
+            // แจ้งให้ listeners รู้ว่ามีการอัพเดท Rack
+            notifyRackUIUpdate();
+            
+            // รีเซ็ตทักษะทั้งหมด
+            if (skillPointsSystem != null) {
+                skillPointsSystem.resetSkills();
+                System.out.println("รีเซ็ตทักษะทั้งหมดเรียบร้อย");
+            } else {
+                System.out.println("ยังไม่มี skillPointsSystem จึงไม่สามารถรีเซ็ตทักษะได้");
+                initiaizeSkillPointsSystem();
+                if (skillPointsSystem != null) {
+                    skillPointsSystem.resetSkills();
+                    System.out.println("สร้างและรีเซ็ตทักษะเรียบร้อย");
+                }
+            }
+            
+            // รีเซ็ตเวลาเกม
+            resetGameTime();
+            
+            // รีเซ็ตข้อมูล Messenger
+            resetMessengerData();
+            
+            System.out.println("รีเซ็ตระบบคลังสินค้า VPS เรียบร้อย");
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการรีเซ็ต Rack และ VPSInventory: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * รับ instance ของ GameManager
+     * @return GameManager instance
+     */
+    public GameManager getGameManager() {
+        if (gameManager == null) {
+            gameManager = GameManager.getInstance();
+        }
+        return gameManager;
+    }
+    
+    /**
+     * เซ็ต instance ของ GameManager (ใช้สำหรับการรีเซ็ตระบบ)
+     * @param manager GameManager instance ใหม่
+     */
+    public void setGameManager(GameManager manager) {
+        this.gameManager = manager;
     }
 }

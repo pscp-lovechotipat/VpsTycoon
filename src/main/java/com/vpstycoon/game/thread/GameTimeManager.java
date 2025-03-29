@@ -189,4 +189,22 @@ public class GameTimeManager {
     public void stop() {
         running = false;
     }
+
+    /**
+     * รีเซ็ตเวลาเกมกลับไปที่ค่าเริ่มต้นที่กำหนด
+     * @param newStartDateTime เวลาเริ่มต้นใหม่
+     */
+    public void resetTime(LocalDateTime newStartDateTime) {
+        // หยุดการทำงานก่อน
+        stop();
+        
+        // อัพเดตเวลาเริ่มต้นและเวลาปัจจุบัน
+        gameDateTime = newStartDateTime;
+        
+        // รีเซ็ตตัวแปรที่เกี่ยวข้องกับเวลา
+        realTimeMs.set(0);
+        lastProcessedMonth = newStartDateTime.getMonthValue() - 1; // ตั้งให้ต่างจากเดือนปัจจุบัน 1 เดือน เพื่อให้ processMonthlyKeepUp() ทำงานในครั้งแรก
+        
+        System.out.println("รีเซ็ตเวลาใน GameTimeManager เป็น: " + newStartDateTime);
+    }
 }

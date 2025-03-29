@@ -298,20 +298,31 @@ public class GameApplication extends Application implements Navigator, ResourceM
         // Move initialization operations to background thread
         new Thread(() -> {
             try {
-                // 1. ลบและรีเซ็ตประวัติแชท
-                try {
-                    ChatHistoryManager chatManager = ResourceManager.getInstance().getChatHistory();
-                    
-                    // เคลียร์ประวัติแชททั้งหมด
-                    ChatHistoryManager.resetInstance();
-                    System.out.println("ล้างประวัติแชทเรียบร้อย");
-                } catch (Exception e) {
-                    System.err.println("เกิดข้อผิดพลาดในการลบประวัติแชท: " + e.getMessage());
-                }
+                // รีเซ็ต GameManager ก่อน เพื่อให้เริ่มต้นใหม่ทั้งหมด
+                GameManager.resetInstance();
+                
+                // รีเซ็ต Rack และ VPSInventory
+                ResourceManager.getInstance().resetRackAndInventory();
+
+                // หมายเหตุ: resetRackAndInventory() ได้เรียกใช้ resetMessengerData() แล้ว
+                // จึงไม่จำเป็นต้องรีเซ็ตประวัติแชทซ้ำอีก
                 
                 // 2. ลบไฟล์เซฟเดิมก่อน
                 ResourceManager.getInstance().deleteSaveFile();
                 System.out.println("ลบไฟล์เซฟเดิมเรียบร้อย");
+                
+                // เรียกใช้ resetMessengerData() อีกครั้งเพื่อให้แน่ใจว่า RequestManager ถูกรีเซ็ตอย่างสมบูรณ์
+                ResourceManager.getInstance().resetMessengerData();
+                
+                // เรียกใช้ resetGameTime() เพื่อรีเซ็ตเวลาเกมให้สมบูรณ์
+                ResourceManager.getInstance().resetGameTime();
+                
+                // ล้างค่า GameState ปัจจุบันก่อนถ้ามีอยู่แล้ว
+                GameState existingState = ResourceManager.getInstance().getCurrentState();
+                if (existingState != null) {
+                    existingState.clearState();
+                    System.out.println("ล้างค่า GameState ปัจจุบันเรียบร้อย");
+                }
                 
                 // 3. สร้าง GameState ใหม่ (ไม่อ่านจากไฟล์)
                 GameState newState = new GameState();

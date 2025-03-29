@@ -42,6 +42,40 @@ public class GameManager {
     }
     
     /**
+     * รีเซ็ต instance ของ GameManager
+     * เรียกใช้เมื่อต้องการเริ่มเกมใหม่
+     */
+    public static void resetInstance() {
+        try {
+            if (instance != null && instance.requestGenerator != null) {
+                instance.requestGenerator.resetGenerator();
+                System.out.println("Reset existing RequestGenerator before resetting GameManager");
+            }
+            
+            if (instance != null && instance.timeManager != null) {
+                // หยุด TimeManager ถ้าจำเป็น
+                System.out.println("Resetting GameManager instance");
+            }
+            
+            // สร้าง instance ใหม่
+            instance = new GameManager();
+            
+            // อัพเดท instance ใน ResourceManager ด้วย
+            ResourceManager.getInstance().setGameManager(instance);
+            
+            System.out.println("GameManager was reset successfully");
+        } catch (Exception e) {
+            System.err.println("Error resetting GameManager: " + e.getMessage());
+            e.printStackTrace();
+            // สร้างใหม่ในกรณีเกิดข้อผิดพลาด
+            instance = new GameManager();
+            
+            // อัพเดท instance ใน ResourceManager ด้วย แม้จะเกิดข้อผิดพลาด
+            ResourceManager.getInstance().setGameManager(instance);
+        }
+    }
+    
+    /**
      * Initialize a new game
      * @param company The player's company
      */

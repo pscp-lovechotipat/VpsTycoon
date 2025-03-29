@@ -327,4 +327,20 @@ public class VMProvisioningManagerImpl implements Serializable {
         Random r = new Random();
         return r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256) + "." + r.nextInt(256);
     }
+
+    /**
+     * รีเซ็ตข้อมูล VM ทั้งหมด
+     * ใช้เมื่อเริ่มเกมใหม่หรือต้องการล้างข้อมูลทั้งหมด
+     */
+    public void resetAllVMs() {
+        if (vmToRequestMap != null) {
+            vmToRequestMap.clear();
+            System.out.println("รีเซ็ต vmToRequestMap เรียบร้อย");
+        }
+        
+        if (activeRequests != null) {
+            activeRequests.clear();
+            System.out.println("รีเซ็ต activeRequests เรียบร้อย");
+        }
+    }
 } 
