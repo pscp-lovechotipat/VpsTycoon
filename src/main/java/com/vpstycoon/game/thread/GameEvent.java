@@ -40,15 +40,15 @@ public class GameEvent implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(GameEvent.class.getName());
     
     // Timing constants for tasks
-    // private static final int INITIAL_TASK_DELAY = 5 * 1000; // 20 seconds initial delay before tasks start
-    // private static final int MIN_TASK_INTERVAL = 5 * 1000; // Minimum 30 seconds between tasks
-    // private static final int MAX_TASK_INTERVAL = 5 * 1000; // Maximum 90 seconds between tasks
-    // private static final int DEBUG_INTERVAL = 1 * 1000;
+     private static final int INITIAL_TASK_DELAY = 5 * 1000; // 20 seconds initial delay before tasks start
+     private static final int MIN_TASK_INTERVAL = 5 * 1000; // Minimum 30 seconds between tasks
+     private static final int MAX_TASK_INTERVAL = 5 * 1000; // Maximum 90 seconds between tasks
+     private static final int DEBUG_INTERVAL = 1 * 1000;
 
-   private static final int INITIAL_TASK_DELAY = 5 * 60 * 1000; // 20 seconds initial delay before tasks start
-   private static final int MIN_TASK_INTERVAL = 3 * 60 * 1000; // Minimum 30 seconds between tasks-
-   private static final int MAX_TASK_INTERVAL = 7 * 60 * 1000; // Maximum 90 seconds between tasks
-   private static final int DEBUG_INTERVAL = 5 * 1000; // Debug output every 5 seconds
+//   private static final int INITIAL_TASK_DELAY = 5 * 60 * 1000; // 20 seconds initial delay before tasks start
+//   private static final int MIN_TASK_INTERVAL = 3 * 60 * 1000; // Minimum 30 seconds between tasks-
+//   private static final int MAX_TASK_INTERVAL = 7 * 60 * 1000; // Maximum 90 seconds between tasks
+//   private static final int DEBUG_INTERVAL = 5 * 1000; // Debug output every 5 seconds
 
     private final GameplayContentPane gameplayContentPane;
     private final ResourceManager resourceManager;
@@ -78,38 +78,38 @@ public class GameEvent implements Runnable {
     // Task definitions
     @SuppressWarnings("unchecked")
     private final Supplier<GameTask>[] taskFactories = new Supplier[] {
-        // Wire connection task 
-        () -> new WireTask(random.nextInt(3) + 3), // 3-5 wires
+        // Wire connection task
+         // () -> new WireTask(random.nextInt(3) + 3), // 3-5 wires
         
         // Data decryption task
-    () -> new DataDecryptionTask(random.nextInt(3) + 3), // 3-5 digits
-
-       // Firewall Defense Task
-     () -> new FirewallDefenseTask(),
-
-       // Data Sorting Task
-       () -> new DataSortingTask(),
-
-       // Password Cracking Task
-       () -> new PasswordCrackingTask(),
-
-       // Network Routing Task
-       () -> new NetworkRoutingTask(),
-
-       // Server Cooling Task
-       () -> new ServerCoolingTask(),
-
-       // Resource Optimization Task
-       () -> new ResourceOptimizationTask(),
-
-       // Calibration Task
-       () -> new CalibrationTask(),
-
-       // File Recovery Task
-       () -> new FileRecoveryTask(),
-
-       // New Hacking Grid Task
-       () -> new HackingTask()
+//     () -> new DataDecryptionTask(random.nextInt(3) + 3), // 3-5 digits
+//
+//       // Firewall Defense Task
+    () -> new FirewallDefenseTask(),
+//
+//       // Data Sorting Task
+//       () -> new DataSortingTask(),
+//
+//       // Password Cracking Task
+//       () -> new PasswordCrackingTask(),
+//
+//       // Network Routing Task
+//       () -> new NetworkRoutingTask(),
+//
+//       // Server Cooling Task
+//       () -> new ServerCoolingTask(),
+//
+//       // Resource Optimization Task
+//       () -> new ResourceOptimizationTask(),
+//
+//       // Calibration Task
+//       () -> new CalibrationTask(),
+//
+//       // File Recovery Task
+//       () -> new FileRecoveryTask(),
+//
+//       // New Hacking Grid Task
+//       () -> new HackingTask()
     };
 
     /**

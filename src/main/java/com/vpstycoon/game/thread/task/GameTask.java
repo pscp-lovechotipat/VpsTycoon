@@ -340,10 +340,10 @@ public abstract class GameTask {
         mainContainer.setAlignment(Pos.CENTER);
         
         // Set fixed size to ensure consistent layout
-        mainContainer.setPrefSize(800, 600);
-        mainContainer.setMaxSize(800, 600);
-        mainContainer.setMinSize(800, 600);
-        
+        mainContainer.setPrefSize(800, 700);
+        mainContainer.setMaxSize(800, 700);
+        mainContainer.setMinSize(800, 700);
+
         // Create main content pane with cyberpunk theme (without footer)
         contentPane = new BorderPane();
         contentPane.setPrefSize(800, 580); // Reduced height to accommodate separate footer

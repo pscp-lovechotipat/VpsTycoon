@@ -72,7 +72,7 @@ public class FirewallDefenseTask extends GameTask {
         defenseGrid.setStyle("-fx-background-color: #0a1520; -fx-border-color: #3a4a5a; -fx-border-width: 2px;");
         
         // Calculate the full width for the status bar (container width - padding)
-        double statusBarWidth = defenseGrid.getPrefWidth() + 115;
+        double statusBarWidth = defenseGrid.getPrefWidth() + 80;
         
         // Firewall status bar - Use the full width of the container
         Rectangle statusBar = new Rectangle(statusBarWidth, 30);
