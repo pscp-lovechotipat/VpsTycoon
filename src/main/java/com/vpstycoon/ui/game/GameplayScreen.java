@@ -190,9 +190,21 @@ public class GameplayScreen extends GameScreen {
 
         state.setGameObjects(gameObjects);
 
-        RequestGenerator requestGenerator = new RequestGenerator(requestManager);
-
-        requestGenerator.start();
+        // Only create and start a RequestGenerator if ResourceManager doesn't already have one running
+        RequestGenerator existingGenerator = ResourceManager.getInstance().getRequestGenerator();
+        if (existingGenerator == null) {
+            RequestGenerator requestGenerator = new RequestGenerator(requestManager);
+            requestGenerator.start();
+            System.out.println("Created and started new RequestGenerator");
+        } else {
+            System.out.println("Using existing RequestGenerator from ResourceManager");
+            // Make sure the existing generator is running
+            if (existingGenerator.isPaused()) {
+                existingGenerator.resumeGenerator();
+                System.out.println("Resumed existing RequestGenerator");
+            }
+        }
+        
         gameTimeController = ResourceManager.getInstance().getGameTimeController();
         gameTimeController.startTime();
     }

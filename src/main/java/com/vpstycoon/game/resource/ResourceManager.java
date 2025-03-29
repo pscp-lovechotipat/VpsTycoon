@@ -12,6 +12,7 @@ import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.thread.GameEvent;
 import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.thread.GameTimeManager;
+import com.vpstycoon.game.thread.RequestGenerator;
 import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
@@ -877,6 +878,14 @@ public class ResourceManager implements Serializable {
     public GameTimeController getGameTimeController() {
         initiaizeGameTimeController();
         return gameTimeController;
+    }
+
+    /**
+     * Get the request generator from GameManager
+     * @return The request generator
+     */
+    public RequestGenerator getRequestGenerator() {
+        return com.vpstycoon.game.GameManager.getInstance().getRequestGenerator();
     }
 
     // เมธอดอื่นๆ คงเดิม

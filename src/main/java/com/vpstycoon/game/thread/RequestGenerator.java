@@ -8,6 +8,7 @@ import java.util.Random;
 public class RequestGenerator extends Thread {
     private final RequestManager requestManager;
     private volatile boolean running = true;
+    private volatile boolean paused = false;
     private final int minDelayMs = 30_000; // Minimum delay between requests (30 seconds)
     private final int maxDelayMs = 90_000; // Maximum delay between requests (90 seconds)
     private final int rateLimitSleepTime = 10_000; // Sleep time when rate limit is reached
@@ -28,6 +29,16 @@ public class RequestGenerator extends Thread {
 
         while (!interrupted() && running) {
             try {
+                // Check if generator is paused
+                if (paused) {
+                    synchronized (this) {
+                        while (paused) {
+                            System.out.println("RequestGenerator paused, waiting to resume...");
+                            wait(); // Wait until notify() is called
+                        }
+                    }
+                }
+                
                 // Check if we've reached the maximum number of pending requests
                 if (requestManager.getRequests().size() >= maxPendingRequests) {
                     System.out.println("RequestGenerator: request limit reached (" + maxPendingRequests + ")");
@@ -91,6 +102,52 @@ public class RequestGenerator extends Thread {
     public void stopGenerator() {
         running = false;
         this.interrupt();
+    }
+    
+    /**
+     * Pause the request generator
+     */
+    public synchronized void pauseGenerator() {
+        System.out.println("RequestGenerator is pausing");
+        paused = true;
+    }
+    
+    /**
+     * Resume the request generator
+     */
+    public synchronized void resumeGenerator() {
+        if (paused) {
+            System.out.println("RequestGenerator is resuming");
+            paused = false;
+            
+            try {
+                notify(); // Wake up the waiting thread
+                System.out.println("RequestGenerator notify() called successfully");
+            } catch (Exception e) {
+                System.err.println("Error in resumeGenerator: " + e.getMessage());
+                e.printStackTrace();
+                
+                // เพิ่มการตรวจสอบ Thread state ถ้าเกิดข้อผิดพลาด
+                if (!isAlive()) {
+                    System.err.println("RequestGenerator thread is not alive, attempting to restart");
+                    try {
+                        // ถ้า thread ไม่ทำงานแล้ว ให้ลองสร้าง thread ใหม่และเริ่มทำงานใหม่
+                        // ทำได้เฉพาะกรณีที่ไม่เคยเริ่ม start อีกทางคือต้องสร้าง RequestGenerator ใหม่
+                        this.start();
+                    } catch (IllegalThreadStateException ex) {
+                        System.err.println("Cannot restart thread: " + ex.getMessage());
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Check if the generator is paused
+     * @return True if the generator is paused
+     */
+    public boolean isPaused() {
+        return paused;
     }
     
     /**

@@ -46,6 +46,16 @@ public class GameManager {
      * @param company The player's company
      */
     public void initializeNewGame(Company company) {
+        // หยุด RequestGenerator เก่าก่อน (ถ้ามี)
+        if (requestGenerator != null) {
+            try {
+                requestGenerator.stopGenerator();
+                System.out.println("Stopped existing RequestGenerator");
+            } catch (Exception e) {
+                System.err.println("Error stopping RequestGenerator: " + e.getMessage());
+            }
+        }
+
         // Create request manager with the company
         requestManager = ResourceManager.getInstance().getRequestManager();
         
@@ -279,281 +289,61 @@ public class GameManager {
                     }
                     
                     // โหลดข้อมูล completedRequests
-                    if (savedState.getCompletedRequests() != null) {
-                        // เพิ่ม completedRequests จาก savedState เข้าไปใน requestManager
+                    if (savedState.getCompletedRequests() != null && !savedState.getCompletedRequests().isEmpty()) {
+                        // เพิ่ม completedRequests จาก savedState
                         this.requestManager.addCompletedRequests(savedState.getCompletedRequests());
                         System.out.println("โหลด completedRequests: " + savedState.getCompletedRequests().size() + " รายการ");
                     }
+                }
+                
+                // ===== โหลดข้อมูล Rack =====
+                try {
+                    // ตรวจสอบว่าสามารถโหลดข้อมูล rack ได้หรือไม่
+                    rackLoadedSuccessfully = ResourceManager.getInstance().loadRackDataFromGameState(savedState);
                     
-                    // โหลดข้อมูล VM assignments และตั้งค่า assignedToVmId ใน CustomerRequest
-                    if (savedState.getVmAssignments() != null && !savedState.getVmAssignments().isEmpty()) {
-                        Map<String, String> vmAssignments = savedState.getVmAssignments();
-                        System.out.println("โหลดข้อมูลการ assign VM: " + vmAssignments.size() + " รายการ");
-                        
-                        // สร้าง map จาก requestId ไปยัง CustomerRequest เพื่อใช้ในการค้นหา
-                        Map<String, CustomerRequest> requestIdMap = new HashMap<>();
-                        
-                        // เพิ่ม pending requests
-                        for (CustomerRequest request : this.requestManager.getRequests()) {
-                            requestIdMap.put(String.valueOf(request.getId()), request);
-                        }
-                        
-                        // เพิ่ม completed requests
-                        for (CustomerRequest request : this.requestManager.getCompletedRequests()) {
-                            requestIdMap.put(String.valueOf(request.getId()), request);
-                        }
-                        
-                        // ตั้งค่า assignedToVmId ใน CustomerRequest
-                        for (Map.Entry<String, String> entry : vmAssignments.entrySet()) {
-                            String vmId = entry.getKey();
-                            String requestId = entry.getValue();
-                            
-                            CustomerRequest request = requestIdMap.get(requestId);
-                            if (request != null) {
-                                request.assignToVM(vmId);
-                                System.out.println("ตั้งค่า assignToVM " + vmId + " ให้กับ request " + request.getName());
-                            } else {
-                                System.out.println("ไม่พบ request id " + requestId + " สำหรับ VM " + vmId);
-                            }
-                        }
+                    // ถ้าโหลด rack สำเร็จให้แสดงข้อความแจ้งเตือน
+                    if (rackLoadedSuccessfully) {
+                        System.out.println("โหลดข้อมูล rack สำเร็จ (" + ResourceManager.getInstance().getRack().getInstalledVPS().size() + " VPS)");
+                    } else {
+                        System.err.println("ไม่สามารถโหลดข้อมูล rack ได้");
                     }
-                } else {
-                    System.err.println("ไม่สามารถโหลดข้อมูล Requests ได้: requestManager เป็น null");
+                } catch (Exception e) {
+                    System.err.println("เกิดข้อผิดพลาดในการโหลดข้อมูล rack: " + e.getMessage());
+                    e.printStackTrace();
                 }
                 
-                // Set date/time from saved state
-                if (savedState.getLocalDateTime() != null) {
-                    timeManager = ResourceManager.getInstance().getGameTimeManager();
-                }
-                
-                // ล้างข้อมูล servers และ inventory เดิม
-                installedServers.clear();
-                vpsInventory.clear();
-                
-                // โหลดข้อมูล VPS และ server จาก gameObjects
-                if (savedState.getGameObjects() != null) {
-                    System.out.println("โหลด GameObjects: " + savedState.getGameObjects().size() + " รายการ");
-                    
-                    for (GameObject obj : savedState.getGameObjects()) {
-                        if (obj instanceof VPSOptimization) {
-                            VPSOptimization server = (VPSOptimization) obj;
-                            
-                            // ตรวจสอบว่า VPS นี้ได้รับการติดตั้งแล้วหรือไม่
-                            if (server.isInstalled()) {
-                                // เพิ่มเข้า installed servers
-                                installedServers.add(server);
-                                timeManager.addVPSServer(server);
-                                System.out.println("โหลด installed VPS: " + server.getVpsId());
-                            } else {
-                                // เพิ่มเข้า inventory
-                                if (server.getVpsId() != null && !server.getVpsId().isEmpty()) {
-                                    vpsInventory.addVPS(server.getVpsId(), server);
-                                    System.out.println("โหลด VPS เข้า inventory: " + server.getVpsId());
-                                } else {
-                                    // ถ้าไม่มี ID ให้สร้าง ID ใหม่
-                                    String newId = "server-" + System.currentTimeMillis() + "-" + vpsInventory.getSize();
-                                    server.setVpsId(newId);
-                                    vpsInventory.addVPS(newId, server);
-                                    System.out.println("โหลด VPS ที่ไม่มี ID เข้า inventory, สร้าง ID ใหม่: " + newId);
-                                }
-                            }
+                // Start the RequestGenerator
+                if (requestGenerator != null) {
+                    // ตรวจสอบว่า Thread กำลังทำงานอยู่หรือไม่
+                    if (!requestGenerator.isAlive()) {
+                        requestGenerator.start();
+                        System.out.println("Started RequestGenerator after loading state");
+                    } else {
+                        // ถ้า Thread กำลังทำงานอยู่แล้ว ให้ตรวจสอบว่ากำลัง paused อยู่หรือไม่
+                        if (requestGenerator.isPaused()) {
+                            requestGenerator.resumeGenerator();
+                            System.out.println("Resumed existing RequestGenerator after loading state");
+                        } else {
+                            System.out.println("RequestGenerator is already running");
                         }
                     }
                 }
                 
-                // โหลดข้อมูล VPSInventory เพิ่มเติม (ถ้ามี)
-                Map<String, Object> inventoryData = savedState.getVpsInventoryData();
-                if (inventoryData != null && !inventoryData.isEmpty()) {
-                    System.out.println("พบข้อมูล VPSInventory เพิ่มเติม");
-                    
-                    if (inventoryData.containsKey("vpsIds") && inventoryData.containsKey("vpsDetails")) {
-                        List<String> vpsIds = (List<String>) inventoryData.get("vpsIds");
-                        Map<String, Map<String, Object>> vpsDetails = (Map<String, Map<String, Object>>) inventoryData.get("vpsDetails");
-                        
-                        // ตรวจสอบแต่ละ VPS ID ว่ามีใน inventory แล้วหรือไม่
-                        for (String vpsId : vpsIds) {
-                            if (!vpsInventory.getAllVPSIds().contains(vpsId) && vpsDetails.containsKey(vpsId)) {
-                                // ถ้ายังไม่มี ให้สร้าง VPS ใหม่จากข้อมูลใน vpsDetails
-                                Map<String, Object> details = vpsDetails.get(vpsId);
-                                
-                                VPSOptimization newVPS = new VPSOptimization();
-                                newVPS.setVpsId(vpsId);
-                                
-                                // ตั้งค่าตาม details
-                                if (details.containsKey("vCPUs")) {
-                                    newVPS.setVCPUs((Integer) details.get("vCPUs"));
-                                }
-                                
-                                if (details.containsKey("ramInGB")) {
-                                    newVPS.setRamInGB((Integer) details.get("ramInGB"));
-                                }
-                                
-                                if (details.containsKey("diskInGB")) {
-                                    newVPS.setDiskInGB((Integer) details.get("diskInGB"));
-                                }
-                                
-                                if (details.containsKey("name") && details.get("name") != null) {
-                                    newVPS.setName((String) details.get("name"));
-                                } else {
-                                    newVPS.setName("VPS-" + vpsId);
-                                }
-                                
-                                if (details.containsKey("size") && details.get("size") != null) {
-                                    try {
-                                        newVPS.setSize(VPSSize.valueOf((String) details.get("size")));
-                                    } catch (Exception e) {
-                                        newVPS.setSize(VPSSize.SIZE_1U); // ค่าเริ่มต้น
-                                    }
-                                }
-                                
-                                // เพิ่มเข้า inventory
-                                newVPS.setInstalled(false);
-                                vpsInventory.addVPS(vpsId, newVPS);
-                                System.out.println("สร้าง VPS ใหม่จากข้อมูลเพิ่มเติม: " + vpsId);
-                            }
-                        }
-                    }
-                }
-                
-                // โหลดข้อมูล Rack (ถ้ามี)
-                Rack rack = null;
-                Map<String, Object> rackConfig = savedState.getRackConfiguration();
-                if (rackConfig != null && !rackConfig.isEmpty()) {
-                    System.out.println("พบข้อมูล Rack Configuration");
-                    
-                    try {
-                        // 1. สร้าง Rack ใหม่
-                        rack = new Rack();
-                        
-                        // 2. สร้าง Rack ตามจำนวนที่บันทึกไว้
-                        int maxRacks = rackConfig.containsKey("maxRacks") ? (Integer) rackConfig.get("maxRacks") : 0;
-                        
-                        // ดึงข้อมูลขนาดของแต่ละ rack (ถ้ามี)
-                        List<Integer> slotCounts = null;
-                        if (rackConfig.containsKey("slotCounts")) {
-                            slotCounts = (List<Integer>) rackConfig.get("slotCounts");
-                        }
-                        
-                        // สร้าง rack ในจำนวนที่บันทึกไว้
-                        for (int i = 0; i < maxRacks; i++) {
-                            int slotCount = 10; // ค่าเริ่มต้น
-                            if (slotCounts != null && i < slotCounts.size()) {
-                                slotCount = slotCounts.get(i);
-                            }
-                            rack.addRack(slotCount);
-                            System.out.println("สร้าง Rack #" + (i+1) + " พร้อม " + slotCount + " slots");
-                        }
-                        
-                        // 3. ถ้ามีข้อมูล unlockedSlotUnitsList ให้ตั้งค่าตามนั้น
-                        if (rackConfig.containsKey("unlockedSlotUnitsList")) {
-                            List<Integer> unlockedList = (List<Integer>) rackConfig.get("unlockedSlotUnitsList");
-                            // ใช้เมธอด setUnlockedSlotUnitsList ที่เราเพิ่งเพิ่มใน Rack
-                            rack.setUnlockedSlotUnitsList(unlockedList);
-                            System.out.println("พบข้อมูล unlockedSlotUnitsList: " + unlockedList);
-                        }
-                        
-                        // 4. ตั้งค่า rack index ปัจจุบันที่เลือก
-                        if (rackConfig.containsKey("currentRackIndex")) {
-                            int currentIndex = (Integer) rackConfig.get("currentRackIndex");
-                            if (currentIndex >= 0 && currentIndex < maxRacks) {
-                                rack.setRackIndex(currentIndex);
-                                System.out.println("ตั้งค่า currentRackIndex = " + currentIndex);
-                            }
-                        }
-                        
-                        // 5. ติดตั้ง VPS ใน rack
-                        if (rackConfig.containsKey("installedVpsIds")) {
-                            List<String> installedVpsIds = (List<String>) rackConfig.get("installedVpsIds");
-                            System.out.println("จำนวน VPS ที่ติดตั้งใน Rack: " + installedVpsIds.size());
-                            
-                            // ติดตั้ง VPS แต่ละตัวเข้า rack
-                            for (String vpsId : installedVpsIds) {
-                                // ค้นหา VPS นี้จาก gameObjects หรือ inventory
-                                VPSOptimization vps = null;
-                                
-                                // ค้นหาจาก installedServers ก่อน
-                                for (VPSOptimization server : installedServers) {
-                                    if (server.getVpsId() != null && server.getVpsId().equals(vpsId)) {
-                                        vps = server;
-                                        break;
-                                    }
-                                }
-                                
-                                // ถ้าไม่พบ ให้ลองค้นหาจาก inventory
-                                if (vps == null) {
-                                    vps = vpsInventory.getVPS(vpsId);
-                                    if (vps != null) {
-                                        // เอาออกจาก inventory และย้ายไปที่ installed
-                                        vpsInventory.removeVPS(vpsId);
-                                        installedServers.add(vps);
-                                    }
-                                }
-                                
-                                if (vps != null) {
-                                    // ติดตั้ง VPS เข้า rack
-                                    vps.setInstalled(true);
-                                    if (rack.installVPS(vps)) {
-                                        System.out.println("ติดตั้ง VPS " + vpsId + " เข้า Rack สำเร็จ");
-                                    } else {
-                                        System.out.println("ติดตั้ง VPS " + vpsId + " เข้า Rack ไม่สำเร็จ");
-                                    }
-                                } else {
-                                    System.out.println("ไม่พบ VPS " + vpsId + " สำหรับติดตั้งเข้า Rack");
-                                }
-                            }
-                        }
-                        
-                        // บันทึก rack ใน ResourceManager
-                        ResourceManager.getInstance().setRack(rack);
-                        System.out.println("ตั้งค่า Rack ใน ResourceManager สำเร็จ");
-                        rackLoadedSuccessfully = true;
-                        
-                    } catch (Exception e) {
-                        System.err.println("เกิดข้อผิดพลาดในการโหลดข้อมูล Rack: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                } else {
-                    System.out.println("ไม่พบข้อมูล Rack Configuration");
-                    // ถ้าไม่พบข้อมูล Rack ให้สร้าง Rack เริ่มต้น
-                    rack = new Rack();
-                    rack.addRack(10); // สร้าง rack พร้อม 10 slots
-                    ResourceManager.getInstance().setRack(rack);
-                    System.out.println("เพิ่ม rack เริ่มต้นพร้อม 1 slot ปลดล็อคแล้ว");
-                    rackLoadedSuccessfully = true;
-                }
-                
-                // โหลดข้อมูล Free VM Count
-                if (savedState.getFreeVmCount() > 0) {
-                    int freeVMCount = savedState.getFreeVmCount();
-                    if (company != null) {
-                        company.setAvailableVMs(freeVMCount);
-                        System.out.println("ตั้งค่า Free VM Count: " + freeVMCount);
-                    }
-                }
-                
-                System.out.println("โหลดข้อมูลเสร็จสิ้น:");
-                System.out.println("- Installed VPS: " + installedServers.size() + " เครื่อง");
-                System.out.println("- VPS ใน Inventory: " + vpsInventory.getSize() + " เครื่อง");
-                if (rack != null) {
-                    System.out.println("- Rack: " + rack.getMaxRacks() + " ชั้น");
-                    System.out.println("- VPS ที่ติดตั้งใน Rack: " + rack.getInstalledVPS().size() + " เครื่อง");
-                }
-                
-                // แน่ใจว่าโหลดเสร็จแล้ว
                 loadCompleted = true;
             }
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการโหลดเกม: " + e.getMessage());
             e.printStackTrace();
+            loadCompleted = false;
         }
         
-        // ตรวจสอบว่าข้อมูล rack ถูกโหลดหรือไม่
-        if (!rackLoadedSuccessfully) {
-            System.out.println("ไม่สามารถโหลดข้อมูล Rack ได้ ทำการสร้าง Rack ใหม่...");
-            Rack rack = new Rack();
-            rack.addRack(10); // สร้าง rack พร้อม 10 slots
-            ResourceManager.getInstance().setRack(rack);
-            System.out.println("สร้าง Rack ใหม่เสร็จเรียบร้อย");
+        // แสดงผลการโหลดเกม
+        if (loadCompleted) {
+            System.out.println("โหลดเกมสำเร็จ");
+            gameRunning = true;
+        } else {
+            System.err.println("โหลดเกมไม่สำเร็จ");
+            gameRunning = false;
         }
     }
 
