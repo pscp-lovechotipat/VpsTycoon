@@ -28,6 +28,8 @@ import java.util.Timer;
 import com.vpstycoon.ui.game.rack.Rack;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.GameManager;
+import com.vpstycoon.event.GameEventBus;
+import com.vpstycoon.event.SettingsChangedEvent;
 
 public class GameplayScreen extends GameScreen {
     private GameState state;
@@ -41,6 +43,7 @@ public class GameplayScreen extends GameScreen {
     private final GameFlowManager gameFlowManager;
     private final DebugOverlayManager debugOverlayManager;
     private GameTimeController gameTimeController;
+    private GameplayContentPane contentPane; // Store reference to content pane
 
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
@@ -53,6 +56,9 @@ public class GameplayScreen extends GameScreen {
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
+        
+        // Register for settings change events
+        subscribeToSettingsChanges();
 
         loadGame();
     }
@@ -92,6 +98,9 @@ public class GameplayScreen extends GameScreen {
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
+        
+        // Register for settings change events
+        subscribeToSettingsChanges();
 
         // โหลดเกมโดยใช้ GameState ที่ได้รับมา
         loadGame(gameState);
@@ -191,7 +200,7 @@ public class GameplayScreen extends GameScreen {
     @Override
     protected Region createContent() {
         // สร้าง GameplayContentPane ซึ่งเป็นหน้าหลักของเกม
-        GameplayContentPane contentPane = new GameplayContentPane(
+        contentPane = new GameplayContentPane(
                 this.gameObjects,
                 this.navigator,
                 this.chatSystem,
@@ -293,5 +302,21 @@ public class GameplayScreen extends GameScreen {
             System.err.println("Error releasing GameplayScreen resources: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Subscribe to settings change events to update the UI when resolution changes
+     */
+    private void subscribeToSettingsChanges() {
+        GameEventBus.getInstance().subscribe(
+            SettingsChangedEvent.class,
+            event -> Platform.runLater(() -> {
+                // Update content pane with new resolution
+                if (contentPane != null) {
+                    System.out.println("Resolution changed, updating game screen layout");
+                    contentPane.updateResolution();
+                }
+            })
+        );
     }
 }

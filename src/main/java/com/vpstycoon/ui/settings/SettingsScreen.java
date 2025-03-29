@@ -338,7 +338,21 @@ public class SettingsScreen extends StackPane {
         applyButton.setOnAction(e -> {
             audioManager.playSoundEffect("click.wav");
             config.save();
+            
+            // Apply resolution changes immediately
+            if (screenManager != null) {
+                // Get the current scene and stage to apply to
+                javafx.stage.Stage stage = (javafx.stage.Stage) getScene().getWindow();
+                javafx.scene.Scene scene = getScene();
+                
+                // Apply the resolution settings directly
+                screenManager.applySettings(stage, scene);
+            }
+            
+            // Then publish the event for other settings
             GameEventBus.getInstance().publish(new SettingsChangedEvent(config));
+            
+            // Close settings screen
             onCloseSettings.run();
         });
         

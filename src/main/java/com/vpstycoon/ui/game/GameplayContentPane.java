@@ -1,6 +1,7 @@
 package com.vpstycoon.ui.game;
 
 import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.config.DefaultGameConfig;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.company.SkillPointsSystem;
@@ -13,6 +14,7 @@ import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.VPSSize;
+import com.vpstycoon.screen.ScreenResolution;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.components.GameMenuBar;
 import com.vpstycoon.ui.game.components.InGameMarketMenuBar;
@@ -132,14 +134,25 @@ public class GameplayContentPane extends BorderPane {
         this.company = company;
         this.rack = rack;
 
+        // Set background and remove any padding/borders from the BorderPane
+        setStyle("-fx-background-color: black; -fx-padding: 0; -fx-margin: 0;");
+        
         // Initialize UI Components
         rootStack = new StackPane();
-        rootStack.setPrefSize(800, 600);
-        rootStack.setMinSize(800, 600);
+        // Set style to ensure no white borders
+        rootStack.setStyle("-fx-background-color: black; -fx-padding: 0; -fx-margin: 0;");
+        
+        // Don't use fixed sizes - get from resolution
+        ScreenResolution resolution = DefaultGameConfig.getInstance().getResolution();
+        rootStack.setPrefSize(resolution.getWidth(), resolution.getHeight());
+        rootStack.setMinSize(resolution.getWidth(), resolution.getHeight());
+        rootStack.setMaxSize(resolution.getWidth(), resolution.getHeight());
         
         gameArea = new StackPane();
-        gameArea.setPrefSize(800, 600);
-        gameArea.setMinSize(800, 600);
+        gameArea.setStyle("-fx-background-color: black; -fx-padding: 0; -fx-margin: 0;");
+        gameArea.setPrefSize(resolution.getWidth(), resolution.getHeight());
+        gameArea.setMinSize(resolution.getWidth(), resolution.getHeight());
+        gameArea.setMaxSize(resolution.getWidth(), resolution.getHeight());
         rootStack.getChildren().add(gameArea);
 
         // เตรียม rack เริ่มต้น (ถ้ายังไม่มี)
@@ -221,32 +234,63 @@ public class GameplayContentPane extends BorderPane {
     private synchronized void setupUI() {
         System.out.println("กำลังตั้งค่า UI ใหม่...");
         
+        // Get current resolution for proper sizing
+        ScreenResolution resolution = DefaultGameConfig.getInstance().getResolution();
+        
+        // Start with clean state - clear game area completely
+        gameArea.getChildren().clear();
+        
+        // Update container sizes to match resolution
+        rootStack.setPrefSize(resolution.getWidth(), resolution.getHeight());
+        rootStack.setMinSize(resolution.getWidth(), resolution.getHeight());
+        rootStack.setMaxSize(resolution.getWidth(), resolution.getHeight());
+        
+        gameArea.setPrefSize(resolution.getWidth(), resolution.getHeight());
+        gameArea.setMinSize(resolution.getWidth(), resolution.getHeight());
+        gameArea.setMaxSize(resolution.getWidth(), resolution.getHeight());
+        
         // Use cached image to avoid reloading
         Image backgroundImage = com.vpstycoon.ui.game.components.RoomObjectsLayer.loadImage("/images/rooms/room.gif");
         
+        // Create background layer with FIXED sizing
         Pane backgroundLayer = createBackgroundLayer(backgroundImage);
-
+        
+        // DO NOT resize the background layer to fill the screen - keep it at fixed size
+        // We'll position it in the center with the worldGroup
+        
+        // Clear old UI components
         this.rootStack.getChildren().clear();
         System.out.println("ล้าง rootStack เรียบร้อย");
 
-        // Create room objects with optimized image loading
+        // Create fresh room objects with optimized image loading
         roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo, this::openKeroro, this::openMusicBox, this::openMusicStop);
         System.out.println("สร้าง roomObjects ใหม่เรียบร้อย");
         
-        // Create the world group with all components
+        // Create a completely new world group with all components
         worldGroup = new Group(backgroundLayer, roomObjects.getServerLayer(), roomObjects.getMonitorLayer(), 
                 roomObjects.getKeroroLayer(), roomObjects.getMusicBoxLayer(), roomObjects.getMusicStopLayer());
         System.out.println("สร้าง worldGroup ใหม่เรียบร้อย");
         
-        // Add world group to game area
+        // Position world group in the center
+        double centerX = (resolution.getWidth() - backgroundLayer.getPrefWidth()) / 2.0;
+        double centerY = (resolution.getHeight() - backgroundLayer.getPrefHeight()) / 2.0;
+        worldGroup.setLayoutX(centerX);
+        worldGroup.setLayoutY(centerY);
+        
+        // Set the world group's overall size to match the background
+        worldGroup.setScaleX(1.0);
+        worldGroup.setScaleY(1.0);
+        worldGroup.setTranslateX(0);
+        worldGroup.setTranslateY(0);
+        
+        // Add world group to empty game area
         gameArea.getChildren().add(worldGroup);
         System.out.println("เพิ่ม worldGroup เข้า gameArea เรียบร้อย");
 
         // Get debug overlay
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
         
-        // Add all UI components to root stack
-        rootStack.getChildren().clear();
+        // Add all UI components to root stack - guaranteed to be empty from previous clear
         rootStack.getChildren().add(gameArea);
         
         // เพิ่มแต่ละ UI element เข้าไปใน rootStack อย่างชัดเจน
@@ -280,17 +324,25 @@ public class GameplayContentPane extends BorderPane {
 
         dateView.setVisible(true);
 
-        StackPane.setMargin(this.moneyUI, new Insets(40));
+        // Update UI positions based on current resolution
+        StackPane.setMargin(moneyUI, new Insets(40));
 
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
         StackPane.setAlignment(menuBar, Pos.TOP_CENTER);
         StackPane.setAlignment(resourceManager.getNotificationView(), Pos.TOP_RIGHT);
         StackPane.setAlignment(moneyUI, Pos.TOP_LEFT);
+        StackPane.setAlignment(dateView, Pos.BOTTOM_CENTER);
+        StackPane.setAlignment(inGameMarketMenuBar, Pos.TOP_CENTER);
+        StackPane.setMargin(inGameMarketMenuBar, new Insets(50, 0, 0, 0));
 
         // Start debug timer
         debugOverlayManager.startTimer();
         
-        // Setup zoom and pan handler
+        // Recreation of zoom and pan handler for the new world group
+        if (zoomPanHandler != null) {
+            zoomPanHandler.cleanup(); // Clean up old handler if it exists
+        }
+        
         zoomPanHandler = new ZoomPanHandler(worldGroup, gameArea, debugOverlayManager, showDebug);
         zoomPanHandler.setup();
 
@@ -303,18 +355,34 @@ public class GameplayContentPane extends BorderPane {
 
     private Pane createBackgroundLayer(Image backgroundImage) {
         Pane backgroundLayer = new Pane();
-
-        double scaleFactor = 0.26;
-        backgroundLayer.setPrefWidth(backgroundImage.getWidth() * scaleFactor);
-        backgroundLayer.setPrefHeight(backgroundImage.getHeight() * scaleFactor);
-
+        
+        // Use a fixed size for the background regardless of resolution
+        // Fixed base scale factor (no longer adjusts with resolution)
+        double fixedScaleFactor = 0.26;
+        
+        // Calculate fixed dimensions
+        double fixedWidth = backgroundImage.getWidth() * fixedScaleFactor;
+        double fixedHeight = backgroundImage.getHeight() * fixedScaleFactor;
+        
+        // Set background dimensions to fixed size
+        backgroundLayer.setPrefWidth(fixedWidth);
+        backgroundLayer.setPrefHeight(fixedHeight);
+        backgroundLayer.setMinWidth(fixedWidth);
+        backgroundLayer.setMinHeight(fixedHeight);
+        backgroundLayer.setMaxWidth(fixedWidth);
+        backgroundLayer.setMaxHeight(fixedHeight);
+        
         // Use CSS to set the background with the cached image path
         backgroundLayer.setStyle("""
         -fx-background-image: url("/images/rooms/room.gif");
-        -fx-background-size: cover;
+        -fx-background-size: contain;
         -fx-background-repeat: no-repeat;
         -fx-background-position: center;
-    """);
+        """);
+        
+        System.out.println("Created background layer with fixed dimensions: " + 
+                          fixedWidth + "x" + fixedHeight);
+                          
         return backgroundLayer;
     }
 
@@ -924,7 +992,58 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public Navigator getNavigator() {
-        return this.navigator;
+        return navigator;
+    }
+
+    /**
+     * Updates the UI layout based on the current resolution settings.
+     * This should be called whenever the game resolution changes.
+     */
+    public void updateResolution() {
+        System.out.println("Updating resolution of game content...");
+        
+        // Get current resolution
+        ScreenResolution resolution = DefaultGameConfig.getInstance().getResolution();
+        
+        // First completely clear the game area to avoid stacking issues
+        gameArea.getChildren().clear();
+        
+        // Remove room objects to prevent stacking
+        if (roomObjects != null) {
+            roomObjects = null;
+        }
+        
+        // Reset world group
+        worldGroup = null;
+        
+        // Update this BorderPane dimensions
+        setPrefSize(resolution.getWidth(), resolution.getHeight());
+        setMinSize(resolution.getWidth(), resolution.getHeight());
+        setMaxSize(resolution.getWidth(), resolution.getHeight());
+        
+        // Update root stack dimensions
+        rootStack.setPrefSize(resolution.getWidth(), resolution.getHeight());
+        rootStack.setMinSize(resolution.getWidth(), resolution.getHeight());
+        rootStack.setMaxSize(resolution.getWidth(), resolution.getHeight());
+        
+        // Update game area dimensions
+        gameArea.setPrefSize(resolution.getWidth(), resolution.getHeight());
+        gameArea.setMinSize(resolution.getWidth(), resolution.getHeight());
+        gameArea.setMaxSize(resolution.getWidth(), resolution.getHeight());
+        
+        // Completely rebuild the UI instead of just updating it
+        // This ensures proper cleanup and repositioning of all elements
+        rootStack.getChildren().clear();
+        rootStack.getChildren().add(gameArea);
+        
+        // Force a complete UI rebuild from scratch with fixed-size background
+        setupUI();
+        
+        // Request layout update for all components
+        requestLayout();
+        layout();
+        
+        System.out.println("Resolution update complete - background size remains fixed.");
     }
 
     // === Setter Methods ===

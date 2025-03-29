@@ -18,20 +18,61 @@ public class JavaFXScreenManager implements ScreenManager {
     
     @Override
     public void applySettings(Stage stage, Scene scene) {
+        ScreenResolution resolution = config.getResolution();
+        
         if (config.isFullscreen()) {
             stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
             stage.setFullScreen(true);
         } else {
             stage.setFullScreen(false);
-            ScreenResolution resolution = config.getResolution();
+            
+            // Set the exact stage size with no decorations
             stage.setWidth(resolution.getWidth());
             stage.setHeight(resolution.getHeight());
+            
+            // Remove any internal padding
+            stage.sizeToScene();
+            
+            // Center on screen
             stage.centerOnScreen();
         }
 
         // Force scene size to match stage
         if (scene != null) {
-            scene.setRoot(scene.getRoot()); // Trigger layout update
+            // Ensure scene fill is black to avoid white borders
+            scene.setFill(javafx.scene.paint.Color.BLACK);
+            
+            // Preserve the current root
+            javafx.scene.Parent currentRoot = scene.getRoot();
+            
+            // Force layout pass and scene recreation for resolution updates
+            if (currentRoot instanceof javafx.scene.layout.Region) {
+                javafx.scene.layout.Region rootRegion = (javafx.scene.layout.Region) currentRoot;
+                
+                // Remove any margin or padding
+                rootRegion.setPadding(javafx.geometry.Insets.EMPTY);
+                rootRegion.setStyle("-fx-background-color: black; -fx-padding: 0; -fx-margin: 0;");
+                
+                // Update region dimensions to match new resolution exactly
+                rootRegion.setPrefWidth(resolution.getWidth());
+                rootRegion.setPrefHeight(resolution.getHeight());
+                rootRegion.setMinWidth(resolution.getWidth());
+                rootRegion.setMinHeight(resolution.getHeight());
+                rootRegion.setMaxWidth(resolution.getWidth());
+                rootRegion.setMaxHeight(resolution.getHeight());
+                
+                // Force layout recalculation
+                rootRegion.requestLayout();
+                rootRegion.layout();
+            }
+            
+            // Create a temporary container to force JavaFX to recreate the scene graph
+            javafx.scene.layout.StackPane tempContainer = new javafx.scene.layout.StackPane();
+            tempContainer.setStyle("-fx-background-color: black;");
+            scene.setRoot(tempContainer);
+            
+            // Set the original root back to trigger a complete re-render
+            scene.setRoot(currentRoot);
         }
     }
     

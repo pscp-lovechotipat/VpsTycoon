@@ -174,4 +174,24 @@ public class ZoomPanHandler {
     public void setShowDebug(boolean showDebug) {
         this.showDebug = showDebug;
     }
+    
+    /**
+     * Cleanup method to remove all event handlers before creating a new handler
+     * This prevents memory leaks and duplicate event handlers
+     */
+    public void cleanup() {
+        // Remove all event handlers from the game area
+        gameArea.setOnScroll(null);
+        gameArea.setOnZoom(null);
+        gameArea.setOnKeyPressed(null);
+        
+        // Remove all event handlers from the world group
+        worldGroup.setOnMousePressed(null);
+        worldGroup.setOnMouseDragged(null);
+        worldGroup.setOnMouseReleased(null);
+        worldGroup.setOnMouseEntered(null);
+        worldGroup.setOnMouseExited(null);
+        
+        System.out.println("ZoomPanHandler event handlers removed");
+    }
 } 
