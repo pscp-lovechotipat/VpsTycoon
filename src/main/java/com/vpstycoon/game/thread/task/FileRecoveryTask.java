@@ -110,10 +110,10 @@ public class FileRecoveryTask extends GameTask {
         // Create title area
         VBox headerBox = new VBox(10);
         headerBox.setAlignment(Pos.CENTER);
-        headerBox.setPadding(new Insets(20));
-        Text titleText = CyberpunkEffects.createTaskTitle("DATA RECOVERY SYSTEM");
+        headerBox.setPadding(new Insets(10));
+        // Text titleText = CyberpunkEffects.createTaskTitle("DATA RECOVERY SYSTEM");
         Text descText = CyberpunkEffects.createTaskDescription("Repair corrupted file fragments to recover data");
-        headerBox.getChildren().addAll(titleText, descText);
+        headerBox.getChildren().addAll(descText);
         taskPane.setTop(headerBox);
         
         // Create the file recovery grid

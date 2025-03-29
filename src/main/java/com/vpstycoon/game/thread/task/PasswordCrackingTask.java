@@ -198,8 +198,8 @@ public class PasswordCrackingTask extends GameTask {
         
         DropShadow glow = new DropShadow();
         glow.setColor(Color.web("#00FFFF"));
-        glow.setRadius(15);
-        glow.setSpread(0.7);
+        glow.setRadius(10);
+        glow.setSpread(0.2);
         titleText.setEffect(glow);
         
         return titleText;

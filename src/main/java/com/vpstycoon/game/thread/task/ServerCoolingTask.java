@@ -130,7 +130,7 @@ public class ServerCoolingTask extends GameTask {
             headerBox.getChildren().addAll(titleText, descText);
         }
         
-        taskPane.setTop(headerBox);
+        // taskPane.setTop(headerBox);
         
         // Create main content with server status and controls
         VBox centerContent = new VBox(20);

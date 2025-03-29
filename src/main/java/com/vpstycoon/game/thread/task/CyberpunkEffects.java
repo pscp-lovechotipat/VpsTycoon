@@ -1,5 +1,6 @@
 package com.vpstycoon.game.thread.task;
 
+import com.vpstycoon.FontLoader;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -81,9 +82,10 @@ public class CyberpunkEffects {
      * @param title The title text
      * @return Styled text node
      */
-    public static Text createTaskTitle(String title) {
-        Text titleText = new Text(">> " + title + " <<");
-        titleText.setFont(Font.font(CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 24));
+    public static Text  createTaskTitle(String title) {
+        Text titleText = new Text(title);
+        // titleText.setFont(Font.font(CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 24));
+        titleText.setFont(FontLoader.TITLE_FONT);
         titleText.setFill(Color.web("#E4FBFF"));
         
         DropShadow glow = new DropShadow();
@@ -104,7 +106,8 @@ public class CyberpunkEffects {
      */
     public static Text createTaskDescription(String description) {
         Text descText = new Text(description);
-        descText.setFont(Font.font(CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 16));
+        // descText.setFont(Font.font(CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 16));
+        descText.setFont(FontLoader.LABEL_FONT);
         descText.setFill(Color.web("#00F6FF"));
         
         // Add a subtle glow effect

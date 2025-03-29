@@ -42,13 +42,13 @@ public class DataSortingTask extends GameTask {
         placeholderPane.setPadding(new Insets(30));
         placeholderPane.setStyle("-fx-background-color: rgba(5, 10, 25, 0.9);");
         
-        Text placeholderText = new Text("DATA SORTING SYSTEM");
-        placeholderText.setFont(Font.font("Orbitron", FontWeight.BOLD, 24));
-        placeholderText.setFill(Color.web("#00ffff"));
+//        Text placeholderText = new Text("DATA SORTING SYSTEM");
+//        placeholderText.setFont(Font.font("Orbitron", FontWeight.BOLD, 24));
+//        placeholderText.setFill(Color.web("#00ffff"));
         
-        Text descText = new Text("Sort the data packets by priority level (1 to 10)");
-        descText.setFont(Font.font("Share Tech Mono", FontWeight.NORMAL, 16));
-        descText.setFill(Color.LIGHTCYAN);
+//        Text descText = new Text("Sort the data packets by priority level (1 to 10)");
+//        descText.setFont(Font.font("Share Tech Mono", FontWeight.NORMAL, 16));
+//        descText.setFill(Color.LIGHTCYAN);
         
         // Create data packets grid
         GridPane dataGrid = new GridPane();
@@ -144,7 +144,7 @@ public class DataSortingTask extends GameTask {
             targetGrid
         );
         
-        placeholderPane.getChildren().addAll(placeholderText, descText, sortingArea);
+        placeholderPane.getChildren().addAll(sortingArea);
         gamePane.getChildren().add(placeholderPane);
     }
     

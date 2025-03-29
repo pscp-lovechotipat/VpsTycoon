@@ -90,7 +90,7 @@ public class HackingTask extends GameTask {
         CyberpunkEffects.addHoloGridLines(hackingPane, 20, 20);
         
         // Create cyberpunk-styled title and description
-        Text titleText = CyberpunkEffects.createTaskTitle("NEURAL GRID HACK v2.0");
+        // Text titleText = CyberpunkEffects.createTaskTitle("NEURAL GRID HACK v2.0");
         Text descText = CyberpunkEffects.createTaskDescription(
             "Find and connect the hidden access path through the security grid.\n" +
             "Start at any node and create a " + PATH_LENGTH + "-node path."
@@ -114,17 +114,17 @@ public class HackingTask extends GameTask {
         // Arrange all components with reduced spacing
         VBox topSection = new VBox(10);
         topSection.setAlignment(Pos.CENTER);
-        topSection.setPadding(new Insets(5));
-        topSection.getChildren().addAll(titleText, descText);
+        topSection.setPadding(new Insets(0, 0, 20, 0));
+        topSection.getChildren().addAll(descText);
         
         VBox centerSection = new VBox(10);
         centerSection.setAlignment(Pos.CENTER);
-        centerSection.setPadding(new Insets(5, 0, 5, 0));
+        centerSection.setPadding(new Insets(20, 0, 20, 0));
         centerSection.getChildren().addAll(gridPane, statusLabel);
         
         HBox bottomSection = new HBox(20);
         bottomSection.setAlignment(Pos.CENTER);
-        bottomSection.setPadding(new Insets(5, 0, 0, 0));
+        bottomSection.setPadding(new Insets(20, 0, 0, 0));
         bottomSection.getChildren().addAll(statusPanel, controlButtons);
         
         hackingPane.setTop(topSection);

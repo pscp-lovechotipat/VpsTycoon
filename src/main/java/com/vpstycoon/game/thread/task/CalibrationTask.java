@@ -86,9 +86,9 @@ public class CalibrationTask extends GameTask {
         // Create title area
         VBox headerBox = new VBox(10);
         headerBox.setAlignment(Pos.CENTER);
-        Text titleText = CyberpunkEffects.createTaskTitle("SYSTEM CALIBRATION");
+        // Text titleText = CyberpunkEffects.createTaskTitle("SYSTEM CALIBRATION");
         Text descText = CyberpunkEffects.createTaskDescription("Calibrate components by repeating the sequence");
-        headerBox.getChildren().addAll(titleText, descText);
+        headerBox.getChildren().addAll(descText);
         taskPane.setTop(headerBox);
         
         // Create circuit board with components

@@ -1,5 +1,6 @@
 package com.vpstycoon.game.thread.task;
 
+import com.vpstycoon.FontLoader;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;
@@ -340,7 +341,7 @@ public abstract class GameTask {
         mainContainer.setAlignment(Pos.CENTER);
         
         // Set fixed size to ensure consistent layout
-        mainContainer.setPrefSize(800, 700);
+        mainContainer.setPrefSize(800, 650);
         mainContainer.setMaxSize(800, 700);
         mainContainer.setMinSize(800, 700);
 
@@ -436,8 +437,9 @@ public abstract class GameTask {
         });
         
         // Create reward display
-        Label rewardLabel = new Label("REWARD: $" + rewardAmount);
-        rewardLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 16));
+        Label rewardLabel = new Label("REWARD: " + rewardAmount);
+//        rewardLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 16));
+        rewardLabel.setFont(FontLoader.SECTION_FONT);
         rewardLabel.setTextFill(Color.web("#39FF14")); // Neon green
         
         // Make reward label pulse
