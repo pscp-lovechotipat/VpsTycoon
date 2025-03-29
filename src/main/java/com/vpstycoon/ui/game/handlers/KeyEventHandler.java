@@ -8,6 +8,7 @@ import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.ResumeScreen;
 import com.vpstycoon.ui.settings.SettingsScreen;
 import javafx.scene.input.KeyCode;
+import com.vpstycoon.game.resource.ResourceManager;
 
 public class KeyEventHandler {
     private final GameplayContentPane contentPane;
@@ -43,8 +44,13 @@ public class KeyEventHandler {
         contentPane.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
                 if (!resumeScreenShowing && !settingsScreenShowing) {
+                    System.out.println("ESC กดแล้ว: กำลังแสดง Pause Menu และหยุดเกม");
                     showResumeScreen();
                     resumeScreenShowing = true;
+                } else if (resumeScreenShowing) {
+                    // กด ESC ขณะที่ Pause Menu กำลังแสดงอยู่ ให้กลับไปเล่นต่อ
+                    System.out.println("ESC กดซ้ำขณะที่ Pause Menu กำลังแสดงอยู่: กลับไปเล่นต่อ");
+                    hideResumeScreen();
                 }
             } else if (event.getCode() == KeyCode.F3) {
                 toggleDebug();
@@ -52,8 +58,58 @@ public class KeyEventHandler {
         });
     }
 
+    /**
+     * หยุดการทำงานของทุก thread ในเกม
+     */
+    private void pauseAllGameThreads(String caller) {
+        // หยุด GameTimeController
+        if (ResourceManager.getInstance().getGameTimeController() != null) {
+            System.out.println("หยุด GameTimeController (จาก " + caller + ")");
+            ResourceManager.getInstance().getGameTimeController().stopTime();
+        }
+        
+        // หยุด GameEvent
+        if (ResourceManager.getInstance().getGameEvent() != null &&
+            ResourceManager.getInstance().getGameEvent().isRunning()) {
+            System.out.println("หยุด GameEvent (จาก " + caller + ")");
+            ResourceManager.getInstance().getGameEvent().pauseEvent();
+        }
+        
+        // หยุด RequestGenerator
+        if (ResourceManager.getInstance().getRequestGenerator() != null) {
+            System.out.println("หยุด RequestGenerator (จาก " + caller + ")");
+            ResourceManager.getInstance().getRequestGenerator().pauseGenerator();
+        }
+    }
+    
+    /**
+     * เริ่มการทำงานของทุก thread ในเกม
+     */
+    private void resumeAllGameThreads(String caller) {
+        // เริ่ม GameTimeController
+        if (ResourceManager.getInstance().getGameTimeController() != null) {
+            System.out.println("เริ่ม GameTimeController (จาก " + caller + ")");
+            ResourceManager.getInstance().getGameTimeController().startTime();
+        }
+        
+        // เริ่ม GameEvent
+        if (ResourceManager.getInstance().getGameEvent() != null) {
+            System.out.println("เริ่ม GameEvent (จาก " + caller + ")");
+            ResourceManager.getInstance().getGameEvent().resumeEvent();
+        }
+        
+        // เริ่ม RequestGenerator
+        if (ResourceManager.getInstance().getRequestGenerator() != null) {
+            System.out.println("เริ่ม RequestGenerator (จาก " + caller + ")");
+            ResourceManager.getInstance().getRequestGenerator().resumeGenerator();
+        }
+    }
+    
     // Methods for ResumeScreen
     private void showResumeScreen() {
+        // หยุดเวลาและทุก thread เมื่อแสดง Pause Menu
+        pauseAllGameThreads("showResumeScreen");
+        
         resumeScreen.setPrefSize(contentPane.getWidth(), contentPane.getHeight());
         
         // Add to rootStack instead of gameArea to ensure it appears on top of all other UI elements
@@ -64,12 +120,18 @@ public class KeyEventHandler {
     }
 
     private void hideResumeScreen() {
+        // เริ่มเวลาและทุก thread เมื่อซ่อน Pause Menu
+        resumeAllGameThreads("hideResumeScreen");
+        
         contentPane.getRootStack().getChildren().remove(resumeScreen);
         resumeScreenShowing = false;
     }
     
     // Methods for SettingsScreen
     public void showSettingsScreen() {
+        // ทำให้แน่ใจว่าเกมยังคงหยุดอยู่เมื่อเปิดหน้าตั้งค่า
+        pauseAllGameThreads("showSettingsScreen");
+        
         settingsScreen.setPrefSize(contentPane.getWidth(), contentPane.getHeight());
         
         // Add to rootStack instead of gameArea to ensure it appears on top of all other UI elements
@@ -82,11 +144,17 @@ public class KeyEventHandler {
         
         // Hide resume screen if it's showing
         if (resumeScreenShowing) {
-            hideResumeScreen();
+            // ไม่ต้องเรียก hideResumeScreen() ทั้งหมดเพราะจะทำให้เริ่ม thread กลับมาทำงาน
+            // แทนที่จะเรียกเมธอดทั้งหมด เราเพียงแค่เอา resumeScreen ออกจาก UI
+            contentPane.getRootStack().getChildren().remove(resumeScreen);
+            resumeScreenShowing = false;
         }
     }
 
     private void hideSettingsScreen() {
+        // เริ่มเวลาและทุก thread เมื่อกลับจากหน้าตั้งค่า
+        resumeAllGameThreads("hideSettingsScreen");
+        
         contentPane.getRootStack().getChildren().remove(settingsScreen);
         settingsScreenShowing = false;
     }

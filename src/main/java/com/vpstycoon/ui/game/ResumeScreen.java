@@ -40,6 +40,9 @@ public class ResumeScreen extends StackPane {
         // Set a high z-index to ensure this screen is displayed on top
         setViewOrder(-1000);
         
+        // Stop all game threads when pause menu is shown
+        pauseAllGameThreads();
+        
         setupUI();
     }
     
@@ -51,6 +54,9 @@ public class ResumeScreen extends StackPane {
         
         // Set a high z-index to ensure this screen is displayed on top
         setViewOrder(-1000);
+        
+        // Stop all game threads when pause menu is shown
+        pauseAllGameThreads();
         
         setupUI();
     }
@@ -103,6 +109,10 @@ public class ResumeScreen extends StackPane {
         MenuButton resumeButton = new MenuButton(MenuButtonType.RESUME);
         resumeButton.setOnAction(e -> {
             audioManager.playSoundEffect("click.wav");
+            
+            // Start all game threads when resuming game
+            resumeAllGameThreads();
+            
             onResumeGame.run();
         });
         styleButton(resumeButton);
@@ -111,6 +121,10 @@ public class ResumeScreen extends StackPane {
         MenuButton settingsButton = new MenuButton(MenuButtonType.SETTINGS);
         settingsButton.setOnAction(e -> {
             audioManager.playSoundEffect("click.wav");
+            
+            // Start all game threads when closing pause menu
+            resumeAllGameThreads();
+            
             // Close resume screen first
             onResumeGame.run();
             // Then open settings
@@ -132,12 +146,8 @@ public class ResumeScreen extends StackPane {
                 System.out.println("กำลังบันทึกเกมก่อนออกไปเมนูหลัก...");
                 ResourceManager.getInstance().pushNotification("บันทึกเกม", "กำลังบันทึกความก้าวหน้าของคุณ...");
                 
-                // หยุดการทำงานของ GameEvent ก่อนออกไปเมนูหลัก
-                if (ResourceManager.getInstance().getGameEvent() != null && 
-                    ResourceManager.getInstance().getGameEvent().isRunning()) {
-                    System.out.println("กำลังหยุด GameEvent ก่อนออกไปเมนูหลัก...");
-                    ResourceManager.getInstance().getGameEvent().stopEvent();
-                }
+                // หยุดการทำงานของทุก thread อย่างถาวรก่อนออกไปเมนูหลัก
+                stopAllGameThreads();
                 
                 // สร้าง GameState จากข้อมูลปัจจุบัน
                 Company company = ResourceManager.getInstance().getCompany();
@@ -179,6 +189,9 @@ public class ResumeScreen extends StackPane {
         // คลิกนอกเมนูเพื่อกลับไปเล่นเกม
         background.setOnMouseClicked(e -> {
             if (e.getTarget() == background) {
+                // Start all game threads when resuming game
+                resumeAllGameThreads();
+                
                 onResumeGame.run();
             }
         });
@@ -194,5 +207,76 @@ public class ResumeScreen extends StackPane {
         
         // Make buttons slightly larger
         button.setPrefWidth(250);
+    }
+    
+    /**
+     * หยุดการทำงานของทุก thread ในเกมเมื่อแสดง Pause Menu
+     */
+    private void pauseAllGameThreads() {
+        // หยุด GameTimeController
+        if (ResourceManager.getInstance().getGameTimeController() != null) {
+            System.out.println("หยุด GameTimeController เมื่อแสดง Pause Menu");
+            ResourceManager.getInstance().getGameTimeController().stopTime();
+        }
+        
+        // หยุด GameEvent
+        if (ResourceManager.getInstance().getGameEvent() != null &&
+            ResourceManager.getInstance().getGameEvent().isRunning()) {
+            System.out.println("หยุด GameEvent เมื่อแสดง Pause Menu");
+            ResourceManager.getInstance().getGameEvent().pauseEvent();
+        }
+        
+        // หยุด RequestGenerator ถ้ามี
+        if (ResourceManager.getInstance().getRequestGenerator() != null) {
+            System.out.println("หยุด RequestGenerator เมื่อแสดง Pause Menu");
+            ResourceManager.getInstance().getRequestGenerator().pauseGenerator();
+        }
+    }
+    
+    /**
+     * หยุดการทำงานของทุก thread ในเกมอย่างถาวรก่อนออกไปเมนูหลัก
+     */
+    private void stopAllGameThreads() {
+        // หยุด GameTimeController อย่างถาวร
+        if (ResourceManager.getInstance().getGameTimeController() != null) {
+            System.out.println("หยุด GameTimeController อย่างถาวรก่อนออกไปเมนูหลัก");
+            ResourceManager.getInstance().getGameTimeController().stopTime();
+        }
+        
+        // หยุด GameEvent อย่างถาวร
+        if (ResourceManager.getInstance().getGameEvent() != null &&
+            ResourceManager.getInstance().getGameEvent().isRunning()) {
+            System.out.println("หยุด GameEvent อย่างถาวรก่อนออกไปเมนูหลัก");
+            ResourceManager.getInstance().getGameEvent().stopEvent(); // ใช้ stopEvent แทน pauseEvent
+        }
+        
+        // หยุด RequestGenerator อย่างถาวร
+        if (ResourceManager.getInstance().getRequestGenerator() != null) {
+            System.out.println("หยุด RequestGenerator อย่างถาวรก่อนออกไปเมนูหลัก");
+            ResourceManager.getInstance().getRequestGenerator().stopGenerator(); // ใช้ stopGenerator แทน pauseGenerator ถ้ามี
+        }
+    }
+    
+    /**
+     * เริ่มการทำงานของทุก thread ในเกมเมื่อกลับไปเล่นเกม
+     */
+    private void resumeAllGameThreads() {
+        // เริ่ม GameTimeController
+        if (ResourceManager.getInstance().getGameTimeController() != null) {
+            System.out.println("เริ่ม GameTimeController เมื่อกลับไปเล่นเกม");
+            ResourceManager.getInstance().getGameTimeController().startTime();
+        }
+        
+        // เริ่ม GameEvent
+        if (ResourceManager.getInstance().getGameEvent() != null) {
+            System.out.println("เริ่ม GameEvent เมื่อกลับไปเล่นเกม");
+            ResourceManager.getInstance().getGameEvent().resumeEvent();
+        }
+        
+        // เริ่ม RequestGenerator ถ้ามี
+        if (ResourceManager.getInstance().getRequestGenerator() != null) {
+            System.out.println("เริ่ม RequestGenerator เมื่อกลับไปเล่นเกม");
+            ResourceManager.getInstance().getRequestGenerator().resumeGenerator();
+        }
     }
 }

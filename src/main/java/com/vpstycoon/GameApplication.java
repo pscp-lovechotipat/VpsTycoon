@@ -276,6 +276,12 @@ public class GameApplication extends Application implements Navigator, ResourceM
 
     @Override
     public void showMainMenu() {
+        // หยุด GameTimeController ก่อนไปเมนูหลัก (ถ้ามี)
+        if (ResourceManager.getInstance().getGameTimeController() != null) {
+            System.out.println("หยุด GameTimeController ก่อนไปเมนูหลัก");
+            ResourceManager.getInstance().getGameTimeController().stopTime();
+        }
+        
         mainMenuScreen.show();
     }
 
@@ -294,6 +300,12 @@ public class GameApplication extends Application implements Navigator, ResourceM
         
         // Show a loading screen while game initializes
         showLoadingScreen("Starting New Game...");
+        
+        // ตรวจสอบและหยุด GameTimeController ก่อนเริ่มเกมใหม่ (ป้องกัน thread ซ้อนกัน)
+        if (ResourceManager.getInstance().getGameTimeController() != null) {
+            System.out.println("หยุด GameTimeController ก่อนเริ่มเกมใหม่");
+            ResourceManager.getInstance().getGameTimeController().stopTime();
+        }
         
         // Move initialization operations to background thread
         new Thread(() -> {

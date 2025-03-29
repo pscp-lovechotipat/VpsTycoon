@@ -766,18 +766,36 @@ public class GameEvent implements Runnable {
     }
 
     /**
-     * Stop the task system
+     * Stops the event system
      */
     public void stopEvent() {
-        LOGGER.info("Stopping task system");
-        System.out.println("[GAMEEVENT] Stopping task system");
-        isRunning = false;
+        System.out.println("[GAMEEVENT] Stopping game event system");
+        this.isRunning = false;
     }
-
+    
     /**
-     * Check if the task system is running
+     * Pauses the event system without fully stopping it
+     */
+    public void pauseEvent() {
+        System.out.println("[GAMEEVENT] Pausing game event system");
+        this.isRunning = false;
+    }
+    
+    /**
+     * Resumes the event system if it was paused
+     */
+    public void resumeEvent() {
+        System.out.println("[GAMEEVENT] Resuming game event system");
+        if (!this.isRunning) {
+            this.isRunning = true;
+            new Thread(this).start();
+        }
+    }
+    
+    /**
+     * Returns whether the event system is running
      * 
-     * @return true if running
+     * @return true if running, false otherwise
      */
     public boolean isRunning() {
         return isRunning;

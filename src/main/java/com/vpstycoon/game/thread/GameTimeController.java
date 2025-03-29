@@ -49,14 +49,30 @@ public class GameTimeController {
         System.out.println("เริ่ม timeThread ใหม่สำเร็จ");
     }
 
-    public void stopTime() {
+    public synchronized void stopTime() {
+        System.out.println("GameTimeController: กำลังหยุด timeManager และ timeThread");
         timeManager.stop();
         if (timeThread != null) {
             try {
-                timeThread.join();
+                // ตั้งค่าให้ thread interrupt เพื่อให้หยุดเร็วขึ้น
+                timeThread.interrupt();
+                
+                // รอ thread หยุดภายใน 1000ms
+                timeThread.join(1000);
+                
+                // ตรวจสอบว่า thread ยังทำงานอยู่หรือไม่
+                if (timeThread.isAlive()) {
+                    System.out.println("WARNING: timeThread ยังทำงานอยู่หลังจากพยายามหยุดแล้ว");
+                } else {
+                    System.out.println("timeThread หยุดการทำงานเรียบร้อยแล้ว");
+                    timeThread = null;
+                }
             } catch (InterruptedException e) {
+                System.err.println("เกิดข้อผิดพลาดขณะรอ timeThread หยุดทำงาน: " + e.getMessage());
                 Thread.currentThread().interrupt();
             }
+        } else {
+            System.out.println("timeThread เป็น null อยู่แล้ว ไม่จำเป็นต้องหยุด");
         }
     }
 

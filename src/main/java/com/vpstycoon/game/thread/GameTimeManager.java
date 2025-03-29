@@ -62,54 +62,66 @@ public class GameTimeManager {
         // เพิ่ม counter สำหรับติดตามจำนวนรอบที่ทำงาน
         int tickCounter = 0;
         
-        while (running) {
-            try {
-                long currentTime = System.currentTimeMillis();
-                long elapsedMs = currentTime - lastTickTime;
-                lastTickTime = currentTime;
+        try {
+            while (running) {
+                try {
+                    long currentTime = System.currentTimeMillis();
+                    long elapsedMs = currentTime - lastTickTime;
+                    lastTickTime = currentTime;
 
-                realTimeMs.addAndGet(elapsedMs);
+                    realTimeMs.addAndGet(elapsedMs);
 
-                long gameMs = (long) (realTimeMs.get() * SCALE_FACTOR);
+                    long gameMs = (long) (realTimeMs.get() * SCALE_FACTOR);
 
-                gameDateTime = startDateTime.plus(gameMs, ChronoUnit.MILLIS);
+                    gameDateTime = startDateTime.plus(gameMs, ChronoUnit.MILLIS);
 
-                // ตรวจสอบการเปลี่ยนเดือน
-                if (gameDateTime.getMonthValue() != lastProcessedMonth) {
-                    processMonthlyKeepUp();
-                    lastProcessedMonth = gameDateTime.getMonthValue();
+                    // ตรวจสอบการเปลี่ยนเดือน
+                    if (gameDateTime.getMonthValue() != lastProcessedMonth) {
+                        processMonthlyKeepUp();
+                        lastProcessedMonth = gameDateTime.getMonthValue();
+                    }
+
+                    notifyTimeListeners();
+
+                    if (currentTime - lastPaymentCheckTime >= GAME_DAY_MS) {
+                        requestManager.processPayments(realTimeMs.get());
+                        lastPaymentCheckTime = currentTime;
+                    }
+
+                    if (currentTime - lastOverheadTime >= OVERHEAD_INTERVAL) {
+                        lastOverheadTime = currentTime;
+                    }
+
+                    if (currentTime - lastRentalCheckTime >= GAME_DAY_MS) {
+                        checkRentalExpirations(realTimeMs.get());
+                        lastRentalCheckTime = currentTime;
+                    }
+
+                    // เพิ่ม logging ทุก 10 วินาที เพื่อแสดงว่าเวลากำลังเดินอยู่
+                    tickCounter++;
+                    if (tickCounter % 10 == 0) {
+                        System.out.println("GameTime Update: " + gameDateTime + " (GameTimeMs: " + gameMs + ", RealTimeMs: " + realTimeMs.get() + ")");
+                    }
+                    
+                    // ตรวจสอบสถานะ interrupt เพื่อให้ thread หยุดได้เร็วขึ้น
+                    if (Thread.currentThread().isInterrupted()) {
+                        System.out.println("Thread TimeManager ถูก interrupt - กำลังหยุด");
+                        running = false;
+                        break;
+                    }
+                    
+                    Thread.sleep(TICK_INTERVAL_MS);
+                } catch (InterruptedException e) {
+                    running = false;
+                    System.out.println("Thread TimeManager Interrupted");
+                    Thread.currentThread().interrupt(); // รักษาสถานะ interrupted
+                    break;
                 }
-
-                notifyTimeListeners();
-
-                if (currentTime - lastPaymentCheckTime >= GAME_DAY_MS) {
-                    requestManager.processPayments(realTimeMs.get());
-                    lastPaymentCheckTime = currentTime;
-                }
-
-                if (currentTime - lastOverheadTime >= OVERHEAD_INTERVAL) {
-                    lastOverheadTime = currentTime;
-                }
-
-                if (currentTime - lastRentalCheckTime >= GAME_DAY_MS) {
-                    checkRentalExpirations(realTimeMs.get());
-                    lastRentalCheckTime = currentTime;
-                }
-
-                // เพิ่ม logging ทุก 10 วินาที เพื่อแสดงว่าเวลากำลังเดินอยู่
-                tickCounter++;
-                if (tickCounter % 10 == 0) {
-                    System.out.println("GameTime Update: " + gameDateTime + " (GameTimeMs: " + gameMs + ", RealTimeMs: " + realTimeMs.get() + ")");
-                }
-                
-                Thread.sleep(TICK_INTERVAL_MS);
-            } catch (InterruptedException e) {
-                running = false;
-                System.out.println("Thread TimeManager Interrupted");
             }
+        } finally {
+            System.out.println("Thread TimeManager Stopped");
+            running = false; // ให้แน่ใจว่าได้ตั้งค่าเป็น false เมื่อออกจากลูป
         }
-        
-        System.out.println("Thread TimeManager Stopped");
     }
 
     private void checkRentalExpirations(long currentGameTimeMs) {
