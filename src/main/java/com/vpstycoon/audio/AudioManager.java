@@ -1,16 +1,22 @@
 package com.vpstycoon.audio;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import com.vpstycoon.audio.interfaces.IAudioManager;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
-import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.service.ResourceManager;
+
 import javafx.application.Platform;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
-import java.net.URL;
-import java.util.*;
-
-public class AudioManager {
+public class AudioManager implements IAudioManager {
     private final Map<String, Media> soundCache = new HashMap<>();
     private final List<MediaPlayer> activeSfxPlayers = new ArrayList<>();
     private MediaPlayer musicPlayer;
@@ -30,6 +36,8 @@ public class AudioManager {
         setSfxVolume(event.getNewConfig().getSfxVolume());
     }
 
+    // เล่นเพลงประกอบเกม
+    @Override
     public void playMusic(String musicFile) {
         Platform.runLater(() -> {
             try {
@@ -62,6 +70,8 @@ public class AudioManager {
         });
     }
 
+    // หยุดเพลงประกอบเกมชั่วคราว
+    @Override
     public void pauseMusic() {
         Platform.runLater(() -> {
             if (musicPlayer != null && musicPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
@@ -71,6 +81,8 @@ public class AudioManager {
         });
     }
 
+    // เล่นเพลงประกอบเกมต่อจากจุดที่หยุดไว้
+    @Override
     public void resumeMusic() {
         Platform.runLater(() -> {
             if (musicPlayer != null && isMusicPaused) {
@@ -80,6 +92,8 @@ public class AudioManager {
         });
     }
 
+    // เล่นเสียงเอฟเฟกต์
+    @Override
     public void playSoundEffect(String soundFile) {
         Platform.runLater(() -> {
             try {
@@ -112,6 +126,8 @@ public class AudioManager {
         });
     }
 
+    // หยุดเล่นเสียงเอฟเฟกต์
+    @Override
     public void stopSoundEffect(String soundFile) {
         Platform.runLater(() -> {
             Iterator<MediaPlayer> iterator = activeSfxPlayers.iterator();
@@ -126,6 +142,8 @@ public class AudioManager {
         });
     }
 
+    // ตั้งค่าระดับความดังของเพลงประกอบ
+    @Override
     public void setMusicVolume(double volume) {
         this.musicVolume = volume;
         if (musicPlayer != null) {
@@ -133,10 +151,14 @@ public class AudioManager {
         }
     }
 
+    // ตั้งค่าระดับความดังของเสียงเอฟเฟกต์
+    @Override
     public void setSfxVolume(double volume) {
         this.sfxVolume = volume;
     }
 
+    // ล้างทรัพยากรเสียงทั้งหมด
+    @Override
     public void dispose() {
         if (musicPlayer != null) {
             musicPlayer.dispose();
@@ -148,20 +170,15 @@ public class AudioManager {
         soundCache.clear();
     }
 
-    /**
-     * Preload a sound effect to avoid lag when first played
-     * @param name The name of the sound file to preload
-     */
+    // โหลดไฟล์เสียงเอฟเฟกต์ล่วงหน้าเพื่อหลีกเลี่ยงการกระตุกเมื่อเล่นครั้งแรก
+    @Override
     public void preloadSoundEffect(String name) {
         if (!soundCache.containsKey(name)) {
             try {
-                // Create final copy for use in lambda
                 final String soundName = name;
                 URL url = ResourceManager.getResource(ResourceManager.getSoundPath(name));
                 if (url != null) {
-                    // Final copy of URL for use in lambda
                     final URL soundUrl = url;
-                    // Use Platform.runLater to safely create Media objects on JavaFX thread
                     Platform.runLater(() -> {
                         try {
                             Media sound = new Media(soundUrl.toString());

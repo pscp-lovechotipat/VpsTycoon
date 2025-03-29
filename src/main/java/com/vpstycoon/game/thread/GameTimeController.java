@@ -15,13 +15,38 @@ public class GameTimeController {
         this.timeManager = new GameTimeManager(company, requestManager, rack, startTime);
     }
 
-    public void startTime() {
-        if (timeThread == null || !timeThread.isAlive()) {
-            timeThread = new Thread(timeManager::start);
-            timeThread.setDaemon(true);
-            timeThread.setName("GameTimeThread");
-            timeThread.start();
+    public synchronized void startTime() {
+        // เพิ่มข้อมูล log เพื่อตรวจสอบสถานะ
+        if (timeThread != null) {
+            System.out.println("สถานะ timeThread ก่อนเริ่ม: isAlive=" + timeThread.isAlive() + ", state=" + timeThread.getState());
+        } else {
+            System.out.println("สถานะ timeThread ก่อนเริ่ม: null (ยังไม่เคยสร้าง)");
         }
+        
+        System.out.println("สถานะ timeManager: running=" + timeManager.isRunning());
+        
+        // ตรวจสอบว่า thread กำลังทำงานอยู่หรือไม่
+        if (timeThread != null && timeThread.isAlive()) {
+            System.out.println("timeThread กำลังทำงานอยู่แล้ว ไม่ต้องเริ่มใหม่");
+            
+            // ตรวจสอบว่าถ้า thread ยังทำงานอยู่แต่ running=false ให้ตั้งค่าเป็น true
+            if (!timeManager.isRunning()) {
+                System.out.println("พบว่า timeManager.running=false แต่ thread ยังทำงานอยู่ กำลังแก้ไข...");
+                // ต้องสร้าง thread ใหม่ เพราะถ้า running=false แปลว่า thread อาจจะหยุดลูปไปแล้ว
+                stopTime();
+                timeThread = null;
+                // จะไปสร้าง thread ใหม่ในขั้นตอนถัดไป
+            } else {
+                return; // ถ้า thread กำลังทำงานและ running=true ก็ไม่ต้องทำอะไร
+            }
+        }
+        
+        // สร้าง thread ใหม่ถ้ายังไม่มีหรือหยุดทำงานแล้ว
+        timeThread = new Thread(timeManager::start);
+        timeThread.setDaemon(true);
+        timeThread.setName("GameTimeThread");
+        timeThread.start();
+        System.out.println("เริ่ม timeThread ใหม่สำเร็จ");
     }
 
     public void stopTime() {

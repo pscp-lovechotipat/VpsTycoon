@@ -49,13 +49,19 @@ public class GameTimeManager {
     }
 
     public void start() {
+        // ตั้งค่า running เป็น true เพื่อให้แน่ใจว่าลูปจะทำงาน
+        running = true;
+        
         long lastTickTime = System.currentTimeMillis();
         long lastPaymentCheckTime = lastTickTime;
         long lastOverheadTime = lastTickTime;
         long lastRentalCheckTime = lastTickTime;
 
-        System.out.println("Thread TimeManager Initializing...");
+        System.out.println("Thread TimeManager Initializing... running=" + running);
 
+        // เพิ่ม counter สำหรับติดตามจำนวนรอบที่ทำงาน
+        int tickCounter = 0;
+        
         while (running) {
             try {
                 long currentTime = System.currentTimeMillis();
@@ -90,11 +96,20 @@ public class GameTimeManager {
                     lastRentalCheckTime = currentTime;
                 }
 
+                // เพิ่ม logging ทุก 10 วินาที เพื่อแสดงว่าเวลากำลังเดินอยู่
+                tickCounter++;
+                if (tickCounter % 10 == 0) {
+                    System.out.println("GameTime Update: " + gameDateTime + " (GameTimeMs: " + gameMs + ", RealTimeMs: " + realTimeMs.get() + ")");
+                }
+                
                 Thread.sleep(TICK_INTERVAL_MS);
             } catch (InterruptedException e) {
                 running = false;
+                System.out.println("Thread TimeManager Interrupted");
             }
         }
+        
+        System.out.println("Thread TimeManager Stopped");
     }
 
     private void checkRentalExpirations(long currentGameTimeMs) {
@@ -205,6 +220,17 @@ public class GameTimeManager {
         realTimeMs.set(0);
         lastProcessedMonth = newStartDateTime.getMonthValue() - 1; // ตั้งให้ต่างจากเดือนปัจจุบัน 1 เดือน เพื่อให้ processMonthlyKeepUp() ทำงานในครั้งแรก
         
-        System.out.println("รีเซ็ตเวลาใน GameTimeManager เป็น: " + newStartDateTime);
+        // ตั้งค่า running กลับเป็น true เพื่อให้พร้อมเริ่มทำงานใหม่
+        running = true;
+        
+        System.out.println("รีเซ็ตเวลาใน GameTimeManager เป็น: " + newStartDateTime + " (running=" + running + ")");
+    }
+
+    /**
+     * ตรวจสอบว่า TimeManager กำลังทำงานอยู่หรือไม่
+     * @return true ถ้ากำลังทำงาน, false ถ้าไม่ได้ทำงาน
+     */
+    public boolean isRunning() {
+        return running;
     }
 }

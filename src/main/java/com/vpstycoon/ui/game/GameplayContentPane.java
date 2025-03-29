@@ -209,7 +209,21 @@ public class GameplayContentPane extends BorderPane {
         
         // ไม่ผูกสถานะดนตรีกับเวลาอีกต่อไป ให้เวลาเกมเดินตลอดเวลา
         // เริ่มการเดินเวลาทันที ไม่ว่าดนตรีจะเปิดหรือปิด
-        gameTimeController.startTime();
+        if (gameTimeController != null) {
+            System.out.println("GameplayContentPane: เริ่มการเดินเวลาเกม (startTime)");
+            try {
+                // ตรวจสอบสถานะ timeThread ก่อนเรียก startTime
+                boolean isRunning = gameTimeController.getGameTimeManager().isRunning();
+                System.out.println("GameplayContentPane: สถานะ gameTimeManager.isRunning=" + isRunning);
+                gameTimeController.startTime();
+                System.out.println("GameplayContentPane: เรียก startTime สำเร็จ");
+            } catch (Exception e) {
+                System.err.println("เกิดข้อผิดพลาดในการเริ่มเวลาเกม: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.err.println("GameplayContentPane: gameTimeController เป็น null ไม่สามารถเริ่มเวลาเกมได้");
+        }
         System.out.println("Game time started at startup");
         
         // ตั้งค่าเริ่มต้นของดนตรีตาม roomObjects

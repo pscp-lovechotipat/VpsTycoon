@@ -1,11 +1,18 @@
 package com.vpstycoon.screen;
 
 import com.vpstycoon.config.GameConfig;
+import com.vpstycoon.view.base.GameScreen;
+
+import javafx.animation.FadeTransition;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class JavaFXScreenManager implements ScreenManager {
     private final GameConfig config;
@@ -135,5 +142,28 @@ public class JavaFXScreenManager implements ScreenManager {
             root.requestLayout();
         }
     }
-
+    
+    @Override
+    public void switchScreen(GameScreen screen) {
+        // เรียกใช้ method switchScreen(Node) ที่มีอยู่แล้ว โดยส่ง root element ของ GameScreen
+        switchScreen(screen.getRoot());
+        
+        // เรียก onShow เพื่อให้ GameScreen รู้ว่าถูกแสดงแล้ว
+        screen.onShow();
+    }
+    
+    @Override
+    public void updateScreenResolution() {
+        // อัปเดตความละเอียดหน้าจอโดยใช้การตั้งค่าปัจจุบัน
+        applySettings(stage, stage.getScene());
+        
+        // ตรวจสอบว่ามีหน้าจอปัจจุบันหรือไม่
+        if (stage.getScene() != null && stage.getScene().getRoot() != null) {
+            StackPane root = (StackPane) stage.getScene().getRoot();
+            if (!root.getChildren().isEmpty()) {
+                // บังคับให้มีการ redraw
+                root.requestLayout();
+            }
+        }
+    }
 }

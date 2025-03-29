@@ -556,7 +556,12 @@ public class GameApplication extends Application implements Navigator, ResourceM
     }
 
     private void startGame(GameState state) {
-        screenManager.switchScreen(new GameScreen(this, gameConfig, state));
+        if (gameplayScreen != null) {
+            gameplayScreen.release();
+        }
+        gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, state);
+        gameplayScreen.show();
+        System.out.println("เริ่มเกมด้วย GameplayScreen ซึ่งจะเริ่มการเดินเวลาเกม");
     }
 
     private void shutdown() {

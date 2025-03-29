@@ -1,5 +1,7 @@
 package com.vpstycoon.screen;
 
+import com.vpstycoon.view.base.GameScreen;
+
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -9,4 +11,10 @@ public interface ScreenManager {
     void setFullscreen(boolean fullscreen);
     void applySettings(Stage stage, Scene scene);
     void switchScreen(Node screen);
+    
+    // เพิ่ม method สำหรับเปลี่ยนหน้าจอที่เป็น GameScreen
+    void switchScreen(GameScreen screen);
+    
+    // เพิ่ม method อัปเดตความละเอียดหน้าจอ
+    void updateScreenResolution();
 } 

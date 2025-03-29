@@ -156,6 +156,15 @@ public class GameplayScreen extends GameScreen {
             //    System.out.println("บันทึกเกมหลังจากโหลด เพื่อให้แน่ใจว่าข้อมูลต่อเนื่อง");
             //    gameFlowManager.saveGame();
             // }
+            
+            // เพิ่มการเรียกใช้ startTime() เพื่อเริ่มเดินเวลาหลังโหลดเกม
+            gameTimeController = ResourceManager.getInstance().getGameTimeController();
+            if (gameTimeController != null) {
+                gameTimeController.startTime();
+                System.out.println("เริ่มการเดินเวลาเกมหลังจากโหลด GameState");
+            } else {
+                System.out.println("ไม่พบ gameTimeController ใน ResourceManager");
+            }
         } else {
             System.out.println("Provided game state is null, initializing new game.");
             this.state = new GameState();

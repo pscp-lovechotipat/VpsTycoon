@@ -1,6 +1,9 @@
 package com.vpstycoon.screen;
 
 import javafx.stage.Screen;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public enum ScreenResolution {
     RES_1280x720(1280, 720, "1280x720 (HD)"),
@@ -43,6 +46,21 @@ public enum ScreenResolution {
             }
         }
         return maxRes;
+    }
+    
+    /**
+     * ดึงรายการความละเอียดทั้งหมดที่รองรับ
+     * @return รายการความละเอียดที่รองรับบนจอปัจจุบัน
+     */
+    public static List<ScreenResolution> getAvailableResolutions() {
+        Screen primaryScreen = Screen.getPrimary();
+        double maxWidth = primaryScreen.getBounds().getWidth();
+        double maxHeight = primaryScreen.getBounds().getHeight();
+        
+        // กรองเอาเฉพาะความละเอียดที่จอปัจจุบันรองรับ
+        return Arrays.stream(values())
+                .filter(res -> res.width <= maxWidth && res.height <= maxHeight)
+                .collect(Collectors.toList());
     }
 
     @Override

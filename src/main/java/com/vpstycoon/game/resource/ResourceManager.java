@@ -261,12 +261,16 @@ public class ResourceManager implements Serializable {
     private void initiaizeGameTimeController() {
         initiaizeRequestManager();
         if (gameTimeController == null) {
+            System.out.println("กำลังสร้าง GameTimeController ใหม่...");
             this.gameTimeController = new GameTimeController(this.company,
                     this.requestManager,
                     this.rack,
                     currentState.getLocalDateTime()
             );
-            gameTimeController.getGameTimeManager().getGameTimeMs();
+            
+            // เรียก startTime() เพื่อเริ่มการทำงานของ timeThread
+            System.out.println("เริ่มการทำงานของ GameTimeController หลังจากสร้างใหม่");
+            gameTimeController.startTime();
         }
     }
 
