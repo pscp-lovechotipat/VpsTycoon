@@ -805,6 +805,15 @@ public class GameplayContentPane extends BorderPane {
         if (vps == null) {
             return false;
         }
+        
+        // ตรวจสอบว่ามีพื้นที่ว่างพอในแร็คหรือไม่
+        if (vps.getSlotsRequired() > rack.getAvailableSlotUnits()) {
+            pushNotification("Installation Failed",
+                    "Not enough slots available in the rack. You need " + vps.getSlotsRequired() +
+                            " slots, but only " + rack.getAvailableSlotUnits() + " are available.");
+            return false;
+        }
+        
         if (rack.installVPS(vps)) {
             // ลบ VPS จาก GameplayContentPane inventory
             vpsInventory.removeVPS(vpsId);

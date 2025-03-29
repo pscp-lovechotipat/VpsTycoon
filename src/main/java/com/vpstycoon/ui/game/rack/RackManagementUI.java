@@ -208,10 +208,21 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
         });
 
         upgradeButton.setOnAction(e -> {
-            int upgradeCost = calculateUpgradeCost();
-            if (parent.getCompany().getMoney() >= upgradeCost) {
+            // ตรวจสอบว่า rack มี slot ว่างที่สามารถ upgrade ได้หรือไม่
+            Rack currentRack = parent.getRack();
+            int currentUnlockedSlots = currentRack.getUnlockedSlotUnits();
+            int maxRackSlots = currentRack.getMaxSlotUnits();
+            
+            // ตรวจสอบว่าได้ upgrade ครบแล้วหรือไม่
+            if (currentUnlockedSlots >= maxRackSlots) {
+                parent.pushNotification("CANNOT UPGRADE", "This rack already has maximum slots unlocked (" + maxRackSlots + " slots)");
+                return;
+            }
+            
+            int currentUpgradeCost = calculateUpgradeCost();
+            if (parent.getCompany().getMoney() >= currentUpgradeCost) {
                 // Deduct the cost first
-                parent.getCompany().setMoney(parent.getCompany().getMoney() - upgradeCost);
+                parent.getCompany().setMoney(parent.getCompany().getMoney() - currentUpgradeCost);
                 
                 if (parent.getRack().upgrade()) {
                     Timeline pulseAnimation = new Timeline();
@@ -1067,6 +1078,17 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             Button upgradeButton = createPixelButton("UPGRADE RACK ($" + upgradeCost + ")", "#4CAF50");
             upgradeButton.setMaxWidth(Double.MAX_VALUE);
             upgradeButton.setOnAction(e -> {
+                // ตรวจสอบว่า rack มี slot ว่างที่สามารถ upgrade ได้หรือไม่
+                Rack currentRack = parent.getRack();
+                int currentUnlockedSlots = currentRack.getUnlockedSlotUnits();
+                int maxRackSlots = currentRack.getMaxSlotUnits();
+                
+                // ตรวจสอบว่าได้ upgrade ครบแล้วหรือไม่
+                if (currentUnlockedSlots >= maxRackSlots) {
+                    parent.pushNotification("CANNOT UPGRADE", "This rack already has maximum slots unlocked (" + maxRackSlots + " slots)");
+                    return;
+                }
+                
                 int currentUpgradeCost = calculateUpgradeCost();
                 if (parent.getCompany().getMoney() >= currentUpgradeCost) {
                     // Deduct the cost first
@@ -1538,6 +1560,17 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             Button upgradeButton = createPixelButton("UPGRADE RACK ($" + upgradeCost + ")", "#4CAF50");
             upgradeButton.setMaxWidth(Double.MAX_VALUE);
             upgradeButton.setOnAction(e -> {
+                // ตรวจสอบว่า rack มี slot ว่างที่สามารถ upgrade ได้หรือไม่
+                Rack currentRack = parent.getRack();
+                int currentUnlockedSlots = currentRack.getUnlockedSlotUnits();
+                int maxRackSlots = currentRack.getMaxSlotUnits();
+                
+                // ตรวจสอบว่าได้ upgrade ครบแล้วหรือไม่
+                if (currentUnlockedSlots >= maxRackSlots) {
+                    parent.pushNotification("CANNOT UPGRADE", "This rack already has maximum slots unlocked (" + maxRackSlots + " slots)");
+                    return;
+                }
+                
                 int currentUpgradeCost = calculateUpgradeCost();
                 if (parent.getCompany().getMoney() >= currentUpgradeCost) {
                     // Deduct the cost first
