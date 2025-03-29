@@ -79,37 +79,37 @@ public class GameEvent implements Runnable {
     @SuppressWarnings("unchecked")
     private final Supplier<GameTask>[] taskFactories = new Supplier[] {
         // Wire connection task
-         // () -> new WireTask(random.nextInt(3) + 3), // 3-5 wires
+        () -> new WireTask(random.nextInt(3) + 3), // 3-5 wires
         
         // Data decryption task
-//     () -> new DataDecryptionTask(random.nextInt(3) + 3), // 3-5 digits
-//
-//       // Firewall Defense Task
-    () -> new FirewallDefenseTask(),
-//
-//       // Data Sorting Task
-//       () -> new DataSortingTask(),
-//
-//       // Password Cracking Task
-//       () -> new PasswordCrackingTask(),
-//
-//       // Network Routing Task
-//       () -> new NetworkRoutingTask(),
-//
-//       // Server Cooling Task
-//       () -> new ServerCoolingTask(),
-//
-//       // Resource Optimization Task
-//       () -> new ResourceOptimizationTask(),
-//
-//       // Calibration Task
-//       () -> new CalibrationTask(),
-//
-//       // File Recovery Task
-//       () -> new FileRecoveryTask(),
-//
-//       // New Hacking Grid Task
-//       () -> new HackingTask()
+        () -> new DataDecryptionTask(random.nextInt(3) + 3), // 3-5 digits
+        
+        // Firewall Defense Task
+        () -> new FirewallDefenseTask(),
+        
+        // Data Sorting Task
+        () -> new DataSortingTask(),
+        
+        // Password Cracking Task
+        () -> new PasswordCrackingTask(),
+        
+        // Network Routing Task
+        () -> new NetworkRoutingTask(),
+        
+        // Server Cooling Task
+        () -> new ServerCoolingTask(),
+        
+        // Resource Optimization Task
+        () -> new ResourceOptimizationTask(),
+        
+        // Calibration Task
+        () -> new CalibrationTask(),
+        
+        // File Recovery Task
+        () -> new FileRecoveryTask(),
+        
+        // Hacking Task
+        () -> new HackingTask()
     };
 
     /**
