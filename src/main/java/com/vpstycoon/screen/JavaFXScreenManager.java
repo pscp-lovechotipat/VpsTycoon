@@ -166,4 +166,57 @@ public class JavaFXScreenManager implements ScreenManager {
             }
         }
     }
+    
+    @Override
+    public void prepareScreen(Node screen) {
+        Scene scene = stage.getScene();
+        
+        // ถ้ายังไม่มี Scene ให้สร้างใหม่
+        if (scene == null) {
+            // สร้าง StackPane และใส่ screen เข้าไป
+            StackPane root = new StackPane(screen);
+            root.setStyle("-fx-background-color: black;");
+            
+            // สร้าง Scene ใหม่พร้อม root ที่มี screen อยู่แล้ว
+            scene = new Scene(root, config.getResolution().getWidth(), config.getResolution().getHeight());
+            scene.setFill(Color.BLACK);
+            
+            // ตั้งค่า Scene ให้ stage
+            stage.setScene(scene);
+        } else {
+            // ถ้ามี Scene อยู่แล้ว แต่ยังไม่มี root 
+            if (!(scene.getRoot() instanceof StackPane)) {
+                // สร้าง StackPane ใหม่และใส่ screen เข้าไป
+                StackPane root = new StackPane(screen);
+                root.setStyle("-fx-background-color: black;");
+                
+                // ตั้งค่า root ใหม่ให้ Scene
+                scene.setRoot(root);
+            } else {
+                // ถ้ามี root ที่เป็น StackPane อยู่แล้ว
+                StackPane root = (StackPane) scene.getRoot();
+                
+                // ถ้ามี children อยู่แล้ว ให้เพิ่ม screen เป็น child ใหม่
+                if (!root.getChildren().isEmpty()) {
+                    screen.setOpacity(1.0); // ตั้งค่าความโปร่งใสให้เห็นชัดเจน
+                    root.getChildren().add(screen);
+                } else {
+                    // ถ้ายังไม่มี children ให้เพิ่ม screen เป็น child แรก
+                    root.getChildren().add(screen);
+                }
+            }
+        }
+        
+        // ปรับขนาดและตำแหน่งของ stage ตามการตั้งค่า
+        applySettings(stage, scene);
+    }
+    
+    @Override
+    public void prepareScreen(GameScreen screen) {
+        // เรียกใช้ method prepareScreen(Node) โดยส่ง root element ของ GameScreen
+        prepareScreen(screen.getRoot());
+        
+        // เรียก onShow เพื่อให้ GameScreen รู้ว่าถูกแสดงแล้ว
+        screen.onShow();
+    }
 }

@@ -36,6 +36,7 @@ import java.util.List;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 import javafx.animation.PauseTransition;
+import javafx.animation.FadeTransition;
 import javafx.util.Duration;
 
 // Good Morning
@@ -133,35 +134,43 @@ public class GameApplication extends Application implements Navigator, ResourceM
                     
                     // Update loading screen to show we're ready
                     if (statusLabel != null) {
-                        statusLabel.setText("โหลดเสร็จสมบูรณ์ กำลังเตรียมเริ่มเข้าสู่เกม...");
+                        statusLabel.setText("โหลดเสร็จสมบูรณ์ กำลังเริ่มเข้าสู่เกม...");
                         statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #2ECC71;");
                     }
                     
-                    // 1. เตรียม CutsceneScreen ก่อนจะซ่อนหน้า Loading
+                    // 1. เตรียม CutsceneScreen ก่อนจะเปลี่ยนจากหน้า Loading
                     System.out.println("กำลังเตรียม CutsceneScreen...");
                     CutsceneScreen cutsceneScreen = new CutsceneScreen(gameConfig, screenManager, this);
                     
-                    // 2. เพิ่มการเช็คว่า CutsceneScreen โหลดเสร็จ (อาจใช้ตรงนี้ได้เลย เพราะเป็น synchronous)
+                    // 2. เพิ่มการเช็คว่า CutsceneScreen โหลดเสร็จ
                     System.out.println("CutsceneScreen พร้อมแล้ว");
                     
                     // 3. แสดง Loading ต่อไปอีกสักพักด้วย PauseTransition
                     PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
                     pause.setOnFinished(e -> {
-                        // 4. สร้าง callback ที่จะเปลี่ยนไปหน้า Cutscene หลังจาก Loading ถูกซ่อนเรียบร้อยแล้ว
-                        Runnable afterLoadingHidden = () -> {
-                            // 5. ตั้งค่า callback ให้ CutsceneScreen 
-                            System.out.println("กำลังแสดง CutsceneScreen...");
-                            
-                            // 6. ใช้ ScreenManager เพื่อเปลี่ยนหน้าจอ (มี fadeout/fadein ในตัว)
-                            screenManager.switchScreen(cutsceneScreen);
-                            
-                            // 7. แสดง primary stage
-                            primaryStage.show();
-                        };
+                        // 4. แสดง CutsceneScreen ในหน้าต่างหลัก และปิดหน้า loading หลังจาก fade in เสร็จ
+                        // ตั้งค่าให้ primaryStage แสดง cutsceneScreen
+                        screenManager.prepareScreen(cutsceneScreen);
+                        primaryStage.show();
                         
-                        // ซ่อนหน้า Loading พร้อมกับส่ง callback
-                        System.out.println("กำลังซ่อนหน้า Loading...");
-                        hideLoadingScreenWithCallback(afterLoadingHidden);
+                        // เมื่อ CutsceneScreen ถูกแสดงแล้ว จึงค่อย fade out หน้า loading
+                        // ทำให้การเปลี่ยนหน้าจอดูราบรื่น
+                        if (loadingStage != null && loadingStage.isShowing()) {
+                            System.out.println("กำลังซ่อนหน้า Loading หลังจากแสดง CutsceneScreen...");
+                            
+                            // สร้าง fade out transition สำหรับหน้า loading
+                            javafx.scene.layout.StackPane root = (javafx.scene.layout.StackPane) loadingStage.getScene().getRoot();
+                            javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(Duration.millis(1000), root);
+                            fadeOut.setFromValue(1.0);
+                            fadeOut.setToValue(0.0);
+                            fadeOut.setOnFinished(event -> {
+                                loadingStage.close();
+                                loadingStage = null;
+                                System.out.println("ปิดหน้าจอโหลดเรียบร้อย");
+                                System.out.println("โหลดทรัพยากรเสร็จสมบูรณ์");
+                            });
+                            fadeOut.play();
+                        }
                     });
                     pause.play();
                     
@@ -635,6 +644,40 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 StackPane root = new StackPane();
                 root.setStyle("-fx-background-color: #121212;");
                 
+                // สร้าง effect พื้นหลังคล้ายกับ cutscene
+                javafx.scene.layout.Region darkBackground = new javafx.scene.layout.Region();
+                darkBackground.setStyle("""
+                    -fx-background-color: black;
+                    -fx-background-radius: 0;
+                """);
+                
+                // สร้าง GridPane สำหรับเส้นกริด (คล้ายกับ CutsceneBackground)
+                javafx.scene.layout.GridPane gridLines = new javafx.scene.layout.GridPane();
+                gridLines.setHgap(20);
+                gridLines.setVgap(20);
+                gridLines.setStyle("""
+                    -fx-background-color: rgba(0, 0, 0, 0);
+                    -fx-grid-lines-visible: true;
+                    -fx-border-color: rgba(58, 19, 97, 0.3);
+                    -fx-border-width: 1;
+                """);
+                
+                // สร้างจำนวนคอลัมน์และแถวให้พอดีกับขนาดหน้าจอ
+                int cols = 20;
+                int rows = 20;
+                
+                for (int i = 0; i < cols; i++) {
+                    javafx.scene.layout.ColumnConstraints colConstraint = new javafx.scene.layout.ColumnConstraints();
+                    colConstraint.setPercentWidth(100.0 / cols);
+                    gridLines.getColumnConstraints().add(colConstraint);
+                }
+                
+                for (int i = 0; i < rows; i++) {
+                    javafx.scene.layout.RowConstraints rowConstraint = new javafx.scene.layout.RowConstraints();
+                    rowConstraint.setPercentHeight(100.0 / rows);
+                    gridLines.getRowConstraints().add(rowConstraint);
+                }
+                
                 VBox content = new VBox(20);
                 content.setAlignment(Pos.CENTER);
                 content.setPadding(new Insets(50));
@@ -642,49 +685,75 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 Label titleLabel = new Label("VPS Tycoon");
                 titleLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white; -fx-font-weight: bold;");
                 
+                // เพิ่ม glow effect ให้ title คล้ายกับใน cutscene
+                javafx.scene.effect.DropShadow glow = new javafx.scene.effect.DropShadow();
+                glow.setColor(javafx.scene.paint.Color.web("#8A2BE2"));  // สีม่วง
+                glow.setRadius(20);
+                glow.setSpread(0.2);
+                titleLabel.setEffect(glow);
+                
                 Label loadingLabel = new Label("กำลังโหลดทรัพยากร...");
                 loadingLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: white;");
                 
                 // Create loading details label with a scroll pane to show what's being loaded
                 loadingDetailsLabel = new Label("");
-                loadingDetailsLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #7FDBFF;");
+                loadingDetailsLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #aaaaaa;");
                 
-                // Create a scroll pane for loading details to show multiple files
-                VBox detailsBox = new VBox(5);
-                detailsBox.setPrefHeight(150);
-                detailsBox.setStyle("-fx-background-color: #1E1E1E; -fx-padding: 10;");
+                ScrollPane scrollPane = new ScrollPane();
+                scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+                scrollPane.setFitToWidth(true);
+                scrollPane.setPrefHeight(100);
+                scrollPane.setMaxHeight(100);
                 
-                ScrollPane detailsScrollPane = new ScrollPane(detailsBox);
-                detailsScrollPane.setPrefWidth(600);
-                detailsScrollPane.setPrefHeight(150);
-                detailsScrollPane.setFitToWidth(true);
-                detailsScrollPane.setStyle("-fx-background: #1E1E1E; -fx-border-color: #444;");
+                loadingDetailsPane = new VBox(5);
+                loadingDetailsPane.setStyle("-fx-background-color: transparent;");
+                scrollPane.setContent(loadingDetailsPane);
                 
+                // Create a stylish progress indicator
                 progressIndicator = new javafx.scene.control.ProgressIndicator();
-                progressIndicator.setMaxSize(60, 60);
+                progressIndicator.setProgress(-1); // ไม่ระบุความคืบหน้า (รอจนกว่าจะโหลดเสร็จ)
+                progressIndicator.setStyle("""
+                    -fx-progress-color: #8A2BE2;
+                """);
+                progressIndicator.setPrefSize(50, 50);
                 
-                Label statusLabel = new Label("โปรดรอสักครู่...");
-                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #AAAAAA;");
+                // Create status label
+                statusLabel = new Label("กำลังเริ่มเกม...");
+                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #2ecc71;");
                 
-                content.getChildren().addAll(titleLabel, loadingLabel, progressIndicator, 
-                                            loadingDetailsLabel, detailsScrollPane, statusLabel);
-                root.getChildren().add(content);
+                // เพิ่ม component ทั้งหมดเข้าไปใน content
+                content.getChildren().addAll(titleLabel, loadingLabel, progressIndicator, statusLabel);
                 
-                // Store references for updating
-                this.loadingDetailsPane = detailsBox;
-                this.statusLabel = statusLabel;
+                // เพิ่ม component ทั้งหมดเข้าไปใน root
+                root.getChildren().addAll(darkBackground, gridLines, content);
                 
-                // Create scene with the configured resolution
-                int width = gameConfig.getResolution().getWidth();
-                int height = gameConfig.getResolution().getHeight();
-                Scene scene = new Scene(root, width, height);
+                // สร้าง scene และตั้งค่า
+                Scene scene = new Scene(root, 500, 300);
+                scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
                 
-                primaryStage.setScene(scene);
-                primaryStage.setTitle("VPS Tycoon - Loading");
-                primaryStage.show();
+                if (loadingStage == null) {
+                    loadingStage = new Stage();
+                    loadingStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+                    loadingStage.setResizable(false);
+                }
+                
+                loadingStage.setScene(scene);
+                loadingStage.show();
+                
+                // Center on screen
+                javafx.geometry.Rectangle2D screenBounds = javafx.stage.Screen.getPrimary().getVisualBounds();
+                loadingStage.setX((screenBounds.getWidth() - 500) / 2);
+                loadingStage.setY((screenBounds.getHeight() - 300) / 2);
+                
+                // Fade in animation
+                FadeTransition fadeIn = new FadeTransition(Duration.millis(500), root);
+                fadeIn.setFromValue(0.0);
+                fadeIn.setToValue(1.0);
+                fadeIn.play();
                 
                 // Initialize the resource loading listener
                 initResourceLoadingListener();
+                
             } catch (Exception e) {
                 System.err.println("Error showing loading screen: " + e.getMessage());
                 e.printStackTrace();
