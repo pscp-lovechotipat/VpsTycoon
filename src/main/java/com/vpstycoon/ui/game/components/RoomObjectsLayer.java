@@ -118,7 +118,6 @@ public class RoomObjectsLayer {
         musicBoxLayer.setOnMouseEntered(event -> {
             musicBoxLayer.setStyle(hoverStyle);
             audioManager.playSoundEffect("hover.wav");
-            ResourceManager.getInstance().pushMouseNotification("Pause Music");
         });
         musicBoxLayer.setOnMouseExited(event -> {musicBoxLayer.setStyle(normalStyle);});
 
@@ -159,7 +158,6 @@ public class RoomObjectsLayer {
         musicStopLayer.setOnMouseEntered(event -> {
             musicStopLayer.setStyle(hoverStyle);
             audioManager.playSoundEffect("hover.wav");
-            ResourceManager.getInstance().pushMouseNotification("Resume Music");
         });
         musicStopLayer.setOnMouseExited(event -> {musicStopLayer.setStyle(normalStyle);});
 
