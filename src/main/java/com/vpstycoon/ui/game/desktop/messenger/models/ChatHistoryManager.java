@@ -43,7 +43,38 @@ public class ChatHistoryManager implements Serializable{
      * ล้างข้อมูล instance และกำหนดให้เป็น null เพื่อให้สร้างใหม่ในครั้งต่อไป
      */
     public static void resetInstance() {
+        // รีเซ็ตข้อมูลแชทก่อนถ้ามี instance อยู่แล้ว
+        if (instance != null) {
+            instance.resetAllChatData();
+        }
+        
+        // กำหนด instance เป็น null เพื่อให้สร้างใหม่
         instance = null;
+        System.out.println("ChatHistoryManager instance has been reset");
+    }
+
+    /**
+     * รีเซ็ตข้อมูลแชททั้งหมด ทั้งในหน่วยความจำและไฟล์
+     * เรียกใช้เมื่อต้องการล้างข้อมูลแชททั้งหมดเพื่อเริ่มเกมใหม่
+     */
+    public void resetAllChatData() {
+        // ล้างข้อมูลในหน่วยความจำ
+        if (customerChatHistory != null) {
+            customerChatHistory.clear();
+        } else {
+            customerChatHistory = new HashMap<>();
+        }
+        
+        // ลบไฟล์ chat history
+        deleteChatHistoryFile();
+        
+        // ล้างข้อมูลใน GameState ถ้ามี
+        GameState currentState = ResourceManager.getInstance().getCurrentState();
+        if (currentState != null) {
+            currentState.setChatHistory(new HashMap<>());
+        }
+        
+        System.out.println("All chat data has been reset (memory, file, and GameState)");
     }
 
     /**

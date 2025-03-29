@@ -73,19 +73,23 @@ public class GameState implements Serializable {
         this.vmAssignments = new HashMap<>();
         this.skillLevels = new HashMap<>();
 
+        this.localDateTime = new SimpleObjectProperty<>();
         this.localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
     
     public GameState(ArrayList<GameObject> gameObjects) {
-        this();
-        this.gameObjects = new ArrayList<>(gameObjects);
+        this();  // เรียกคอนสตรัคเตอร์หลัก
+        if (gameObjects != null) {
+            this.gameObjects = new ArrayList<>(gameObjects);
+        }
     }
 
     public GameState(Company company, List<GameObject> gameObjects) {
         this.company = company;
         this.resources = new HashMap<>();
         this.upgrades = new HashMap<>();
-        this.gameObjects = new ArrayList<>(gameObjects);
+        this.gameObjects = new ArrayList<>(gameObjects != null ? gameObjects : new ArrayList<>());
+        this.lastSaveTime = System.currentTimeMillis();
         
         // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
         this.rackConfiguration = new HashMap<>();
@@ -94,12 +98,19 @@ public class GameState implements Serializable {
         this.chatHistory = new HashMap<>();
         this.pendingRequests = new ArrayList<>();
         this.completedRequests = new ArrayList<>();
+        this.vmAssignments = new HashMap<>();
+        this.skillLevels = new HashMap<>();
+        
+        // กำหนดค่าเริ่มต้นของเวลา
+        this.localDateTime = new SimpleObjectProperty<>(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
 
     public GameState(Company company) {
         this.company = company;
         this.resources = new HashMap<>();
         this.upgrades = new HashMap<>();
+        this.gameObjects = new ArrayList<>();
+        this.lastSaveTime = System.currentTimeMillis();
         
         // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
         this.rackConfiguration = new HashMap<>();
@@ -108,6 +119,11 @@ public class GameState implements Serializable {
         this.chatHistory = new HashMap<>();
         this.pendingRequests = new ArrayList<>();
         this.completedRequests = new ArrayList<>();
+        this.vmAssignments = new HashMap<>();
+        this.skillLevels = new HashMap<>();
+        
+        // กำหนดค่าเริ่มต้นของเวลา
+        this.localDateTime = new SimpleObjectProperty<>(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
 
     // Getter และ Setter สำหรับ freeVmCount
@@ -268,5 +284,76 @@ public class GameState implements Serializable {
     
     public void setSkillLevels(Map<SkillType, Integer> skillLevels) {
         this.skillLevels = skillLevels;
+    }
+    
+    /**
+     * ล้างค่าทั้งหมดกลับเป็นค่าเริ่มต้น สำหรับการเริ่มเกมใหม่
+     */
+    public void clearState() {
+        // ล้างข้อมูลทั้งหมด
+        resources.clear();
+        upgrades.clear();
+        
+        // ตรวจสอบ gameObjects ว่าเป็น null หรือไม่ก่อนเรียก clear()
+        if (gameObjects != null) {
+            gameObjects.clear();
+        } else {
+            gameObjects = new ArrayList<>();
+        }
+        
+        // ตรวจสอบ rackConfiguration ว่าเป็น null หรือไม่ก่อนเรียก clear()
+        if (rackConfiguration != null) {
+            rackConfiguration.clear();
+        } else {
+            rackConfiguration = new HashMap<>();
+        }
+        
+        // ตรวจสอบ vpsInventoryData ว่าเป็น null หรือไม่ก่อนเรียก clear()
+        if (vpsInventoryData != null) {
+            vpsInventoryData.clear();
+        } else {
+            vpsInventoryData = new HashMap<>();
+        }
+        
+        freeVmCount = 0;
+        
+        // ล้างข้อมูลการแชท
+        if (chatHistory != null) {
+            chatHistory.clear();
+        } else {
+            chatHistory = new HashMap<>();
+        }
+        
+        // ล้างข้อมูล requests
+        if (pendingRequests != null) {
+            pendingRequests.clear();
+        } else {
+            pendingRequests = new ArrayList<>();
+        }
+        
+        if (completedRequests != null) {
+            completedRequests.clear();
+        } else {
+            completedRequests = new ArrayList<>();
+        }
+        
+        if (vmAssignments != null) {
+            vmAssignments.clear();
+        } else {
+            vmAssignments = new HashMap<>();
+        }
+        
+        // ล้างข้อมูล skills
+        if (skillLevels != null) {
+            skillLevels.clear();
+        } else {
+            skillLevels = new HashMap<>();
+        }
+        
+        // ตั้งเวลาให้กลับไปที่เริ่มต้น
+        localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
+        gameTimeMs = 0;
+        
+        System.out.println("ล้างข้อมูล GameState เรียบร้อยแล้ว");
     }
 }

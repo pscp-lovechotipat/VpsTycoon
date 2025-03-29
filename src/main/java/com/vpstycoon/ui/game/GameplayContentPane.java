@@ -207,16 +207,21 @@ public class GameplayContentPane extends BorderPane {
 
         this.audioManager = ResourceManager.getInstance().getAudioManager();
         
-        // Make sure game time state matches music state at startup
+        // ไม่ผูกสถานะดนตรีกับเวลาอีกต่อไป ให้เวลาเกมเดินตลอดเวลา
+        // เริ่มการเดินเวลาทันที ไม่ว่าดนตรีจะเปิดหรือปิด
+        gameTimeController.startTime();
+        System.out.println("Game time started at startup");
+        
+        // ตั้งค่าเริ่มต้นของดนตรีตาม roomObjects
         if (roomObjects != null && !roomObjects.getRun()) {
-            // If music is off at startup, also stop the game time
-            gameTimeController.stopTime();
-            System.out.println("Game time stopped at startup (music off)");
+            audioManager.pauseMusic();
         } else {
-            // If music is on at startup, ensure game time is running
-            gameTimeController.startTime();
-            System.out.println("Game time started at startup (music on)");
+            audioManager.resumeMusic();
         }
+        
+        // เริ่มการทำงานของ GameEvent
+        ResourceManager.getInstance().initializeGameEvent(this);
+        System.out.println("เริ่มการทำงานของ GameEvent แล้ว");
     }
 
     /**
@@ -528,12 +533,9 @@ public class GameplayContentPane extends BorderPane {
             roomObjects.getMusicBoxLayer().setVisible(false);
             roomObjects.getMusicStopLayer().setVisible(true);
             audioManager.pauseMusic();
-            // Pause game time
-            gameTimeController.stopTime();
-            // Pause request generator
-            ResourceManager.getInstance().getRequestGenerator().pauseGenerator();
-            System.out.println("Music and game paused");
-            pushNotification("Game Paused", "Game time and request generation paused. Click the music box to resume.");
+            // ไม่หยุดเวลาอีกต่อไป แต่ให้แสดงข้อความเกี่ยวกับดนตรีเท่านั้น
+            System.out.println("Music paused");
+            pushNotification("Music Paused", "Game music has been paused. Click the music box to resume.");
             roomObjects.setRun(false);
         }
     }
@@ -543,12 +545,9 @@ public class GameplayContentPane extends BorderPane {
             roomObjects.getMusicBoxLayer().setVisible(true);
             roomObjects.getMusicStopLayer().setVisible(false);
             audioManager.resumeMusic();
-            // Resume game time
-            gameTimeController.startTime();
-            // Resume request generator
-            ResourceManager.getInstance().getRequestGenerator().resumeGenerator();
-            System.out.println("Music and game resumed");
-            pushNotification("Game Resumed", "Game time and request generation resumed.");
+            // ไม่ต้องเริ่มเวลาอีกต่อไป เพราะเวลาจะเดินตลอด
+            System.out.println("Music resumed");
+            pushNotification("Music Resumed", "Game music has been resumed.");
             roomObjects.setRun(true);
         }
     }

@@ -105,6 +105,27 @@ public class RequestGenerator extends Thread {
     }
     
     /**
+     * รีเซ็ต RequestGenerator ให้กลับเป็นค่าเริ่มต้น
+     */
+    public void resetGenerator() {
+        // หยุดการทำงานก่อน
+        running = false;
+        this.interrupt();
+        
+        try {
+            // รีเซ็ตค่าต่างๆ กลับเป็นค่าเริ่มต้น
+            this.paused = false;
+            this.maxPendingRequests = 10;
+            this.requestRateMultiplier = 1.0;
+            
+            System.out.println("RequestGenerator ถูกรีเซ็ตกลับเป็นค่าเริ่มต้นแล้ว");
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการรีเซ็ต RequestGenerator: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
      * Pause the request generator
      */
     public synchronized void pauseGenerator() {

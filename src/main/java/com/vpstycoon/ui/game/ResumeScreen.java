@@ -132,6 +132,13 @@ public class ResumeScreen extends StackPane {
                 System.out.println("กำลังบันทึกเกมก่อนออกไปเมนูหลัก...");
                 ResourceManager.getInstance().pushNotification("บันทึกเกม", "กำลังบันทึกความก้าวหน้าของคุณ...");
                 
+                // หยุดการทำงานของ GameEvent ก่อนออกไปเมนูหลัก
+                if (ResourceManager.getInstance().getGameEvent() != null && 
+                    ResourceManager.getInstance().getGameEvent().isRunning()) {
+                    System.out.println("กำลังหยุด GameEvent ก่อนออกไปเมนูหลัก...");
+                    ResourceManager.getInstance().getGameEvent().stopEvent();
+                }
+                
                 // สร้าง GameState จากข้อมูลปัจจุบัน
                 Company company = ResourceManager.getInstance().getCompany();
                 List<GameObject> gameObjects = 

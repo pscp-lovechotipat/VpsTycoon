@@ -56,4 +56,33 @@ public class GameTimeController {
     public long getGameTimeMs() {
         return timeManager.getGameTimeMs();
     }
+    
+    /**
+     * รีเซ็ตเวลากลับเป็นค่าเริ่มต้นและเริ่มการเดินเวลาใหม่
+     * @param startTime เวลาเริ่มต้นที่ต้องการรีเซ็ต (ถ้าเป็น null จะใช้ค่าเริ่มต้น 2000-01-01)
+     */
+    public void resetTime(LocalDateTime startTime) {
+        // หยุดเวลาก่อน
+        stopTime();
+        
+        // กำหนดค่าเริ่มต้นใหม่
+        if (startTime == null) {
+            startTime = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
+        }
+        
+        // กำหนดค่าเริ่มต้นใหม่ใน timeManager
+        timeManager.resetTime(startTime);
+        
+        // เริ่มการเดินเวลาใหม่
+        startTime();
+        
+        System.out.println("รีเซ็ตและเริ่มเวลาเกมใหม่เป็น: " + startTime);
+    }
+    
+    /**
+     * รีเซ็ตเวลากลับเป็นค่าเริ่มต้นและเริ่มการเดินเวลาใหม่ (ใช้ค่าเริ่มต้น 2000-01-01)
+     */
+    public void resetTime() {
+        resetTime(null);
+    }
 }
