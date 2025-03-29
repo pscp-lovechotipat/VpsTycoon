@@ -847,6 +847,10 @@ public class ResourceManager implements Serializable {
         return mouseNotificationController;
     }
 
+    /**
+     * Get the GameEvent instance
+     * @return the GameEvent instance or null if not initialized
+     */
     public GameEvent getGameEvent() {
         return gameEvent;
     }

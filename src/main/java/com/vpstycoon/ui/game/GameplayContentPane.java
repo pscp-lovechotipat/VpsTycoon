@@ -218,6 +218,10 @@ public class GameplayContentPane extends BorderPane {
         } else {
             audioManager.resumeMusic();
         }
+        
+        // เริ่มการทำงานของ GameEvent
+        ResourceManager.getInstance().initializeGameEvent(this);
+        System.out.println("เริ่มการทำงานของ GameEvent แล้ว");
     }
 
     /**
