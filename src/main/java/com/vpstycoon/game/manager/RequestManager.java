@@ -75,12 +75,7 @@ public class RequestManager implements Serializable {
             future.completeExceptionally(new IllegalArgumentException("Request not found"));
             return future;
         }
-        
-        
-        
-        
-        
-        
+
         request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
         
         

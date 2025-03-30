@@ -23,6 +23,7 @@ public class AudioManager implements IAudioManager {
     private double musicVolume = 0.5;
     private double sfxVolume = 0.5;
     private boolean isMusicPaused = false;
+    private boolean muted = false;
 
     public AudioManager() {
         GameEventBus.getInstance().subscribe(
@@ -33,9 +34,20 @@ public class AudioManager implements IAudioManager {
 
     private void onSettingsChanged(SettingsChangedEvent event) {
         setMusicVolume(event.getNewConfig().getMusicVolume());
-        setSfxVolume(event.getNewConfig().getSfxVolume());
+        setSoundVolume(event.getNewConfig().getSfxVolume());
     }
-
+    
+    @Override
+    public void playSound(String sound) {
+        playSound(sound, sfxVolume);
+    }
+    
+    @Override
+    public void playSound(String sound, double volume) {
+        if (!muted) {
+            playSoundEffect(sound, volume);
+        }
+    }
     
     @Override
     public void playMusic(String musicFile) {
@@ -62,14 +74,31 @@ public class AudioManager implements IAudioManager {
                 musicPlayer = new MediaPlayer(music);
                 musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
                 musicPlayer.setVolume(musicVolume);
-                musicPlayer.play();
+                if (!muted) {
+                    musicPlayer.play();
+                }
                 isMusicPaused = false;
             } catch (Exception e) {
                 System.err.println("Failed to play music: " + e.getMessage());
             }
         });
     }
-
+    
+    @Override
+    public void playMusic(String music, double volume) {
+        this.musicVolume = volume;
+        playMusic(music);
+    }
+    
+    @Override
+    public void stopMusic() {
+        Platform.runLater(() -> {
+            if (musicPlayer != null) {
+                musicPlayer.stop();
+                isMusicPaused = false;
+            }
+        });
+    }
     
     @Override
     public void pauseMusic() {
@@ -80,21 +109,22 @@ public class AudioManager implements IAudioManager {
             }
         });
     }
-
     
     @Override
     public void resumeMusic() {
         Platform.runLater(() -> {
-            if (musicPlayer != null && isMusicPaused) {
+            if (musicPlayer != null && isMusicPaused && !muted) {
                 musicPlayer.play();
                 isMusicPaused = false;
             }
         });
     }
-
     
-    @Override
     public void playSoundEffect(String soundFile) {
+        playSoundEffect(soundFile, sfxVolume);
+    }
+    
+    private void playSoundEffect(String soundFile, double volume) {
         Platform.runLater(() -> {
             try {
                 Media sound = soundCache.computeIfAbsent(soundFile, k -> {
@@ -112,7 +142,7 @@ public class AudioManager implements IAudioManager {
                 });
                 if (sound != null) {
                     MediaPlayer player = new MediaPlayer(sound);
-                    player.setVolume(sfxVolume);
+                    player.setVolume(volume);
                     activeSfxPlayers.add(player);
                     player.play();
                     player.setOnEndOfMedia(() -> {
@@ -125,9 +155,7 @@ public class AudioManager implements IAudioManager {
             }
         });
     }
-
     
-    @Override
     public void stopSoundEffect(String soundFile) {
         Platform.runLater(() -> {
             Iterator<MediaPlayer> iterator = activeSfxPlayers.iterator();
@@ -141,7 +169,6 @@ public class AudioManager implements IAudioManager {
             }
         });
     }
-
     
     @Override
     public void setMusicVolume(double volume) {
@@ -150,15 +177,45 @@ public class AudioManager implements IAudioManager {
             musicPlayer.setVolume(volume);
         }
     }
-
     
     @Override
-    public void setSfxVolume(double volume) {
+    public void setSoundVolume(double volume) {
         this.sfxVolume = volume;
     }
-
+    
+    public void setSfxVolume(double volume) {
+        setSoundVolume(volume);
+    }
     
     @Override
+    public double getSoundVolume() {
+        return sfxVolume;
+    }
+    
+    @Override
+    public double getMusicVolume() {
+        return musicVolume;
+    }
+    
+    @Override
+    public void setMuted(boolean muted) {
+        this.muted = muted;
+        if (muted) {
+            if (musicPlayer != null && musicPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
+                musicPlayer.pause();
+            }
+        } else {
+            if (musicPlayer != null && !isMusicPaused) {
+                musicPlayer.play();
+            }
+        }
+    }
+    
+    @Override
+    public boolean isMuted() {
+        return muted;
+    }
+    
     public void dispose() {
         if (musicPlayer != null) {
             musicPlayer.dispose();
@@ -169,9 +226,7 @@ public class AudioManager implements IAudioManager {
         activeSfxPlayers.clear();
         soundCache.clear();
     }
-
     
-    @Override
     public void preloadSoundEffect(String name) {
         if (!soundCache.containsKey(name)) {
             try {

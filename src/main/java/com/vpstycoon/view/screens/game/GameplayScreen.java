@@ -18,14 +18,16 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
+import com.vpstycoon.audio.interfaces.IAudioManager;
+import com.vpstycoon.model.company.interfaces.ICompany;
 
 public class GameplayScreen extends GameScreen {
     
     private final GameConfig config;
     private final ScreenManager screenManager;
     private final INavigator navigator;
-    private final AudioManager audioManager;
-    private final Company company;
+    private final IAudioManager audioManager;
+    private final ICompany company;
     
     
     public GameplayScreen(GameConfig config, ScreenManager screenManager, INavigator navigator) {
@@ -78,19 +80,19 @@ public class GameplayScreen extends GameScreen {
         
         Button menuButton = new Button("เมนู");
         menuButton.setOnAction(e -> {
-            audioManager.playSoundEffect("click.mp3");
+            audioManager.playSound("click.mp3");
             showGameMenu();
         });
         
         Button saveButton = new Button("บันทึก");
         saveButton.setOnAction(e -> {
-            audioManager.playSoundEffect("click.mp3");
+            audioManager.playSound("click.mp3");
             saveGame();
         });
         
         Button exitButton = new Button("ออก");
         exitButton.setOnAction(e -> {
-            audioManager.playSoundEffect("click.mp3");
+            audioManager.playSound("click.mp3");
             navigator.saveAndExitToMainMenu();
         });
         

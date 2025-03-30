@@ -1,6 +1,6 @@
 package com.vpstycoon.view.screens.menu;
 
-import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.audio.interfaces.IAudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.navigation.interfaces.INavigator;
 import com.vpstycoon.screen.ScreenManager;
@@ -25,7 +25,7 @@ public class MainMenuScreen extends GameScreen {
     private final GameConfig config;
     private final ScreenManager screenManager;
     private final INavigator navigator;
-    private final AudioManager audioManager;
+    private final IAudioManager audioManager;
     
     
     public MainMenuScreen(GameConfig config, ScreenManager screenManager, INavigator navigator) {
@@ -50,22 +50,22 @@ public class MainMenuScreen extends GameScreen {
         
         
         Button playButton = createMenuButton("เริ่มเกมใหม่", event -> {
-            audioManager.playSoundEffect("click.mp3");
+            audioManager.playSound("click.mp3");
             navigator.navigateToGame();
         });
         
         Button continueButton = createMenuButton("เล่นต่อ", event -> {
-            audioManager.playSoundEffect("click.mp3");
+            audioManager.playSound("click.mp3");
             navigator.navigateToGame();
         });
         
         Button settingsButton = createMenuButton("ตั้งค่า", event -> {
-            audioManager.playSoundEffect("click.mp3");
+            audioManager.playSound("click.mp3");
             navigator.navigateToSettings();
         });
         
         Button exitButton = createMenuButton("ออกจากเกม", event -> {
-            audioManager.playSoundEffect("click.mp3");
+            audioManager.playSound("click.mp3");
             System.exit(0);
         });
         

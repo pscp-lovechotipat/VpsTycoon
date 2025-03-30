@@ -82,7 +82,7 @@ public class GameplayContentPane extends BorderPane {
     private final Navigator navigator;
     private final ChatSystem chatSystem;
 
-    private final RequestManager requestManager;
+    private RequestManager requestManager;
     private final VPSManager vpsManager;
     private final Rack rack;
 
@@ -518,7 +518,27 @@ public class GameplayContentPane extends BorderPane {
     }
 
     public void openSimulationDesktop() {
-        audioManager.playSoundEffect("click_app.wav");
+        audioManager.playSound("click_app.wav");
+        
+        if (simulationDesktopUI == null) {
+            System.err.println("ไม่สามารถเปิดหน้าเดสก์ท็อปได้: SimulationDesktopUI เป็น null");
+            pushCenterNotification("ข้อผิดพลาด", "ไม่สามารถเปิดหน้าเดสก์ท็อปได้: โปรดลองอีกครั้งในภายหลัง", "/images/icon/error.png");
+            return;
+        }
+        
+        if (requestManager == null) {
+            try {
+                System.out.println("กำลังสร้าง RequestManager ใหม่...");
+                this.requestManager = new com.vpstycoon.game.manager.RequestManager(this.company);
+                System.out.println("สร้าง RequestManager ใหม่สำเร็จ");
+            } catch (Exception e) {
+                System.err.println("ไม่สามารถสร้าง RequestManager: " + e.getMessage());
+                e.printStackTrace();
+                pushCenterNotification("ข้อผิดพลาด", "ไม่สามารถเปิดหน้าเดสก์ท็อปได้: ไม่สามารถสร้าง RequestManager", "/images/icon/error.png");
+                return;
+            }
+        }
+        
         simulationDesktopUI.openSimulationDesktop();
     }
 

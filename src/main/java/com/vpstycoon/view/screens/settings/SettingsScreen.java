@@ -1,6 +1,6 @@
 package com.vpstycoon.view.screens.settings;
 
-import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.audio.interfaces.IAudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
@@ -27,7 +27,7 @@ public class SettingsScreen extends GameScreen {
     private final GameConfig config;
     private final ScreenManager screenManager;
     private final INavigator navigator;
-    private final AudioManager audioManager;
+    private final IAudioManager audioManager;
     
     private ComboBox<ScreenResolution> resolutionComboBox;
     private Slider musicVolumeSlider;
@@ -108,12 +108,12 @@ public class SettingsScreen extends GameScreen {
         Button applyButton = new Button("นำไปใช้");
         applyButton.setOnAction(e -> {
             applySettings();
-            audioManager.playSoundEffect("click.mp3");
+            audioManager.playSound("click.mp3");
         });
         
         Button backButton = new Button("กลับ");
         backButton.setOnAction(e -> {
-            audioManager.playSoundEffect("click.mp3");
+            audioManager.playSound("click.mp3");
             navigator.navigateToMainMenu();
         });
         
@@ -145,7 +145,7 @@ public class SettingsScreen extends GameScreen {
     @Override
     public void onShow() {
         
-        audioManager.playSoundEffect("menu_open.mp3");
+        audioManager.playSound("menu_open.mp3");
         
         
         resolutionComboBox.setValue(config.getResolution());

@@ -177,16 +177,6 @@ public class GameplayScreen extends GameScreen {
             RequestGenerator requestGenerator = new RequestGenerator(requestManager);
             requestGenerator.start();
             System.out.println("สร้างและเริ่ม RequestGenerator ใหม่");
-            if (requestManager.getRequests().isEmpty()) {
-                System.out.println("ไม่พบ requests ในระบบ กำลังสร้างตัวอย่าง...");
-                for (int i = 0; i < 3; i++) {
-                    CustomerRequest request = requestManager.generateRandomRequest();
-                    requestManager.addRequest(request);
-                    System.out.println("สร้าง request ตัวอย่าง: " + request.getName());
-                }
-            } else {
-                System.out.println("พบ requests " + requestManager.getRequests().size() + " รายการในระบบ");
-            }
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการสร้าง RequestGenerator: " + e.getMessage());
             e.printStackTrace();
