@@ -2,6 +2,7 @@ package com.vpstycoon.game.thread;
 
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.game.resource.ResourceManager;
 
 import java.util.Random;
 
@@ -82,6 +83,18 @@ public class RequestGenerator extends Thread {
                     );
                 } catch (Exception e) {
                     System.err.println("ไม่สามารถแสดง notification สำหรับคำขอใหม่: " + e.getMessage());
+                }
+                
+                // บันทึกข้อมูลเกมเมื่อมีคำขอใหม่
+                try {
+                    if (ResourceManager.getInstance().getCurrentState() != null) {
+                        ResourceManager.getInstance().saveGameState(ResourceManager.getInstance().getCurrentState());
+                        System.out.println("บันทึกข้อมูลเกมหลังจากได้รับคำขอใหม่");
+                    } else {
+                        System.out.println("ไม่พบ GameState สำหรับบันทึกข้อมูลหลังจากได้รับคำขอใหม่");
+                    }
+                } catch (Exception e) {
+                    System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูลเกมหลังจากได้รับคำขอใหม่: " + e.getMessage());
                 }
 
                 System.out.println("[RequestGenerator] สร้าง Request ใหม่: " + newRequest.getName() +

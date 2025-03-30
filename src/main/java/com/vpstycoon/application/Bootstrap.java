@@ -1,5 +1,6 @@
 package com.vpstycoon.application;
 
+import com.vpstycoon.GameApplication;
 import javafx.application.Application;
 
 
