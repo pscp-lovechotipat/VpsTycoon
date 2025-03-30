@@ -210,24 +210,21 @@ public class ResourceManager implements Serializable {
         }
     }
 
-    private void initiaizeRequestManager() {
-        if (requestManager == null) {
-            requestManager = new RequestManager(company);
-            
-            if (requestManager.getRequests().isEmpty()) {
-                System.out.println("ไม่พบ CustomerRequest ที่มีอยู่ กำลังสร้างตัวอย่าง...");
-                for (int i = 0; i < 3; i++) {
-                    CustomerRequest request = requestManager.generateRandomRequest();
-                    requestManager.addRequest(request);
-                }
-            }
-        }
-    }
-
     private void initiaizeGameTimeController() {
-        initiaizeRequestManager();
         if (gameTimeController == null) {
             System.out.println("กำลังสร้าง GameTimeController ใหม่...");
+            
+            // สร้าง RequestManager ก่อนถ้ายังไม่มี
+            if (requestManager == null) {
+                try {
+                    System.out.println("สร้าง RequestManager ก่อนเริ่มต้น GameTimeController");
+                    this.requestManager = new com.vpstycoon.game.manager.RequestManager(this.company);
+                } catch (Exception e) {
+                    System.err.println("ไม่สามารถสร้าง RequestManager: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            
             this.gameTimeController = new GameTimeController(this.company,
                     this.requestManager,
                     this.rack,
@@ -761,7 +758,6 @@ public class ResourceManager implements Serializable {
     }
 
     public RequestManager getRequestManager() {
-        initiaizeRequestManager();
         return requestManager;
     }
 
@@ -1040,8 +1036,6 @@ public class ResourceManager implements Serializable {
                 requestManager.resetRequests();
             } else {
                 System.out.println("ยังไม่มี RequestManager");
-                
-                initiaizeRequestManager();
                 if (requestManager != null) {
                     requestManager.resetRequests();
                 }

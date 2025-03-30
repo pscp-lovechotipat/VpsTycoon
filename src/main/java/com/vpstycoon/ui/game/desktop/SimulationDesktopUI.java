@@ -20,9 +20,25 @@ public class SimulationDesktopUI {
         
         int availableVMs = 0;
         
+        if (parent.getRequestManager() == null) {
+            System.err.println("ไม่สามารถเปิดหน้าเดสก์ท็อปได้: RequestManager ยังคงเป็น null หลังจากพยายามสร้างใหม่");
+            parent.pushCenterNotification("ข้อผิดพลาด", "ไม่สามารถเปิดหน้าเดสก์ท็อปได้: RequestManager ไม่สามารถสร้างได้", "/images/icon/error.png");
+            return;
+        }
         
         VMProvisioningManagerImpl vmProvisioningManager = parent.getRequestManager().getVmProvisioningManager();
         
+        if (vmProvisioningManager == null) {
+            System.err.println("ไม่สามารถเปิดหน้าเดสก์ท็อปได้: VMProvisioningManager เป็น null");
+            parent.pushCenterNotification("ข้อผิดพลาด", "ไม่สามารถเปิดหน้าเดสก์ท็อปได้: ระบบจัดการ VM ไม่พร้อมใช้งาน", "/images/icon/error.png");
+            return;
+        }
+        
+        if (parent.getVpsManager() == null || parent.getVpsManager().getVPSMap() == null) {
+            System.err.println("ไม่สามารถเปิดหน้าเดสก์ท็อปได้: VPSManager หรือ VPSMap เป็น null");
+            parent.pushCenterNotification("ข้อผิดพลาด", "ไม่สามารถเปิดหน้าเดสก์ท็อปได้: ระบบจัดการ VPS ไม่พร้อมใช้งาน", "/images/icon/error.png");
+            return;
+        }
         
         for (var vps : parent.getVpsManager().getVPSMap().values()) {
             
@@ -34,6 +50,11 @@ public class SimulationDesktopUI {
             }
         }
         
+        if (parent.getCompany() == null) {
+            System.err.println("ไม่สามารถเปิดหน้าเดสก์ท็อปได้: Company เป็น null");
+            parent.pushCenterNotification("ข้อผิดพลาด", "ไม่สามารถเปิดหน้าเดสก์ท็อปได้: ข้อมูลบริษัทไม่พร้อมใช้งาน", "/images/icon/error.png");
+            return;
+        }
         
         parent.getCompany().setAvailableVMs(availableVMs);
 

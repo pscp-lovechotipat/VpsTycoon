@@ -40,6 +40,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import com.vpstycoon.audio.interfaces.IAudioManager;
 
 public class GameApplication extends Application implements INavigator, IResourceManager.ResourceLoadingListener {
     
@@ -52,7 +53,7 @@ public class GameApplication extends Application implements INavigator, IResourc
     private GameScreen cutsceneScreen;
     private GameSaveManager saveManager;
     private GameManager gameManager;
-    private AudioManager audioManager;
+    private IAudioManager audioManager;
     private Stage loadingStage;
     private Label loadingDetailsLabel;
     private javafx.scene.control.ProgressIndicator progressIndicator;

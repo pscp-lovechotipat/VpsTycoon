@@ -3,43 +3,51 @@ package com.vpstycoon.service.interfaces;
 import java.io.InputStream;
 import java.net.URL;
 
-import com.vpstycoon.audio.AudioManager;
-import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.company.Company;
+import com.vpstycoon.audio.interfaces.IAudioManager;
+import com.vpstycoon.model.common.GameObject;
+import com.vpstycoon.model.common.GameState;
+import com.vpstycoon.model.company.interfaces.ICompany;
 
 import javafx.scene.image.Image;
 
+/**
+ * อินเตอร์เฟซสำหรับจัดการทรัพยากรในเกม
+ */
 public interface IResourceManager {
     
+    /**
+     * อินเตอร์เฟซสำหรับติดตามสถานะการโหลดทรัพยากร
+     */
     public interface ResourceLoadingListener {
+        /**
+         * เรียกเมื่อกำลังโหลดทรัพยากร
+         */
         void onResourceLoading(String resourcePath);
+        
+        /**
+         * เรียกเมื่อโหลดทรัพยากรเสร็จสิ้น
+         */
         void onResourceLoadingComplete(int totalLoaded);
     }
     
-    
+    // การจัดการสถานะเกม
     void saveGameState(GameState state);
     GameState loadGameState();
     GameState getCurrentState();
     void setCurrentState(GameState state);
     
+    // การจัดการบริษัท
+    ICompany getCompany();
+    void setCompany(ICompany company);
     
-    Company getCompany();
-    void setCompany(Company company);
-    
-    
+    // การจัดการการแจ้งเตือน
     void pushNotification(String title, String content);
     void pushMouseNotification(String content);
     void pushCenterNotification(String title, String content);
     void pushCenterNotification(String title, String content, String image);
     void pushCenterNotificationAutoClose(String title, String content, String image, long autoCloseMillis);
     
-    
-    AudioManager getAudioManager();
-    boolean isMusicRunning();
-    void setMusicRunning(boolean running);
-    
-    
+    // การจัดการทรัพยากรภาพ
     Image getPreloadedImage(String path);
     void preloadAssets();
     boolean isPreloadComplete();
@@ -47,26 +55,26 @@ public interface IResourceManager {
     void clearCache();
     String getText(String path);
     
-    
+    // การจัดการข้อมูลเกม
     void resetGameTime();
     void resetMessengerData();
     void resetRackAndInventory();
     
-    
+    // การจัดการไฟล์เซฟเกม
     void deleteSaveFile();
     boolean hasSaveFile();
     
-    
+    // การสร้างอ็อบเจกต์ในเกม
     GameObject createGameObject(String id, String type, int gridX, int gridY);
     
-    
+    // การจัดการผู้ฟังเหตุการณ์ (Listener)
     void setResourceLoadingListener(ResourceLoadingListener listener);
     
-    
-    static String getImagePath(String name) { return ""; }
-    static String getSoundPath(String name) { return ""; }
-    static String getMusicPath(String name) { return ""; }
-    static String getTextPath(String name) { return ""; }
-    static URL getResource(String path) { return null; }
-    static InputStream getResourceAsStream(String path) { return null; }
+    // Helper methods
+    static String getImagePath(String name) { return "/images/" + name; }
+    static String getSoundPath(String name) { return "/sounds/" + name; }
+    static String getMusicPath(String name) { return "/music/" + name; }
+    static String getTextPath(String name) { return "/text/" + name; }
+    static URL getResource(String path) { return IResourceManager.class.getResource(path); }
+    static InputStream getResourceAsStream(String path) { return IResourceManager.class.getResourceAsStream(path); }
 } 

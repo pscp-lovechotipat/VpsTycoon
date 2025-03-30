@@ -24,7 +24,7 @@ public class GameTimeManager {
     private static final double SCALE_FACTOR = 86400000.0 / GAME_DAY_MS;
 
     private final Company company;
-    private final RequestManager requestManager;
+    private RequestManager requestManager;
     private final Rack rack;
     private final LocalDateTime startDateTime;
     private LocalDateTime gameDateTime;
@@ -84,7 +84,32 @@ public class GameTimeManager {
                     notifyTimeListeners();
 
                     if (currentTime - lastPaymentCheckTime >= GAME_DAY_MS) {
-                        requestManager.processPayments(realTimeMs.get());
+                        if (requestManager != null) {
+                            requestManager.processPayments(realTimeMs.get());
+                        } else {
+                            System.err.println("Warning: requestManager is null, cannot process payments");
+                            // พยายามสร้าง RequestManager ใหม่
+                            if (company != null) {
+                                try {
+                                    // ลองหา RequestManager จาก ResourceManager ก่อน
+                                    com.vpstycoon.game.resource.ResourceManager resourceManager = 
+                                        com.vpstycoon.game.resource.ResourceManager.getInstance();
+                                    RequestManager rm = resourceManager.getRequestManager();
+                                    
+                                    if (rm != null) {
+                                        System.out.println("พบ RequestManager จาก ResourceManager, นำมาใช้งาน");
+                                        requestManager = rm;
+                                    } else {
+                                        // สร้างใหม่ถ้าไม่พบ
+                                        requestManager = new com.vpstycoon.game.manager.RequestManager(company);
+                                        resourceManager.setRequestManager(requestManager);
+                                        System.out.println("สร้าง RequestManager ใหม่สำเร็จใน GameTimeManager และตั้งค่าให้ ResourceManager");
+                                    }
+                                } catch (Exception e) {
+                                    System.err.println("ไม่สามารถสร้าง RequestManager ใน GameTimeManager: " + e.getMessage());
+                                }
+                            }
+                        }
                         lastPaymentCheckTime = currentTime;
                     }
 
@@ -123,6 +148,11 @@ public class GameTimeManager {
     }
 
     private void checkRentalExpirations(long currentGameTimeMs) {
+        if (requestManager == null) {
+            System.err.println("Warning: requestManager is null in checkRentalExpirations");
+            return;
+        }
+        
         for (CustomerRequest request : requestManager.getRequests()) {
             if (request.isActive()) {
                 long rentalStartTime = request.getLastPaymentTime();
