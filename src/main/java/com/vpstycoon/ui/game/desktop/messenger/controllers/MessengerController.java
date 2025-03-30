@@ -169,15 +169,21 @@ public class MessengerController {
         requestListView.getRequestView().getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             chatAreaView.updateChatHeader(newVal);
             
-            
+            // ตรวจสอบว่ามี VM ว่างและลูกค้ามี VM แล้วหรือยัง
             boolean hasAvailableVMs = false;
             boolean customerAlreadyHasVM = false;
             
             if (newVal != null) {
+                System.out.println("เลือกคำขอ: " + newVal.getName() + 
+                                  " (active: " + newVal.isActive() + 
+                                  ", expired: " + newVal.isExpired() + 
+                                  ", assignedToVM: " + newVal.isAssignedToVM() + ")");
                 
+                // ตรวจสอบว่า request นี้มีการกำหนด VM แล้วหรือไม่
                 customerAlreadyHasVM = isRequestAssigned(newVal);
                 
                 if (!newVal.isActive() && !newVal.isExpired() && !customerAlreadyHasVM) {
+                    // นับจำนวน VM ที่ว่างในระบบทั้งหมด
                     for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                         hasAvailableVMs = vps.getVms().stream()
                                 .anyMatch(vm -> "Running".equals(vm.getStatus()) && 
@@ -188,16 +194,21 @@ public class MessengerController {
                 }
             }
             
+            // กำหนดสถานะปุ่ม Assign VM ตามเงื่อนไข
             chatAreaView.getAssignVMButton().setDisable(newVal == null || newVal.isActive() || 
                                                      newVal.isExpired() || !hasAvailableVMs || 
                                                      customerAlreadyHasVM);
             
+            // กำหนดสถานะปุ่ม Archive ตามเงื่อนไข - ต้อง active หรือ expired จึงจะ archive ได้
             chatAreaView.getArchiveButton().setDisable(newVal == null || (!newVal.isActive() && !newVal.isExpired()));
+            
             if (newVal != null) {
+                // แสดงข้อความแชตของคำขอที่เลือก
                 updateChatWithRequestDetails(newVal);
                 
-                
+                // ถ้าลูกค้ามี VM อยู่แล้วและคำขอไม่หมดอายุ
                 if (customerAlreadyHasVM && !newVal.isExpired()) {
+                    // หา VM ที่กำหนดให้กับลูกค้าคนนี้
                     VPSOptimization.VM assignedVM = null;
                     for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
                         if (entry.getValue().equals(newVal)) {
@@ -206,18 +217,16 @@ public class MessengerController {
                         }
                     }
                     
-                    
-                    if (!newVal.isActive()) {
+                    // ถ้า request ยังไม่ active แต่มี VM แล้ว ให้ปรับเป็น active
+                    if (!newVal.isActive() && assignedVM != null) {
                         newVal.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
                         System.out.println("ปรับสถานะลูกค้า " + newVal.getName() + " เป็น active เนื่องจากมี VM อยู่แล้ว");
-                    }
                     
-                    if (assignedVM != null) {
+                        // แสดงข้อความเกี่ยวกับ VM ที่กำหนดให้กับลูกค้า (เฉพาะกรณีที่พบ VM จริงเท่านั้น)
                         chatAreaView.addSystemMessage("ลูกค้ารายนี้มี VM " + assignedVM.getName() + " ถูกกำหนดไว้แล้ว");
                         
-                        
+                        // ตรวจสอบว่า VM มีการบันทึกข้อมูลลูกค้าแล้วหรือไม่
                         if (!assignedVM.isAssignedToCustomer()) {
-                            
                             assignedVM.assignToCustomer(
                                 String.valueOf(newVal.getId()),
                                 newVal.getName(),
@@ -225,11 +234,9 @@ public class MessengerController {
                             );
                             System.out.println("บันทึกข้อมูลลูกค้า " + newVal.getName() + " ลงใน VM " + assignedVM.getName());
                         }
-                    } else {
-                        chatAreaView.addSystemMessage("ลูกค้ารายนี้มี VM ถูกกำหนดไว้แล้ว");
                     }
                     
-                    
+                    // ปรับปุ่ม UI ให้เหมาะสม
                     chatAreaView.getAssignVMButton().setDisable(true);
                     chatAreaView.getArchiveButton().setDisable(false);
                     chatAreaView.updateChatHeader(newVal);
@@ -1001,6 +1008,7 @@ public class MessengerController {
         if (request != null) {
             List<ChatMessage> chatHistory = chatHistoryManager.getChatHistory(request);
             if (chatHistory == null || chatHistory.isEmpty()) {
+                // เพิ่มข้อความคำขอเริ่มต้นจากลูกค้า
                 String requestMessage = "Hello! I need a VM with the following specs:\n" +
                         "• " + request.getRequiredVCPUs() + " vCPUs\n" +
                         "• " + request.getRequiredRam() + " RAM\n" +
@@ -1008,16 +1016,17 @@ public class MessengerController {
                         "Can you help me set this up?";
                 chatHistoryManager.addMessage(request, new ChatMessage(MessageType.CUSTOMER, requestMessage, new HashMap<>()));
 
-                
+                // เพิ่มข้อความระบบเฉพาะกรณี request หมดอายุแล้วเท่านั้น
                 if (request.isExpired()) {
                     chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, 
                         "This contract has expired and is waiting to be archived.", new HashMap<>()));
                 }
             }
             
+            // โหลดประวัติแชตจาก chatHistoryManager
             chatAreaView.loadChatHistory(request);
             
-            
+            // เฉพาะกรณี request หมดอายุและไม่มี VM ที่กำลังใช้งานอยู่ ให้แสดงข้อความเพิ่มเติม
             if (request.isExpired() && !vmAssignments.containsValue(request)) {
                 chatAreaView.addSystemMessage("This request can be archived now to free up space in the request list.");
             }
@@ -1107,7 +1116,13 @@ public class MessengerController {
 
     private void archiveRequest(CustomerRequest selected) {
         if (selected != null && (selected.isActive() || selected.isExpired())) {
+            System.out.println("กำลัง archive คำขอ: " + selected.getName() + 
+                              " (isActive: " + selected.isActive() + 
+                              ", isExpired: " + selected.isExpired() + 
+                              ", isAssignedToVM: " + selected.isAssignedToVM() +
+                              ", assignedVmId: " + selected.getAssignedVmId() + ")");
             
+            // ตรวจสอบเพื่อหา VM ที่เกี่ยวข้องกับคำขอนี้
             VPSOptimization.VM assignedVM = vmAssignments.entrySet().stream()
                     .filter(entry -> entry.getValue() == selected)
                     .map(Map.Entry::getKey)
@@ -1115,14 +1130,60 @@ public class MessengerController {
                     .orElse(null);
             
             if (assignedVM != null) {
+                System.out.println("พบ VM ที่กำหนดให้คำขอนี้ใน vmAssignments: " + assignedVM.getName());
                 
+                // คืน VM กลับมาใช้งานใหม่
                 releaseVM(assignedVM, true);
+            } else if (selected.isAssignedToVM()) {
+                // กรณีพบว่า request ระบุว่ามี VM แต่ไม่พบใน vmAssignments
+                System.out.println("⚠️ คำขอระบุว่ามี VM (ID: " + selected.getAssignedVmId() + 
+                                 ") แต่ไม่พบใน vmAssignments - ตรวจสอบ VM ทั้งหมด");
+                
+                // ค้นหา VM ที่อาจตรงกับ assignedVmId ในคำขอ
+                boolean foundMatchingVM = false;
+                for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                    for (VPSOptimization.VM vm : vps.getVms()) {
+                        if (vm.getId() != null && vm.getId().equals(selected.getAssignedVmId())) {
+                            System.out.println("พบ VM ตรงกับ ID ที่คำขอเก็บไว้: " + vm.getName());
+                            releaseVM(vm, true);
+                            foundMatchingVM = true;
+                            break;
+                        }
+                    }
+                    if (foundMatchingVM) break;
+                }
+                
+                if (!foundMatchingVM) {
+                    // ไม่พบ VM ที่ตรงกัน ให้ล้างค่าใน request และดำเนินการต่อ
+                    System.out.println("ไม่พบ VM ตรงกับ ID: " + selected.getAssignedVmId() + " - จะล้างค่าใน request");
+                    selected.unassignFromVM();
+                    
+                    // นับจำนวน VM ที่ว่างจริงเพื่อตรวจสอบความไม่สอดคล้อง
+                    int countFromVMs = 0;
+                    for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+                        countFromVMs += (int) vps.getVms().stream()
+                                .filter(vm -> "Running".equals(vm.getStatus()) && 
+                                        !vmAssignments.containsKey(vm) && 
+                                        !vm.isAssignedToCustomer())
+                                .count();
+                    }
+                    
+                    // เปรียบเทียบกับค่าที่เก็บไว้
+                    int storedAvailableVMs = company.getAvailableVMs();
+                    
+                    // ปรับให้ตรงกับความเป็นจริง ถ้าไม่ตรงกัน
+                    if (countFromVMs != storedAvailableVMs) {
+                        company.setAvailableVMs(countFromVMs);
+                        ResourceManager.getInstance().getCurrentState().setFreeVmCount(countFromVMs);
+                        System.out.println("แก้ไขความไม่สอดคล้อง: จำนวน VM จริงที่ว่าง = " + countFromVMs + 
+                                          " แต่ค่า availableVMs = " + storedAvailableVMs);
+                    }
+                }
             } else if (selected.isExpired()) {
+                // กรณีคำขอหมดอายุและไม่พบ VM ที่เกี่ยวข้อง
+                System.out.println("คำขอหมดอายุและไม่มี VM ที่เกี่ยวข้อง: " + selected.getName());
                 
-                
-                System.out.println("ไม่พบ VM สำหรับ request ที่หมดอายุ: " + selected.getName() + " แต่จะเพิ่ม availableVMs เพื่อแก้ไขความไม่สอดคล้อง");
-                
-                
+                // ตรวจสอบความไม่สอดคล้องของจำนวน VM
                 int countFromVMs = 0;
                 for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                     countFromVMs += (int) vps.getVms().stream()
@@ -1132,9 +1193,7 @@ public class MessengerController {
                             .count();
                 }
                 
-                
                 int storedAvailableVMs = company.getAvailableVMs();
-                
                 
                 if (countFromVMs != storedAvailableVMs) {
                     company.setAvailableVMs(countFromVMs);
@@ -1144,16 +1203,42 @@ public class MessengerController {
                 }
             }
             
+            // ลบคำขอออกจากรายการ
             requestManager.getRequests().remove(selected);
             chatAreaView.clearMessages();
-            chatAreaView.getAssignVMButton().setDisable(false); 
+            chatAreaView.getAssignVMButton().setDisable(false);
+            
+            // อัพเดต UI
             updateRequestList();
             updateDashboard();
+            
+            // บันทึกข้อมูลเกมหลังจาก archive คำขอ
+            try {
+                if (ResourceManager.getInstance().getCurrentState() != null) {
+                    ResourceManager.getInstance().saveGameState(ResourceManager.getInstance().getCurrentState());
+                    System.out.println("บันทึกข้อมูลเกมหลังจาก archive คำขอเรียบร้อยแล้ว");
+                }
+            } catch (Exception e) {
+                System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูลเกมหลังจาก archive คำขอ: " + e.getMessage());
+            }
+        } else {
+            if (selected == null) {
+                System.err.println("ไม่สามารถ archive คำขอได้: ไม่พบคำขอที่เลือก");
+            } else {
+                System.err.println("ไม่สามารถ archive คำขอได้: คำขอต้องเป็น active หรือ expired " +
+                                  "(isActive: " + selected.isActive() + ", isExpired: " + selected.isExpired() + ")");
+            }
         }
     }
 
     public void releaseVM(VPSOptimization.VM vm, boolean isArchiving) {
+        // ตรวจสอบว่า vm ไม่เป็น null
+        if (vm == null) {
+            System.err.println("ไม่สามารถปล่อย VM คืนได้เนื่องจาก VM เป็น null");
+            return;
+        }
         
+        // หาคำขอที่เกี่ยวข้องกับ VM
         CustomerRequest requestToRelease = null;
         for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
             if (entry.getKey().equals(vm)) {
@@ -1163,49 +1248,95 @@ public class MessengerController {
         }
         
         if (requestToRelease != null) {
+            String logMessage = "กำลังคืน VM " + vm.getName() + " จากคำขอ " + requestToRelease.getName();
             if (isArchiving) {
-                
+                logMessage += " (เนื่องจากกำลัง archive)";
+            } else {
+                logMessage += " (เนื่องจากคำขอหมดอายุ)";
+            }
+            System.out.println(logMessage);
+            
+            if (isArchiving) {
+                // ถ้าคืน VM เพราะกำลัง archive คำขอ
                 chatHistoryManager.addMessage(requestToRelease, new ChatMessage(MessageType.SYSTEM,
                     "Request archived and VM released.", new HashMap<>()));
                 chatAreaView.addSystemMessage("Request archived and VM released.");
                 
-                
+                // ลบคำขอออกจากรายการ
                 requestManager.getRequests().remove(requestToRelease);
             } else {
-                
+                // ถ้าคืน VM เพราะคำขอหมดอายุ
                 requestToRelease.markAsExpired();
                 chatHistoryManager.addMessage(requestToRelease, new ChatMessage(MessageType.SYSTEM,
                     "Contract expired and VM released.", new HashMap<>()));
                 chatAreaView.addSystemMessage("Contract expired and VM released.");
             }
             
-            
+            // คืนสถานะ VM
+            System.out.println("คืนสถานะ VM: " + vm.getName() + " (customerId: " + vm.getCustomerId() + ")");
             vm.releaseFromCustomer();
+            System.out.println("หลังจากคืนสถานะ VM: " + vm.getName() + " (customerId: " + 
+                              (vm.getCustomerId() == null ? "null" : vm.getCustomerId()) + 
+                              ", isAssigned: " + vm.isAssignedToCustomer() + ")");
             
-            
+            // ลบการเชื่อมโยงกับคำขอ
             requestToRelease.unassignFromVM();
-            System.out.println("ลบการเชื่อมโยง assignToVM ของ request " + requestToRelease.getName());
+            System.out.println("ลบการเชื่อมโยง assignToVM ของ request " + requestToRelease.getName() + 
+                              " (assignedVmId: " + requestToRelease.getAssignedVmId() + ")");
             
-            
+            // ลบ VM จากแมป vmAssignments
             vmAssignments.remove(vm);
             
-            
-            int currentAvailableVMs = company.getAvailableVMs();
-            currentAvailableVMs++;
-            company.setAvailableVMs(currentAvailableVMs);
-            ResourceManager.getInstance().getCurrentState().setFreeVmCount(currentAvailableVMs);
-            System.out.println("เพิ่มจำนวน available VM เนื่องจากมีการปล่อย VM: " + currentAvailableVMs);
-            
-            
-            updateDashboard();
-            updateRequestList();
-            
-            
-            CustomerRequest selectedRequest = requestListView.getSelectedRequest();
-            if (selectedRequest != null) {
-                boolean shouldEnableArchive = selectedRequest.isActive() || selectedRequest.isExpired();
-                chatAreaView.getArchiveButton().setDisable(!shouldEnableArchive);
+            // ตรวจสอบว่า VM ถูกลบออกจาก vmAssignments แล้วจริง ๆ
+            boolean stillAssigned = false;
+            for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
+                if (entry.getKey().equals(vm) || entry.getValue().equals(requestToRelease)) {
+                    stillAssigned = true;
+                    System.err.println("พบข้อผิดพลาด: VM หรือ request ยังคงอยู่ใน vmAssignments หลังจากลบแล้ว");
+                    break;
+                }
             }
+            
+            if (!stillAssigned) {
+                // เพิ่มจำนวน available VMs กลับคืนมา
+                int currentAvailableVMs = company.getAvailableVMs();
+                currentAvailableVMs++;
+                company.setAvailableVMs(currentAvailableVMs);
+                
+                // บันทึกจำนวน VM ที่ว่างลงใน GameState
+                if (ResourceManager.getInstance().getCurrentState() != null) {
+                    ResourceManager.getInstance().getCurrentState().setFreeVmCount(currentAvailableVMs);
+                    System.out.println("เพิ่มจำนวน available VM เป็น " + currentAvailableVMs + " และบันทึกลง GameState");
+                    
+                    // บันทึกข้อมูลเกมหลังจากคืน VM
+                    try {
+                        ResourceManager.getInstance().saveGameState(ResourceManager.getInstance().getCurrentState());
+                        System.out.println("บันทึกข้อมูลเกมหลังจากคืน VM เรียบร้อยแล้ว");
+                    } catch (Exception e) {
+                        System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูลเกมหลังจากคืน VM: " + e.getMessage());
+                    }
+                } else {
+                    System.out.println("เพิ่มจำนวน available VM เป็น " + currentAvailableVMs + " (แต่ไม่มี GameState)");
+                }
+                
+                // อัพเดตหน้า UI
+                updateDashboard();
+                updateRequestList();
+                
+                // อัพเดตสถานะปุ่ม Archive ใน UI ตามความเหมาะสม
+                CustomerRequest selectedRequest = requestListView.getSelectedRequest();
+                if (selectedRequest != null) {
+                    boolean shouldEnableArchive = selectedRequest.isActive() || selectedRequest.isExpired();
+                    chatAreaView.getArchiveButton().setDisable(!shouldEnableArchive);
+                }
+                
+                // ตรวจสอบความถูกต้องของ VM ทั้งหมดในระบบ
+                validateVMConsistency();
+            } else {
+                System.err.println("ไม่ได้เพิ่มจำนวน available VM เนื่องจากการลบ VM จาก vmAssignments ไม่สำเร็จ");
+            }
+        } else {
+            System.err.println("ไม่พบคำขอที่เกี่ยวข้องกับ VM " + vm.getName() + " ที่ต้องการปล่อยคืน");
         }
     }
 
@@ -1480,76 +1611,34 @@ public class MessengerController {
     private boolean isRequestAssigned(CustomerRequest request) {
         if (request == null) return false;
         
-        // ตรวจสอบว่า request มีการกำหนด VM แล้วหรือไม่
-        if (request.isAssignedToVM()) {
-            // ค้นหา VM ที่ถูกกำหนดให้กับ request นี้
-            String vmId = request.getAssignedVmId();
-            boolean vmFound = false;
-            
-            // ค้นหา VM ที่มี ID ตรงกับที่บันทึกไว้ใน request
-            for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
-                for (VPSOptimization.VM vm : vps.getVms()) {
-                    if (vm.getId() != null && vm.getId().equals(vmId)) {
-                        // เพิ่ม VM และ request เข้าไปใน vmAssignments เพื่อเก็บความสัมพันธ์
-                        // แต่ไม่เปลี่ยนสถานะ
-                        if (!vmAssignments.containsKey(vm) || !vmAssignments.get(vm).equals(request)) {
-                            vmAssignments.put(vm, request);
-                            System.out.println("เพิ่ม VM " + vm.getName() + " และ request " + request.getName() + " เข้า vmAssignments");
-                        }
-                        vmFound = true;
-                        break;
-                    }
-                }
-                if (vmFound) break;
+        // ตรวจสอบว่ารายการ vmAssignments มี request นี้หรือไม่
+        for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
+            if (entry.getValue().equals(request)) {
+                System.out.println("ตรวจพบว่าคำขอของ " + request.getName() + " มี VM ใน vmAssignments แล้ว");
+                return true;
             }
-            
-            return true;
         }
         
-        // ตรวจสอบว่า request อยู่ใน vmAssignments หรือไม่
-        if (vmAssignments.values().contains(request)) {
-            // แก้ไขส่วนนี้ - ไม่ต้อง activate request อัตโนมัติ
-            // เพียงแค่อัปเดตข้อมูลการเชื่อมโยงระหว่าง VM และ request
+        // ตรวจสอบจาก isAssignedToVM() ของ request
+        // แต่ไม่ทำการเปลี่ยนแปลงข้อมูลใดๆ
+        if (request.isAssignedToVM()) {
+            String vmId = request.getAssignedVmId();
+            System.out.println("คำขอของ " + request.getName() + " มีการกำหนด assignedVmId = " + vmId);
+            
+            // ตรวจสอบว่า VM นี้มีอยู่ใน vmAssignments แล้ว
+            boolean vmExists = false;
             for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
-                if (entry.getValue().equals(request)) {
-                    VPSOptimization.VM vm = entry.getKey();
-                    
-                    if (!request.isAssignedToVM()) {
-                        // บันทึกข้อมูลแต่ไม่ activate อัตโนมัติ
-                        // ใช้ method ตรงๆ แทนการใช้ assignToVM เพื่อหลีกเลี่ยงการ activate
-                        request.unassignFromVM(); // เพื่อความปลอดภัย
-                        request.assignToVM(vm.getId());
-                        System.out.println("อัปเดต assignedToVmId = " + vm.getId() + " ให้กับ request " + request.getName());
-                    }
+                if (entry.getKey().getId() != null && entry.getKey().getId().equals(vmId)) {
+                    vmExists = true;
                     break;
                 }
             }
             
-            return true;
-        }
-        
-        // ตรวจสอบ VM ที่มีการกำหนดค่า customerId ตรงกับ request.getId()
-        String requestId = String.valueOf(request.getId());
-        for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
-            for (VPSOptimization.VM vm : vps.getVms()) {
-                if (vm.isAssignedToCustomer() && 
-                    requestId.equals(vm.getCustomerId())) {
-                    
-                    // เพิ่ม VM และ request เข้าไปใน vmAssignments
-                    vmAssignments.put(vm, request);
-                    System.out.println("พบ VM ที่ถูกกำหนดให้ลูกค้า " + request.getName() + 
-                                      " แต่ไม่ได้ถูกบันทึกใน vmAssignments จึงบันทึกเพิ่มเติม");
-                    
-                    // อัปเดตข้อมูลแต่ไม่ activate อัตโนมัติ
-                    if (!request.isAssignedToVM()) {
-                        // ใช้ method ตรงๆ แทนการใช้ assignToVM เพื่อหลีกเลี่ยงการ activate
-                        request.unassignFromVM(); // เพื่อความปลอดภัย
-                        request.assignToVM(vm.getId());
-                        System.out.println("อัปเดต assignedToVmId = " + vm.getId() + " ให้กับ request " + request.getName());
-                    }
-                    
-                    return true;
-                }
+            if (vmExists) {
+                return true;
+            } else {
+                System.out.println("คำขอของ " + request.getName() + " มี assignedVmId แต่ไม่พบ VM นี้ใน vmAssignments");
+                return false;
             }
         }
         
