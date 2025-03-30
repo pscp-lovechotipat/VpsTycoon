@@ -1480,23 +1480,18 @@ public class MessengerController {
     private boolean isRequestAssigned(CustomerRequest request) {
         if (request == null) return false;
         
-        
+        // ตรวจสอบว่า request มีการกำหนด VM แล้วหรือไม่
         if (request.isAssignedToVM()) {
-            
-            if (!request.isActive() && !request.isExpired()) {
-                request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
-                System.out.println("ปรับสถานะลูกค้า " + request.getName() + " เป็น active เนื่องจากมี assignedToVmId");
-            }
-            
-            
+            // ค้นหา VM ที่ถูกกำหนดให้กับ request นี้
             String vmId = request.getAssignedVmId();
             boolean vmFound = false;
             
-            
+            // ค้นหา VM ที่มี ID ตรงกับที่บันทึกไว้ใน request
             for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                 for (VPSOptimization.VM vm : vps.getVms()) {
                     if (vm.getId() != null && vm.getId().equals(vmId)) {
-                        
+                        // เพิ่ม VM และ request เข้าไปใน vmAssignments เพื่อเก็บความสัมพันธ์
+                        // แต่ไม่เปลี่ยนสถานะ
                         if (!vmAssignments.containsKey(vm) || !vmAssignments.get(vm).equals(request)) {
                             vmAssignments.put(vm, request);
                             System.out.println("เพิ่ม VM " + vm.getName() + " และ request " + request.getName() + " เข้า vmAssignments");
@@ -1511,21 +1506,18 @@ public class MessengerController {
             return true;
         }
         
-        
-        
+        // ตรวจสอบว่า request อยู่ใน vmAssignments หรือไม่
         if (vmAssignments.values().contains(request)) {
-            
-            if (!request.isActive() && !request.isExpired()) {
-                request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
-                System.out.println("ปรับสถานะลูกค้า " + request.getName() + " เป็น active เนื่องจากพบใน vmAssignments");
-            }
-            
-            
+            // แก้ไขส่วนนี้ - ไม่ต้อง activate request อัตโนมัติ
+            // เพียงแค่อัปเดตข้อมูลการเชื่อมโยงระหว่าง VM และ request
             for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
                 if (entry.getValue().equals(request)) {
                     VPSOptimization.VM vm = entry.getKey();
                     
                     if (!request.isAssignedToVM()) {
+                        // บันทึกข้อมูลแต่ไม่ activate อัตโนมัติ
+                        // ใช้ method ตรงๆ แทนการใช้ assignToVM เพื่อหลีกเลี่ยงการ activate
+                        request.unassignFromVM(); // เพื่อความปลอดภัย
                         request.assignToVM(vm.getId());
                         System.out.println("อัปเดต assignedToVmId = " + vm.getId() + " ให้กับ request " + request.getName());
                     }
@@ -1536,29 +1528,24 @@ public class MessengerController {
             return true;
         }
         
-        
+        // ตรวจสอบ VM ที่มีการกำหนดค่า customerId ตรงกับ request.getId()
         String requestId = String.valueOf(request.getId());
         for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
             for (VPSOptimization.VM vm : vps.getVms()) {
                 if (vm.isAssignedToCustomer() && 
                     requestId.equals(vm.getCustomerId())) {
                     
-                    
-                    
+                    // เพิ่ม VM และ request เข้าไปใน vmAssignments
                     vmAssignments.put(vm, request);
                     System.out.println("พบ VM ที่ถูกกำหนดให้ลูกค้า " + request.getName() + 
                                       " แต่ไม่ได้ถูกบันทึกใน vmAssignments จึงบันทึกเพิ่มเติม");
                     
-                    
+                    // อัปเดตข้อมูลแต่ไม่ activate อัตโนมัติ
                     if (!request.isAssignedToVM()) {
+                        // ใช้ method ตรงๆ แทนการใช้ assignToVM เพื่อหลีกเลี่ยงการ activate
+                        request.unassignFromVM(); // เพื่อความปลอดภัย
                         request.assignToVM(vm.getId());
                         System.out.println("อัปเดต assignedToVmId = " + vm.getId() + " ให้กับ request " + request.getName());
-                    }
-                    
-                    
-                    if (!request.isActive() && !request.isExpired()) {
-                        request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
-                        System.out.println("ปรับสถานะลูกค้า " + request.getName() + " เป็น active เนื่องจากพบใน VM");
                     }
                     
                     return true;
