@@ -73,6 +73,9 @@ public class MessengerController {
     private final VMProvisioningManager vmProvisioningManager;
     private final RentalManager rentalManager;
     private final SkillPointsManager skillPointsManager;
+    
+    // เพิ่มตัวแปรสำหรับตรวจสอบว่ากำลังโหลดแบบเริ่มต้นอยู่หรือไม่
+    private boolean isLoadingRequests = true;
 
     public MessengerController(RequestManager requestManager, VPSManager vpsManager, Company company,
                                ChatHistoryManager chatHistoryManager, StackPane rootStack,
@@ -148,9 +151,9 @@ public class MessengerController {
                 System.out.println("มีการเปลี่ยนแปลงรายการคำขอ...");
                 System.out.println("จำนวน free VM ก่อนอัพเดต: " + company.getAvailableVMs());
                 
+                // ไม่ต้องแสดง notification ที่นี่ เพราะ notification จะถูกแสดงโดย RequestGenerator โดยตรง
                 
                 updateRequestList();
-                
                 
                 dashboardView.updateDashboard(
                     company.getRating(), 
@@ -1656,5 +1659,9 @@ public class MessengerController {
         } else {
             System.out.println("ไม่พบคำขอที่เสร็จสิ้นแล้วใน GameState");
         }
+        
+        // หลังจากโหลด requests เสร็จแล้ว กำหนดให้ isLoadingRequests เป็น false
+        // เพื่อให้การเพิ่ม request ในครั้งถัดไปแสดง notification
+        isLoadingRequests = false;
     }
 }

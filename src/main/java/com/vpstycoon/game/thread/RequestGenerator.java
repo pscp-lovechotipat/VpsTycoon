@@ -9,8 +9,8 @@ public class RequestGenerator extends Thread {
     private final RequestManager requestManager;
     private volatile boolean running = true;
     private volatile boolean paused = false;
-    private final int minDelayMs = 10_000;
-    private final int maxDelayMs = 30_000;
+    private final int minDelayMs = 30_000;
+    private final int maxDelayMs = 120_000;
     private final int rateLimitSleepTime = 5_000;
     private int maxPendingRequests = 20;
     
@@ -72,6 +72,18 @@ public class RequestGenerator extends Thread {
                 requestManager.addRequest(newRequest);
                 generatedRequestCount++;
                 
+                // แสดง notification เมื่อมี request ใหม่
+                try {
+                    com.vpstycoon.game.resource.ResourceManager.getInstance().pushNotification(
+                        "คำขอใหม่จาก " + newRequest.getName(),
+                        "ต้องการ VM: " + newRequest.getRequiredVCPUs() + " vCPUs, " +
+                        newRequest.getRequiredRam() + " RAM, " +
+                        newRequest.getRequiredDisk() + " Disk"
+                    );
+                } catch (Exception e) {
+                    System.err.println("ไม่สามารถแสดง notification สำหรับคำขอใหม่: " + e.getMessage());
+                }
+
                 System.out.println("[RequestGenerator] สร้าง Request ใหม่: " + newRequest.getName() +
                         " | Type: " + newRequest.getCustomerType() +
                         " | Request: " + newRequest.getRequestType() +
