@@ -30,18 +30,7 @@ public class CutsceneScreen extends StackPane {
     private VBox creditsBox;
     private Button skipButton;
     private SequentialTransition sequentialTransition;
-    
-    
-    private final List<String> developers = Arrays.asList(
-        "Nathapong Sopapol",
-        "Thanatpat Promthong",
-        "Kongpop Panchai",
-        "Tanapat Chamted",
-        "Yaowapa Thawornwiriyanan",
-        "Supakorn Pipithgul",
-        "Thanapon Sukpiboon",
-        "Phichada Kaewsiri"
-    );
+
 
     public CutsceneScreen(GameConfig gameConfig, ScreenManager screenManager, Navigator navigator) {
         this.gameConfig = gameConfig;
@@ -88,36 +77,22 @@ public class CutsceneScreen extends StackPane {
         subtitleLabel.setOpacity(0);
         
         
-        creditsBox = new VBox(10); 
-        creditsBox.setAlignment(javafx.geometry.Pos.CENTER);
-        creditsBox.setOpacity(0);
-        
-        
-        Label creditsTitle = new Label("DEVELOPERS");
-        creditsTitle.setFont(FontLoader.TITLE_FONT);
-        creditsTitle.setTextFill(Color.WHITE);
-        creditsTitle.setStyle("-fx-font-size: 28px;");
-        creditsTitle.setTextAlignment(TextAlignment.CENTER);
-        
-        
-        javafx.scene.effect.Glow titleGlow = new javafx.scene.effect.Glow(0.5);
-        javafx.scene.effect.DropShadow titleShadow = new javafx.scene.effect.DropShadow(10, Color.web("#00FFFF"));
-        titleGlow.setInput(titleShadow);
-        creditsTitle.setEffect(titleGlow);
-        
-        
-        creditsBox.getChildren().add(creditsTitle);
-        
-        
-        for (String developer : developers) {
-            Label nameLabel = new Label(developer);
-            nameLabel.setFont(FontLoader.TITLE_FONT);
-            nameLabel.setTextFill(Color.WHITE);
-            nameLabel.setStyle("-fx-font-size: 18px;");
-            nameLabel.setTextAlignment(TextAlignment.CENTER);
+        javafx.scene.image.Image creditsImage = new javafx.scene.image.Image(getClass().getResourceAsStream("/images/others/Credits.gif"));
             
-            creditsBox.getChildren().add(nameLabel);
+        // Debug if image is loaded
+        if (creditsImage.isError()) {
+            System.err.println("Error loading Credits.gif: " + creditsImage.getException().getMessage());
         }
+        
+        javafx.scene.image.ImageView creditsImageView = new javafx.scene.image.ImageView(creditsImage);
+        creditsImageView.setFitWidth(960);
+        creditsImageView.setPreserveRatio(true);
+        
+        // Store the ImageView in creditsBox field
+        creditsBox = new VBox();
+        creditsBox.setAlignment(Pos.CENTER);
+        creditsBox.getChildren().add(creditsImageView);
+        creditsBox.setOpacity(0); // Only set opacity on container
 
         
         getChildren().addAll(logoLabel, subtitleLabel, creditsBox);
@@ -228,47 +203,6 @@ public class CutsceneScreen extends StackPane {
         creditsBoxFadeIn.setToValue(1);
         
         
-        SequentialTransition nameHighlights = new SequentialTransition();
-        
-        
-        for (int i = 1; i < creditsBox.getChildren().size(); i++) {
-            Label nameLabel = (Label) creditsBox.getChildren().get(i);
-            
-            
-            nameLabel.setTextFill(Color.GRAY);
-            
-            
-            FadeTransition highlight = new FadeTransition(Duration.seconds(0.3), nameLabel);
-            highlight.setFromValue(0.7);
-            highlight.setToValue(1.0);
-            
-            
-            TranslateTransition moveIn = new TranslateTransition(Duration.seconds(0.4), nameLabel);
-            moveIn.setFromX(-5);
-            moveIn.setToX(0);
-            
-            
-            SequentialTransition nameSequence = new SequentialTransition(
-                new javafx.animation.PauseTransition(Duration.seconds(0.3)),
-                new ParallelTransition(highlight, moveIn)
-            );
-            
-            
-            nameSequence.setOnFinished(event -> {
-                nameLabel.setTextFill(Color.WHITE);
-                
-                javafx.scene.effect.Glow glow = new javafx.scene.effect.Glow(0.3);
-                nameLabel.setEffect(glow);
-            });
-            
-            
-            nameHighlights.getChildren().add(nameSequence);
-        }
-        
-        
-        ParallelTransition creditsScene = new ParallelTransition(creditsBoxFadeIn);
-        
-        
         FadeTransition finalFadeOut = new FadeTransition(Duration.seconds(1.5), this);
         finalFadeOut.setFromValue(1);
         finalFadeOut.setToValue(0);
@@ -279,9 +213,8 @@ public class CutsceneScreen extends StackPane {
             firstSceneIn,
             new javafx.animation.PauseTransition(Duration.seconds(2.0)),
             firstSceneTransition,
-            creditsScene,
-            nameHighlights,
-            new javafx.animation.PauseTransition(Duration.seconds(1.0)),
+            creditsBoxFadeIn,
+            new javafx.animation.PauseTransition(Duration.seconds(3.0)),
             finalFadeOut
         );
 

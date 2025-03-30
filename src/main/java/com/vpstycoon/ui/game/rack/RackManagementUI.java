@@ -638,10 +638,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
     }
 
     public synchronized void openRackInfo() {
-
-        List<Node> originalRootNodes = new ArrayList<>(parent.getRootStack().getChildren());
-        
-
         final boolean menuBarWasVisible = parent.getMenuBar().isVisible();
         final boolean marketMenuBarWasVisible = parent.getInGameMarketMenuBar().isVisible();
         final boolean moneyUIWasVisible = parent.getMoneyUI().isVisible();

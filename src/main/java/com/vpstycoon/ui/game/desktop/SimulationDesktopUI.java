@@ -66,6 +66,47 @@ public class SimulationDesktopUI {
         
         
         final int rootStackChildCount = parent.getRootStack().getChildren().size();
+        
+        // Store original game area content before replacing it
+        final List<Node> originalContent = new ArrayList<>(parent.getGameArea().getChildren());
+
+        Runnable onExit = () -> {
+            javafx.application.Platform.runLater(() -> {
+                try {
+
+                    parent.getGameArea().getChildren().clear();
+
+
+                    for (Node node : originalContent) {
+                        if (!parent.getGameArea().getChildren().contains(node)) {
+                            parent.getGameArea().getChildren().add(node);
+                        }
+                    }
+
+
+                    parent.getMenuBar().setVisible(menuBarVisible);
+                    parent.getMoneyUI().setVisible(moneyUIVisible);
+                    parent.getDateView().setVisible(dateViewVisible);
+                    parent.getInGameMarketMenuBar().setVisible(marketMenuBarVisible);
+
+
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(300), parent.getGameArea());
+                    fadeIn.setFromValue(0.8);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+
+
+                    System.out.println("กลับสู่หน้าหลักเรียบร้อย UI ถูกคืนค่าสู่สถานะเดิม");
+
+                } catch (Exception ex) {
+
+                    System.err.println("เกิดข้อผิดพลาดในการคืนค่า UI: " + ex.getMessage());
+                    ex.printStackTrace();
+                    parent.returnToRoom();
+                }
+            });
+        };
 
         DesktopScreen desktop = new DesktopScreen(
                 parent.getCompany().getRating(),
@@ -75,7 +116,44 @@ public class SimulationDesktopUI {
                 parent.getVpsManager(),
                 parent.getCompany(),
                 parent,
-                ResourceManager.getInstance().getGameTimeManager()
+                ResourceManager.getInstance().getGameTimeManager(),
+                () -> {
+            javafx.application.Platform.runLater(() -> {
+                try {
+
+                    parent.getGameArea().getChildren().clear();
+
+
+                    for (Node node : originalContent) {
+                        if (!parent.getGameArea().getChildren().contains(node)) {
+                            parent.getGameArea().getChildren().add(node);
+                        }
+                    }
+
+
+                    parent.getMenuBar().setVisible(menuBarVisible);
+                    parent.getMoneyUI().setVisible(moneyUIVisible);
+                    parent.getDateView().setVisible(dateViewVisible);
+                    parent.getInGameMarketMenuBar().setVisible(marketMenuBarVisible);
+
+
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(300), parent.getGameArea());
+                    fadeIn.setFromValue(0.8);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+
+
+                    System.out.println("กลับสู่หน้าหลักเรียบร้อย UI ถูกคืนค่าสู่สถานะเดิม");
+
+                } catch (Exception ex) {
+
+                    System.err.println("เกิดข้อผิดพลาดในการคืนค่า UI: " + ex.getMessage());
+                    ex.printStackTrace();
+                    parent.returnToRoom();
+                }
+            });
+        }
         );
         StackPane.setAlignment(desktop, Pos.CENTER);
         
@@ -83,9 +161,6 @@ public class SimulationDesktopUI {
         desktop.setMaxSize(parent.getGameArea().getWidth() * 0.95, parent.getGameArea().getHeight() * 0.95);
         desktop.setPrefSize(parent.getGameArea().getWidth() * 0.95, parent.getGameArea().getHeight() * 0.95);
 
-        
-        final List<Node> originalContent = new ArrayList<>(parent.getGameArea().getChildren());
-        
         
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(desktop);
@@ -95,45 +170,5 @@ public class SimulationDesktopUI {
         parent.getMoneyUI().setVisible(false);
         parent.getDateView().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
-
-        
-        desktop.addExitButton(() -> {
-            
-            javafx.application.Platform.runLater(() -> {
-                try {
-                    
-                    parent.getGameArea().getChildren().clear();
-                    
-                    
-                    for (Node node : originalContent) {
-                        if (!parent.getGameArea().getChildren().contains(node)) {
-                            parent.getGameArea().getChildren().add(node);
-                        }
-                    }
-                    
-                    
-                    parent.getMenuBar().setVisible(menuBarVisible);
-                    parent.getMoneyUI().setVisible(moneyUIVisible);
-                    parent.getDateView().setVisible(dateViewVisible);
-                    parent.getInGameMarketMenuBar().setVisible(marketMenuBarVisible);
-                    
-                    
-                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
-                        javafx.util.Duration.millis(300), parent.getGameArea());
-                    fadeIn.setFromValue(0.8);
-                    fadeIn.setToValue(1.0);
-                    fadeIn.play();
-                    
-                    
-                    System.out.println("กลับสู่หน้าหลักเรียบร้อย UI ถูกคืนค่าสู่สถานะเดิม");
-                    
-                } catch (Exception ex) {
-                    
-                    System.err.println("เกิดข้อผิดพลาดในการคืนค่า UI: " + ex.getMessage());
-                    ex.printStackTrace();
-                    parent.returnToRoom();
-                }
-            });
-        });
     }
 }

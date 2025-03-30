@@ -923,7 +923,16 @@ public class ResourceManager implements Serializable {
             "/images/Object/Keroro.png",
             "/images/Object/MusicboxOn.gif",
             "/images/Object/MusicboxOff.png",
-            "/images/Object/Table.png"
+            "/images/Object/Table.png",
+            "/images/wallpaper/Desktop.gif",
+            "/images/buttons/MessengerDesktop.png",
+            "/images/buttons/MarketDesktop.png",
+            "/images/buttons/RoomDesktop.gif",
+            "/images/buttons/ServerDesktop.gif",
+            "/images/home/logo.gif",
+            "/images/home/itstudent.gif",
+            "/images/home/background.png",
+            "/images/others/Credits.gif"
         };
         
         final String[] soundsToPreload = {
@@ -936,45 +945,32 @@ public class ResourceManager implements Serializable {
         Thread preloadThread = new Thread(() -> {
             try {
                 for (String imagePath : imagesToPreload) {
-                    System.out.println("กำลังโหลด: " + imagePath);
                     notifyResourceLoading(imagePath);
                     preloadImage(imagePath);
-                    
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
                 }
                 
                 for (String soundPath : soundsToPreload) {
-                    System.out.println("กำลังโหลดเสียง: " + soundPath);
                     notifyResourceLoading("เสียง: " + soundPath);
                     audioManager.preloadSoundEffect(soundPath);
-                    
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
+                }
+                
+                try {
+                    Class.forName("com.vpstycoon.ui.game.desktop.DesktopScreen")
+                         .getMethod("preloadImages")
+                         .invoke(null);
+                } catch (Exception e) {
+                    System.err.println("Error preloading DesktopScreen images: " + e.getMessage());
                 }
                 
                 int totalResources = imagesToPreload.length + soundsToPreload.length;
-                System.out.println("===== โหลดทรัพยากรของเกมเสร็จสมบูรณ์ =====");
-                System.out.println("จำนวนทรัพยากรที่โหลด: " + totalResources);
-                
+                System.out.println("===== โหลดทรัพยากรของเกมเสร็จสมบูรณ์: " + totalResources + " รายการ =====");
                 notifyResourceLoadingComplete(totalResources);
-                
-                synchronized(preloadLock) {
-                    preloadComplete = true;
-                    preloadLock.notifyAll();
-                }
             } catch (Exception e) {
                 System.err.println("Error preloading assets: " + e.getMessage());
                 e.printStackTrace();
-                
+            } finally {
                 synchronized(preloadLock) {
-                    preloadComplete = true; 
+                    preloadComplete = true;
                     preloadLock.notifyAll();
                 }
             }
@@ -985,18 +981,12 @@ public class ResourceManager implements Serializable {
     }
     
     public boolean waitForPreload(long timeoutMs) {
-        if (preloadComplete) {
-            return true;
-        }
+        if (preloadComplete) return true;
         
         synchronized(preloadLock) {
             if (!preloadComplete) {
                 try {
-                    if (timeoutMs > 0) {
-                        preloadLock.wait(timeoutMs);
-                    } else {
-                        preloadLock.wait();
-                    }
+                    preloadLock.wait(timeoutMs > 0 ? timeoutMs : 0);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -1013,9 +1003,7 @@ public class ResourceManager implements Serializable {
     private Image preloadImage(String path) {
         if (!imageCache.containsKey(path)) {
             try {
-                Image image = new Image(path, true);
-                imageCache.put(path, image);
-                return image;
+                imageCache.put(path, new Image(path, true));
             } catch (Exception e) {
                 System.err.println("Error loading image " + path + ": " + e.getMessage());
             }
