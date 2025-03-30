@@ -5,23 +5,18 @@ import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.screen.ScreenResolution;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.desktop.messenger.controllers.MessengerController;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
-import com.vpstycoon.game.resource.ResourceManager;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.control.Button;
-import javafx.scene.layout.FlowPane;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
-import javafx.scene.image.Image;
 
-import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 

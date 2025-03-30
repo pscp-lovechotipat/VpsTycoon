@@ -1,5 +1,8 @@
 package com.vpstycoon.game.thread.task;
 
+import com.vpstycoon.game.company.SkillPointsSystem;
+import com.vpstycoon.game.resource.ResourceManager;
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -13,28 +16,19 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.effect.Glow;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
-import javafx.scene.Node;
-import javafx.animation.FadeTransition;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
-
-import com.vpstycoon.game.company.SkillPointsSystem;
-import com.vpstycoon.game.resource.ResourceManager;
 
 
 public class ServerCoolingTask extends GameTask {

@@ -1,10 +1,11 @@
 package com.vpstycoon.model.request.interfaces;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
 import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.vps.enums.RequestType;
 import com.vpstycoon.model.request.enums.RentalPeriodType;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * อินเตอร์เฟซสำหรับคำขอของลูกค้า

@@ -1,7 +1,6 @@
 package com.vpstycoon.ui.game.notification.center;
 
 import javafx.application.Platform;
-import javafx.scene.image.Image;
 
 public class CenterNotificationController {
     private final CenterNotificationModel model;

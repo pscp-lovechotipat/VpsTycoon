@@ -4,8 +4,9 @@ import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.desktop.messenger.models.VMProvisioningManagerImpl;
 import javafx.geometry.Pos;
-import javafx.scene.layout.StackPane;
 import javafx.scene.Node;
+import javafx.scene.layout.StackPane;
+
 import java.util.ArrayList;
 import java.util.List;
 

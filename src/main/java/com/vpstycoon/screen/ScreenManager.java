@@ -1,7 +1,6 @@
 package com.vpstycoon.screen;
 
 import com.vpstycoon.view.base.GameScreen;
-
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.stage.Stage;

@@ -2,13 +2,12 @@ package com.vpstycoon.ui.game.handlers;
 
 import com.vpstycoon.config.DefaultGameConfig;
 import com.vpstycoon.config.GameConfig;
-import com.vpstycoon.screen.ScreenManager;
+import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.ResumeScreen;
 import com.vpstycoon.ui.settings.SettingsScreen;
 import javafx.scene.input.KeyCode;
-import com.vpstycoon.game.resource.ResourceManager;
 
 public class KeyEventHandler {
     private final GameplayContentPane contentPane;

@@ -7,11 +7,7 @@ import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.desktop.messenger.controllers.MessengerController;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.HashSet;
+import java.util.*;
 
 public class ChatHistoryManager implements Serializable{
     private static ChatHistoryManager instance;

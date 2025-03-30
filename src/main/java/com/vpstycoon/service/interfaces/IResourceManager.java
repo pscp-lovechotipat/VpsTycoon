@@ -1,14 +1,12 @@
 package com.vpstycoon.service.interfaces;
 
-import java.io.InputStream;
-import java.net.URL;
-
-import com.vpstycoon.audio.interfaces.IAudioManager;
 import com.vpstycoon.model.common.GameObject;
 import com.vpstycoon.model.common.GameState;
 import com.vpstycoon.model.company.interfaces.ICompany;
-
 import javafx.scene.image.Image;
+
+import java.io.InputStream;
+import java.net.URL;
 
 /**
  * อินเตอร์เฟซสำหรับจัดการทรัพยากรในเกม

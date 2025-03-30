@@ -6,13 +6,10 @@ import com.vpstycoon.navigation.interfaces.INavigator;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.service.ResourceManager;
 import com.vpstycoon.view.base.GameScreen;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;

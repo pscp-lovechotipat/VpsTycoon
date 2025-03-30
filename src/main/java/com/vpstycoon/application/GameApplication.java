@@ -6,20 +6,25 @@ import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
 import com.vpstycoon.game.GameManager;
+import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.game.thread.RequestGenerator;
 import com.vpstycoon.screen.JavaFXScreenManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.SceneController;
 import com.vpstycoon.ui.cutscene.CutsceneScreen;
 import com.vpstycoon.ui.game.GameplayScreen;
 import com.vpstycoon.ui.game.components.RoomObjectsLayer;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 import com.vpstycoon.ui.menu.MainMenuScreen;
 import com.vpstycoon.ui.navigation.Navigator;
-import com.vpstycoon.ui.screen.GameScreen;
 import com.vpstycoon.ui.settings.SettingsScreen;
+import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -32,15 +37,10 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import com.vpstycoon.game.GameObject;
-import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
-import javafx.animation.PauseTransition;
-import javafx.animation.FadeTransition;
-import javafx.util.Duration;
-import com.vpstycoon.game.thread.RequestGenerator;
-import com.vpstycoon.game.manager.RequestManager;
 
 
 public class GameApplication extends Application implements Navigator, ResourceManager.ResourceLoadingListener {

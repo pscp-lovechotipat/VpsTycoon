@@ -2,10 +2,10 @@ package com.vpstycoon.ui.game.components;
 
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.resource.ResourceManager;
-import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+
 import java.util.HashMap;
 import java.util.Map;
 

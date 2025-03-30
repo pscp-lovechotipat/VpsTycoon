@@ -2,10 +2,9 @@ package com.vpstycoon.screen;
 
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.view.base.GameScreen;
-
 import javafx.animation.FadeTransition;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Region;
@@ -47,14 +46,14 @@ public class JavaFXScreenManager implements ScreenManager {
 
         if (scene != null) {
 
-            scene.setFill(javafx.scene.paint.Color.BLACK);
+            scene.setFill(Color.BLACK);
             
 
-            javafx.scene.Parent currentRoot = scene.getRoot();
+            Parent currentRoot = scene.getRoot();
             
 
-            if (currentRoot instanceof javafx.scene.layout.Region) {
-                javafx.scene.layout.Region rootRegion = (javafx.scene.layout.Region) currentRoot;
+            if (currentRoot instanceof Region) {
+                Region rootRegion = (Region) currentRoot;
                 
 
                 rootRegion.setPadding(javafx.geometry.Insets.EMPTY);
@@ -74,7 +73,7 @@ public class JavaFXScreenManager implements ScreenManager {
             }
             
 
-            javafx.scene.layout.StackPane tempContainer = new javafx.scene.layout.StackPane();
+            StackPane tempContainer = new StackPane();
             tempContainer.setStyle("-fx-background-color: black;");
             scene.setRoot(tempContainer);
             
@@ -108,7 +107,7 @@ public class JavaFXScreenManager implements ScreenManager {
             if (!root.getChildren().isEmpty()) {
                 Node currentScreen = root.getChildren().get(0);
                 
-                javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                FadeTransition fadeOut = new FadeTransition(
                     javafx.util.Duration.millis(300), currentScreen);
                 fadeOut.setFromValue(1.0);
                 fadeOut.setToValue(0.0);
@@ -117,7 +116,7 @@ public class JavaFXScreenManager implements ScreenManager {
                 
                 root.getChildren().add(screen);
                 
-                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                FadeTransition fadeIn = new FadeTransition(
                     javafx.util.Duration.millis(300), screen);
                 fadeIn.setFromValue(0.0);
                 fadeIn.setToValue(1.0);
@@ -132,8 +131,8 @@ public class JavaFXScreenManager implements ScreenManager {
             } else {
                 root.getChildren().add(screen);
                 
-                javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
-                    javafx.util.Duration.millis(300), screen);
+                FadeTransition fadeIn = new FadeTransition(
+                    Duration.millis(300), screen);
                 fadeIn.setFromValue(0.0);
                 fadeIn.setToValue(1.0);
                 fadeIn.play();

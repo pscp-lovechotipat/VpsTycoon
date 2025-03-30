@@ -1,8 +1,8 @@
 package com.vpstycoon.ui.game.desktop.messenger.models;
 
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.manager.CustomerRequest;
-import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.desktop.messenger.MessageType;
@@ -14,10 +14,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import com.vpstycoon.game.company.SkillPointsSystem;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public class VMProvisioningManager {
     private final ChatHistoryManager chatHistoryManager;

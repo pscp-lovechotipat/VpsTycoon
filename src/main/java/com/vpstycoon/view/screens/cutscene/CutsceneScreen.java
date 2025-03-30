@@ -4,7 +4,6 @@ import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.navigation.interfaces.INavigator;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.view.base.GameScreen;
-
 import javafx.animation.FadeTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;

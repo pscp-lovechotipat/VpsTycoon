@@ -1,23 +1,24 @@
 package com.vpstycoon.ui.game.rack;
 
 import com.vpstycoon.game.GameObject;
+import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.geometry.Pos;
-import javafx.geometry.Insets;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.vps.VPSInventory;
 
 public class Rack extends StackPane implements Serializable {
     private static final long serialVersionUID = 1L;

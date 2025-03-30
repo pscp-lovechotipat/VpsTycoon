@@ -1,11 +1,12 @@
 package com.vpstycoon.config;
 
+import com.vpstycoon.screen.ScreenResolution;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
-import com.vpstycoon.screen.ScreenResolution;
 
 public class ConfigSerializer {
     private static final String CONFIG_FILE = "game_config.properties";

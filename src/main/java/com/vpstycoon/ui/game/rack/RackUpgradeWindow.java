@@ -1,7 +1,7 @@
 package com.vpstycoon.ui.game.rack;
 
-import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;

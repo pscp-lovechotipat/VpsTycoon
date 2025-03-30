@@ -10,7 +10,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 import java.time.Duration;
-
 import java.time.LocalDateTime;
 
 public class DateModel {

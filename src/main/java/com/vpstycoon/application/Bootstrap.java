@@ -1,9 +1,5 @@
 package com.vpstycoon.application;
 
-import javafx.application.Application;
-
-
-
 public class Bootstrap {
     
     

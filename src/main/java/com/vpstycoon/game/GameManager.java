@@ -8,7 +8,6 @@ import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.game.thread.RequestGenerator;
 import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
-import com.vpstycoon.game.vps.enums.VPSSize;
 import com.vpstycoon.ui.game.rack.Rack;
 
 import java.util.ArrayList;

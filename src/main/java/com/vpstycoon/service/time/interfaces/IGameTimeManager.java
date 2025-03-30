@@ -1,12 +1,9 @@
 package com.vpstycoon.service.time.interfaces;
 
-import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.company.Company;
-import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.manager.CustomerRequest;
+import com.vpstycoon.game.vps.VPSOptimization;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * ให้บริการจัดการเวลาในเกม รวมทั้งการคำนวณเวลาและการแจ้งเตือนเมื่อเวลาเปลี่ยนแปลง

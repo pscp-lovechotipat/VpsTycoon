@@ -1,7 +1,6 @@
 package com.vpstycoon.ui.game.notification;
 
 import com.vpstycoon.audio.AudioManager;
-import com.vpstycoon.game.resource.ResourceManager;
 import javafx.animation.*;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;

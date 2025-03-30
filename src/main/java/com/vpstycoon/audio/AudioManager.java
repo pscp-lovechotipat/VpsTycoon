@@ -1,20 +1,15 @@
 package com.vpstycoon.audio;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.vpstycoon.audio.interfaces.IAudioManager;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
 import com.vpstycoon.service.ResourceManager;
-
 import javafx.application.Platform;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+
+import java.net.URL;
+import java.util.*;
 
 public class AudioManager implements IAudioManager {
     private final Map<String, Media> soundCache = new HashMap<>();

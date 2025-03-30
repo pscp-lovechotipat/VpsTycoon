@@ -1,13 +1,12 @@
 package com.vpstycoon.game.company;
 
+import com.vpstycoon.game.vps.enums.VPSProduct;
+
 import java.io.IOException;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.vpstycoon.game.resource.ResourceManager;
-import com.vpstycoon.game.vps.enums.VPSProduct;
 
 
 public class SkillPointsSystem implements Serializable {

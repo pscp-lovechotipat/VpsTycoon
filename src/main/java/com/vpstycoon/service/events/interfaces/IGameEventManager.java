@@ -1,8 +1,6 @@
 package com.vpstycoon.service.events.interfaces;
 
-import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.thread.task.GameTask;
-import com.vpstycoon.ui.game.GameplayContentPane;
 
 /**
  * จัดการกิจกรรม (event) ในเกม เช่น การสร้างและจัดการ Task ต่างๆ

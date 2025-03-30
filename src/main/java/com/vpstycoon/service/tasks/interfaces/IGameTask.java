@@ -1,6 +1,5 @@
 package com.vpstycoon.service.tasks.interfaces;
 
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 
 /**

@@ -1,12 +1,10 @@
 package com.vpstycoon.game;
 
 import com.vpstycoon.game.company.Company;
-import com.vpstycoon.game.resource.ResourceManager;
-import com.vpstycoon.game.vps.VPSInventory;
-import com.vpstycoon.ui.game.rack.Rack;
-import com.vpstycoon.game.manager.CustomerRequest;
-import com.vpstycoon.ui.game.desktop.messenger.models.ChatMessage;
 import com.vpstycoon.game.company.SkillPointsSystem.SkillType;
+import com.vpstycoon.game.manager.CustomerRequest;
+import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatMessage;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 

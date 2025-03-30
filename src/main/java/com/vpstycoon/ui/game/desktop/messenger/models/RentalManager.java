@@ -10,7 +10,6 @@ import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import javafx.application.Platform;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;

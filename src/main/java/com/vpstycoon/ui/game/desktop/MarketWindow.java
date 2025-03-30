@@ -1,14 +1,13 @@
 package com.vpstycoon.ui.game.desktop;
 
-import com.vpstycoon.game.company.Company;
+import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.company.SkillPointsSystem;
+import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.RackProduct;
 import com.vpstycoon.game.vps.enums.VPSProduct;
 import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.game.manager.VPSManager;
-import com.vpstycoon.game.GameManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -16,9 +15,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
+import javafx.scene.layout.VBox;
 
 import java.util.UUID;
 

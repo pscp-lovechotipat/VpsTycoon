@@ -1,6 +1,7 @@
 package com.vpstycoon.screen;
 
 import javafx.stage.Screen;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;

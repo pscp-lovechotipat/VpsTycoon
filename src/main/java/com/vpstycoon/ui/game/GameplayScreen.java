@@ -1,7 +1,9 @@
 package com.vpstycoon.ui.game;
 
-import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
+import com.vpstycoon.event.GameEventBus;
+import com.vpstycoon.event.SettingsChangedEvent;
+import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
@@ -13,10 +15,12 @@ import com.vpstycoon.game.object.RackObject;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.thread.RequestGenerator;
+import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.flow.GameFlowManager;
+import com.vpstycoon.ui.game.rack.Rack;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.application.Platform;
 import javafx.scene.layout.Region;
@@ -24,13 +28,6 @@ import javafx.scene.layout.Region;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
-
-import com.vpstycoon.ui.game.rack.Rack;
-import com.vpstycoon.game.vps.VPSOptimization;
-import com.vpstycoon.game.GameManager;
-import com.vpstycoon.event.GameEventBus;
-import com.vpstycoon.event.SettingsChangedEvent;
-import com.vpstycoon.game.manager.CustomerRequest;
 
 public class GameplayScreen extends GameScreen {
     private GameState state;

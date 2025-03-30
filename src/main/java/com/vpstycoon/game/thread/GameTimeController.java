@@ -2,7 +2,6 @@ package com.vpstycoon.game.thread;
 
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
-import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.rack.Rack;
 
 import java.time.LocalDateTime;

@@ -1,7 +1,6 @@
 package com.vpstycoon.ui.game.desktop.messenger.models;
 
 import com.vpstycoon.game.manager.CustomerRequest;
-import javafx.collections.ObservableList;
 
 import java.io.Serializable;
 import java.util.ArrayList;

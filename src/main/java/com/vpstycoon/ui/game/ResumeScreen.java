@@ -2,6 +2,9 @@ package com.vpstycoon.ui.game;
 
 import com.vpstycoon.application.FontLoader;
 import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.game.GameObject;
+import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
@@ -14,16 +17,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.LinearGradient;
-import javafx.scene.paint.Stop;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import com.vpstycoon.game.company.Company;
-import com.vpstycoon.game.GameState;
+
 import java.util.List;
-import com.vpstycoon.game.GameObject;
 
 public class ResumeScreen extends StackPane {
     private final Navigator navigator;

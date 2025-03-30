@@ -9,7 +9,6 @@ import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
 import com.vpstycoon.service.ResourceManager;
 import com.vpstycoon.view.base.GameScreen;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;

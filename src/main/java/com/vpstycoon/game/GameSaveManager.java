@@ -1,7 +1,6 @@
 package com.vpstycoon.game;
 
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
-import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistorySaveData;
 
 import java.io.*;
 import java.nio.file.Files;

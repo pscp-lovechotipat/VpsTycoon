@@ -1,7 +1,7 @@
 package com.vpstycoon.game.company;
 
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 

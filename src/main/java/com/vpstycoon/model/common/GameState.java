@@ -1,16 +1,10 @@
 package com.vpstycoon.model.common;
 
 import com.vpstycoon.model.company.interfaces.ICompany;
-import com.vpstycoon.model.request.interfaces.ICustomerRequest;
-
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serial;
-import java.io.Serializable;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;

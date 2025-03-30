@@ -1,13 +1,12 @@
 package com.vpstycoon.view.screens.game;
 
-import com.vpstycoon.audio.AudioManager;
+import com.vpstycoon.audio.interfaces.IAudioManager;
 import com.vpstycoon.config.GameConfig;
-import com.vpstycoon.game.company.Company;
+import com.vpstycoon.model.company.interfaces.ICompany;
 import com.vpstycoon.navigation.interfaces.INavigator;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.service.ResourceManager;
 import com.vpstycoon.view.base.GameScreen;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -17,9 +16,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-
-import com.vpstycoon.audio.interfaces.IAudioManager;
-import com.vpstycoon.model.company.interfaces.ICompany;
 
 public class GameplayScreen extends GameScreen {
     

@@ -1,6 +1,7 @@
 package com.vpstycoon.model.common;
 
 import com.vpstycoon.model.company.interfaces.ICompany;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;

@@ -1,13 +1,14 @@
 package com.vpstycoon.ui.game.rack;
 
 import com.vpstycoon.game.vps.VPSOptimization;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
-import javafx.geometry.Pos;
-import javafx.geometry.Insets;
+
 import java.util.List;
 
 public class RackStatus extends VBox {
