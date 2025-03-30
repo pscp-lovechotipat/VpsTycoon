@@ -4,9 +4,7 @@ import com.vpstycoon.ui.debug.DebugOverlayManager;
 import javafx.scene.Group;
 import javafx.scene.layout.StackPane;
 
-/**
- * Handles zoom and pan interactions for the game world.
- */
+
 public class ZoomPanHandler {
     private final Group worldGroup;
     private final StackPane gameArea;
@@ -34,17 +32,17 @@ public class ZoomPanHandler {
     }
     
     private void setupZoomHandlers() {
-        // Mouse wheel zoom
+        
         gameArea.setOnScroll(e -> {
             double zoomFactor = 1.05;
             if (e.getDeltaY() < 0) {
                 zoomFactor = 1.0 / zoomFactor;
             }
             
-            // Calculate new scale
+            
             double newScale = worldGroup.getScaleX() * zoomFactor;
             
-            // Set min/max scale limits
+            
             double minScale = 0.5;
             double maxScale = 2.0;
             
@@ -57,14 +55,14 @@ public class ZoomPanHandler {
             e.consume();
         });
         
-        // Touchpad pinch zoom
+        
         gameArea.setOnZoom(e -> {
             double zoomFactor = e.getZoomFactor();
             
-            // Calculate new scale using zoom factor from gesture
+            
             double newScale = worldGroup.getScaleX() * zoomFactor;
             
-            // Set min/max scale limits
+            
             double minScale = 0.5;
             double maxScale = 2.0;
             
@@ -79,7 +77,7 @@ public class ZoomPanHandler {
     }
     
     private void setupPanHandlers() {
-        // Mouse pressed handler
+        
         worldGroup.setOnMousePressed(e -> {
             mouseAnchorX = e.getSceneX();
             mouseAnchorY = e.getSceneY();
@@ -91,35 +89,35 @@ public class ZoomPanHandler {
             e.consume();
         });
         
-        // Mouse drag handler
+        
         worldGroup.setOnMouseDragged(e -> {
             if (isPanning) {
                 double deltaX = e.getSceneX() - mouseAnchorX;
                 double deltaY = e.getSceneY() - mouseAnchorY;
 
-                // คำนวณค่าใหม่
+                
                 double newTranslateX = translateAnchorX + deltaX;
                 double newTranslateY = translateAnchorY + deltaY;
 
-                // ดึงขนาดของ worldGroup และ gameArea
+                
                 double worldWidth = worldGroup.getBoundsInLocal().getWidth();
                 double worldHeight = worldGroup.getBoundsInLocal().getHeight();
                 double viewWidth = gameArea.getWidth();
                 double viewHeight = gameArea.getHeight();
 
-                // คำนวณขอบเขต
+                
                 int delta = 500;
 
-                double minX = Math.min(-delta, viewWidth - worldWidth); // ค่าต่ำสุดของ translateX
-                double maxX = delta; // ค่าสูงสุดของ translateX
-                double minY = Math.min(-delta, viewHeight - worldHeight); // ค่าต่ำสุดของ translateY
-                double maxY = delta; // ค่าสูงสุดของ translateY
+                double minX = Math.min(-delta, viewWidth - worldWidth); 
+                double maxX = delta; 
+                double minY = Math.min(-delta, viewHeight - worldHeight); 
+                double maxY = delta; 
 
-                // จำกัดค่า translateX และ translateY
+                
                 newTranslateX = Math.max(minX, Math.min(maxX, newTranslateX));
                 newTranslateY = Math.max(minY, Math.min(maxY, newTranslateY));
 
-                // ตั้งค่าที่จำกัดแล้ว
+                
                 worldGroup.setTranslateX(newTranslateX);
                 worldGroup.setTranslateY(newTranslateY);
 
@@ -128,7 +126,7 @@ public class ZoomPanHandler {
             }
         });
         
-        // Mouse released handler
+        
         worldGroup.setOnMouseReleased(e -> {
             if (isPanning) {
                 isPanning = false;
@@ -137,7 +135,7 @@ public class ZoomPanHandler {
             }
         });
         
-        // Mouse cursor handlers
+        
         worldGroup.setOnMouseEntered(e -> {
             gameArea.setCursor(javafx.scene.Cursor.HAND);
         });
@@ -150,7 +148,7 @@ public class ZoomPanHandler {
     }
     
     private void setupResetHandler() {
-        // Reset zoom and position with spacebar
+        
         gameArea.setOnKeyPressed(e -> {
             if (e.getCode() == javafx.scene.input.KeyCode.SPACE) {
                 worldGroup.setScaleX(1.0);
@@ -161,7 +159,7 @@ public class ZoomPanHandler {
             }
         });
         
-        // Enable key events
+        
         gameArea.setFocusTraversable(true);
     }
     
@@ -175,17 +173,14 @@ public class ZoomPanHandler {
         this.showDebug = showDebug;
     }
     
-    /**
-     * Cleanup method to remove all event handlers before creating a new handler
-     * This prevents memory leaks and duplicate event handlers
-     */
+    
     public void cleanup() {
-        // Remove all event handlers from the game area
+        
         gameArea.setOnScroll(null);
         gameArea.setOnZoom(null);
         gameArea.setOnKeyPressed(null);
         
-        // Remove all event handlers from the world group
+        
         worldGroup.setOnMousePressed(null);
         worldGroup.setOnMouseDragged(null);
         worldGroup.setOnMouseReleased(null);

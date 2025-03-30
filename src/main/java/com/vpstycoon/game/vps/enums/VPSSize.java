@@ -1,8 +1,6 @@
 package com.vpstycoon.game.vps.enums;
 
-/**
- * Enum representing the physical size of a VPS server and the number of slots it requires in a rack.
- */
+
 public enum VPSSize {
     SIZE_1U("1U", 1, 1.0),
     SIZE_2U("2U", 2, 1.5),

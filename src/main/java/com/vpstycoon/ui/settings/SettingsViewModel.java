@@ -50,7 +50,7 @@ public class SettingsViewModel {
                 config.setVsyncEnabled(vsync.get());
                 config.save();
                 
-                // Publish event to notify other components
+                
                 GameEventBus.getInstance().publish(new SettingsChangedEvent(config));
             } catch (Exception e) {
                 showErrorDialog("Failed to save settings: " + e.getMessage());
@@ -66,12 +66,12 @@ public class SettingsViewModel {
         alert.showAndWait();
     }
     
-    // Property getters
+    
     public ObjectProperty<ScreenResolution> resolutionProperty() { return resolution; }
     public BooleanProperty fullscreenProperty() { return fullscreen; }
     public DoubleProperty musicVolumeProperty() { return musicVolume; }
     public DoubleProperty sfxVolumeProperty() { return sfxVolume; }
     public BooleanProperty vsyncProperty() { return vsync; }
     
-    // ... other view model methods ...
+    
 } 

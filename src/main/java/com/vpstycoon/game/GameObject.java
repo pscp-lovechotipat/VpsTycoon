@@ -10,12 +10,12 @@ import java.util.Map;
 public class GameObject implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private static final double CELL_SIZE = 64.0;  // << กำหนดขนาดกริด
+    private static final double CELL_SIZE = 64.0;  
 
     private String id;
     private String type;
 
-    // เปลี่ยนจาก double x, y เป็น int gridX, gridY
+    
     private int gridX;
     private int gridY;
 
@@ -41,7 +41,7 @@ public class GameObject implements Serializable {
         this.company = ResourceManager.getInstance().getCompany();
     }
 
-    // Constructor หลักที่ใช้ gridX, gridY
+    
     public GameObject(String id, String type, int gridX, int gridY) {
         this.id = id;
         this.type = type;
@@ -53,7 +53,7 @@ public class GameObject implements Serializable {
 
         this.company = ResourceManager.getInstance().getCompany();
 
-        // เรียกเมธอด setGridPosition() เพื่อเซตค่า
+        
         setGridPosition(gridX, gridY);
     }
 
@@ -78,7 +78,7 @@ public class GameObject implements Serializable {
         return type;
     }
 
-    // คืนค่าเป็นพิกเซล
+    
     public double getX() {
         return gridX * CELL_SIZE;
     }
@@ -87,11 +87,11 @@ public class GameObject implements Serializable {
         return gridY * CELL_SIZE;
     }
 
-    // ถ้าอยากให้แก้ได้ด้วยการ setX / setY ก็สามารถทำ Overload หรือไม่ทำก็ได้
-    // public void setX(double x) { this.gridX = (int)Math.round(x / CELL_SIZE); }
-    // public void setY(double y) { this.gridY = (int)Math.round(y / CELL_SIZE); }
+    
+    
+    
 
-    // คืนค่า gridX, gridY ตรง ๆ (ถ้าต้องการ)
+    
     public int getGridX() {
         return gridX;
     }
@@ -100,7 +100,7 @@ public class GameObject implements Serializable {
         return gridY;
     }
 
-    // เมธอดหลักสำหรับกำหนดตำแหน่งในกริด
+    
     public void setGridPosition(int gridX, int gridY) {
         this.gridX = gridX;
         this.gridY = gridY;
@@ -150,7 +150,7 @@ public class GameObject implements Serializable {
     }
 
     public void stop() {
-        // ถ้ามีการหยุดการทำงานใน subclasses
+        
     }
 
     public Company getCompany() {

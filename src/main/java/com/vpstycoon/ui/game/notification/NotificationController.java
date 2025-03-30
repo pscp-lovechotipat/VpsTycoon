@@ -9,7 +9,7 @@ public class NotificationController {
         this.view = view;
     }
 
-    // Method push สำหรับเพิ่มการแจ้งเตือน
+    
     public void push(String title, String content) {
         NotificationModel.Notification notification = new NotificationModel.Notification(title, content);
         model.addNotification(notification);

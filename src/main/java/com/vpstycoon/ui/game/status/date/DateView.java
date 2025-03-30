@@ -23,11 +23,11 @@ public class DateView extends VBox {
         this.model = model;
 
         setAlignment(Pos.BOTTOM_CENTER);
-        setSpacing(15);  // เพิ่ม spacing ให้ดูโปร่งขึ้น
+        setSpacing(15);  
         setPickOnBounds(false);
         setFocused(false);
 
-        // เพิ่ม background สไตล์ cyberpunk
+        
         setStyle("-fx-border-color: #00FFFF; " +
                 "-fx-border-width: 1px; " +
                 "-fx-border-radius: 5px;");
@@ -41,7 +41,7 @@ public class DateView extends VBox {
         dateBox.setAlignment(Pos.BOTTOM_CENTER);
         dateBox.setSpacing(15);
 
-        // ส่วนแสดงวันที่ (ยังคงเป็นสีทอง)
+        
         Text dateLabel = new Text("Date: ");
         Text dateValue = new Text();
 
@@ -52,7 +52,7 @@ public class DateView extends VBox {
         dateLabel.setFont(font);
         dateValue.setFont(font);
 
-        // เพิ่ม neon glow effect ให้วันที่
+        
         DropShadow glow = new DropShadow();
         glow.setColor(Color.web("#FFD700"));
         glow.setRadius(10);
@@ -60,7 +60,7 @@ public class DateView extends VBox {
         dateLabel.setEffect(glow);
         dateValue.setEffect(glow);
 
-        // Format วันที่
+        
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         dateValue.textProperty().bind(new StringBinding() {
             {
@@ -73,18 +73,18 @@ public class DateView extends VBox {
             }
         });
 
-        // ส่วนแสดงวินาทีที่เหลือ (เปลี่ยนเป็นสีฟ้า)
+        
         Text timeLabel = new Text("Next day in: ");
         Text timeValue = new Text();
 
-        Color cyberBlue = Color.web("#00FFFF");  // สีฟ้าแบบ cyberpunk
+        Color cyberBlue = Color.web("#00FFFF");  
         timeLabel.setFill(cyberBlue);
         timeValue.setFill(cyberBlue);
 
         timeLabel.setFont(font);
         timeValue.setFont(font);
 
-        // เพิ่ม neon glow effect สีฟ้า
+        
         DropShadow blueGlow = new DropShadow();
         blueGlow.setColor(cyberBlue);
         blueGlow.setRadius(10);
@@ -92,10 +92,10 @@ public class DateView extends VBox {
         timeLabel.setEffect(blueGlow);
         timeValue.setEffect(blueGlow);
 
-        // Bind วินาที
+        
         timeValue.textProperty().bind(model.timeRemainingProperty());
 
-        // เพิ่มทั้งสองส่วนลงใน HBox
+        
         dateBox.getChildren().addAll(dateLabel, dateValue, timeLabel, timeValue);
         this.getChildren().add(dateBox);
     }

@@ -20,9 +20,9 @@ public class ChatSystem {
     }
     
     private void initializeCustomerTypes() {
-        unlockedCustomerTypes.add(CustomerType.INDIVIDUAL); // เริ่มต้นปลดล็อคลูกค้าทั่วไป
+        unlockedCustomerTypes.add(CustomerType.INDIVIDUAL); 
         
-        // กำหนดคะแนนสำหรับแต่ละประเภทลูกค้า
+        
         customerTypePoints.put(CustomerType.INDIVIDUAL, 10);
         customerTypePoints.put(CustomerType.SMALL_BUSINESS, 20);
         customerTypePoints.put(CustomerType.MEDIUM_BUSINESS, 30);

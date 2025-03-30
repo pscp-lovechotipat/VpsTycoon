@@ -18,21 +18,21 @@ public class GameFlowManager {
     }
 
     public void saveGame() {
-        // ดึง Company จาก ResourceManager
+        
         Company company = ResourceManager.getInstance().getCompany(); 
         
         if (company != null) {
             System.out.println("กำลังบันทึกเกม... เงินปัจจุบัน: $" + company.getMoney());
             
-            // สร้าง GameState ใหม่โดยใช้ข้อมูลปัจจุบัน
+            
             GameState state = new GameState(company, gameObjects);
             
-            // บันทึกเวลาเกมปัจจุบัน
+            
             if (ResourceManager.getInstance().getGameTimeController() != null) {
                 state.setLocalDateTime(ResourceManager.getInstance().getGameTimeController().getGameTimeManager().getGameDateTime());
             }
             
-            // บันทึกด้วย ResourceManager
+            
             ResourceManager.getInstance().saveGameState(state);
             
             System.out.println("บันทึกเกมสำเร็จ! จำนวน GameObject: " + (gameObjects != null ? gameObjects.size() : 0));
@@ -44,10 +44,11 @@ public class GameFlowManager {
     public void stopAllGameObjects() {
         if (gameObjects != null) {
             for (GameObject obj : gameObjects) {
-                obj.stop();  // ต้องมีเมธอด stop() ใน GameObject
+                obj.stop();  
             }
             gameObjects.clear();
         }
     }
 }
+
 

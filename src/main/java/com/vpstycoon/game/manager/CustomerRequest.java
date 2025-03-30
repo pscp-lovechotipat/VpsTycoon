@@ -22,7 +22,7 @@ public class CustomerRequest extends Customer implements Serializable {
     private long creationTime;
     private long lastPaymentTime;
     
-    // เพิ่ม field เพื่อเก็บข้อมูลว่า request นี้ถูก assign ให้กับ VM ใด
+    
     private String assignedToVmId;
 
     public enum RentalPeriodType {
@@ -174,7 +174,7 @@ public class CustomerRequest extends Customer implements Serializable {
         long timeSinceLastPaymentMs = currentGameTimeMs - lastPaymentTime;
         long paymentIntervalMs;
 
-        // ใช้ game time จาก GameTimeManager
+        
         switch (rentalPeriodType) {
             case DAILY:
                 paymentIntervalMs = GameTimeManager.GAME_DAY_MS;
@@ -221,12 +221,12 @@ public class CustomerRequest extends Customer implements Serializable {
         return isExpired;
     }
 
-    // Setter for rentalPeriodType
+    
     public void setRentalPeriodType(RentalPeriodType rentalPeriodType) {
         this.rentalPeriodType = rentalPeriodType;
     }
 
-    // Getters
+    
     public CustomerType getCustomerType() {
         return customerType;
     }
@@ -295,10 +295,7 @@ public class CustomerRequest extends Customer implements Serializable {
         return lastPaymentTime;
     }
 
-    /**
-     * เพิ่มเมธอด equals เพื่อเปรียบเทียบ CustomerRequest
-     * โดยเปรียบเทียบจาก ID และชื่อ
-     */
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -306,12 +303,12 @@ public class CustomerRequest extends Customer implements Serializable {
         
         CustomerRequest other = (CustomerRequest) obj;
         
-        // เปรียบเทียบจาก ID และชื่อเป็นหลัก
+        
         if (this.getId() == other.getId() && this.getName().equals(other.getName())) {
             return true;
         }
         
-        // ถ้า ID ไม่ตรงกัน ลองเปรียบเทียบจากคุณสมบัติอื่น
+        
         return this.getName().equals(other.getName()) &&
                this.customerType == other.customerType &&
                this.requestType == other.requestType &&
@@ -320,9 +317,7 @@ public class CustomerRequest extends Customer implements Serializable {
                this.requiredDiskGB == other.requiredDiskGB;
     }
     
-    /**
-     * เพิ่มเมธอด hashCode เพื่อใช้เป็น key ใน Map
-     */
+    
     @Override
     public int hashCode() {
         int result = getName().hashCode();
@@ -334,37 +329,26 @@ public class CustomerRequest extends Customer implements Serializable {
         return result;
     }
 
-    /**
-     * ตรวจสอบว่า request นี้ถูก assign ให้ VM แล้วหรือไม่
-     * @return true ถ้าถูก assign แล้ว, false ถ้ายังไม่ถูก assign
-     */
+    
     public boolean isAssignedToVM() {
         return assignedToVmId != null && !assignedToVmId.isEmpty();
     }
     
-    /**
-     * เมธอดสำหรับตั้งค่า VM ที่ request นี้ถูก assign ให้
-     * @param vmId ID ของ VM ที่ถูก assign
-     */
+    
     public void assignToVM(String vmId) {
         this.assignedToVmId = vmId;
         if (vmId != null && !vmId.isEmpty() && !isActive) {
-            // ถ้ามีการ assign VM ให้ request นี้ ให้ตั้งค่า isActive เป็น true
+            
             activate(System.currentTimeMillis());
         }
     }
     
-    /**
-     * เมธอดสำหรับยกเลิกการ assign VM
-     */
+    
     public void unassignFromVM() {
         this.assignedToVmId = null;
     }
     
-    /**
-     * ดึง ID ของ VM ที่ request นี้ถูก assign ให้
-     * @return ID ของ VM หรือ null ถ้าไม่ได้ถูก assign
-     */
+    
     public String getAssignedVmId() {
         return assignedToVmId;
     }

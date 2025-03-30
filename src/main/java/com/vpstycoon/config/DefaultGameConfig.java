@@ -98,5 +98,5 @@ public class DefaultGameConfig implements GameConfig {
         }
     }
 
-    // ... implement other interface methods ...
+    
 } 

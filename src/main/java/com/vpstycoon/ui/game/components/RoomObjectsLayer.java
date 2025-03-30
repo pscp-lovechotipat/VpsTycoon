@@ -9,9 +9,7 @@ import javafx.scene.layout.Pane;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Contains all the room objects (monitor, table, server).
- */
+
 public class RoomObjectsLayer {
     private final Pane monitorLayer;
     private final Pane tableLayer;
@@ -28,16 +26,16 @@ public class RoomObjectsLayer {
     private ResourceManager resourceManager = ResourceManager.getInstance();
     private boolean run = resourceManager.isMusicRunning();
     
-    // Static image cache to avoid reloading the same images
+    
     private static Map<String, Image> imageCache = new HashMap<>();
     private static boolean imagesPreloaded = false;
     
-    // Preload all required images to avoid stutter
+    
     static {
         preloadImages();
     }
     
-    // Preload all images used in the room
+    
     public static synchronized void preloadImages() {
         if (imagesPreloaded) {
             System.out.println("Room images already preloaded, skipping");
@@ -57,10 +55,10 @@ public class RoomObjectsLayer {
         System.out.println("Room object images preloading complete");
     }
     
-    // Helper method to load and cache images
+    
     public static Image loadImage(String path) {
         if (!imageCache.containsKey(path)) {
-            // true enables background loading
+            
             Image image = new Image(path, true);
             imageCache.put(path, image);
             return image;
@@ -73,7 +71,7 @@ public class RoomObjectsLayer {
         this.onServerClick = onServerClick;
         this.audioManager = ResourceManager.getInstance().getAudioManager();
         
-        // Create all UI elements in parallel to improve performance
+        
         this.tableLayer = createTableLayer();
         this.monitorLayer = createMonitorLayer();
         this.serverLayer = createServerLayer();
@@ -252,7 +250,7 @@ public class RoomObjectsLayer {
     private Pane createServerLayer() {
         Pane serverLayer = new Pane();
 
-        // Get cached image instead of loading a new one
+        
         Image img = loadImage("/images/servers/server2.gif");
         serverLayer.setPrefWidth(img.getWidth());
         serverLayer.setPrefHeight(img.getHeight());
@@ -261,7 +259,7 @@ public class RoomObjectsLayer {
         serverLayer.setTranslateX(340);
         serverLayer.setTranslateY(-210);
 
-        // Style ปกติ (ตามที่มึงให้มา)
+        
         String normalStyle = """
             -fx-background-image: url('/images/servers/server2.gif');
             -fx-background-size: contain;
@@ -270,7 +268,7 @@ public class RoomObjectsLayer {
         """;
         serverLayer.setStyle(normalStyle);
 
-        // Style ตอน hover (ใส่ขนาดด้วย)
+        
         String hoverStyle = """
             -fx-background-image: url('/images/servers/server2.gif');
             -fx-background-size: contain;
@@ -279,14 +277,14 @@ public class RoomObjectsLayer {
             -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
         """;
 
-        // ตั้งค่า hover effect
+        
         serverLayer.setOnMouseEntered(e -> {
-            // Load sound effect in advance if not in emergency performance situation
+            
             if (!ResourceManager.getInstance().isEmergencyPerformanceMode()) {
                 audioManager.playSoundEffect("server.mp3");
             }
             serverLayer.setStyle(hoverStyle);
-        }); // เปลี่ยนเป็น hoverStyle ตอนเมาส์เข้า
+        }); 
         serverLayer.setOnMouseExited(e -> {
             if (!ResourceManager.getInstance().isEmergencyPerformanceMode()) {
                 audioManager.stopSoundEffect("server.mp3");
@@ -332,3 +330,4 @@ public class RoomObjectsLayer {
         System.out.println("Music Run State: " + run);
     }
 }
+

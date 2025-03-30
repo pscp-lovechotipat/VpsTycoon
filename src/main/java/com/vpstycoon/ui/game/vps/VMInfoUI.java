@@ -29,16 +29,16 @@ public class VMInfoUI {
     }
 
     public void openVMInfoPage(VPSOptimization.VM vm, VPSOptimization vps) {
-        // Main container with cyber theme
+        
         BorderPane vmInfoPane = new BorderPane();
         vmInfoPane.setPrefSize(800, 600);
         vmInfoPane.setStyle("-fx-background-color: linear-gradient(to bottom, #1a0033, #380066); -fx-padding: 20px; -fx-border-color: #8a2be2; -fx-border-width: 3px; -fx-border-radius: 5px;");
 
-        // Hide the menu bars
+        
         parent.getMenuBar().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
         
-        // Cyber-style top bar
+        
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
         topBar.setStyle("-fx-background-color: #220033; -fx-padding: 10px; -fx-background-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(138,43,226,0.6), 15, 0, 0, 5); -fx-border-color: #8a2be2; -fx-border-width: 1px; -fx-border-radius: 10px;");
@@ -54,7 +54,7 @@ public class VMInfoUI {
             parent.openVPSInfoPage(vps);
         });
         
-        // Add blinking status indicator
+        
         Rectangle statusIndicator = new Rectangle(15, 15);
         statusIndicator.setFill(Color.GREEN);
         statusIndicator.setArcHeight(5);
@@ -76,11 +76,11 @@ public class VMInfoUI {
         
         topBar.getChildren().addAll(backButton, titleLabel, statusBox);
 
-        // VM Dashboard - main content
+        
         VBox contentBox = new VBox(15);
         contentBox.setStyle("-fx-background-color: rgba(25, 0, 51, 0.7); -fx-padding: 20px; -fx-background-radius: 10px; -fx-border-color: #8a2be2; -fx-border-width: 1px; -fx-border-radius: 10px;");
         
-        // Stats section
+        
         Label sectionTitle = new Label("SYSTEM METRICS");
         sectionTitle.setStyle("-fx-text-fill: #00ffff; -fx-font-size: 18px; -fx-font-weight: bold; -fx-border-color: #8a2be2; -fx-border-width: 0 0 1px 0; -fx-padding: 0 0 5px 0;");
         
@@ -89,19 +89,19 @@ public class VMInfoUI {
         statsGrid.setVgap(15);
         statsGrid.setPadding(new Insets(10));
         
-        // CPU usage
+        
         addResourceMonitor(statsGrid, "CPU USAGE", generateRandomValue(10, 90), 0);
         
-        // RAM usage
+        
         addResourceMonitor(statsGrid, "RAM USAGE", generateRandomValue(20, 85), 1);
         
-        // Network traffic
+        
         addResourceMonitor(statsGrid, "NETWORK I/O", generateRandomValue(5, 60), 2);
         
-        // Disk I/O
+        
         addResourceMonitor(statsGrid, "DISK I/O", generateRandomValue(15, 70), 3);
         
-        // VM information section
+        
         VBox vmInfoSection = new VBox(10);
         vmInfoSection.setStyle("-fx-background-color: rgba(40, 0, 80, 0.5); -fx-padding: 15px; -fx-background-radius: 8px; -fx-border-color: #9370db; -fx-border-width: 1px; -fx-border-radius: 8px;");
         
@@ -125,7 +125,7 @@ public class VMInfoUI {
         
         contentBox.getChildren().addAll(sectionTitle, statsGrid, vmInfoSection);
 
-        // Action buttons
+        
         HBox buttonBox = new HBox(15);
         buttonBox.setAlignment(Pos.CENTER);
         buttonBox.setPadding(new Insets(15, 0, 0, 0));
@@ -156,7 +156,7 @@ public class VMInfoUI {
         vmInfoPane.setCenter(contentBox);
         vmInfoPane.setBottom(buttonBox);
 
-        // Display the updated UI
+        
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(vmInfoPane);
     }
@@ -235,6 +235,6 @@ public class VMInfoUI {
     
     private void showActionMessage(String message) {
         System.out.println(message);
-        // Here you could implement a futuristic notification popup if desired
+        
     }
 }

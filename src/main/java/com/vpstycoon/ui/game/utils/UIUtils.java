@@ -28,39 +28,39 @@ public class UIUtils {
 
         button.setFont(FontLoader.loadFont(32));
         
-        // Base cyberpunk style with purple glow
+        
         String baseStyle = "-fx-background-color: #2a0a3a; " +
                            "-fx-border-color: #8a2be2; " +
                            "-fx-border-width: 2px; " +
                            "-fx-border-style: solid; " +
                            "-fx-text-fill: #e0b0ff; " + 
-//                           "-fx-font-family: 'Courier New'; " +
+
                            "-fx-font-weight: bold; " +
                            "-fx-padding: 10px 20px; " +
                            "-fx-background-radius: 0; " +
                            "-fx-border-radius: 0; " +
                            "-fx-effect: dropshadow(gaussian, #9370db, 10, 0.5, 0, 0), innershadow(gaussian, #9370db, 5, 0.5, 0, 0);";
         
-        // Hover style with enhanced glow
+        
         String hoverStyle = "-fx-background-color: #3a1a4a; " +
                             "-fx-border-color: #b041ff; " +
                             "-fx-border-width: 2px; " +
                             "-fx-border-style: solid; " +
                             "-fx-text-fill: #f0d0ff; " +
-//                            "-fx-font-family: 'Courier New'; " +
+
                             "-fx-font-weight: bold; " +
                             "-fx-padding: 10px 20px; " +
                             "-fx-background-radius: 0; " +
                             "-fx-border-radius: 0; " +
                             "-fx-effect: dropshadow(gaussian, #b041ff, 15, 0.7, 0, 0), innershadow(gaussian, #b041ff, 7, 0.7, 0, 0);";
         
-        // Pressed style
+        
         String pressedStyle = "-fx-background-color: #4a2a5a; " +
                               "-fx-border-color: #c061ff; " +
                               "-fx-border-width: 2px; " +
                               "-fx-border-style: solid; " +
                               "-fx-text-fill: #ffffff; " +
-//                              "-fx-font-family: 'Courier New'; " +
+
                               "-fx-font-weight: bold; " +
                               "-fx-padding: 10px 20px; " +
                               "-fx-background-radius: 0; " +

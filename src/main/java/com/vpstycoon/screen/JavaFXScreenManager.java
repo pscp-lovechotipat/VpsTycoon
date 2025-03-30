@@ -33,34 +33,34 @@ public class JavaFXScreenManager implements ScreenManager {
         } else {
             stage.setFullScreen(false);
             
-            // Set the exact stage size with no decorations
+
             stage.setWidth(resolution.getWidth());
             stage.setHeight(resolution.getHeight());
             
-            // Remove any internal padding
+
             stage.sizeToScene();
             
-            // Center on screen
+
             stage.centerOnScreen();
         }
 
-        // Force scene size to match stage
+
         if (scene != null) {
-            // Ensure scene fill is black to avoid white borders
+
             scene.setFill(javafx.scene.paint.Color.BLACK);
             
-            // Preserve the current root
+
             javafx.scene.Parent currentRoot = scene.getRoot();
             
-            // Force layout pass and scene recreation for resolution updates
+
             if (currentRoot instanceof javafx.scene.layout.Region) {
                 javafx.scene.layout.Region rootRegion = (javafx.scene.layout.Region) currentRoot;
                 
-                // Remove any margin or padding
+
                 rootRegion.setPadding(javafx.geometry.Insets.EMPTY);
                 rootRegion.setStyle("-fx-background-color: black; -fx-padding: 0; -fx-margin: 0;");
                 
-                // Update region dimensions to match new resolution exactly
+
                 rootRegion.setPrefWidth(resolution.getWidth());
                 rootRegion.setPrefHeight(resolution.getHeight());
                 rootRegion.setMinWidth(resolution.getWidth());
@@ -68,17 +68,17 @@ public class JavaFXScreenManager implements ScreenManager {
                 rootRegion.setMaxWidth(resolution.getWidth());
                 rootRegion.setMaxHeight(resolution.getHeight());
                 
-                // Force layout recalculation
+
                 rootRegion.requestLayout();
                 rootRegion.layout();
             }
             
-            // Create a temporary container to force JavaFX to recreate the scene graph
+
             javafx.scene.layout.StackPane tempContainer = new javafx.scene.layout.StackPane();
             tempContainer.setStyle("-fx-background-color: black;");
             scene.setRoot(tempContainer);
             
-            // Set the original root back to trigger a complete re-render
+
             scene.setRoot(currentRoot);
         }
     }
@@ -145,57 +145,57 @@ public class JavaFXScreenManager implements ScreenManager {
     
     @Override
     public void switchScreen(GameScreen screen) {
-        // เรียกใช้ method switchScreen(Node) ที่มีอยู่แล้ว โดยส่ง root element ของ GameScreen
+
         switchScreen(screen.getRoot());
         
-        // เรียก onShow เพื่อให้ GameScreen รู้ว่าถูกแสดงแล้ว
+
         screen.onShow();
     }
     
     @Override
     public void updateScreenResolution() {
-        // อัปเดตความละเอียดหน้าจอโดยใช้การตั้งค่าปัจจุบัน
+
         applySettings(stage, stage.getScene());
         
-        // ตรวจสอบว่ามีหน้าจอปัจจุบันหรือไม่
+
         if (stage.getScene() != null && stage.getScene().getRoot() != null) {
             StackPane root = (StackPane) stage.getScene().getRoot();
             if (!root.getChildren().isEmpty()) {
-                // บังคับให้มีการ redraw
+
                 root.requestLayout();
             }
         }
     }
-    
+
     @Override
     public void prepareScreen(Node screen) {
         Scene scene = stage.getScene();
-        
+
         // ถ้ายังไม่มี Scene ให้สร้างใหม่
         if (scene == null) {
             // สร้าง StackPane และใส่ screen เข้าไป
             StackPane root = new StackPane(screen);
             root.setStyle("-fx-background-color: black;");
-            
+
             // สร้าง Scene ใหม่พร้อม root ที่มี screen อยู่แล้ว
             scene = new Scene(root, config.getResolution().getWidth(), config.getResolution().getHeight());
             scene.setFill(Color.BLACK);
-            
+
             // ตั้งค่า Scene ให้ stage
             stage.setScene(scene);
         } else {
-            // ถ้ามี Scene อยู่แล้ว แต่ยังไม่มี root 
+            // ถ้ามี Scene อยู่แล้ว แต่ยังไม่มี root
             if (!(scene.getRoot() instanceof StackPane)) {
                 // สร้าง StackPane ใหม่และใส่ screen เข้าไป
                 StackPane root = new StackPane(screen);
                 root.setStyle("-fx-background-color: black;");
-                
+
                 // ตั้งค่า root ใหม่ให้ Scene
                 scene.setRoot(root);
             } else {
                 // ถ้ามี root ที่เป็น StackPane อยู่แล้ว
                 StackPane root = (StackPane) scene.getRoot();
-                
+
                 // ถ้ามี children อยู่แล้ว ให้เพิ่ม screen เป็น child ใหม่
                 if (!root.getChildren().isEmpty()) {
                     screen.setOpacity(1.0); // ตั้งค่าความโปร่งใสให้เห็นชัดเจน
@@ -206,16 +206,16 @@ public class JavaFXScreenManager implements ScreenManager {
                 }
             }
         }
-        
+
         // ปรับขนาดและตำแหน่งของ stage ตามการตั้งค่า
         applySettings(stage, scene);
     }
-    
+
     @Override
     public void prepareScreen(GameScreen screen) {
         // เรียกใช้ method prepareScreen(Node) โดยส่ง root element ของ GameScreen
         prepareScreen(screen.getRoot());
-        
+
         // เรียก onShow เพื่อให้ GameScreen รู้ว่าถูกแสดงแล้ว
         screen.onShow();
     }

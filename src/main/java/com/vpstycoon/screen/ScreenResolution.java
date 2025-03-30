@@ -38,7 +38,7 @@ public enum ScreenResolution {
         double maxWidth = primaryScreen.getBounds().getWidth();
         double maxHeight = primaryScreen.getBounds().getHeight();
 
-        ScreenResolution maxRes = RES_1280x720; // Default minimum
+        ScreenResolution maxRes = RES_1280x720; 
         for (ScreenResolution res : values()) {
             if (res.width <= maxWidth && res.height <= maxHeight 
                 && (res.width > maxRes.width || res.height > maxRes.height)) {
@@ -48,16 +48,13 @@ public enum ScreenResolution {
         return maxRes;
     }
     
-    /**
-     * ดึงรายการความละเอียดทั้งหมดที่รองรับ
-     * @return รายการความละเอียดที่รองรับบนจอปัจจุบัน
-     */
+    
     public static List<ScreenResolution> getAvailableResolutions() {
         Screen primaryScreen = Screen.getPrimary();
         double maxWidth = primaryScreen.getBounds().getWidth();
         double maxHeight = primaryScreen.getBounds().getHeight();
         
-        // กรองเอาเฉพาะความละเอียดที่จอปัจจุบันรองรับ
+        
         return Arrays.stream(values())
                 .filter(res -> res.width <= maxWidth && res.height <= maxHeight)
                 .collect(Collectors.toList());

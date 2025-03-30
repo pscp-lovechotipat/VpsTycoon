@@ -19,7 +19,7 @@ public class GameScreen extends BorderPane {
     }
 
     private void initializeUI() {
-        // TODO: เพิ่ม UI components ของเกม
-        // เช่น แสดงเงิน, ทรัพยากร, ปุ่มต่างๆ
+        
+        
     }
 } 

@@ -14,12 +14,12 @@ public enum MenuButtonType {
 
     private final String value;
 
-    // Constructor
+    
     MenuButtonType(String value) {
         this.value = value;
     }
 
-    // Getter for the string value
+    
     public String getValue() {
         return value;
     }

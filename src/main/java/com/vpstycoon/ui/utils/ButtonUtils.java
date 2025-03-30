@@ -3,7 +3,7 @@ package com.vpstycoon.ui.utils;
 import javafx.scene.control.Button;
 
 public class ButtonUtils {
-    // สร้างปุ่มแบบโมดัล (พร้อม hover effect)
+    
     public static Button createModalButton(String text) {
         Button button = new Button(text);
         button.setStyle("""
@@ -26,7 +26,7 @@ public class ButtonUtils {
         return button;
     }
 
-    // สร้างปุ่มทั่วไป
+    
     public static Button createButton(String text) {
         Button button = new Button(text);
         button.setStyle("""
@@ -39,3 +39,4 @@ public class ButtonUtils {
         return button;
     }
 }
+

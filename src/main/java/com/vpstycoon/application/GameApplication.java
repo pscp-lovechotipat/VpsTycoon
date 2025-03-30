@@ -40,10 +40,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-/**
- * คลาสหลักสำหรับเริ่มต้นแอปพลิเคชัน
- * รับผิดชอบในการเริ่มต้นทรัพยากรและการแสดงผล UI หลัก
- */
+
 public class GameApplication extends Application implements INavigator, IResourceManager.ResourceLoadingListener {
     
     private Stage primaryStage;
@@ -62,7 +59,7 @@ public class GameApplication extends Application implements INavigator, IResourc
     private VBox loadingDetailsPane;
     private Label statusLabel;
     
-    // เมธอดหลักที่เรียกโดย Bootstrap
+    
     public static void main(String[] args) {
         launch(args);
     }
@@ -71,40 +68,40 @@ public class GameApplication extends Application implements INavigator, IResourc
     public void start(Stage primaryStage) {
         System.out.println("เริ่มต้น GameApplication");
         
-        // ตั้งค่าคุณสมบัติพื้นฐานของแอปพลิเคชัน
+        
         this.primaryStage = primaryStage;
         this.gameConfig = createGameConfig();
         this.screenManager = new JavaFXScreenManager(gameConfig, primaryStage);
         this.gameManager = GameManager.getInstance();
         
-        // แสดงหน้าจอโหลดระหว่างที่โหลดทรัพยากร
+        
         initializeLoadingScreen();
         
-        // เริ่มต้นเกมในเธรดแยก
+        
         Thread initThread = new Thread(() -> {
             try {
-                // ตั้งค่า resource loading listener ก่อน
+                
                 ResourceManager resourceManager = ResourceManager.getInstance();
                 resourceManager.setResourceLoadingListener(this);
                 
-                // เริ่ม resource preloader ที่จะแสดงความคืบหน้าการโหลด
+                
                 resourceManager.preloadAssets();
                 
-                // อัปเดตสถานะก่อนการเริ่มต้น
+                
                 Platform.runLater(() -> {
                     if (statusLabel != null) {
                         statusLabel.setText("เริ่มเตรียมเกม กรุณารอสักครู่...");
                     }
                 });
                 
-                // เสร็จสิ้นการเริ่มต้น
+                
                 finishInitialization();
                 
             } catch (Exception e) {
                 System.err.println("เกิดข้อผิดพลาดระหว่างการเริ่มต้นเกม: " + e.getMessage());
                 e.printStackTrace();
                 
-                // แสดงข้อผิดพลาดบนเธรด JavaFX
+                
                 Platform.runLater(() -> {
                     hideLoadingScreen();
                     showAlert("Error", "เริ่มต้นเกมล้มเหลว: " + e.getMessage());
@@ -117,36 +114,36 @@ public class GameApplication extends Application implements INavigator, IResourc
         initThread.start();
     }
     
-    // เสร็จสิ้นการเริ่มต้นเกมหลังจากที่โหลดทรัพยากรเสร็จแล้ว
+    
     private void finishInitialization() {
         try {
-            // เริ่มต้นเกม (สามารถทำงานนอกเธรด JavaFX)
+            
             initializeGame();
             
-            // การดำเนินการกับ UI ทั้งหมดต้องอยู่บนเธรด JavaFX
+            
             Platform.runLater(() -> {
                 try {
-                    // เล่นเพลงหลังจากโหลดทรัพยากรเสร็จ
+                    
                     audioManager = ResourceManager.getInstance().getAudioManager();
                     audioManager.playMusic("menu_music.mp3");
                     
-                    // อัปเดตหน้าจอโหลดเพื่อแสดงว่าพร้อมแล้ว
+                    
                     if (statusLabel != null) {
                         statusLabel.setText("โหลดเสร็จสมบูรณ์ กำลังเตรียมเริ่มเข้าสู่เกม...");
                         statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #2ECC71;");
                     }
                     
-                    // แสดงหน้าจอแรก
+                    
                     System.out.println("กำลังแสดงหน้าแรก...");
                     
-                    // เพิ่มการหน่วงเวลาเพื่อให้ผู้ใช้เห็นข้อความว่าโหลดเสร็จแล้ว
+                    
                     PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
                     pause.setOnFinished(e -> {
-                        // ซ่อนหน้าจอโหลดและแสดงหน้าจอหลักหลังจากการโหลดเสร็จสิ้น
+                        
                         hideLoadingScreen();
                         primaryStage.show();
                         
-                        // นำทางไปยังหน้าแรก
+                        
                         navigateToCutscene();
                     });
                     pause.play();
@@ -162,7 +159,7 @@ public class GameApplication extends Application implements INavigator, IResourc
             System.err.println("เกิดข้อผิดพลาดระหว่างการเริ่มต้นเกม: " + e.getMessage());
             e.printStackTrace();
             
-            // แสดงข้อผิดพลาดบนเธรด JavaFX
+            
             Platform.runLater(() -> {
                 hideLoadingScreen();
                 showAlert("Error", "เริ่มต้นเกมล้มเหลว: " + e.getMessage());
@@ -171,7 +168,7 @@ public class GameApplication extends Application implements INavigator, IResourc
         }
     }
     
-    // แสดงหน้าจอโหลด
+    
     private void initializeLoadingScreen() {
         Platform.runLater(() -> {
             loadingStage = new Stage();
@@ -214,7 +211,7 @@ public class GameApplication extends Application implements INavigator, IResourc
         });
     }
     
-    // ซ่อนหน้าจอโหลด
+    
     private void hideLoadingScreen() {
         Platform.runLater(() -> {
             if (loadingStage != null && loadingStage.isShowing()) {
@@ -223,7 +220,7 @@ public class GameApplication extends Application implements INavigator, IResourc
         });
     }
     
-    // สร้างการแจ้งเตือน
+    
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -232,18 +229,18 @@ public class GameApplication extends Application implements INavigator, IResourc
         alert.showAndWait();
     }
     
-    // สร้างการตั้งค่าเกมเริ่มต้น
+    
     private GameConfig createGameConfig() {
         return DefaultGameConfig.getInstance();
     }
     
-    // เริ่มต้นเกม
+    
     private void initializeGame() {
         try {
-            // เริ่มต้นคอนโทรลเลอร์หน้าจอ
+            
             SceneController.initialize(primaryStage, gameConfig, screenManager);
             
-            // สร้างหน้าจอต่างๆ
+            
             createScreens();
             
         } catch (Exception e) {
@@ -253,13 +250,13 @@ public class GameApplication extends Application implements INavigator, IResourc
         }
     }
     
-    // สร้างหน้าจอต่างๆ
+    
     private void createScreens() {
         try {
-            // ตรวจสอบว่าหน้าจอได้ถูกสร้างไว้แล้วหรือไม่
+            
             if (mainMenuScreen == null) {
-                // ในสถานการณ์จริง, ควรสร้างหน้าจอต่างๆ จากแพ็คเกจ com.vpstycoon.view.screens
-                // แต่ในที่นี้ ยังไม่มีการ implement เต็มรูปแบบ จึงใช้ตัวแปรเป็น null ไปก่อน
+                
+                
                 System.out.println("สร้างหน้าจอต่างๆ...");
             }
         } catch (Exception e) {
@@ -269,9 +266,9 @@ public class GameApplication extends Application implements INavigator, IResourc
         }
     }
 
-    // -------------------------------------------------------------------------
-    // การ implement การเฝ้าดูการโหลดทรัพยากร
-    // -------------------------------------------------------------------------
+    
+    
+    
     
     @Override
     public void onResourceLoading(String resourcePath) {
@@ -288,9 +285,9 @@ public class GameApplication extends Application implements INavigator, IResourc
         });
     }
     
-    // -------------------------------------------------------------------------
-    // การ implement Navigator
-    // -------------------------------------------------------------------------
+    
+    
+    
     
     @Override
     public void navigateToMainMenu() {
@@ -318,16 +315,16 @@ public class GameApplication extends Application implements INavigator, IResourc
         if (cutsceneScreen != null) {
             screenManager.switchScreen(cutsceneScreen);
         } else {
-            // ถ้ายังไม่มีหน้า cutscene ให้ไปที่เมนูหลักแทน
+            
             navigateToMainMenu();
         }
     }
     
     @Override
     public void saveAndExitToMainMenu() {
-        // บันทึกเกม (จะถูก implement ต่อไป)
         
-        // กลับไปที่เมนูหลัก
+        
+        
         navigateToMainMenu();
     }
 } 

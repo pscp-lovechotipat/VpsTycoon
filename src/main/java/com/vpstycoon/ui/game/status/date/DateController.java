@@ -22,12 +22,12 @@ public class DateController implements GameTimeManager.GameTimeListener{
 
     @Override
     public void onTimeChanged(LocalDateTime newTime, long gameTimeMs) {
-        // อัปเดตทันทีเมื่อเวลาในเกมเปลี่ยนแปลง
+        
         dateModel.setDate(newTime);
     }
 
     @Override
     public void onRentalPeriodCheck(CustomerRequest request, CustomerRequest.RentalPeriodType period) {
-        // ไม่ต้องทำอะไรที่นี่สำหรับ UI ของวันที่
+        
     }
 }

@@ -17,7 +17,7 @@ public class MoneyController {
         this.moneyUI = moneyUI;
         this.resourceManager = ResourceManager.getInstance();
 
-        // สร้าง Timeline เพื่ออัพเดตทุกวินาที
+        
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> update()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
@@ -29,3 +29,4 @@ public class MoneyController {
         moneyModel.setRating(company.getRating());
     }
 }
+

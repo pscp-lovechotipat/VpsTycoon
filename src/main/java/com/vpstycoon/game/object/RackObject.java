@@ -35,7 +35,7 @@ public class RackObject extends GameObject {
     }
 
     private long calculateUpgradeCost() {
-        // กำหนดสูตรคำนวณค่าใช้จ่ายอัพเกรดตามความต้องการ
+        
         return (long) (1000 * (super.getLevel() * 1.085));
     }
 
@@ -49,3 +49,4 @@ public class RackObject extends GameObject {
         }
     }
 }
+

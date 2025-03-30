@@ -8,13 +8,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-/**
- * Creates the top menu bar with status indicators in a cyberpunk theme.
- */
+
 public class GameMenuBar extends HBox {
     private final GameplayContentPane parent;
 
-    // Cyberpunk theme colors
+    
     private static final Color CYBER_PURPLE_BRIGHT = Color.rgb(200, 50, 255);
     private static final Color CYBER_PURPLE_DARK = Color.rgb(120, 20, 180);
     private static final Color CYBER_PINK = Color.rgb(255, 50, 180);
@@ -42,42 +40,42 @@ public class GameMenuBar extends HBox {
     }
 
     private void initializeStatusButtons() {
-        // 1. Rack Slots - Yellow theme
+        
         VBox rackSlotsStatus = createStatusButton(
                 "Rack Slots",
                 CYBER_YELLOW,
                 CYBER_YELLOW_DARK
         );
 
-        // 2. Network Speed - Blue theme
+        
         VBox networkStatus = createStatusButton(
                 "Network",
                 CYBER_BLUE,
                 CYBER_BLUE_DARK
         );
 
-        // 3. Server Efficiency - Pink theme
+        
         VBox deployStatus = createStatusButton(
                 "Deploy",
                 CYBER_PINK,
                 CYBER_PINK_DARK
         );
 
-        // 4. Marketing - Green theme
+        
         VBox marketingStatus = createStatusButton(
                 "Marketing",
                 CYBER_GREEN,
                 CYBER_GREEN_DARK
         );
 
-        // 5. Security - Purple theme
+        
         VBox securityStatus = createStatusButton(
                 "Security",
                 CYBER_PURPLE_BRIGHT,
                 CYBER_PURPLE_DARK
         );
 
-        // 6. Management - Light Green theme
+        
         VBox managementStatus = createStatusButton(
                 "Management",
                 CYBER_LIGHT_GREEN,

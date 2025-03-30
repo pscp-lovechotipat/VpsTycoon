@@ -19,9 +19,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
-/**
- * หน้าจอเมนูหลักของเกม
- */
+
 public class MainMenuScreen extends GameScreen {
     
     private final GameConfig config;
@@ -29,9 +27,7 @@ public class MainMenuScreen extends GameScreen {
     private final INavigator navigator;
     private final AudioManager audioManager;
     
-    /**
-     * สร้าง MainMenuScreen
-     */
+    
     public MainMenuScreen(GameConfig config, ScreenManager screenManager, INavigator navigator) {
         this.config = config;
         this.screenManager = screenManager;
@@ -41,18 +37,18 @@ public class MainMenuScreen extends GameScreen {
         createUI();
     }
     
-    // สร้าง UI สำหรับหน้าจอ
+    
     private void createUI() {
         BorderPane rootPane = new BorderPane();
         rootPane.setStyle("-fx-background-color: #1E1E1E;");
         
-        // โลโก้
+        
         Label titleLabel = new Label("วีพีเอส ไทคูน");
         titleLabel.setFont(new Font("System", 48));
         titleLabel.setTextFill(Color.WHITE);
         titleLabel.setTextAlignment(TextAlignment.CENTER);
         
-        // ปุ่มเมนู
+        
         Button playButton = createMenuButton("เริ่มเกมใหม่", event -> {
             audioManager.playSoundEffect("click.mp3");
             navigator.navigateToGame();
@@ -73,7 +69,7 @@ public class MainMenuScreen extends GameScreen {
             System.exit(0);
         });
         
-        // เพิ่มปุ่มเข้าไปใน VBox
+        
         VBox menuBox = new VBox(20);
         menuBox.setAlignment(Pos.CENTER);
         menuBox.getChildren().addAll(titleLabel, playButton, continueButton, settingsButton, exitButton);
@@ -81,7 +77,7 @@ public class MainMenuScreen extends GameScreen {
         
         rootPane.setCenter(menuBox);
         
-        // ข้อความด้านล่าง
+        
         Label versionLabel = new Label("เวอร์ชัน 1.0");
         versionLabel.setTextFill(Color.GRAY);
         BorderPane.setAlignment(versionLabel, Pos.CENTER);
@@ -91,7 +87,7 @@ public class MainMenuScreen extends GameScreen {
         root = rootPane;
     }
     
-    // สร้างปุ่มเมนู
+    
     private Button createMenuButton(String text, javafx.event.EventHandler<javafx.event.ActionEvent> handler) {
         Button button = new Button(text);
         button.setMinWidth(200);
@@ -103,17 +99,17 @@ public class MainMenuScreen extends GameScreen {
 
     @Override
     public void onShow() {
-        // เล่นเพลงประกอบเมนูหลัก
+        
         audioManager.playMusic("menu_music.mp3");
     }
 
     @Override
     public void onHide() {
-        // ทำความสะอาดทรัพยากร
+        
     }
 
     @Override
     public void onResize(double width, double height) {
-        // ปรับขนาดตามหน้าจอ
+        
     }
 } 

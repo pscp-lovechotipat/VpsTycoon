@@ -15,20 +15,20 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GameTimeManager {
-    public static final long GAME_DAY_MS = 30000;    // 30 วินาทีจริง = 1 วันในเกม
+    public static final long GAME_DAY_MS = 30000;
     public static final long GAME_WEEK_MS = GAME_DAY_MS * 7;
     public static final long GAME_MONTH_MS = GAME_DAY_MS * 30;
     public static final long GAME_YEAR_MS = GAME_MONTH_MS * 12;
-    public static final long TICK_INTERVAL_MS = 1000; // ใส่ประมาณนี้พอ เดี่ยว observer แตกกระจุย
+    public static final long TICK_INTERVAL_MS = 1000;
     private static final long OVERHEAD_INTERVAL = GAME_MONTH_MS;
-    private static final double SCALE_FACTOR = 86400000.0 / GAME_DAY_MS; // ใน 1 วัน มี 86,400,000 ms  / 30,000 ms
+    private static final double SCALE_FACTOR = 86400000.0 / GAME_DAY_MS;
 
     private final Company company;
     private final RequestManager requestManager;
     private final Rack rack;
-    private final LocalDateTime startDateTime; // เพิ่มตัวแปรสำหรับจุดเริ่มต้น
+    private final LocalDateTime startDateTime;
     private LocalDateTime gameDateTime;
-    private final AtomicLong realTimeMs = new AtomicLong(0); // มิลลิวินาทีจริงที่ผ่านไป
+    private final AtomicLong realTimeMs = new AtomicLong(0);
     private volatile boolean running = true;
     private int lastProcessedMonth = -1;
 
@@ -49,7 +49,7 @@ public class GameTimeManager {
     }
 
     public void start() {
-        // ตั้งค่า running เป็น true เพื่อให้แน่ใจว่าลูปจะทำงาน
+
         running = true;
         
         long lastTickTime = System.currentTimeMillis();
@@ -59,7 +59,7 @@ public class GameTimeManager {
 
         System.out.println("Thread TimeManager Initializing... running=" + running);
 
-        // เพิ่ม counter สำหรับติดตามจำนวนรอบที่ทำงาน
+
         int tickCounter = 0;
         
         try {
@@ -75,11 +75,11 @@ public class GameTimeManager {
 
                     gameDateTime = startDateTime.plus(gameMs, ChronoUnit.MILLIS);
 
-                    // ตรวจสอบการเปลี่ยนเดือน
-                    if (gameDateTime.getMonthValue() != lastProcessedMonth) {
-                        processMonthlyKeepUp();
-                        lastProcessedMonth = gameDateTime.getMonthValue();
-                    }
+
+                if (gameDateTime.getMonthValue() != lastProcessedMonth) {
+                    processMonthlyKeepUp();
+                    lastProcessedMonth = gameDateTime.getMonthValue();
+                }
 
                     notifyTimeListeners();
 
@@ -97,30 +97,28 @@ public class GameTimeManager {
                         lastRentalCheckTime = currentTime;
                     }
 
-                    // เพิ่ม logging ทุก 10 วินาที เพื่อแสดงว่าเวลากำลังเดินอยู่
                     tickCounter++;
                     if (tickCounter % 10 == 0) {
                         System.out.println("GameTime Update: " + gameDateTime + " (GameTimeMs: " + gameMs + ", RealTimeMs: " + realTimeMs.get() + ")");
                     }
-                    
-                    // ตรวจสอบสถานะ interrupt เพื่อให้ thread หยุดได้เร็วขึ้น
+
                     if (Thread.currentThread().isInterrupted()) {
                         System.out.println("Thread TimeManager ถูก interrupt - กำลังหยุด");
                         running = false;
                         break;
                     }
-                    
+
                     Thread.sleep(TICK_INTERVAL_MS);
                 } catch (InterruptedException e) {
                     running = false;
                     System.out.println("Thread TimeManager Interrupted");
-                    Thread.currentThread().interrupt(); // รักษาสถานะ interrupted
+                    Thread.currentThread().interrupt();
                     break;
                 }
             }
         } finally {
             System.out.println("Thread TimeManager Stopped");
-            running = false; // ให้แน่ใจว่าได้ตั้งค่าเป็น false เมื่อออกจากลูป
+            running = false;
         }
     }
 
@@ -133,7 +131,7 @@ public class GameTimeManager {
                     long durationMs = period.getDays() * GAME_DAY_MS;
                     long timeSinceLastPaymentMs = currentGameTimeMs - rentalStartTime;
 
-                    // ตรวจสอบการชำระเงินตามรอบ
+
                     if (request.isPaymentDue(currentGameTimeMs)) {
                         double payment = request.getPaymentAmount();
                         company.addMoney(payment);
@@ -142,14 +140,10 @@ public class GameTimeManager {
                                 " | Game time: " + currentGameTimeMs);
                     }
 
-                    // ตรวจสอบการหมดสัญญา
                     if (currentGameTimeMs >= rentalStartTime + durationMs) {
-                        // Mark the request as expired BEFORE notifying listeners
-                        // This ensures that listeners can check the correct status
+
                         request.markAsExpired();
-                        
-                        // Notify listeners to handle the contract expiration
-                        // For example, to decide whether to renew the contract
+
                         for (GameTimeListener listener : timeListeners) {
                             listener.onRentalPeriodCheck(request, period);
                             System.out.println("Rental period check completed for " + request.getName());
@@ -217,31 +211,25 @@ public class GameTimeManager {
         running = false;
     }
 
-    /**
-     * รีเซ็ตเวลาเกมกลับไปที่ค่าเริ่มต้นที่กำหนด
-     * @param newStartDateTime เวลาเริ่มต้นใหม่
-     */
+
     public void resetTime(LocalDateTime newStartDateTime) {
-        // หยุดการทำงานก่อน
+
         stop();
         
-        // อัพเดตเวลาเริ่มต้นและเวลาปัจจุบัน
+
         gameDateTime = newStartDateTime;
         
-        // รีเซ็ตตัวแปรที่เกี่ยวข้องกับเวลา
+
         realTimeMs.set(0);
-        lastProcessedMonth = newStartDateTime.getMonthValue() - 1; // ตั้งให้ต่างจากเดือนปัจจุบัน 1 เดือน เพื่อให้ processMonthlyKeepUp() ทำงานในครั้งแรก
+        lastProcessedMonth = newStartDateTime.getMonthValue() - 1;
         
-        // ตั้งค่า running กลับเป็น true เพื่อให้พร้อมเริ่มทำงานใหม่
+
         running = true;
         
         System.out.println("รีเซ็ตเวลาใน GameTimeManager เป็น: " + newStartDateTime + " (running=" + running + ")");
     }
 
-    /**
-     * ตรวจสอบว่า TimeManager กำลังทำงานอยู่หรือไม่
-     * @return true ถ้ากำลังทำงาน, false ถ้าไม่ได้ทำงาน
-     */
+
     public boolean isRunning() {
         return running;
     }

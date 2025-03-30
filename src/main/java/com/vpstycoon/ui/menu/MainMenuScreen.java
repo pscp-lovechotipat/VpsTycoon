@@ -48,12 +48,12 @@ public class MainMenuScreen extends GameScreen {
                          -fx-background-image: url("/images/wallpaper/Wallpaper.png");
                          -fx-background-size: contain;
                          -fx-background-position: center;
-                         """); // ดาร์คบลู
+                         """); 
 
-        // Enforce resolution
+        
         enforceResolution(root);
 
-        // Logo or Title
+        
         Label titleLabel = new Label();
         titleLabel.setStyle("""
                             -fx-background-image: url("/images/logo/vps_tycoon_logo.png");
@@ -64,49 +64,49 @@ public class MainMenuScreen extends GameScreen {
                             -fx-pref-width: 300px;
                             -fx-pref-height: 200px;
                             """);
-        // เพิ่ม ScaleTransition เพื่อทำให้เด้งเข้าออก
+        
         ScaleTransition scaleTransition = new ScaleTransition(Duration.seconds(1), titleLabel);
-        scaleTransition.setFromX(1.0); // ขนาดเริ่มต้น (ปกติ)
+        scaleTransition.setFromX(1.0); 
         scaleTransition.setFromY(1.0);
-        scaleTransition.setToX(1.1);   // ขยาย 10%
+        scaleTransition.setToX(1.1);   
         scaleTransition.setToY(1.1);
-        scaleTransition.setCycleCount(ScaleTransition.INDEFINITE); // วนซ้ำไม่หยุด
-        scaleTransition.setAutoReverse(true); // ขยายแล้วย่อกลับ
-        scaleTransition.play(); // เริ่ม animation
+        scaleTransition.setCycleCount(ScaleTransition.INDEFINITE); 
+        scaleTransition.setAutoReverse(true); 
+        scaleTransition.play(); 
 
-        // New Game Button
+        
         MenuButton newGameButton = new MenuButton(MenuButtonType.NEW_GAME);
         newGameButton.setOnAction(e -> {
             navigator.startNewGame();
             audioManager.playSoundEffect("click.wav");
         });
 
-        // Settings Button
+        
         MenuButton settingsButton = new MenuButton(MenuButtonType.SETTINGS);
         settingsButton.setOnAction(e -> {
             audioManager.playSoundEffect("click.wav");
             navigator.showSettings();
         });
 
-        // Quit Button
+        
         MenuButton quitButton = new MenuButton(MenuButtonType.QUIT);
         quitButton.setOnAction(e -> {
             audioManager.playSoundEffect("click.wav");
             Platform.exit();
         });
 
-        // Delete Game Button
+        
         MenuButton deleteButton = new MenuButton(MenuButtonType.DELETEGAME);
         deleteButton.setOnAction(e -> {
             GameSaveManager save = new GameSaveManager();
             save.deleteGame();
-            // รีเฟรชหน้าเพื่อลบปุ่ม Continue
+            
             screenManager.switchScreen(createContent());
         });
 
         root.getChildren().add(titleLabel);
 
-        // Continue Button (แสดงเฉพาะเมื่อมีเซฟเกม)
+        
         if (saveManager.saveExists()) {
             MenuButton continueButton = new MenuButton(MenuButtonType.CONTINUE);
             continueButton.setOnAction(e -> {

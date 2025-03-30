@@ -1,7 +1,7 @@
 package com.vpstycoon.game.customer.enums;
 
 public enum CustomerType {
-    //รายบุคคล
+    
     INDIVIDUAL(0, "Individual Customer"),
     SMALL_BUSINESS(100, "Small Business"),
     MEDIUM_BUSINESS(300, "Medium Business"),

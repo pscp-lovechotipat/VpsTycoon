@@ -28,17 +28,17 @@ public class RequestListView extends VBox {
         setPrefWidth(450);
         getStyleClass().add("request-list");
 
-        // Cyberpunk style header
+        
         HBox headerBox = new HBox(10);
         headerBox.setAlignment(Pos.CENTER_LEFT);
         headerBox.setPadding(new Insets(0, 0, 10, 0));
         
-        // ไอคอนสำหรับหัวข้อ
+        
         Rectangle headerIcon = new Rectangle(20, 20);
         headerIcon.setArcWidth(5);
         headerIcon.setArcHeight(5);
         
-        // สร้าง Gradient สำหรับไอคอน
+        
         Stop[] stops = new Stop[] {
             new Stop(0, Color.web("#00c3ff")),
             new Stop(1, Color.web("#9e33ff"))
@@ -46,30 +46,30 @@ public class RequestListView extends VBox {
         LinearGradient gradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE, stops);
         headerIcon.setFill(gradient);
         
-        // เพิ่ม Glow effect
+        
         Glow glow = new Glow(0.7);
         headerIcon.setEffect(glow);
         
         Label title = new Label("ACTIVE REQUESTS");
         title.getStyleClass().add("request-list-title");
         
-        // เพิ่มข้อมูลเกี่ยวกับจำนวนคำขอ
+        
         Label countLabel = new Label("[ 0 ]");
         countLabel.setStyle("-fx-text-fill: #00ffff; -fx-font-size: 12px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
         
         headerBox.getChildren().addAll(headerIcon, title, countLabel);
         HBox.setHgrow(title, Priority.ALWAYS);
 
-        // เพิ่ม Digital Border
+        
         String digitalBorderStyle = "-fx-border-color: #9e33ff; -fx-border-width: 1; " +
                                     "-fx-border-radius: 5; -fx-effect: dropshadow(gaussian, #9e33ff, 5, 0.3, 0, 0);";
 
-        // สร้าง ListView ด้วย custom cell factory
+        
         requestView = new ListView<>();
         requestView.getStyleClass().add("request-list-view");
         requestView.setStyle(requestView.getStyle() + digitalBorderStyle);
 
-        // Cyberpunk style cell factory
+        
         requestView.setCellFactory(param -> new ListCell<CustomerRequest>() {
             @Override
             protected void updateItem(CustomerRequest request, boolean empty) {
@@ -83,7 +83,7 @@ public class RequestListView extends VBox {
                     cellContent.setPadding(new Insets(8));
                     cellContent.setMinHeight(95);
 
-                    // เปลี่ยนจาก Circle เป็น Rectangle แบบ cyberpunk
+                    
                     Rectangle avatar = new Rectangle(30, 30);
                     avatar.setArcWidth(5);
                     avatar.setArcHeight(5);
@@ -97,7 +97,7 @@ public class RequestListView extends VBox {
                     avatar.setStroke(Color.web("#9e33ff"));
                     avatar.setStrokeWidth(1);
                     
-                    // ใส่ Drop Shadow Effect
+                    
                     DropShadow dropShadow = new DropShadow();
                     dropShadow.setColor(Color.web("#9e33ff", 0.5));
                     dropShadow.setRadius(10);
@@ -108,7 +108,7 @@ public class RequestListView extends VBox {
                     HBox nameStatusBox = new HBox(5);
                     nameStatusBox.setAlignment(Pos.CENTER_LEFT);
 
-                    // เปลี่ยนชื่อให้เป็นตัวพิมพ์ใหญ่ทั้งหมดตามสไตล์ cyberpunk
+                    
                     Label nameLabel = new Label(request.getTitle().toUpperCase());
                     nameLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #E0FFFF; -fx-font-family: 'Monospace', 'Courier New', monospace;");
 
@@ -127,27 +127,27 @@ public class RequestListView extends VBox {
 
                     nameStatusBox.getChildren().addAll(nameLabel, statusLabel);
 
-                    // เปลี่ยนรูปแบบการแสดงผลข้อมูล VM ใน cyberpunk style
+                    
                     Label previewLabel = new Label("SPECS: [ " + request.getRequiredVCPUs() + " vCPU | " +
                             request.getRequiredRam() + " RAM | " + request.getRequiredDisk() + " DISK ]");
                     previewLabel.setStyle("-fx-text-fill: #00ffff; -fx-font-size: 11px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
 
-                    // แสดงข้อมูล RequestType และระยะเวลาเช่า
+                    
                     Label requestTypeLabel = new Label("TYPE: [ " + request.getRequestType() + " | " + 
                             request.getRentalPeriodType().getDisplayName() + " | " + 
                             request.getDuration() + " DAYS ]");
                     requestTypeLabel.setStyle("-fx-text-fill: #00ff88; -fx-font-size: 11px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
 
-                    // แสดงข้อมูลอัตราการจ่ายเงิน
+                    
                     Label rateLabel = new Label("RATE: [ $" + String.format("%.2f", request.getMonthlyPayment()) + " / MONTH ]");
                     rateLabel.setStyle("-fx-text-fill: #ffcc00; -fx-font-size: 11px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
 
                     textContent.getChildren().addAll(nameStatusBox, previewLabel, requestTypeLabel, rateLabel);
 
-                    // ไอคอนแสดงสถานะ
+                    
                     Circle statusIndicator = new Circle(5);
                     
-                    // เพิ่ม Glow effect ให้กับ statusIndicator
+                    
                     Glow statusGlow = new Glow(0.8);
                     statusIndicator.setEffect(statusGlow);
                     
@@ -177,23 +177,23 @@ public class RequestListView extends VBox {
     public void updateRequestList(List<CustomerRequest> requests) {
         requestView.getItems().clear();
         
-        // ตรวจสอบและแสดงข้อมูลการดีบัก
+        
         System.out.println("โหลดข้อมูล CustomerRequest จำนวน: " + (requests != null ? requests.size() : 0) + " รายการ");
         
-        // ตรวจสอบว่ามีข้อมูลหรือไม่
+        
         if (requests == null || requests.isEmpty()) {
             System.out.println("ไม่พบข้อมูล CustomerRequest");
             
-            // อัปเดตจำนวนคำขอในหัวข้อ
+            
             Label countLabel = (Label) ((HBox) getChildren().get(0)).getChildren().get(2);
             countLabel.setText("[ 0 ]");
             return;
         }
         
-        // ข้อมูลถูกต้อง ให้เพิ่มเข้า ListView
+        
         requestView.getItems().addAll(requests);
         
-        // ตรวจสอบแต่ละรายการว่ามีข้อมูลครบหรือไม่
+        
         int validCount = 0;
         for (CustomerRequest request : requests) {
             if (request.getTitle() != null && request.getRequiredVCPUs() > 0) {
@@ -205,7 +205,7 @@ public class RequestListView extends VBox {
         }
         System.out.println("จำนวน CustomerRequest ที่สมบูรณ์: " + validCount + "/" + requests.size());
         
-        // อัปเดตจำนวนคำขอในหัวข้อ
+        
         Label countLabel = (Label) ((HBox) getChildren().get(0)).getChildren().get(2);
         countLabel.setText("[ " + requests.size() + " ]");
     }

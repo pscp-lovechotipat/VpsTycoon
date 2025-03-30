@@ -1,8 +1,6 @@
 package com.vpstycoon.game.vps.enums;
 
-/**
- * Enum representing the possible statuses of a VPS
- */
+
 public enum VPSStatus {
     RUNNING("Running"),
     STOPPED("Stopped"),

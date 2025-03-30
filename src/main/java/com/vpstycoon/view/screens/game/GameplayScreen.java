@@ -18,9 +18,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-/**
- * หน้าจอหลักของเกม
- */
+
 public class GameplayScreen extends GameScreen {
     
     private final GameConfig config;
@@ -29,9 +27,7 @@ public class GameplayScreen extends GameScreen {
     private final AudioManager audioManager;
     private final Company company;
     
-    /**
-     * สร้าง GameplayScreen
-     */
+    
     public GameplayScreen(GameConfig config, ScreenManager screenManager, INavigator navigator) {
         this.config = config;
         this.screenManager = screenManager;
@@ -42,12 +38,12 @@ public class GameplayScreen extends GameScreen {
         createUI();
     }
     
-    // สร้าง UI สำหรับหน้าจอ
+    
     private void createUI() {
         BorderPane rootPane = new BorderPane();
         rootPane.setStyle("-fx-background-color: #2C3E50;");
         
-        // แถบสถานะด้านบน
+        
         HBox statusBar = new HBox(20);
         statusBar.setPadding(new Insets(10));
         statusBar.setStyle("-fx-background-color: #34495E;");
@@ -64,7 +60,7 @@ public class GameplayScreen extends GameScreen {
         statusBar.getChildren().addAll(companyLabel, balanceLabel, dateLabel);
         rootPane.setTop(statusBar);
         
-        // เนื้อหาหลัก
+        
         StackPane contentPane = new StackPane();
         contentPane.setStyle("-fx-background-color: #2C3E50;");
         
@@ -74,7 +70,7 @@ public class GameplayScreen extends GameScreen {
         contentPane.getChildren().add(placeholderLabel);
         rootPane.setCenter(contentPane);
         
-        // เมนูด้านล่าง
+        
         HBox bottomMenu = new HBox(10);
         bottomMenu.setPadding(new Insets(10));
         bottomMenu.setAlignment(Pos.CENTER);
@@ -104,9 +100,9 @@ public class GameplayScreen extends GameScreen {
         root = rootPane;
     }
     
-    // แสดงเมนูเกม
+    
     private void showGameMenu() {
-        // สร้าง popup menu
+        
         VBox menuBox = new VBox(10);
         menuBox.setStyle("-fx-background-color: rgba(52, 73, 94, 0.9); -fx-padding: 20;");
         menuBox.setMaxWidth(300);
@@ -126,37 +122,37 @@ public class GameplayScreen extends GameScreen {
         menuBox.getChildren().addAll(
                 titleLabel, resumeButton, saveButton, loadButton, settingsButton, exitButton);
         
-        // สร้าง overlay สำหรับเมนู
+        
         StackPane overlay = new StackPane(menuBox);
         overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);");
         
-        // แสดง overlay บน root
+        
         ((BorderPane) root).setCenter(overlay);
         
-        // เพิ่ม event handlers
+        
         resumeButton.setOnAction(e -> ((BorderPane) root).setCenter(new StackPane(new Label("กลับสู่เกม"))));
         exitButton.setOnAction(e -> navigator.navigateToMainMenu());
     }
     
-    // บันทึกเกม
+    
     private void saveGame() {
-        // จะถูก implement ต่อไป
+        
         System.out.println("บันทึกเกม...");
     }
 
     @Override
     public void onShow() {
-        // เล่นเพลงประกอบเกม
+        
         audioManager.playMusic("gameplay_music.mp3");
     }
 
     @Override
     public void onHide() {
-        // ทำความสะอาดทรัพยากร
+        
     }
 
     @Override
     public void onResize(double width, double height) {
-        // ปรับขนาดตามหน้าจอ
+        
     }
 } 

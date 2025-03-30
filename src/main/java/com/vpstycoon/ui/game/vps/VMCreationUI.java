@@ -24,48 +24,44 @@ public class VMCreationUI {
         this.parent = parent;
     }
 
-    /**
-     * Generate the next available IP in the subnet range based on the VPS IP.
-     * @param vps The VPS to base the IP on
-     * @return The next available IP or null if no IPs are available
-     */
+    
     private String getNextAvailableIP(VPSOptimization vps) {
-        // Get the VPS IP
+        
         String vpsId = parent.getVpsManager().getVPSMap().keySet().stream()
                 .filter(id -> parent.getVpsManager().getVPS(id) == vps)
                 .findFirst()
                 .orElse(null);
         if (vpsId == null) {
-            // Fallback: If VPS ID can't be found, generate a default IP
+            
             return "10.0.0.2";
         }
 
-        // Extract the base IP (before the name suffix)
+        
         String vpsIp;
         if (vpsId.contains("-")) {
             vpsIp = vpsId.split("-")[0];
         } else {
-            vpsIp = vpsId; // No dash in the ID, use as is
+            vpsIp = vpsId; 
         }
         
         String[] ipParts = vpsIp.split("\\.");
         if (ipParts.length != 4) {
-            // Fallback: If IP format is invalid, generate a default IP
+            
             return "10.0.0.2";
         }
 
-        // Define the subnet range (e.g., 103.216.158.2 to 103.216.158.255)
+        
         String baseSubnet = ipParts[0] + "." + ipParts[1] + "." + ipParts[2] + ".";
-        int minRange = 2;   // Start at .2
-        int maxRange = 255; // End at .255
+        int minRange = 2;   
+        int maxRange = 255; 
 
-        // Get existing VM IPs
+        
         List<String> usedIps = vps.getVms().stream()
                 .map(VPSOptimization.VM::getIp)
                 .filter(ip -> ip != null && ip.startsWith(baseSubnet))
                 .collect(Collectors.toList());
 
-        // Find the next available IP
+        
         for (int i = minRange; i <= maxRange; i++) {
             String candidateIp = baseSubnet + i;
             if (!usedIps.contains(candidateIp)) {
@@ -73,19 +69,19 @@ public class VMCreationUI {
             }
         }
         
-        // If all IPs in the subnet are used, return a fallback IP from another subnet
+        
         return "192.168." + (ipParts[2].equals("0") ? "1" : "0") + ".2";
     }
 
     public void openCreateVMPage(VPSOptimization vps) {
-        // Calculate currently used resources
+        
         int usedVCPUs = vps.getVms().stream().mapToInt(VPSOptimization.VM::getVcpu).sum();
         int usedRamGB = vps.getVms().stream()
                 .mapToInt(vm -> Integer.parseInt(vm.getRam().replace("GB", ""))).sum();
         int usedDiskGB = vps.getVms().stream()
                 .mapToInt(vm -> Integer.parseInt(vm.getDisk().replace("GB", ""))).sum();
 
-        // Calculate available resources
+        
         int availableVCPUs = vps.getVCPUs() - usedVCPUs;
         int availableRamGB = vps.getRamInGB() - usedRamGB;
         int availableDiskGB = vps.getDiskInGB() - usedDiskGB;
@@ -105,16 +101,16 @@ public class VMCreationUI {
             return;
         }
 
-        // สร้างหน้าหลักสำหรับสร้าง VM
+        
         BorderPane createVMPane = new BorderPane();
         createVMPane.setPrefSize(800, 600);
         createVMPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2A1B3D, #1A0B2E); -fx-padding: 20px;");
 
-        // Hide the menu bars
+        
         parent.getMenuBar().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
         
-        // ส่วนหัว - Cyberpunk header
+        
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
         topBar.setStyle("-fx-background-color: #3A1C5A; -fx-padding: 15px; -fx-background-radius: 5px; " +
@@ -137,7 +133,7 @@ public class VMCreationUI {
         backButton.setOnAction(e -> parent.openVPSInfoPage(vps));
         topBar.getChildren().addAll(backButton, titleBox);
 
-        // Container for the form
+        
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 10px;");
         scrollPane.setFitToWidth(true);
@@ -146,11 +142,11 @@ public class VMCreationUI {
         VBox formContainer = new VBox(20);
         formContainer.setPadding(new Insets(10));
         
-        // Resource visualization
+        
         HBox resourceVisualization = createCyberCard("AVAILABLE RESOURCES");
         resourceVisualization.setSpacing(20);
         
-        // Create progress bars for resources
+        
         int vCpuPercent = (int)(100 * (1 - (double)availableVCPUs/vps.getVCPUs()));
         int ramPercent = (int)(100 * (1 - (double)availableRamGB/vps.getRamInGB()));
         int diskPercent = (int)(100 * (1 - (double)availableDiskGB/vps.getDiskInGB()));
@@ -161,10 +157,10 @@ public class VMCreationUI {
         
         resourceVisualization.getChildren().addAll(cpuVis, ramVis, diskVis);
         
-        // INSTANCE DETAILS SECTION
-        VBox instanceSection = createCyberSection("01 // INSTANCE CONFIG");
         
-        // Instance name with cyber styling
+        VBox instanceSection = createCyberSection("01 INSTANCE CONFIG");
+        
+        
         HBox nameBox = new HBox(15);
         nameBox.setAlignment(Pos.CENTER_LEFT);
         Label nameLabel = new Label("HOSTNAME:");
@@ -173,7 +169,7 @@ public class VMCreationUI {
         nameField.setPromptText("Enter instance name");
         nameBox.getChildren().addAll(nameLabel, nameField);
         
-        // Operating System selection
+        
         HBox osBox = new HBox(15);
         osBox.setAlignment(Pos.CENTER_LEFT);
         Label osLabel = new Label("OS IMAGE:");
@@ -185,7 +181,7 @@ public class VMCreationUI {
         osComboBox.setValue("Ubuntu 22.04 LTS");
         osBox.getChildren().addAll(osLabel, osComboBox);
         
-        // IP Address field
+        
         HBox ipBox = new HBox(15);
         ipBox.setAlignment(Pos.CENTER_LEFT);
         Label ipLabel = new Label("IP ADDRESS:");
@@ -197,10 +193,10 @@ public class VMCreationUI {
         
         instanceSection.getChildren().addAll(nameBox, osBox, ipBox);
         
-        // HARDWARE CONFIGURATION SECTION
-        VBox hardwareSection = createCyberSection("02 // HARDWARE SPECS");
-
-        // Preset configurations
+        
+        VBox hardwareSection = createCyberSection("02 HARDWARE CONFIG");
+        
+        
         HBox presetBox = new HBox(15);
         presetBox.setAlignment(Pos.CENTER_LEFT);
         Label presetLabel = new Label("PRESET:");
@@ -215,13 +211,13 @@ public class VMCreationUI {
         presetComboBox.setValue("Custom Configuration");
         presetBox.getChildren().addAll(presetLabel, presetComboBox);
         
-        // vCPU selection with slider
+        
         HBox vcpuBox = new HBox(15);
         vcpuBox.setAlignment(Pos.CENTER_LEFT);
         Label vcpuLabel = new Label("vCPUs:");
         vcpuLabel.setStyle("-fx-text-fill: #00F6FF; -fx-font-weight: bold; -fx-font-family: 'Monospace';");
         
-        // Create CPU options
+        
         List<Integer> vcpuOptions = new ArrayList<>();
         for (int i = 1; i <= availableVCPUs && i <= 16; i *= 2) {
             vcpuOptions.add(i);
@@ -238,7 +234,7 @@ public class VMCreationUI {
         vcpuVBox.getChildren().addAll(vcpuComboBox, vcpuDetailLabel);
         vcpuBox.getChildren().addAll(vcpuLabel, vcpuVBox);
         
-        // RAM selection with modern styling
+        
         HBox ramBox = new HBox(15);
         ramBox.setAlignment(Pos.CENTER_LEFT);
         Label ramLabel = new Label("MEMORY:");
@@ -262,7 +258,7 @@ public class VMCreationUI {
         ramVBox.getChildren().addAll(ramComboBox, ramDetailLabel);
         ramBox.getChildren().addAll(ramLabel, ramVBox);
         
-        // Disk selection with enhanced UI
+        
         HBox diskBox = new HBox(15);
         diskBox.setAlignment(Pos.CENTER_LEFT);
         Label diskLabel = new Label("STORAGE:");
@@ -295,10 +291,10 @@ public class VMCreationUI {
         
         hardwareSection.getChildren().addAll(presetBox, vcpuBox, ramBox, diskBox);
         
-        // NETWORK SECTION
-        VBox networkSection = createCyberSection("03 // NETWORK CONFIG");
         
-        // Network options
+        VBox networkSection = createCyberSection("03 NETWORK CONFIG");
+        
+        
         HBox networkBox = new HBox(15);
         networkBox.setAlignment(Pos.CENTER_LEFT);
         Label networkLabel = new Label("NETWORK:");
@@ -311,7 +307,7 @@ public class VMCreationUI {
         networkComboBox.setValue("Public (Internet Accessible)");
         networkBox.getChildren().addAll(networkLabel, networkComboBox);
         
-        // Bandwidth options
+        
         HBox bandwidthBox = new HBox(15);
         bandwidthBox.setAlignment(Pos.CENTER_LEFT);
         Label bandwidthLabel = new Label("BANDWIDTH:");
@@ -325,15 +321,15 @@ public class VMCreationUI {
         bandwidthComboBox.setValue("1 Gbps (Standard)");
         bandwidthBox.getChildren().addAll(bandwidthLabel, bandwidthComboBox);
         
-        // Firewall section
-        VBox firewallSection = createCyberSection("04 // SECURITY");
         
-        // Check if firewall management is unlocked
+        VBox firewallSection = createCyberSection("04 FIREWALL CONFIG");
+        
+        
         SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         boolean firewallUnlocked = skillPointsSystem != null && 
                 skillPointsSystem.isFirewallManagementUnlocked();
 
-        // Define default rules outside the if block so they're accessible everywhere
+        
         List<String> defaultRules = new ArrayList<>();
         defaultRules.add("ALLOW TCP IN 22 (SSH) FROM ANY");
         defaultRules.add("ALLOW TCP IN 80 (HTTP) FROM ANY");
@@ -341,7 +337,7 @@ public class VMCreationUI {
         defaultRules.add("DENY ALL OTHER INCOMING TRAFFIC");
 
         if (firewallUnlocked) {
-            // Security level selector
+            
             HBox securityLevelBox = new HBox(15);
             securityLevelBox.setAlignment(Pos.CENTER_LEFT);
             Label securityLabel = new Label("SECURITY PROFILE:");
@@ -354,7 +350,7 @@ public class VMCreationUI {
             securityComboBox.setValue("Standard (Basic Protection)");
             securityLevelBox.getChildren().addAll(securityLabel, securityComboBox);
             
-            // Ports configuration
+            
             HBox portsBox = new HBox(15);
             portsBox.setAlignment(Pos.CENTER_LEFT);
             Label portsLabel = new Label("OPEN PORTS:");
@@ -363,7 +359,7 @@ public class VMCreationUI {
             portsField.setPromptText("Comma-separated list of ports (e.g., 22, 80, 443)");
             portsBox.getChildren().addAll(portsLabel, portsField);
 
-            // Firewall rules with modern styling
+            
             VBox rulesBox = new VBox(10);
             rulesBox.setAlignment(Pos.CENTER_LEFT);
             Label rulesLabel = new Label("FIREWALL RULES:");
@@ -393,7 +389,7 @@ public class VMCreationUI {
 
             firewallSection.getChildren().addAll(securityLevelBox, portsBox, rulesBox);
         } else {
-            // Locked firewall section
+            
             VBox lockedBox = new VBox(10);
             lockedBox.setAlignment(Pos.CENTER);
             lockedBox.setStyle("-fx-border-color: #8A2BE2; -fx-border-width: 1px; " +
@@ -415,10 +411,10 @@ public class VMCreationUI {
             firewallSection.getChildren().add(lockedBox);
         }
         
-        // STARTUP OPTIONS SECTION
-        VBox startupSection = createCyberSection("05 // INITIALIZATION");
         
-        // Startup script
+        VBox startupSection = createCyberSection("05 STARTUP CONFIG");
+        
+        
         VBox scriptBox = new VBox(10);
         scriptBox.setAlignment(Pos.CENTER_LEFT);
         Label scriptLabel = new Label("STARTUP SCRIPT:");
@@ -433,7 +429,7 @@ public class VMCreationUI {
         
         scriptBox.getChildren().addAll(scriptLabel, scriptArea);
         
-        // Backup options
+        
         HBox backupBox = new HBox(15);
         backupBox.setAlignment(Pos.CENTER_LEFT);
         Label backupLabel = new Label("BACKUP SCHEDULE:");
@@ -446,7 +442,7 @@ public class VMCreationUI {
         
         startupSection.getChildren().addAll(scriptBox, backupBox);
         
-        // Cost estimation with cyber styling
+        
         HBox costEstimation = createCyberCard("ESTIMATED COST");
         
         Label costLabel = new Label("MONTHLY COST: $20.99");
@@ -460,7 +456,7 @@ public class VMCreationUI {
         costInfo.getChildren().addAll(costLabel, costDetail);
         costEstimation.getChildren().add(costInfo);
         
-        // Combine all sections
+        
         networkSection.getChildren().addAll(networkBox, bandwidthBox);
         formContainer.getChildren().addAll(
                 resourceVisualization, 
@@ -473,7 +469,7 @@ public class VMCreationUI {
         
         scrollPane.setContent(formContainer);
         
-        // Action buttons with cyber styling
+        
         HBox buttonBox = new HBox(15);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         buttonBox.setPadding(new Insets(20, 10, 10, 10));
@@ -493,20 +489,20 @@ public class VMCreationUI {
             bandwidthComboBox.setValue("1 Gbps (Standard)");
             if (firewallUnlocked) {
                 try {
-                    // First, find the ports box which is the second child
+                    
                     HBox portsBox = (HBox) firewallSection.getChildren().get(1);
                     if (portsBox != null) {
-                        // Find the text field which is the second child of portsBox
+                        
                         TextField portsFieldRef = (TextField) portsBox.getChildren().get(1);
                         if (portsFieldRef != null) {
                             portsFieldRef.setText("22, 80, 443");
                         }
                     }
                     
-                    // Find the rules box which is the third child
+                    
                     VBox rulesBox = (VBox) firewallSection.getChildren().get(2);
                     if (rulesBox != null) {
-                        // Find the list view which is the second child of rulesBox
+                        
                         ListView<String> rulesListRef = (ListView<String>) rulesBox.getChildren().get(1);
                         if (rulesListRef != null) {
                             rulesListRef.setItems(FXCollections.observableArrayList(defaultRules));
@@ -539,37 +535,37 @@ public class VMCreationUI {
                             Integer.parseInt(diskComboBox.getValue().replaceAll("[^0-9]", ""))
                     );
 
-                    // กำหนดค่าเพิ่มเติมหลังสร้าง VM
+                    
                     newVM.setIp(ipField.getText());
                     newVM.setStatus("Initializing");
                     
-                    // Store additional configuration in the VM's description or elsewhere if needed
-                    // These methods don't exist in the VM class, so we'll comment them out
-                    // newVM.setOperatingSystem(osComboBox.getValue());
-                    // newVM.setDiskType(diskTypeComboBox.getValue());
-                    // newVM.setNetworkType(networkComboBox.getValue());
-                    // newVM.setBandwidth(bandwidthComboBox.getValue());
                     
-                    // Add custom VM description with additional info
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                     String vmDescription = "OS: " + osComboBox.getValue() + 
                                           ", Disk: " + diskTypeComboBox.getValue() +
                                           ", Network: " + networkComboBox.getValue() +
                                           ", Bandwidth: " + bandwidthComboBox.getValue();
-                    // Store this description somewhere if needed
+                    
                     
                     if (firewallUnlocked) {
                         try {
-                            // First, find the rules box which is the third child
+                            
                             VBox rulesBox = (VBox) firewallSection.getChildren().get(2);
                             if (rulesBox != null) {
-                                // Find the list view which is the second child of rulesBox
+                                
                                 ListView<String> rulesList = (ListView<String>) rulesBox.getChildren().get(1);
                                 if (rulesList != null) {
                                     List<String> rules = new ArrayList<>(rulesList.getItems());
-                                    // setFirewallRules doesn't exist, save rules somewhere else if needed
-                                    // newVM.setFirewallRules(rules);
                                     
-                                    // อาจจะบันทึกกฎ Firewall เป็น custom data หรือใน GameState ที่อื่น
+                                    
+                                    
+                                    
                                     System.out.println("Firewall rules: " + rules + " for VM: " + newVM.getName());
                                 }
                             }
@@ -578,13 +574,13 @@ public class VMCreationUI {
                         }
                     }
 
-                    // Ensure VM is set to "Running" status so it's available for assignment
+                    
                     newVM.setStatus("Running");
                     
                     vps.addVM(newVM);
                     System.out.println("Success: VM created: " + ipField.getText() + " in VPS: " + vpsId);
                     
-                    // Explicitly update the dashboard to refresh VM count
+                    
                     parent.pushNotification("VM Created", "VM " + nameField.getText() + " has been created and is now available for assignment.");
                     
                     parent.openVPSInfoPage(vps);
@@ -600,12 +596,12 @@ public class VMCreationUI {
         createVMPane.setCenter(scrollPane);
         createVMPane.setBottom(buttonBox);
 
-        // แสดงผล
+        
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(createVMPane);
     }
     
-    // Helper methods for UI elements with cyber styling
+    
     
     private Button createCyberButton(String text, String color) {
         Button button = new Button(text);
@@ -677,16 +673,11 @@ public class VMCreationUI {
         return resourceBox;
     }
     
-    /**
-     * Creates a styled ComboBox with improved visibility for the cyberpunk theme
-     * @param items The items to include in the ComboBox
-     * @param <T> The type of items in the ComboBox
-     * @return A styled ComboBox
-     */
+    
     private <T> ComboBox<T> createCyberComboBox(javafx.collections.ObservableList<T> items) {
         ComboBox<T> comboBox = new ComboBox<>(items);
         
-        // Set the base style for the ComboBox
+        
         comboBox.setStyle(
                 "-fx-background-color: #221133; " + 
                 "-fx-border-color: #8A2BE2; " +
@@ -695,7 +686,7 @@ public class VMCreationUI {
                 "-fx-font-family: 'Monospace';"
         );
         
-        // Apply custom styling to make text more visible
+        
         comboBox.setButtonCell(new ListCell<T>() {
             @Override
             protected void updateItem(T item, boolean empty) {
@@ -709,7 +700,7 @@ public class VMCreationUI {
             }
         });
         
-        // Style the dropdown items for better visibility
+        
         comboBox.setCellFactory(param -> new ListCell<T>() {
             @Override
             protected void updateItem(T item, boolean empty) {

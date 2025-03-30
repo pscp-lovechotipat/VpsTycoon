@@ -1,0 +1,1 @@
+$files = Get-ChildItem -Path src -Recurse -Filter "*.java"; foreach ($file in $files) { $content = Get-Content -Path $file.FullName -Raw; $content = $content -replace "//.*", ""; $content = $content -replace "/\*[\s\S]*?\*/", ""; $content | Set-Content -Path $file.FullName; Write-Host ("ลบคอมเม้นแล้ว: " + $file.FullName); }

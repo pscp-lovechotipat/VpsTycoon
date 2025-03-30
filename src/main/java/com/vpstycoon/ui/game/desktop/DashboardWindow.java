@@ -40,7 +40,7 @@ public class DashboardWindow extends VBox {
     private final transient Runnable onClose;
     private Timeline glowAnimation;
 
-    // UI components that need to be updated
+    
     private Label statRatingValue;
     private Label statMarketingValue;
     private Label statRevenueValue;
@@ -58,7 +58,7 @@ public class DashboardWindow extends VBox {
 
     private XYChart.Series<String, Number> diskSeries;
 
-    // Statistics variables
+    
     private Label statVPSValue;
     private Label statVMValue;
     private Label statCustomerValue;
@@ -76,25 +76,25 @@ public class DashboardWindow extends VBox {
         styleWindow();
         startDataUpdates();
         
-        // ลงทะเบียนเป็น observer เพื่อรับการแจ้งเตือนเมื่อค่า rating เปลี่ยนแปลง
+        
         company.addRatingObserver(newRating -> updateDashboard());
     }
 
     private void setupUI() {
         setPrefSize(700, 500);
 
-        // Title Bar with Cyberpunk Theme
+        
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_RIGHT);
         titleBar.setPadding(new Insets(8, 15, 8, 15));
         titleBar.setStyle("-fx-background-color: #37474F; -fx-background-radius: 10 10 0 0; -fx-border-color: #9e33ff; -fx-border-width: 0 0 2 0; -fx-effect: dropshadow(gaussian, rgba(0, 255, 255, 0.3), 5, 0, 0, 3);");
 
-        // Create cyberpunk icon
+        
         Rectangle iconBg = new Rectangle(24, 24);
         iconBg.setArcWidth(5);
         iconBg.setArcHeight(5);
         
-        // Gradient for icon
+        
         Stop[] stops = new Stop[] {
             new Stop(0, Color.web("#00ffff")),
             new Stop(1, Color.web("#ff00ff"))
@@ -102,11 +102,11 @@ public class DashboardWindow extends VBox {
         LinearGradient gradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE, stops);
         iconBg.setFill(gradient);
         
-        // Effect for icon
+        
         Glow glow = new Glow(0.8);
         iconBg.setEffect(glow);
         
-        // Glow animation
+        
         glowAnimation = new Timeline(
             new KeyFrame(Duration.ZERO, new KeyValue(glow.levelProperty(), 0.5)),
             new KeyFrame(Duration.seconds(1.5), new KeyValue(glow.levelProperty(), 0.8))
@@ -115,7 +115,7 @@ public class DashboardWindow extends VBox {
         glowAnimation.setCycleCount(Timeline.INDEFINITE);
         glowAnimation.play();
         
-        // Icon text
+        
         Text iconText = new Text("D");
         iconText.setFill(Color.WHITE);
         iconText.setStyle("-fx-font-weight: bold;");
@@ -129,7 +129,7 @@ public class DashboardWindow extends VBox {
         HBox.setHgrow(titleLabel, Priority.ALWAYS);
         titleLabel.setAlignment(Pos.CENTER_LEFT);
         
-        // Version label
+        
         Label versionLabel = new Label("v3.7");
         versionLabel.setStyle("-fx-text-fill: #00ffff; -fx-font-size: 10px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
         versionLabel.setTranslateY(4);
@@ -151,7 +151,7 @@ public class DashboardWindow extends VBox {
 
         titleBar.getChildren().addAll(titleBox, closeButton);
 
-        // Stats Section - First Row with Cyberpunk Theme
+        
         HBox statsContainer = new HBox(15);
         statsContainer.setPadding(new Insets(15, 15, 5, 15));
         statsContainer.setStyle("-fx-background-color: #263238; -fx-background-radius: 5; -fx-border-color: #9900ff; -fx-border-width: 1; -fx-border-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);");
@@ -173,7 +173,7 @@ public class DashboardWindow extends VBox {
 
         statsContainer.getChildren().addAll(ratingCard, marketingCard, revenueCard, pointsCard, moneyCard);
 
-        // Stats Section - Second Row with Cyberpunk Theme
+        
         HBox statsContainer2 = new HBox(15);
         statsContainer2.setPadding(new Insets(5, 15, 15, 15));
         statsContainer2.setStyle("-fx-background-color: #263238; -fx-background-radius: 5; -fx-border-color: #9900ff; -fx-border-width: 1; -fx-border-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 5);");
@@ -196,7 +196,7 @@ public class DashboardWindow extends VBox {
 
         statsContainer2.getChildren().addAll(vpsCard, vmCard, customerCard, ratingAvgCard, uptimeCard);
 
-        // Graphs Container with Cyberpunk Theme
+        
         VBox graphsContainer = new VBox(15);
         graphsContainer.setPadding(new Insets(15));
         VBox.setVgrow(graphsContainer, Priority.ALWAYS);
@@ -219,7 +219,7 @@ public class DashboardWindow extends VBox {
         card.setPadding(new Insets(10));
         card.setStyle("-fx-background-color: #37474F; -fx-background-radius: 5; -fx-border-color: " + color + "; -fx-border-width: 1; -fx-border-radius: 5; -fx-padding: 5; -fx-alignment: center; -fx-effect: innershadow(gaussian, " + color + ", 10, 0.3, 0, 0);");
         
-        // Add hover effect
+        
         DropShadow glow = new DropShadow();
         glow.setColor(Color.web(color));
         glow.setRadius(10);
@@ -250,7 +250,7 @@ public class DashboardWindow extends VBox {
         xAxis.setLabel("Time");
         yAxis.setLabel("Amount (THB)");
         
-        // Apply cyberpunk styling to axes
+        
         xAxis.setStyle("-fx-tick-label-fill: #00ffff; -fx-font-family: 'Monospace', 'Courier New', monospace;");
         yAxis.setStyle("-fx-tick-label-fill: #00ffff; -fx-font-family: 'Monospace', 'Courier New', monospace;");
 
@@ -259,7 +259,7 @@ public class DashboardWindow extends VBox {
         chart.setAnimated(false);
         chart.setCreateSymbols(false);
         
-        // Apply cyberpunk styling to chart
+        
         chart.setStyle("""
             -fx-background-color: #263238;
             -fx-background-radius: 5;
@@ -270,7 +270,7 @@ public class DashboardWindow extends VBox {
             -fx-legend-side: BOTTOM;
             """);
         
-        // Style the chart title - now only after scene exists
+        
         chart.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 Platform.runLater(() -> {
@@ -300,7 +300,7 @@ public class DashboardWindow extends VBox {
         chart.getData().add(expenseSeries);
         chart.getData().add(profitSeries);
         
-        // Apply custom colors to series when chart is actually displayed
+        
         chart.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 applyCyberSeriesColors(chart);
@@ -311,8 +311,8 @@ public class DashboardWindow extends VBox {
     }
     
     private void setSeriesColors(LineChart<String, Number> chart) {
-        // This has been replaced by applyCyberSeriesColors
-        // No longer needed, will be removed
+        
+        
     }
     
     private void applyCyberSeriesColors(LineChart<String, Number> chart) {
@@ -322,13 +322,13 @@ public class DashboardWindow extends VBox {
             final int seriesIndex = i;
             final String color = i < colors.length ? colors[i] : "#ffffff";
             
-            // Apply series line colors directly using CSS
+            
             XYChart.Series<String, Number> series = chart.getData().get(seriesIndex);
             series.getNode().setStyle("-fx-stroke: " + color + "; -fx-stroke-width: 2px;");
             
-            // Set the node styles once they are visible
+            
             for (XYChart.Data<String, Number> data : series.getData()) {
-                // Use layout bounds to detect when node is actually created
+                
                 data.nodeProperty().addListener((ov, oldNode, newNode) -> {
                     if (newNode != null) {
                         newNode.setStyle("-fx-background-color: " + color + ", white;");
@@ -344,7 +344,7 @@ public class DashboardWindow extends VBox {
         xAxis.setLabel("Time");
         yAxis.setLabel("Usage (%)");
         
-        // Apply cyberpunk styling to axes
+        
         xAxis.setStyle("-fx-tick-label-fill: #00ffff; -fx-font-family: 'Monospace', 'Courier New', monospace;");
         yAxis.setStyle("-fx-tick-label-fill: #00ffff; -fx-font-family: 'Monospace', 'Courier New', monospace;");
 
@@ -353,7 +353,7 @@ public class DashboardWindow extends VBox {
         chart.setAnimated(false);
         chart.setCreateSymbols(false);
         
-        // Apply cyberpunk styling to chart
+        
         chart.setStyle("""
             -fx-background-color: #263238;
             -fx-background-radius: 5;
@@ -364,7 +364,7 @@ public class DashboardWindow extends VBox {
             -fx-legend-side: BOTTOM;
             """);
         
-        // Style the chart title - now only after scene exists
+        
         chart.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 Platform.runLater(() -> {
@@ -394,7 +394,7 @@ public class DashboardWindow extends VBox {
         chart.getData().add(ramSeries);
         chart.getData().add(diskSeries);
         
-        // Custom colors for performance chart using safer approach
+        
         chart.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 applyCyberPerformanceColors(chart);
@@ -411,13 +411,13 @@ public class DashboardWindow extends VBox {
             final int seriesIndex = i;
             final String color = i < colors.length ? colors[i] : "#ffffff";
             
-            // Apply series line colors directly using CSS
+            
             XYChart.Series<String, Number> series = chart.getData().get(seriesIndex);
             series.getNode().setStyle("-fx-stroke: " + color + "; -fx-stroke-width: 2px;");
             
-            // Set the node styles once they are visible
+            
             for (XYChart.Data<String, Number> data : series.getData()) {
-                // Use layout bounds to detect when node is actually created
+                
                 data.nodeProperty().addListener((ov, oldNode, newNode) -> {
                     if (newNode != null) {
                         newNode.setStyle("-fx-background-color: " + color + ", white;");
@@ -439,12 +439,12 @@ public class DashboardWindow extends VBox {
             """);
     }
 
-    // Helper methods to calculate real values
+    
     private double calculateMonthlyRevenue() {
         return requestManager.getRequests().stream()
                 .filter(req -> req.isActive())
                 .mapToDouble(req -> {
-                    // แยกเฉพาะตัวเลขออกจากหน่วย (GB)
+                    
                     String ramStr = req.getRequiredRam().split(" ")[0];
                     String diskStr = req.getRequiredDisk().split(" ")[0];
                     return req.getRequiredVCPUs() * 10.0 + Double.parseDouble(ramStr) * 5.0 + Double.parseDouble(diskStr) * 2.0;
@@ -478,7 +478,7 @@ public class DashboardWindow extends VBox {
 
     public void updateDashboard() {
         Platform.runLater(() -> {
-            // Update UI components - Main stats
+            
             statRatingValue.setText(String.format("%.2f ★", company.getRating()));
             statMarketingValue.setText(company.getMarketingPoints() + " MP");
             double monthlyRevenue = calculateMonthlyRevenue();
@@ -486,14 +486,14 @@ public class DashboardWindow extends VBox {
             statPointsValue.setText(company.getSkillPointsAvailable() + " SP");
             statMoneyValue.setText("$" + company.getMoney());
 
-            // Update UI components - Additional stats
+            
             statVPSValue.setText(String.valueOf(vpsManager.getVPSMap().size()));
             statVMValue.setText(String.valueOf(calculateTotalVMs()));
             statCustomerValue.setText(String.valueOf(requestManager.getRequests().size()));
             statAvgRatingValue.setText(String.format("%.1f ★", calculateAverageRating()));
             statUptimeValue.setText(String.format("%.2f%%", calculateUptime()));
 
-            // Update charts with new data
+            
             updateChartData(monthlyRevenue);
         });
     }
@@ -532,7 +532,7 @@ public class DashboardWindow extends VBox {
         expenseSeries.getData().add(expensesData);
         profitSeries.getData().add(profitData);
         
-        // Apply the styles to new data points
+        
         revenueData.nodeProperty().addListener((ov, oldNode, newNode) -> {
             if (newNode != null) {
                 newNode.setStyle("-fx-background-color: #00ffff, white;");
@@ -580,7 +580,7 @@ public class DashboardWindow extends VBox {
         ramSeries.getData().add(ramData);
         diskSeries.getData().add(diskData);
         
-        // Apply the styles to new data points
+        
         cpuData.nodeProperty().addListener((ov, oldNode, newNode) -> {
             if (newNode != null) {
                 newNode.setStyle("-fx-background-color: #ff00ff, white;");

@@ -12,12 +12,12 @@ public enum EventType {
     COMPETITOR_PRESSURE("Competitor Pressure", "Upgrade services or increase marketing", 7000, 0.2),
     IP_SHORTAGE("IP Shortage", "Purchase additional IP blocks", 4000, 0.15),
     SYSTEM_ERROR("System Error", "Rollback system or update patches", 6000, 0.2),
-    SPECIAL_EVENT("Special Event", "Positive event - no action needed", 0, 0.0); // Positive event, no cost
+    SPECIAL_EVENT("Special Event", "Positive event - no action needed", 0, 0.0); 
 
     private final String displayName;
     private final String solution;
-    private final long baseCost;        // Base cost in dollars
-    private final double scaleFactor;   // Scale factor for randomizing cost
+    private final long baseCost;        
+    private final double scaleFactor;   
 
     EventType(String displayName, String solution, long baseCost, double scaleFactor) {
         this.displayName = displayName;
@@ -42,10 +42,10 @@ public enum EventType {
         return scaleFactor;
     }
 
-    // Calculate randomized cost based on baseCost and scaleFactor
+    
     public long calculateCost(Random random) {
-        if (baseCost == 0) return 0; // No cost for positive events
-        double variation = (random.nextDouble() * 2 - 1) * scaleFactor; // -scaleFactor to +scaleFactor
+        if (baseCost == 0) return 0; 
+        double variation = (random.nextDouble() * 2 - 1) * scaleFactor; 
         return Math.round(baseCost * (1 + variation));
     }
 }

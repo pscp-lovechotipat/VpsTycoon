@@ -36,17 +36,17 @@ public class SceneController {
     }
 
     private void initializeScene() {
-        // Set the background color of the root container to black
+        
         rootContainer.setStyle("-fx-background-color: black;");
         
-        // Create scene with black background to avoid white borders
+        
         mainScene = new Scene(rootContainer);
         mainScene.setFill(javafx.scene.paint.Color.BLACK);
         
-        // Ensure the stage has the exact size as the scene
+        
         stage.setScene(mainScene);
         
-        // Apply initial resolution
+        
         updateResolution();
     }
 
@@ -58,7 +58,7 @@ public class SceneController {
     public void updateResolution() {
         ScreenResolution resolution = config.getResolution();
         
-        // Set container size
+        
         rootContainer.setPrefWidth(resolution.getWidth());
         rootContainer.setPrefHeight(resolution.getHeight());
         rootContainer.setMinWidth(resolution.getWidth());
@@ -66,16 +66,16 @@ public class SceneController {
         rootContainer.setMaxWidth(resolution.getWidth());
         rootContainer.setMaxHeight(resolution.getHeight());
         
-        // Apply settings to stage
+        
         screenManager.applySettings(stage, mainScene);
         
-        // Ensure scene size matches stage exactly
+        
         mainScene.setFill(javafx.scene.paint.Color.BLACK);
         
-        // Force a redraw of the content
+        
         rootContainer.requestLayout();
         
-        // If we have any content, ensure it's properly sized for the new resolution
+        
         if (!rootContainer.getChildren().isEmpty()) {
             for (javafx.scene.Node child : rootContainer.getChildren()) {
                 if (child instanceof javafx.scene.layout.Region) {

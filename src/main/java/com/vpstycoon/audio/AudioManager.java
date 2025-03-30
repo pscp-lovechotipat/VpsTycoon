@@ -36,7 +36,7 @@ public class AudioManager implements IAudioManager {
         setSfxVolume(event.getNewConfig().getSfxVolume());
     }
 
-    // เล่นเพลงประกอบเกม
+    
     @Override
     public void playMusic(String musicFile) {
         Platform.runLater(() -> {
@@ -70,7 +70,7 @@ public class AudioManager implements IAudioManager {
         });
     }
 
-    // หยุดเพลงประกอบเกมชั่วคราว
+    
     @Override
     public void pauseMusic() {
         Platform.runLater(() -> {
@@ -81,7 +81,7 @@ public class AudioManager implements IAudioManager {
         });
     }
 
-    // เล่นเพลงประกอบเกมต่อจากจุดที่หยุดไว้
+    
     @Override
     public void resumeMusic() {
         Platform.runLater(() -> {
@@ -92,7 +92,7 @@ public class AudioManager implements IAudioManager {
         });
     }
 
-    // เล่นเสียงเอฟเฟกต์
+    
     @Override
     public void playSoundEffect(String soundFile) {
         Platform.runLater(() -> {
@@ -126,7 +126,7 @@ public class AudioManager implements IAudioManager {
         });
     }
 
-    // หยุดเล่นเสียงเอฟเฟกต์
+    
     @Override
     public void stopSoundEffect(String soundFile) {
         Platform.runLater(() -> {
@@ -142,7 +142,7 @@ public class AudioManager implements IAudioManager {
         });
     }
 
-    // ตั้งค่าระดับความดังของเพลงประกอบ
+    
     @Override
     public void setMusicVolume(double volume) {
         this.musicVolume = volume;
@@ -151,13 +151,13 @@ public class AudioManager implements IAudioManager {
         }
     }
 
-    // ตั้งค่าระดับความดังของเสียงเอฟเฟกต์
+    
     @Override
     public void setSfxVolume(double volume) {
         this.sfxVolume = volume;
     }
 
-    // ล้างทรัพยากรเสียงทั้งหมด
+    
     @Override
     public void dispose() {
         if (musicPlayer != null) {
@@ -170,7 +170,7 @@ public class AudioManager implements IAudioManager {
         soundCache.clear();
     }
 
-    // โหลดไฟล์เสียงเอฟเฟกต์ล่วงหน้าเพื่อหลีกเลี่ยงการกระตุกเมื่อเล่นครั้งแรก
+    
     @Override
     public void preloadSoundEffect(String name) {
         if (!soundCache.containsKey(name)) {
@@ -197,3 +197,4 @@ public class AudioManager implements IAudioManager {
         }
     }
 }
+

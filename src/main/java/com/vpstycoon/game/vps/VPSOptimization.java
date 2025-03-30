@@ -14,7 +14,7 @@ public class VPSOptimization extends GameObject implements Serializable {
     private final List<VM> vms;
     private VPSStatus status;
     
-    // Add a vpsId field to store the server's unique identifier
+    
     private String vpsId;
 
     private int maxVMs;
@@ -31,9 +31,9 @@ public class VPSOptimization extends GameObject implements Serializable {
     private boolean monitoringSystemEnabled = false;
     private boolean autoScalingEnabled = false;
 
-    private int optimizationLevel = 1; // 1-5 optimization level
-    private VPSSize size = VPSSize.SIZE_1U; // Physical size of the VPS
-    private boolean installed = false; // Whether the VPS is installed in a rack
+    private int optimizationLevel = 1; 
+    private VPSSize size = VPSSize.SIZE_1U; 
+    private boolean installed = false; 
 
     public VPSOptimization() {
         this.vms = new ArrayList<>();
@@ -48,31 +48,20 @@ public class VPSOptimization extends GameObject implements Serializable {
         this.diskInGB = 20;
         this.size = VPSSize.SIZE_1U;
         this.installed = false;
-        this.vpsId = "Server-" + System.currentTimeMillis(); // Default ID with timestamp
+        this.vpsId = "Server-" + System.currentTimeMillis(); 
     }
     
-    /**
-     * Constructor with vcpus, ram, and size
-     * @param vcpus Number of virtual CPUs
-     * @param ramInGB Amount of RAM in GB
-     * @param size Physical size of the VPS
-     */
+    
     public VPSOptimization(int vcpus, int ramInGB, VPSSize size) {
-        this();  // Call the default constructor first
+        this();  
         this.vcpus = vcpus;
         this.ramInGB = ramInGB;
         this.size = size;
-        // Set a reasonable disk size based on RAM
+        
         this.diskInGB = ramInGB * 10;
     }
     
-    /**
-     * Constructor with ID, vcpus, ram, and size
-     * @param id The VPS ID
-     * @param vcpus Number of virtual CPUs
-     * @param ramInGB Amount of RAM in GB
-     * @param size Physical size of the VPS
-     */
+    
     public VPSOptimization(String id, int vcpus, int ramInGB, VPSSize size) {
         this(vcpus, ramInGB, size);
         this.vpsId = id;
@@ -174,111 +163,81 @@ public class VPSOptimization extends GameObject implements Serializable {
         this.installed = installed;
     }
 
-    /**
-     * Calculate the optimization score based on resource usage and configuration
-     * @return The optimization score (0-100)
-     */
+    
     public double calculateOptimizationScore() {
-        // คำนวณคะแนนการ optimize จากการใช้ทรัพยากรและการตั้งค่า
+        
         double cpuScore = 100 - cpuUsage;
         double ramScore = 100 - ramUsage;
         double diskScore = 100 - diskUsage;
         double networkScore = 100 - networkUsage;
         
-        // ถ่วงน้ำหนักคะแนนตามความสำคัญ
+        
         double baseScore = (cpuScore * 0.4) + (ramScore * 0.3) + (diskScore * 0.2) + (networkScore * 0.1);
         
-        // เพิ่มคะแนนตามระบบที่เปิดใช้งาน
+        
         double bonusScore = 0;
         if (backupSystemEnabled) bonusScore += 5;
         if (monitoringSystemEnabled) bonusScore += 5;
         if (autoScalingEnabled) bonusScore += 5;
         
-        // เพิ่มคะแนนตามระดับการ optimize
+        
         bonusScore += (optimizationLevel - 1) * 3;
         
         return Math.min(100, baseScore + bonusScore);
     }
     
-    /**
-     * Check if this VPS has a backup system
-     * @return true if backup system is enabled
-     */
+    
     public boolean hasBackupSystem() {
         return backupSystemEnabled;
     }
     
-    /**
-     * Enable or disable backup system
-     * @param enabled true to enable, false to disable
-     */
+    
     public void setBackupSystem(boolean enabled) {
         this.backupSystemEnabled = enabled;
     }
     
-    /**
-     * Check if this VPS has a monitoring system
-     * @return true if monitoring system is enabled
-     */
+    
     public boolean hasMonitoringSystem() {
         return monitoringSystemEnabled;
     }
     
-    /**
-     * Enable or disable monitoring system
-     * @param enabled true to enable, false to disable
-     */
+    
     public void setMonitoringSystem(boolean enabled) {
         this.monitoringSystemEnabled = enabled;
         if (enabled) {
-            // เมื่อเปิดใช้งานระบบตรวจสอบ จะช่วยลดการใช้ทรัพยากร
+            
             this.cpuUsage = Math.max(0, cpuUsage * 0.9);
             this.ramUsage = Math.max(0, ramUsage * 0.9);
             this.diskUsage = Math.max(0, diskUsage * 0.9);
         }
     }
     
-    /**
-     * Check if this VPS has auto-scaling enabled
-     * @return true if auto-scaling is enabled
-     */
+    
     public boolean hasAutoScaling() {
         return autoScalingEnabled;
     }
     
-    /**
-     * Enable or disable auto-scaling
-     * @param enabled true to enable, false to disable
-     */
+    
     public void setAutoScaling(boolean enabled) {
         this.autoScalingEnabled = enabled;
     }
     
-    /**
-     * Get the optimization level
-     * @return optimization level (1-5)
-     */
+    
     public int getOptimizationLevel() {
         return optimizationLevel;
     }
     
-    /**
-     * Set the optimization level
-     * @param level optimization level (1-5)
-     */
+    
     public void setOptimizationLevel(int level) {
         this.optimizationLevel = Math.max(1, Math.min(5, level));
     }
     
-    /**
-     * Optimize the VPS to reduce resource usage
-     * @return true if optimization was successful
-     */
+    
     public boolean optimize() {
         if (optimizationLevel < 5) {
             optimizationLevel++;
             
-            // ลดการใช้ทรัพยากรตามระดับการ optimize
+            
             double optimizationFactor = 0.95 - ((optimizationLevel - 1) * 0.05);
             this.cpuUsage = Math.max(0, cpuUsage * optimizationFactor);
             this.ramUsage = Math.max(0, ramUsage * optimizationFactor);
@@ -414,40 +373,29 @@ public class VPSOptimization extends GameObject implements Serializable {
         }
     }
 
-    /**
-     * Override equals method to properly compare VPS objects
-     * This will fix the "Unknown" server ID issue
-     */
+    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         
-        // For VPS objects, we should compare by reference identity since they're unique instances
-        // This change will fix the "Unknown" server ID issue
+        
+        
         return this == obj;
     }
     
-    /**
-     * Override hashCode to be consistent with equals
-     */
+    
     @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }
 
-    /**
-     * Get the VPS ID
-     * @return The VPS ID
-     */
+    
     public String getVpsId() {
         return vpsId;
     }
     
-    /**
-     * Set the VPS ID
-     * @param vpsId The new VPS ID
-     */
+    
     public void setVpsId(String vpsId) {
         this.vpsId = vpsId;
     }

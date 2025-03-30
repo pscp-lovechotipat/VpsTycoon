@@ -11,7 +11,7 @@ public class MouseNotificationController {
         this.view = view;
     }
 
-    // เพิ่ม notification ใหม่
+    
     public void addNotification(String content) {
         Point mousePoint = MouseInfo.getPointerInfo().getLocation();
         double mouseX = mousePoint.getX();
@@ -20,11 +20,12 @@ public class MouseNotificationController {
         content = "+ " + content;
 
         MouseNotificationModel.Notification notification = new MouseNotificationModel.Notification(content);
-        model.addNotification(notification); // เพิ่มเข้า model
-        view.addNotificationPane(content, mouseX, mouseY); // แสดงใน view
+        model.addNotification(notification); 
+        view.addNotificationPane(content, mouseX, mouseY); 
     }
 
     public void setView(MouseNotificationView mouseNotificationView) {
         this.view = mouseNotificationView;
     }
 }
+

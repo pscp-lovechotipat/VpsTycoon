@@ -66,7 +66,7 @@ public class ResourceManager implements Serializable, IResourceManager {
         return instance;
     }
 
-    // สร้างไดเรกทอรีสำหรับสำรองข้อมูล
+    
     private void createBackupDirectory() {
         try {
             Path backupPath = Paths.get(BACKUP_DIR);
@@ -78,7 +78,7 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    // สร้างสำเนาไฟล์ที่เสียหาย
+    
     private void createCorruptedFileBackup(File originalFile) {
         try {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
@@ -90,14 +90,14 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    // ล้างแคชทั้งหมด
+    
     @Override
     public void clearCache() {
         imageCache.clear();
         textCache.clear();
     }
 
-    // ลบไฟล์เซฟเกม
+    
     @Override
     public void deleteSaveFile() {
         File file = new File(SAVE_FILE);
@@ -110,43 +110,43 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    // ตรวจสอบว่ามีไฟล์เซฟเกมหรือไม่
+    
     @Override
     public boolean hasSaveFile() {
         return new File(SAVE_FILE).exists();
     }
 
-    // ดึงพาธของรูปภาพ
+    
     public static String getImagePath(String name) {
         return IMAGES_PATH + name;
     }
 
-    // ดึงพาธของไฟล์เสียง
+    
     public static String getSoundPath(String name) {
         return SOUNDS_PATH + name;
     }
 
-    // ดึงพาธของไฟล์เพลง
+    
     public static String getMusicPath(String name) {
         return MUSIC_PATH + name;
     }
 
-    // ดึง URL ของทรัพยากร
+    
     public static URL getResource(String path) {
         return ResourceManager.class.getResource(path);
     }
 
-    // ดึงพาธของไฟล์ข้อความ
+    
     public static String getTextPath(String name) {
         return TEXT_PATH + name;
     }
 
-    // ดึง InputStream ของทรัพยากร
+    
     public static InputStream getResourceAsStream(String path) {
         return ResourceManager.class.getResourceAsStream(path);
     }
 
-    // ดึงข้อความจากไฟล์
+    
     @Override
     public String getText(String path) {
         return textCache.computeIfAbsent(path, k -> {
@@ -161,7 +161,7 @@ public class ResourceManager implements Serializable, IResourceManager {
         });
     }
 
-    // ดึงสถานะเกมปัจจุบัน
+    
     @Override
     public GameState getCurrentState() {
         if (currentState == null) {
@@ -170,7 +170,7 @@ public class ResourceManager implements Serializable, IResourceManager {
         return currentState;
     }
 
-    // ตั้งค่าสถานะเกมปัจจุบัน
+    
     @Override
     public void setCurrentState(GameState state) {
         if (state != null) {
@@ -183,37 +183,37 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    // ดึงบริษัท
+    
     @Override
     public Company getCompany() {
         return company;
     }
 
-    // ตั้งค่าบริษัท
+    
     @Override
     public void setCompany(Company company) {
         this.company = company;
     }
 
-    // ดึงตัวจัดการเสียง
+    
     @Override
     public AudioManager getAudioManager() {
         return audioManager;
     }
 
-    // สร้าง GameObject
+    
     @Override
     public GameObject createGameObject(String id, String type, int gridX, int gridY) {
         return new GameObject(id, type, gridX, gridY);
     }
 
-    // ตรวจสอบว่าเพลงกำลังเล่นอยู่หรือไม่
+    
     @Override
     public boolean isMusicRunning() {
         return musicRunning;
     }
 
-    // ตั้งค่าสถานะการเล่นเพลง
+    
     @Override
     public void setMusicRunning(boolean running) {
         this.musicRunning = running;
@@ -224,19 +224,19 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    // ตั้งค่าตัวติดตามการโหลดทรัพยากร
+    
     @Override
     public void setResourceLoadingListener(ResourceLoadingListener listener) {
         this.resourceLoadingListener = listener;
     }
 
-    // ตรวจสอบว่าการโหลดทรัพยากรล่วงหน้าเสร็จสิ้นแล้วหรือไม่
+    
     @Override
     public boolean isPreloadComplete() {
         return preloadComplete;
     }
 
-    // รอให้การโหลดทรัพยากรล่วงหน้าเสร็จสิ้น
+    
     @Override
     public boolean waitForPreload(long timeoutMs) {
         if (preloadComplete) {
@@ -254,77 +254,77 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    // ดึงรูปภาพที่โหลดล่วงหน้า
+    
     @Override
     public Image getPreloadedImage(String path) {
         return imageCache.get(path);
     }
 
-    // โหลดทรัพยากรล่วงหน้า
+    
     @Override
     public void preloadAssets() {
-        // Implementation depends on other components
+        
         preloadComplete = true;
     }
 
-    // รีเซ็ตข้อมูล Messenger
+    
     @Override
     public void resetMessengerData() {
-        // Implementation depends on other components
+        
     }
 
-    // รีเซ็ตเวลาเกม
+    
     @Override
     public void resetGameTime() {
-        // Implementation depends on other components
+        
     }
 
-    // รีเซ็ต Rack และ Inventory
+    
     @Override
     public void resetRackAndInventory() {
-        // Implementation depends on other components
+        
     }
 
-    // บันทึกสถานะเกม
+    
     @Override
     public void saveGameState(GameState state) {
-        // Implementation depends on other components
+        
     }
 
-    // โหลดสถานะเกม
+    
     @Override
     public GameState loadGameState() {
-        // Implementation depends on other components
+        
         return new GameState(company);
     }
 
-    // แสดงการแจ้งเตือน
+    
     @Override
     public void pushNotification(String title, String content) {
-        // Implementation depends on other components
+        
     }
 
-    // แสดงการแจ้งเตือนบนเมาส์
+    
     @Override
     public void pushMouseNotification(String content) {
-        // Implementation depends on other components
+        
     }
 
-    // แสดงการแจ้งเตือนตรงกลาง
+    
     @Override
     public void pushCenterNotification(String title, String content) {
         pushCenterNotification(title, content, null);
     }
 
-    // แสดงการแจ้งเตือนตรงกลางพร้อมรูปภาพ
+    
     @Override
     public void pushCenterNotification(String title, String content, String image) {
-        // Implementation depends on other components
+        
     }
 
-    // แสดงการแจ้งเตือนตรงกลางที่จะปิดอัตโนมัติ
+    
     @Override
     public void pushCenterNotificationAutoClose(String title, String content, String image, long autoCloseMillis) {
-        // Implementation depends on other components
+        
     }
 } 

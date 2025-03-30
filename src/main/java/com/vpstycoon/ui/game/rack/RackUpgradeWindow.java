@@ -15,28 +15,26 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
-/**
- * Window for upgrading racks and room capacity
- */
+
 public class RackUpgradeWindow extends VBox {
     private final GameplayContentPane parent;
     private final Runnable onClose;
     private final Company company;
     private final SkillPointsSystem skillPointsSystem;
     
-    // Current rack and room stats
+    
     private int numberOfRacks;
     private int maxNumberOfRacks;
     private int rackSlots;
     
-    // UI components
+    
     private Label moneyLabel;
     private Label racksLabel;
     private Label slotsLabel;
     private Button buyRackButton;
     private Button upgradeRoomButton;
     
-    // Costs
+    
     private final long rackCost = 5000;
     private final long roomUpgradeCost = 20000;
     
@@ -46,11 +44,11 @@ public class RackUpgradeWindow extends VBox {
         this.company = parent.getCompany();
         this.skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         
-        // Initialize current stats
+        
         this.numberOfRacks = 1;
-        this.maxNumberOfRacks = 10; // Default max racks
+        this.maxNumberOfRacks = 10; 
         this.rackSlots = skillPointsSystem != null ?
-                skillPointsSystem.getAvailableRackSlots() : 4; // Default slots per rack
+                skillPointsSystem.getAvailableRackSlots() : 4; 
         
         setupUI();
         styleWindow();
@@ -59,7 +57,7 @@ public class RackUpgradeWindow extends VBox {
     private void setupUI() {
         setPrefSize(700, 500);
         
-        // Title Bar
+        
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_RIGHT);
         titleBar.setPadding(new Insets(8, 15, 8, 15));
@@ -76,12 +74,12 @@ public class RackUpgradeWindow extends VBox {
 
         titleBar.getChildren().addAll(titleLabel, closeButton);
         
-        // Current Stats Section
+        
         VBox statsBox = new VBox(15);
         statsBox.setPadding(new Insets(15));
         statsBox.setStyle("-fx-background-color: #ecf0f1; -fx-border-radius: 5; -fx-background-radius: 5;");
         
-        // Money display
+        
         HBox moneyBox = new HBox(10);
         moneyBox.setAlignment(Pos.CENTER_LEFT);
         Label moneyTitleLabel = new Label("Available Funds:");
@@ -92,7 +90,7 @@ public class RackUpgradeWindow extends VBox {
         
         moneyBox.getChildren().addAll(moneyTitleLabel, moneyLabel);
         
-        // Racks display
+        
         HBox racksBox = new HBox(10);
         racksBox.setAlignment(Pos.CENTER_LEFT);
         Label racksTitleLabel = new Label("Racks:");
@@ -106,7 +104,7 @@ public class RackUpgradeWindow extends VBox {
         
         racksBox.getChildren().addAll(racksTitleLabel, racksLabel, racksProgressBar);
         
-        // Slots display
+        
         HBox slotsBox = new HBox(10);
         slotsBox.setAlignment(Pos.CENTER_LEFT);
         Label slotsTitleLabel = new Label("Slots per Rack:");
@@ -119,11 +117,11 @@ public class RackUpgradeWindow extends VBox {
         
         statsBox.getChildren().addAll(moneyBox, racksBox, slotsBox);
         
-        // Upgrade Options Section
+        
         VBox upgradeBox = new VBox(20);
         upgradeBox.setPadding(new Insets(15));
         
-        // Buy Rack Option
+        
         BorderPane buyRackPane = createUpgradeOption(
                 "Buy New Rack",
                 "Purchase a new server rack to increase your hosting capacity.",
@@ -134,7 +132,7 @@ public class RackUpgradeWindow extends VBox {
         buyRackButton = (Button) buyRackPane.getRight();
         buyRackButton.setOnAction(e -> buyNewRack());
         
-        // Upgrade Room Option
+        
         BorderPane upgradeRoomPane = createUpgradeOption(
                 "Upgrade Server Room",
                 "Expand your server room to accommodate more racks.",
@@ -145,7 +143,7 @@ public class RackUpgradeWindow extends VBox {
         upgradeRoomButton = (Button) upgradeRoomPane.getRight();
         upgradeRoomButton.setOnAction(e -> upgradeRoom());
         
-        // Skill Points Info
+        
         BorderPane skillPointsPane = createUpgradeOption(
                 "Upgrade Rack Slots",
                 "Use skill points to increase the number of slots per rack.",
@@ -159,7 +157,7 @@ public class RackUpgradeWindow extends VBox {
         
         upgradeBox.getChildren().addAll(buyRackPane, upgradeRoomPane, skillPointsPane);
         
-        // Help Section
+        
         VBox helpBox = new VBox(10);
         helpBox.setPadding(new Insets(15));
         helpBox.setStyle("-fx-background-color: #ecf0f1; -fx-border-radius: 5; -fx-background-radius: 5;");
@@ -177,7 +175,7 @@ public class RackUpgradeWindow extends VBox {
         
         helpBox.getChildren().addAll(helpTitle, helpText);
         
-        // Add all sections to the main container
+        
         getChildren().addAll(titleBar, statsBox, upgradeBox, helpBox);
     }
     
@@ -188,7 +186,7 @@ public class RackUpgradeWindow extends VBox {
                 "-fx-border-radius: 5; -fx-background-radius: 5; " +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
         
-        // Left side - Info
+        
         VBox infoBox = new VBox(5);
         Label titleLabel = new Label(title);
         titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -201,7 +199,7 @@ public class RackUpgradeWindow extends VBox {
         
         infoBox.getChildren().addAll(titleLabel, descLabel, costLabel);
         
-        // Right side - Button
+        
         Button actionButton = new Button("Purchase");
         actionButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white;");
         actionButton.setDisable(!enabled);
@@ -222,9 +220,7 @@ public class RackUpgradeWindow extends VBox {
                 "-fx-border-radius: 10; -fx-background-radius: 10;");
     }
     
-    /**
-     * Buy a new rack
-     */
+    
     private void buyNewRack() {
         if (numberOfRacks < maxNumberOfRacks && company.getMoney() >= rackCost) {
             if (company.spendMoney(rackCost)) {
@@ -236,9 +232,7 @@ public class RackUpgradeWindow extends VBox {
         }
     }
     
-    /**
-     * Upgrade the server room
-     */
+    
     private void upgradeRoom() {
         if (company.getMoney() >= roomUpgradeCost) {
             if (company.spendMoney(roomUpgradeCost)) {
@@ -251,9 +245,7 @@ public class RackUpgradeWindow extends VBox {
         }
     }
     
-    /**
-     * Update the UI to reflect current stats
-     */
+    
     public void updateUI() {
         moneyLabel.setText("$" + company.getMoney());
         racksLabel.setText(numberOfRacks + " / " + maxNumberOfRacks);

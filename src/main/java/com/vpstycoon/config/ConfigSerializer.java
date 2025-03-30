@@ -42,7 +42,7 @@ public class ConfigSerializer {
                 try {
                     config.setResolution(ScreenResolution.valueOf(resolutionStr));
                 } catch (IllegalArgumentException e) {
-                    // ถ้าไม่พบค่า resolution ที่ถูกต้อง ให้ใช้ค่าเริ่มต้น
+                    
                 }
             }
             
@@ -56,7 +56,7 @@ public class ConfigSerializer {
                 try {
                     config.setMusicVolume(Double.parseDouble(musicVolumeStr));
                 } catch (NumberFormatException e) {
-                    // ถ้าแปลงค่าไม่ได้ ใช้ค่าเริ่มต้น
+                    
                 }
             }
             
@@ -65,7 +65,7 @@ public class ConfigSerializer {
                 try {
                     config.setSfxVolume(Double.parseDouble(sfxVolumeStr));
                 } catch (NumberFormatException e) {
-                    // ถ้าแปลงค่าไม่ได้ ใช้ค่าเริ่มต้น
+                    
                 }
             }
             

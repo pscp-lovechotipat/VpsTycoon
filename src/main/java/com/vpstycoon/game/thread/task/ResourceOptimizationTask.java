@@ -23,10 +23,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
 
-/**
- * Resource Optimization Task
- * The player needs to allocate resources efficiently by adjusting sliders to match target values
- */
+
 public class ResourceOptimizationTask extends GameTask {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceOptimizationTask.class.getName());
@@ -48,13 +45,13 @@ public class ResourceOptimizationTask extends GameTask {
                 "Resource Allocation",
                 "Optimize system resources for maximum efficiency",
                 "/images/task/resource_task.png",
-                7000, // reward
-                25,  // penalty (0.25 * 100)
-                4,    // difficulty
-                60    // time limit in seconds
+                7000, 
+                25,  
+                4,    
+                60    
         );
         
-        // Generate random target values (between 0.3 and 0.9) for each resource
+        
         for (int i = 0; i < NUM_RESOURCES; i++) {
             targetValues.add(0.3 + random.nextDouble() * 0.6);
         }
@@ -62,16 +59,16 @@ public class ResourceOptimizationTask extends GameTask {
 
     @Override
     protected void initializeTaskSpecifics() {
-        // Create main task container
+        
         BorderPane taskPane = new BorderPane();
         CyberpunkEffects.styleTaskPane(taskPane);
         taskPane.setPrefSize(600, 400);
         taskPane.setPadding(new Insets(20));
         
-        // Add animated background and grid lines
+        
         CyberpunkEffects.addAnimatedBackground(taskPane);
         
-        // Create title area
+        
         VBox headerBox = new VBox(10);
         headerBox.setAlignment(Pos.CENTER);
         Text titleText = CyberpunkEffects.createTaskTitle("RESOURCE OPTIMIZATION SYSTEMS");
@@ -79,12 +76,12 @@ public class ResourceOptimizationTask extends GameTask {
         headerBox.getChildren().addAll(titleText, descText);
         taskPane.setTop(headerBox);
         
-        // Create main content area with sliders
+        
         VBox slidersContainer = new VBox(15);
         slidersContainer.setPadding(new Insets(20, 0, 20, 0));
         slidersContainer.setAlignment(Pos.CENTER);
         
-        // Resource names
+        
         String[] resourceNames = {
             "CPU ALLOCATION", 
             "MEMORY UTILIZATION", 
@@ -92,16 +89,16 @@ public class ResourceOptimizationTask extends GameTask {
             "STORAGE I/O PRIORITY"
         };
         
-        // Create sliders for each resource
+        
         for (int i = 0; i < NUM_RESOURCES; i++) {
             final int index = i;
             HBox resourceBox = new HBox(15);
             resourceBox.setAlignment(Pos.CENTER_LEFT);
             
-            // Resource name label
+            
             Label nameLabel = CyberpunkEffects.createGlowingLabel(resourceNames[i], "#00FFFF");
             
-            // Resource slider
+            
             Slider slider = new Slider(0, 1, 0.5);
             slider.setPrefWidth(200);
             slider.setStyle(
@@ -109,37 +106,37 @@ public class ResourceOptimizationTask extends GameTask {
                     "-fx-accent: " + CyberpunkEffects.NEON_COLORS[i % CyberpunkEffects.NEON_COLORS.length].toString().replace("0x", "#") + ";"
             );
             
-            // Visual indicator for target
+            
             Pane indicatorPane = new Pane();
             indicatorPane.setPrefSize(200, 30);
             indicatorPane.setStyle("-fx-background-color: #151530; -fx-border-color: #303060; -fx-border-width: 1;");
             
-            // Create rectangle indicator for current level
+            
             Rectangle levelIndicator = new Rectangle(0, 5, 10, 20);
             levelIndicator.setFill(CyberpunkEffects.NEON_COLORS[i % CyberpunkEffects.NEON_COLORS.length]);
             indicatorPane.getChildren().add(levelIndicator);
             
-            // Create target zone indicator
+            
             Rectangle targetZone = new Rectangle(0, 0, 3, 30);
             targetZone.setFill(Color.WHITE);
             targetZone.setOpacity(0.7);
             indicatorPane.getChildren().add(targetZone);
             
-            // Position target indicator
+            
             double targetX = targetValues.get(i) * 200;
             targetZone.setX(targetX);
             
-            // Status label
+            
             Label statusLabel = new Label("SUBOPTIMAL");
             statusLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 12));
             statusLabel.setTextFill(Color.ORANGERED);
             
-            // Update indicator position when slider value changes
+            
             slider.valueProperty().addListener((obs, oldVal, newVal) -> {
                 double x = newVal.doubleValue() * 200 - 5;
                 levelIndicator.setX(x);
                 
-                // Check if value is close to target
+                
                 if (Math.abs(newVal.doubleValue() - targetValues.get(index)) < 0.05) {
                     if (!statusLabel.getText().equals("OPTIMIZED")) {
                         optimizedCount++;
@@ -157,23 +154,23 @@ public class ResourceOptimizationTask extends GameTask {
                 }
             });
             
-            // Add components to resource box
+            
             resourceBox.getChildren().addAll(nameLabel, slider, indicatorPane, statusLabel);
             slidersContainer.getChildren().add(resourceBox);
             
-            // Store references
+            
             sliders.add(slider);
             indicators.add(levelIndicator);
             statusLabels.add(statusLabel);
         }
         
-        // System status display
+        
         systemStatusLabel = new Label("SYSTEM EFFICIENCY: 0%");
         systemStatusLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 16));
         systemStatusLabel.setTextFill(Color.web("#FF9500"));
         CyberpunkEffects.pulseNode(systemStatusLabel);
         
-        // Optimize button
+        
         optimizeButton = CyberpunkEffects.createCyberpunkButton("FINALIZE OPTIMIZATION", true);
         optimizeButton.setDisable(true);
         optimizeButton.setOnAction(e -> {
@@ -184,29 +181,27 @@ public class ResourceOptimizationTask extends GameTask {
             }
         });
         
-        // Create bottom button area
+        
         VBox bottomBox = new VBox(15);
         bottomBox.setAlignment(Pos.CENTER);
         bottomBox.getChildren().addAll(systemStatusLabel, optimizeButton);
         
-        // Add scanning effect to the main pane
+        
         CyberpunkEffects.addScanningEffect(taskPane);
         
-        // Add components to the main pane
+        
         taskPane.setCenter(slidersContainer);
         taskPane.setBottom(bottomBox);
         BorderPane.setMargin(bottomBox, new Insets(0, 0, 20, 0));
         
-        // Add instructions with glitch animation
+        
         addInstructionsWithGlitch(taskPane);
         
-        // Add the task pane to the game pane
+        
         gamePane.getChildren().add(taskPane);
     }
     
-    /**
-     * Add glitching instructions to the task pane
-     */
+    
     private void addInstructionsWithGlitch(Pane pane) {
         Label instructionsLabel = new Label("DRAG SLIDERS TO MATCH TARGET INDICATORS");
         instructionsLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 14));
@@ -215,7 +210,7 @@ public class ResourceOptimizationTask extends GameTask {
         instructionsLabel.setTranslateY(20);
         instructionsLabel.setOpacity(0.8);
         
-        // Add glitch effect to instructions
+        
         Timeline glitchTimeline = new Timeline(
             new KeyFrame(Duration.ZERO, 
                 new KeyValue(instructionsLabel.opacityProperty(), 0.8)),
@@ -236,9 +231,7 @@ public class ResourceOptimizationTask extends GameTask {
         pane.getChildren().add(instructionsLabel);
     }
     
-    /**
-     * Update the system status based on optimized resources
-     */
+    
     private void updateSystemStatus() {
         int percentage = (int)((optimizedCount / (double)NUM_RESOURCES) * 100);
         systemStatusLabel.setText("SYSTEM EFFICIENCY: " + percentage + "%");
@@ -253,7 +246,7 @@ public class ResourceOptimizationTask extends GameTask {
             systemStatusLabel.setTextFill(Color.web("#00FF00"));
         }
         
-        // Enable optimize button when all resources are optimized
+        
         optimizeButton.setDisable(optimizedCount < NUM_RESOURCES);
     }
 } 

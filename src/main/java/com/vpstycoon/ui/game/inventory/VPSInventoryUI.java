@@ -17,9 +17,7 @@ import javafx.scene.layout.VBox;
 
 import java.util.Map;
 
-/**
- * UI for displaying and managing the VPS inventory
- */
+
 public class VPSInventoryUI {
     private final GameplayContentPane parent;
     
@@ -27,21 +25,19 @@ public class VPSInventoryUI {
         this.parent = parent;
     }
     
-    /**
-     * Open the VPS inventory UI
-     */
+    
     public void openInventory() {
-        // Create main container
+        
         BorderPane inventoryPane = new BorderPane();
         inventoryPane.setPrefSize(800, 600);
         inventoryPane.setStyle("-fx-background-color: linear-gradient(to bottom, #1a0033, #000022); -fx-padding: 20px;");
         
-        // Hide the menu bars
+        
         parent.getMenuBar().setVisible(false);
         parent.getMoneyUI().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
         
-        // Create title bar
+        
         HBox titleBar = new HBox(20);
         titleBar.setAlignment(Pos.CENTER_LEFT);
         titleBar.setStyle("-fx-background-color: #2a0a3a; -fx-padding: 10px; -fx-background-radius: 5px; " +
@@ -59,11 +55,11 @@ public class VPSInventoryUI {
         
         titleBar.getChildren().addAll(backButton, titleLabel);
         
-        // Create inventory content
+        
         VBox contentBox = new VBox(20);
         contentBox.setPadding(new Insets(20));
         
-        // Inventory stats
+        
         HBox statsBox = new HBox(20);
         statsBox.setAlignment(Pos.CENTER_LEFT);
         statsBox.setPadding(new Insets(15));
@@ -71,16 +67,16 @@ public class VPSInventoryUI {
                          "-fx-border-color: #8a2be2; -fx-border-width: 1px; " +
                          "-fx-effect: dropshadow(gaussian, rgba(110,0,220,0.3), 5, 0, 0, 2);");
         
-        // โหลดข้อมูลจาก GameState ถ้ามี
+        
         boolean inventoryUpdated = false;
         GameState currentState = ResourceManager.getInstance().getCurrentState();
         if (currentState != null) {
-            // พยายามอัปเดตข้อมูล VPSInventory จาก GameState
+            
             for (GameObject obj : currentState.getGameObjects()) {
                 if (obj instanceof VPSOptimization) {
                     VPSOptimization vps = (VPSOptimization) obj;
                     if (!vps.isInstalled()) {
-                        // ถ้า VPS ไม่ได้ติดตั้ง ให้ตรวจสอบว่าอยู่ในคลังหรือยัง
+                        
                         if (!parent.getVpsInventory().getInventoryMap().containsKey(vps.getVpsId())) {
                             parent.getVpsInventory().addVPS(vps.getVpsId(), vps);
                             inventoryUpdated = true;
@@ -100,42 +96,39 @@ public class VPSInventoryUI {
         Label rackStatsLabel = new Label("RACK SLOTS: " + parent.getRack().getOccupiedSlotUnits() + "/" + parent.getRack().getMaxSlotUnits());
         rackStatsLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 16px; -fx-font-weight: bold;");
         
-        // เพิ่มการแสดงฐานะทางการเงิน
+        
         Label moneyLabel = new Label("BALANCE: $" + ResourceManager.getInstance().getCompany().getMoney());
         moneyLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-size: 16px; -fx-font-weight: bold;");
         
         statsBox.getChildren().addAll(inventoryCountLabel, rackStatsLabel, moneyLabel);
         
-        // Inventory list
+        
         VBox inventoryList = createInventoryList();
         
-        // Add to scroll pane for large inventories
+        
         ScrollPane scrollPane = new ScrollPane(inventoryList);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent; " +
                            "-fx-control-inner-background: #1a0033; -fx-border-color: #8a2be2; -fx-border-width: 1px;");
         
-        // Add components to content box
+        
         contentBox.getChildren().addAll(statsBox, scrollPane);
         
-        // Add components to main pane
+        
         inventoryPane.setTop(titleBar);
         inventoryPane.setCenter(contentBox);
         
-        // Add to game area
+        
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(inventoryPane);
     }
     
-    /**
-     * Create the inventory list
-     * @return VBox containing the inventory items
-     */
+    
     private VBox createInventoryList() {
         VBox inventoryList = new VBox(10);
         inventoryList.setPadding(new Insets(10));
         
-        // Get inventory items
+        
         Map<String, VPSOptimization> inventory = parent.getVpsInventory().getInventoryMap();
         
         if (inventory.isEmpty()) {
@@ -145,7 +138,7 @@ public class VPSInventoryUI {
             return inventoryList;
         }
         
-        // Add header
+        
         HBox header = new HBox(20);
         header.setPadding(new Insets(10, 10, 10, 10));
         header.setStyle("-fx-background-color: #3a1a4a; -fx-background-radius: 5px; " +
@@ -174,15 +167,15 @@ public class VPSInventoryUI {
         header.getChildren().addAll(idHeader, specsHeader, sizeHeader, statusHeader, actionsHeader);
         inventoryList.getChildren().add(header);
         
-        // ตรวจสอบ Syncing status กับ GameState
+        
         GameState currentState = ResourceManager.getInstance().getCurrentState();
         
-        // Add inventory items
+        
         for (Map.Entry<String, VPSOptimization> entry : inventory.entrySet()) {
             String vpsId = entry.getKey();
             VPSOptimization vps = entry.getValue();
             
-            // ตรวจสอบว่า VPS อยู่ใน GameState หรือไม่
+            
             boolean syncedWithGameState = false;
             if (currentState != null && currentState.getGameObjects() != null) {
                 for (GameObject obj : currentState.getGameObjects()) {
@@ -203,20 +196,14 @@ public class VPSInventoryUI {
         return inventoryList;
     }
     
-    /**
-     * Create a row for an inventory item
-     * @param vpsId The VPS ID
-     * @param vps The VPS object
-     * @param syncedWithGameState ค่าบูลีนที่แสดงว่า VPS นี้ซิงค์กับ GameState หรือไม่
-     * @return HBox containing the item information
-     */
+    
     private HBox createInventoryItemRow(String vpsId, VPSOptimization vps, boolean syncedWithGameState) {
         HBox itemRow = new HBox(20);
         itemRow.setPadding(new Insets(10));
         itemRow.setStyle("-fx-background-color: #2a0a3a; -fx-background-radius: 5px; " +
                         "-fx-border-color: #8a2be2; -fx-border-width: 1px;");
         
-        // Add hover effect
+        
         itemRow.setOnMouseEntered(e -> 
             itemRow.setStyle("-fx-background-color: #3a1a4a; -fx-background-radius: 5px; " +
                            "-fx-border-color: #b041ff; -fx-border-width: 2px; " +
@@ -228,12 +215,12 @@ public class VPSInventoryUI {
                            "-fx-border-color: #8a2be2; -fx-border-width: 1px;")
         );
         
-        // VPS ID
+        
         Label idLabel = new Label(vpsId + (syncedWithGameState ? "" : " [SYNCING]"));
         idLabel.setMinWidth(150);
         idLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-weight: bold;");
         
-        // Specifications
+        
         Label specsLabel = new Label(String.format(
                 "vCPUs: %d, RAM: %d GB, Disk: %d GB",
                 vps.getVCPUs(), vps.getRamInGB(), vps.getDiskInGB()
@@ -241,18 +228,18 @@ public class VPSInventoryUI {
         specsLabel.setMinWidth(200);
         specsLabel.setStyle("-fx-text-fill: #e0b0ff;");
         
-        // Size
+        
         Label sizeLabel = new Label(vps.getSize().getDisplayName() + " (" + vps.getSlotsRequired() + " slots)");
         sizeLabel.setMinWidth(80);
         sizeLabel.setStyle("-fx-text-fill: #e0b0ff;");
         
-        // Status
+        
         Label statusLabel = new Label(syncedWithGameState ? "READY" : "SYNCING");
         statusLabel.setMinWidth(100);
         statusLabel.setStyle("-fx-text-fill: " + (syncedWithGameState ? "#00ff00;" : "#ffaa00;") + 
                            "-fx-font-weight: bold;");
         
-        // Actions
+        
         HBox actionsBox = new HBox(10);
         
         Button installButton = UIUtils.createModernButton("Install", "#27ae60");
@@ -261,7 +248,7 @@ public class VPSInventoryUI {
         Button detailsButton = UIUtils.createModernButton("Details", "#3498db");
         detailsButton.setOnAction(e -> showVPSDetails(vpsId, vps));
         
-        // ถ้าไม่ซิงค์กับ GameState ให้ปิดปุ่ม Install
+        
         if (!syncedWithGameState) {
             installButton.setDisable(true);
             installButton.setStyle(installButton.getStyle() + "-fx-opacity: 0.5;");
@@ -269,19 +256,15 @@ public class VPSInventoryUI {
         
         actionsBox.getChildren().addAll(installButton, detailsButton);
         
-        // Add all to row
+        
         itemRow.getChildren().addAll(idLabel, specsLabel, sizeLabel, statusLabel, actionsBox);
         
         return itemRow;
     }
     
-    /**
-     * Install a VPS from inventory to rack
-     * @param vpsId The VPS ID
-     * @param vps The VPS object
-     */
+    
     private void installVPS(String vpsId, VPSOptimization vps) {
-        // Check if there are enough slots available
+        
         if (vps.getSlotsRequired() > parent.getRack().getAvailableSlotUnits()) {
             parent.pushNotification("Installation Failed",
                     "Not enough slots available in the rack. You need " + vps.getSlotsRequired() +
@@ -289,14 +272,14 @@ public class VPSInventoryUI {
             return;
         }
 
-        // Install the VPS
+        
         boolean success = parent.installVPSFromInventory(vpsId);
         
         if (success) {
             parent.pushNotification("Server Installed", 
                     "Successfully installed " + vpsId + " into the rack.");
             
-            // Go directly to rack view instead of refreshing inventory
+            
             parent.openRackInfo();
         } else {
             parent.pushNotification("Installation Failed", 
@@ -304,25 +287,21 @@ public class VPSInventoryUI {
         }
     }
     
-    /**
-     * Show details for a VPS
-     * @param vpsId The VPS ID
-     * @param vps The VPS object
-     */
+    
     private void showVPSDetails(String vpsId, VPSOptimization vps) {
-        // Create a popup with VPS details
+        
         BorderPane detailsPane = new BorderPane();
         detailsPane.setPrefSize(400, 300);
         detailsPane.setStyle("-fx-background-color: linear-gradient(to bottom, #1a0033, #000022); " +
                            "-fx-padding: 20px; -fx-background-radius: 10px; -fx-border-color: #8a2be2; " +
                            "-fx-border-width: 2px; -fx-effect: dropshadow(gaussian, rgba(110,0,220,0.4), 10, 0, 0, 5);");
         
-        // Title
+        
         Label titleLabel = new Label("SERVER DETAILS: " + vpsId);
         titleLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 20px; -fx-font-weight: bold; " +
                           "-fx-effect: dropshadow(gaussian, #9370db, 2, 0.3, 0, 0);");
         
-        // Details
+        
         VBox detailsBox = new VBox(10);
         detailsBox.setPadding(new Insets(20, 0, 20, 0));
         detailsBox.setStyle("-fx-background-color: #2a0a3a; -fx-padding: 15px; -fx-background-radius: 5px; " +
@@ -348,11 +327,11 @@ public class VPSInventoryUI {
         
         detailsBox.getChildren().addAll(vcpuLabel, ramLabel, diskLabel, sizeLabel, slotsLabel, statusLabel);
         
-        // Close button
+        
         Button closeButton = UIUtils.createModernButton("Close", "#e74c3c");
         closeButton.setOnAction(e -> openInventory());
         
-        // Add components to details pane
+        
         detailsPane.setTop(titleLabel);
         detailsPane.setCenter(detailsBox);
         detailsPane.setBottom(closeButton);
@@ -360,7 +339,7 @@ public class VPSInventoryUI {
         BorderPane.setMargin(titleLabel, new Insets(0, 0, 10, 0));
         BorderPane.setMargin(closeButton, new Insets(10, 0, 0, 0));
         
-        // Add to game area
+        
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(detailsPane);
     }

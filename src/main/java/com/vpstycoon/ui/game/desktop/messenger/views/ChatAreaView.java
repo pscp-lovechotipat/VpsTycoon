@@ -42,13 +42,13 @@ public class ChatAreaView extends VBox {
         getStyleClass().add("chat-area");
         VBox.setVgrow(this, Priority.ALWAYS);
 
-        // Chat Header - เพิ่ม cyberpunk style
+        
         HBox chatHeader = new HBox(10);
         chatHeader.setAlignment(Pos.CENTER_LEFT);
         chatHeader.setPadding(new Insets(0, 0, 10, 0));
         chatHeader.setStyle("-fx-border-color: transparent transparent #9e33ff transparent; -fx-border-width: 0 0 1 0;");
 
-        // ปรับแต่ง Avatar ให้เป็นแบบสี่เหลี่ยมแบบ cyberpunk 
+        
         Rectangle customerAvatar = new Rectangle(40, 40);
         customerAvatar.setArcWidth(5);
         customerAvatar.setArcHeight(5);
@@ -56,12 +56,12 @@ public class ChatAreaView extends VBox {
         customerAvatar.setStroke(Color.web("#00c3ff"));
         customerAvatar.setStrokeWidth(1.5);
         
-        // เพิ่ม Glow effect
+        
         Glow avatarGlow = new Glow(0.5);
         customerAvatar.setEffect(avatarGlow);
         
-        // แทนที่ Circle Avatar เดิม
-        this.customerAvatar = null; // ล้าง reference เดิม
+        
+        this.customerAvatar = null; 
 
         VBox customerInfoBox = new VBox(3);
         customerNameLabel = new Label("SELECT CLIENT");
@@ -81,7 +81,7 @@ public class ChatAreaView extends VBox {
         chatHeader.getChildren().addAll(customerAvatar, customerInfoBox);
         HBox.setHgrow(customerInfoBox, Priority.ALWAYS);
 
-        // เพิ่ม chat stats/info ในรูปแบบ cyberpunk
+        
         HBox statusArea = new HBox(10);
         statusArea.setAlignment(Pos.CENTER_RIGHT);
         
@@ -96,13 +96,13 @@ public class ChatAreaView extends VBox {
         statusArea.getChildren().addAll(statusInfoLabel, signalIcon);
         chatHeader.getChildren().add(statusArea);
 
-        // Messages Area - Cyberpunk style
+        
         ScrollPane messagesScroll = new ScrollPane();
         messagesScroll.setFitToWidth(true);
         messagesScroll.getStyleClass().add("messages-scroll");
         VBox.setVgrow(messagesScroll, Priority.ALWAYS);
 
-        // เพิ่ม digital frame border แบบ cyberpunk
+        
         String digitalBorderStyle = "-fx-border-color: #9e33ff; -fx-border-width: 1; " +
                                     "-fx-border-radius: 5; -fx-effect: dropshadow(gaussian, #9e33ff, 5, 0.3, 0, 0);";
         messagesScroll.setStyle(messagesScroll.getStyle() + digitalBorderStyle);
@@ -112,7 +112,7 @@ public class ChatAreaView extends VBox {
         messagesBox.getStyleClass().add("messages-box");
         messagesScroll.setContent(messagesBox);
 
-        // Input Area - Cyberpunk style
+        
         HBox inputArea = new HBox(10);
         inputArea.setAlignment(Pos.CENTER);
         inputArea.getStyleClass().add("input-area");
@@ -122,7 +122,7 @@ public class ChatAreaView extends VBox {
         messageInput.getStyleClass().add("message-input");
         HBox.setHgrow(messageInput, Priority.ALWAYS);
 
-        // ปรับแต่งปุ่มด้วย cyberpunk style
+        
         sendButton = new Button("SEND >");
         sendButton.getStyleClass().add("cyber-button");
 
@@ -136,12 +136,12 @@ public class ChatAreaView extends VBox {
 
         inputArea.getChildren().addAll(messageInput, sendButton, assignVMButton, archiveButton);
 
-        // เพิ่ม cyberpunk border ให้กับ input area
+        
         inputArea.setStyle(inputArea.getStyle() + digitalBorderStyle);
 
         getChildren().addAll(chatHeader, messagesScroll, inputArea);
 
-        // Auto-scroll to bottom when new message is added
+        
         messagesBox.heightProperty().addListener((obs, oldVal, newVal) -> messagesScroll.setVvalue(1.0));
     }
 
@@ -153,12 +153,12 @@ public class ChatAreaView extends VBox {
             int g = Math.abs((nameHash / 100) % 100);
             int b = Math.abs((nameHash / 10000) % 100) + 100;
             
-            // ค้นหา Rectangle avatar ใน Chat Header
+            
             HBox chatHeader = (HBox) getChildren().get(0);
             Rectangle customerAvatar = (Rectangle) chatHeader.getChildren().get(0);
             customerAvatar.setFill(Color.rgb(r, g, b));
 
-            // เปลี่ยนรูปแบบข้อความให้เป็น cyberpunk style
+            
             customerTypeLabel.setText("[CLIENT:" + request.getName().toUpperCase() + "]");
 
             if (request.isActive()) {
@@ -174,7 +174,7 @@ public class ChatAreaView extends VBox {
         } else {
             customerNameLabel.setText("SELECT CLIENT");
             
-            // ค้นหา Rectangle avatar ใน Chat Header
+            
             HBox chatHeader = (HBox) getChildren().get(0);
             Rectangle customerAvatar = (Rectangle) chatHeader.getChildren().get(0);
             customerAvatar.setFill(Color.rgb(100, 50, 200));
@@ -185,7 +185,7 @@ public class ChatAreaView extends VBox {
     }
 
     public void loadChatHistory(CustomerRequest request) {
-        messagesBox.getChildren().clear(); // ล้าง UI เดิม
+        messagesBox.getChildren().clear(); 
         if (request == null) return;
 
         List<ChatMessage> history = chatHistoryManager.getChatHistory(request);
@@ -234,7 +234,7 @@ public class ChatAreaView extends VBox {
 
                             Platform.runLater(() -> messagesBox.getChildren().add(progressContainer));
 
-                            // อัปเดตแบบ real-time
+                            
                             Timer timer = new Timer();
                             timer.scheduleAtFixedRate(new TimerTask() {
                                 @Override
@@ -251,7 +251,7 @@ public class ChatAreaView extends VBox {
                                         }
                                     });
                                 }
-                            }, 0, 1000); // อัปเดตทุก 1 วินาที
+                            }, 0, 1000); 
                         } else {
                             addSystemMessageFromHistory(message.getContent());
                         }
@@ -269,7 +269,7 @@ public class ChatAreaView extends VBox {
         messageContainer.setPadding(new Insets(5, 0, 5, 0));
         messageContainer.getStyleClass().add("message-container");
 
-        // เปลี่ยน Circle avatar เป็น Rectangle แบบ cyberpunk
+        
         Rectangle avatar = new Rectangle(30, 30);
         avatar.setArcWidth(5);
         avatar.setArcHeight(5);
@@ -289,7 +289,7 @@ public class ChatAreaView extends VBox {
         messageLabel.getStyleClass().add("customer-message");
         messageLabel.setMinHeight(Region.USE_PREF_SIZE);
 
-        // เพิ่ม timestamp ในรูปแบบ cyberpunk
+        
         Label timeLabel = new Label("[" + LocalTime.now().format(timeFormatter) + "]");
         timeLabel.setStyle("-fx-text-fill: rgba(0, 255, 255, 0.8); -fx-font-size: 10px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
         timeLabel.setPadding(new Insets(0, 0, 0, 5));
@@ -315,7 +315,7 @@ public class ChatAreaView extends VBox {
         messageLabel.getStyleClass().add("user-message");
         messageLabel.setMinHeight(Region.USE_PREF_SIZE);
 
-        // เพิ่ม timestamp ในรูปแบบ cyberpunk
+        
         Label timeLabel = new Label("[" + LocalTime.now().format(timeFormatter) + "]");
         timeLabel.setAlignment(Pos.CENTER_RIGHT);
         timeLabel.setStyle("-fx-text-fill: rgba(0, 255, 255, 0.8); -fx-font-size: 10px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
@@ -323,7 +323,7 @@ public class ChatAreaView extends VBox {
 
         messageBox.getChildren().addAll(messageLabel, timeLabel);
         
-        // เปลี่ยน Circle avatar เป็น Rectangle แบบ cyberpunk
+        
         Rectangle avatar = new Rectangle(30, 30);
         avatar.setArcWidth(5);
         avatar.setArcHeight(5);
@@ -369,7 +369,7 @@ public class ChatAreaView extends VBox {
         messagesBox.getChildren().clear();
     }
 
-    // Getters
+    
     public Button getSendButton() { return sendButton; }
     public Button getAssignVMButton() { return assignVMButton; }
     public Button getArchiveButton() { return archiveButton; }

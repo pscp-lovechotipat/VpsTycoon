@@ -47,12 +47,12 @@ public class DesktopScreen extends StackPane {
     private void setupUI() {
         setStyle("-fx-background-color: #1e1e1e; -fx-background-image: url(/images/wallpaper/desktop_wallpaper_bambam.png); -fx-background-size: cover; -fx-background-position: center; -fx-background-repeat: no-repeat;");
         
-        // Set size to fill available space
-        setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        setPrefSize(1920, 1080); // Set a large preferred size
         
-        FlowPane iconsContainer = new FlowPane(20, 20); // Increase spacing
-        iconsContainer.setPadding(new Insets(30)); // Increase padding
+        setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        setPrefSize(1920, 1080); 
+        
+        FlowPane iconsContainer = new FlowPane(20, 20); 
+        iconsContainer.setPadding(new Insets(30)); 
         iconsContainer.setAlignment(Pos.TOP_LEFT);
         iconsContainer.setMaxWidth(Double.MAX_VALUE);
         iconsContainer.setMaxHeight(Double.MAX_VALUE);
@@ -67,32 +67,32 @@ public class DesktopScreen extends StackPane {
 
     private void openChatWindow() {
         if (chatWindow == null) {
-            // สร้าง ChatHistoryManager
+            
             ChatHistoryManager chatHistoryManager = ResourceManager.getInstance().getChatHistory();
 
-            // สร้าง MessengerController และส่ง ChatHistoryManager เข้าไป
+            
             chatController = new MessengerController(requestManager, vpsManager, company, chatHistoryManager,
                     parent.getRootStack(), gameTimeManager, this::closeChatWindow);
 
-            // ดึง MessengerWindow จาก MessengerController
+            
             chatWindow = chatController.getMessengerWindow();
 
-            // อัพเดต dashboardView ด้วยค่า free VM ที่ได้จาก company
+            
             chatWindow.getDashboardView().updateDashboard(
                 company.getRating(),
                 requestManager.getRequests().size(),
-                company.getAvailableVMs(),  // ใช้ค่า availableVMs ที่เก็บไว้ใน company
+                company.getAvailableVMs(),  
                 vpsManager.getVPSMap().size()
             );
 
-            // ตั้งค่าปุ่มปิดให้ทำงานอย่างถูกต้อง
+            
             chatWindow.getCloseButton().setOnAction(e -> {
                 chatController.close();
                 closeChatWindow();
             });
         }
         if (!getChildren().contains(chatWindow)) {
-            // ทุกครั้งที่เปิด chat window ให้อัพเดตข้อมูล free VM ล่าสุดจาก company
+            
             chatWindow.getDashboardView().updateDashboard(
                 company.getRating(),
                 requestManager.getRequests().size(),
@@ -100,7 +100,7 @@ public class DesktopScreen extends StackPane {
                 vpsManager.getVPSMap().size()
             );
             
-            // Make chat window larger
+            
             chatWindow.setPrefSize(900, 700);
             chatWindow.setMaxSize(1200, 800);
             
@@ -112,8 +112,8 @@ public class DesktopScreen extends StackPane {
     private void closeChatWindow() {
         if (chatWindow != null && getChildren().contains(chatWindow)) {
             getChildren().remove(chatWindow);
-            chatWindow = null; // รีเซ็ต chatWindow เพื่อให้สามารถสร้างใหม่ได้
-            chatController = null; // รีเซ็ต chatController
+            chatWindow = null; 
+            chatController = null; 
         }
     }
 
@@ -121,7 +121,7 @@ public class DesktopScreen extends StackPane {
         MarketWindow marketWindow = new MarketWindow(() -> getChildren().removeIf(node -> node instanceof MarketWindow),
                 () -> getChildren().removeIf(node -> node instanceof MarketWindow), vpsManager, parent);
         
-        // Make market window fill most of the screen
+        
         marketWindow.setPrefSize(1200, 800);
         marketWindow.setMaxSize(1600, 900);
         
@@ -133,7 +133,7 @@ public class DesktopScreen extends StackPane {
         DashboardWindow dashboardWindow = new DashboardWindow(company, vpsManager, requestManager,
                 () -> getChildren().removeIf(node -> node instanceof DashboardWindow));
         
-        // Make dashboard window larger
+        
         dashboardWindow.setPrefSize(1200, 800);
         dashboardWindow.setMaxSize(1600, 900);
         

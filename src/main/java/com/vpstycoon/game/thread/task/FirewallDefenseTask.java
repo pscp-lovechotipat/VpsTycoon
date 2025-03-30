@@ -22,10 +22,7 @@ import java.util.List;
 import java.util.Random;
 import com.vpstycoon.FontLoader;
 
-/**
- * Firewall Defense Task - Placeholder class
- * In the full implementation, player would need to defend against incoming cyber attacks
- */
+
 public class FirewallDefenseTask extends GameTask {
 
     private Timeline attackGenerator;
@@ -37,10 +34,10 @@ public class FirewallDefenseTask extends GameTask {
                 "Firewall Defense",
                 "Defend your network from incoming cyber attacks",
                 "/images/task/firewall_task.png",
-                7500, // reward
-                25,  // penalty (0.25 * 100)
-                3,    // difficulty
-                60    // time limit in seconds
+                7500, 
+                25,  
+                3,    
+                60    
         );
     }
 
@@ -55,7 +52,7 @@ public class FirewallDefenseTask extends GameTask {
         placeholderText.setFont(FontLoader.SECTION_FONT);
         placeholderText.setFill(Color.web("#00ffff"));
         
-        // Add glowing effect to title
+        
         DropShadow shadow = new DropShadow();
         shadow.setColor(Color.rgb(0, 255, 255, 0.7));
         shadow.setRadius(10);
@@ -65,16 +62,16 @@ public class FirewallDefenseTask extends GameTask {
         descText.setFont(FontLoader.LABEL_FONT);
         descText.setFill(Color.LIGHTCYAN);
         
-        // Main game area
+        
         Pane defenseGrid = new Pane();
         defenseGrid.setPrefSize(600, 400);
         defenseGrid.setPadding(new Insets(20));
         defenseGrid.setStyle("-fx-background-color: #0a1520; -fx-border-color: #3a4a5a; -fx-border-width: 2px;");
         
-        // Calculate the full width for the status bar (container width - padding)
+        
         double statusBarWidth = defenseGrid.getPrefWidth() + 80;
         
-        // Firewall status bar - Use the full width of the container
+        
         Rectangle statusBar = new Rectangle(statusBarWidth, 30);
         statusBar.setFill(Color.GREEN);
         statusBar.setX(10);
@@ -83,16 +80,16 @@ public class FirewallDefenseTask extends GameTask {
         Text statusText = new Text("Firewall Integrity: 100%");
         statusText.setFont(FontLoader.LABEL_FONT);
         statusText.setFill(Color.WHITE);
-        statusText.setX(statusBarWidth / 2 - 100); // Center the text
+        statusText.setX(statusBarWidth / 2 - 100); 
         statusText.setY(30);
         
         defenseGrid.getChildren().addAll(statusBar, statusText);
         
-        // Attack counters
-        int[] attacksToDefend = {10}; // Number of attacks to neutralize
-        int[] attacksNeutralized = {0}; // Counter for neutralized attacks
         
-        // Statistics display
+        int[] attacksToDefend = {10}; 
+        int[] attacksNeutralized = {0}; 
+        
+        
         HBox statsBox = new HBox(40);
         statsBox.setAlignment(Pos.CENTER);
         statsBox.setPadding(new Insets(20));
@@ -107,26 +104,26 @@ public class FirewallDefenseTask extends GameTask {
         
         statsBox.getChildren().addAll(attacksRemainingText, attacksBlockedText);
         
-        // Attack generator timeline
+        
         attackGenerator = new Timeline(
             new KeyFrame(Duration.seconds(1.2), event -> {
                 if (attacksToDefend[0] > 0 && activeAttacks.size() < 5) {
-                    // Create a new attack at random position
+                    
                     AttackNode attack = createRandomAttack(defenseGrid);
                     activeAttacks.add(attack);
                     
-                    // Decrease remaining attacks
+                    
                     attacksToDefend[0]--;
                     attacksRemainingText.setText("Remaining Attacks: " + attacksToDefend[0]);
                     
-                    // Auto-damage timeline for this attack
+                    
                     Timeline damageFire = new Timeline(
                         new KeyFrame(Duration.seconds(5), e -> {
                             if (!attack.isNeutralized()) {
-                                // Attack hit firewall and caused damage
+                                
                                 decreaseFirewallIntegrity(statusBar, statusText, statusBarWidth);
                                 
-                                // Remove attack
+                                
                                 defenseGrid.getChildren().remove(attack.getStackPane());
                                 activeAttacks.remove(attack);
                             }
@@ -135,7 +132,7 @@ public class FirewallDefenseTask extends GameTask {
                     damageFire.play();
                     attackTimelines.add(damageFire);
                     
-                    // Setup click handler for attack
+                    
                     attack.setupClickHandler(defenseGrid, attacksNeutralized, attacksBlockedText, statusText);
                 }
             })
@@ -158,37 +155,37 @@ public class FirewallDefenseTask extends GameTask {
             }
         }
         
-        // หยุด timelines ของแต่ละ attack
+        
         for (AttackNode attack : activeAttacks) {
             attack.stopPulseAnimation();
         }
     }
     
-    // Create a random attack visualization
+    
     private AttackNode createRandomAttack(Pane container) {
         Random rand = random;
         
-        // Get the visible area dimensions (accounting for the shape size)
-        double attackSize = 40; // Maximum size of an attack node
-        double safeMargin = 50; // Safe margin to avoid UI elements
         
-        // Restrict the spawn area to avoid UI elements and stay within visible bounds
+        double attackSize = 40; 
+        double safeMargin = 50; 
+        
+        
         double minX = safeMargin;
         double maxX = container.getPrefWidth() - safeMargin - attackSize;
         double minY = safeMargin;
         double maxY = container.getPrefHeight() - safeMargin - attackSize;
         
-        // Random position within the safe area
+        
         double x = minX + rand.nextDouble() * (maxX - minX);
         double y = minY + rand.nextDouble() * (maxY - minY);
         
-        // Random attack type
+        
         int attackType = rand.nextInt(3);
         
-        // Create attack based on type
+        
         AttackNode attack;
         if (attackType == 0) {
-            // Virus attack - red square
+            
             Rectangle virus = new Rectangle(30, 30);
             virus.setFill(Color.RED);
             virus.setArcWidth(5);
@@ -197,7 +194,7 @@ public class FirewallDefenseTask extends GameTask {
             
             attack = new AttackNode(virus, "VIRUS");
         } else if (attackType == 1) {
-            // Malware - purple hexagon
+            
             javafx.scene.shape.Polygon malware = new javafx.scene.shape.Polygon();
             for (int i = 0; i < 6; i++) {
                 double angle = 2.0 * Math.PI * i / 6;
@@ -208,39 +205,39 @@ public class FirewallDefenseTask extends GameTask {
             
             attack = new AttackNode(malware, "MALWARE");
         } else {
-            // Ransomware - orange circle
+            
             javafx.scene.shape.Circle ransomware = new javafx.scene.shape.Circle(18);
             ransomware.setFill(Color.ORANGE);
             
             attack = new AttackNode(ransomware, "RANSOM");
         }
         
-        // Position the attack node
+        
         attack.getStackPane().setLayoutX(x - 20);
         attack.getStackPane().setLayoutY(y - 20);
         
-        // Add to container
+        
         container.getChildren().add(attack.getStackPane());
         
         return attack;
     }
     
-    // Decrease firewall integrity
+    
     private void decreaseFirewallIntegrity(Rectangle statusBar, Text statusText, double fullWidth) {
-        // Current width is proportional to integrity
+        
         double currentWidth = statusBar.getWidth();
         
-        // Decrease by 10%
-        double newWidth = Math.max(0, currentWidth - (fullWidth * 0.1)); // 10% of full width
+        
+        double newWidth = Math.max(0, currentWidth - (fullWidth * 0.1)); 
         statusBar.setWidth(newWidth);
         
-        // Update percentage text
+        
         int percentage = (int) (newWidth / fullWidth * 100);
         statusText.setText("Firewall Integrity: " + percentage + "%");
         
         log("Firewall integrity decreased to " + percentage + "%");
         
-        // Change color based on percentage
+        
         if (percentage < 25) {
             statusBar.setFill(Color.RED);
         } else if (percentage < 50) {
@@ -249,7 +246,7 @@ public class FirewallDefenseTask extends GameTask {
             statusBar.setFill(Color.YELLOW);
         }
         
-        // Fail task if integrity reaches 0
+        
         if (percentage <= 0) {
             log("Firewall integrity is zero, task failed");
             stopAllTimelines();
@@ -257,7 +254,7 @@ public class FirewallDefenseTask extends GameTask {
         }
     }
     
-    // Class to represent an attack
+    
     private class AttackNode {
         private final javafx.scene.shape.Shape shape;
         private final StackPane stackPane;
@@ -269,20 +266,20 @@ public class FirewallDefenseTask extends GameTask {
             this.shape = shape;
             this.type = type;
             
-            // Create label with proper styling
+            
             Text label = new Text(type);
             label.setFont(FontLoader.loadFont(10));
             label.setFill(Color.WHITE);
             
-            // Add glow to the label
+            
             Glow glow = new Glow(0.5);
             label.setEffect(glow);
             
-            // Create stack pane to hold shape and label
+            
             stackPane = new StackPane(shape, label);
             stackPane.setPrefSize(40, 40);
             
-            // Add pulsing effect
+            
             pulseAnimation = new Timeline(
                 new KeyFrame(Duration.seconds(0), e -> stackPane.setOpacity(1.0)),
                 new KeyFrame(Duration.seconds(0.5), e -> stackPane.setOpacity(0.7)),
@@ -292,20 +289,20 @@ public class FirewallDefenseTask extends GameTask {
             pulseAnimation.play();
         }
         
-        // Add click handler for stack pane
+        
         public void setupClickHandler(Pane defenseGrid, int[] attacksNeutralized, Text attacksBlockedText, Text statusText) {
             stackPane.setOnMouseClicked(e -> {
-                // Update counters
+                
                 attacksNeutralized[0]++;
                 attacksBlockedText.setText("Attacks Neutralized: " + attacksNeutralized[0]);
                 
-                // Visual feedback
+                
                 shape.setFill(Color.GREEN.deriveColor(1, 1, 1, 0.5));
                 
-                // Neutralize attack
+                
                 neutralize();
                 
-                // Remove after animation
+                
                 Timeline removeTimeline = new Timeline(
                     new KeyFrame(Duration.seconds(0.5), ev -> {
                         defenseGrid.getChildren().remove(stackPane);
@@ -315,7 +312,7 @@ public class FirewallDefenseTask extends GameTask {
                 removeTimeline.play();
                 attackTimelines.add(removeTimeline);
                 
-                // Check if task is complete
+                
                 if (attacksNeutralized[0] >= 10 && 
                     Double.parseDouble(statusText.getText().replaceAll("[^0-9.]", "")) > 50) {
                     stopAllTimelines();

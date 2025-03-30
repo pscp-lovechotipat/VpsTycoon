@@ -14,29 +14,29 @@ public class GameObjectView extends StackPane {
     public GameObjectView(GameObject gameObject) {
         this.gameObject = gameObject;
 
-        // ✅ กำหนดสีของปุ่มตามประเภทของ GameObject
+        
         Color buttonColor;
         switch (gameObject.getName().toLowerCase()) {
             case "marketing":
-                buttonColor = Color.web("#28a745"); // 🟢 Green
+                buttonColor = Color.web("#28a745"); 
                 break;
             case "security":
-                buttonColor = Color.web("#6f42c1"); // 🟣 Purple
+                buttonColor = Color.web("#6f42c1"); 
                 break;
             case "network":
-                buttonColor = Color.web("#007bff"); // 🔵 Blue
+                buttonColor = Color.web("#007bff"); 
                 break;
             case "server":
-                buttonColor = Color.web("#f39c12"); // 🟠 Orange (ตัวอย่าง)
+                buttonColor = Color.web("#f39c12"); 
                 break;
             case "database":
-                buttonColor = Color.web("#e74c3c"); // 🔴 Red (ตัวอย่าง)
+                buttonColor = Color.web("#e74c3c"); 
                 break;
             default:
-                buttonColor = Color.LIGHTGRAY; // ค่าเริ่มต้น (เป็นสีเทา)
+                buttonColor = Color.LIGHTGRAY; 
         }
 
-        // เปลี่ยนพื้นหลังเป็นวงกลม และใช้สีที่กำหนด
+        
         background = new Circle(50);
         background.setFill(buttonColor);
         background.setStroke(Color.TRANSPARENT);
@@ -58,8 +58,8 @@ public class GameObjectView extends StackPane {
             background.setStroke(Color.TRANSPARENT);
             background.setEffect(null);
         });
-        // ✅ ปรับตำแหน่งให้อยู่สูงขึ้นไป (เลื่อนขึ้น)
+        
         setTranslateX(gameObject.getX());
-        setTranslateY(gameObject.getY() - 100); // เลื่อนขึ้นไป 100 px
+        setTranslateY(gameObject.getY() - 100); 
     }
 }

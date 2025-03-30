@@ -30,7 +30,7 @@ public class SkillPointsWindow extends VBox {
     private void setupUI() {
         setPrefSize(700, 600);
 
-        // Title Bar
+        
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_RIGHT);
         titleBar.setPadding(new Insets(8, 15, 8, 15));
@@ -48,7 +48,7 @@ public class SkillPointsWindow extends VBox {
 
         titleBar.getChildren().addAll(titleLabel, closeButton);
 
-        // Available Points Section
+        
         HBox pointsBox = new HBox();
         pointsBox.setAlignment(Pos.CENTER);
         pointsBox.setPadding(new Insets(15));
@@ -63,25 +63,25 @@ public class SkillPointsWindow extends VBox {
 
         pointsBox.getChildren().addAll(pointsTitle, availablePointsLabel);
 
-        // Scrollable Content
+        
         ScrollPane scrollPane = (ScrollPane) getChildren().get(2);
-        scrollPane.setFitToWidth(true);  // Makes content stretch to window width
-        scrollPane.setStyle("-fx-background: #f5f6fa; -fx-border-color: transparent;"); // Match window background
+        scrollPane.setFitToWidth(true);  
+        scrollPane.setStyle("-fx-background: #f5f6fa; -fx-border-color: transparent;"); 
 
         VBox scrollContent = (VBox) scrollPane.getContent();
-        scrollContent.setPadding(new Insets(0, 15, 15, 15)); // Match original padding
+        scrollContent.setPadding(new Insets(0, 15, 15, 15)); 
 
-        // Skills Section
+        
         VBox skillsContainer = (VBox) scrollContent.getChildren().get(0);
 
         skillsContainer.getChildren().clear();
 
-        // Add each skill type
+        
         for (SkillType skillType : SkillType.values()) {
             skillsContainer.getChildren().add(createSkillCard(skillType));
         }
 
-        // Help Section
+        
         VBox helpBox = new VBox(10);
         helpBox.setPadding(new Insets(15));
         helpBox.setStyle("-fx-background-color: #ecf0f1; -fx-border-radius: 5; -fx-background-radius: 5;");
@@ -97,26 +97,26 @@ public class SkillPointsWindow extends VBox {
 
         helpBox.getChildren().addAll(helpTitle, helpText);
 
-        // Add skills and help to scrollable content
+        
         scrollContent.getChildren().addAll(skillsContainer, helpBox);
         scrollPane.setContent(scrollContent);
 
-        // Add all sections to the main container
+        
         getChildren().addAll(titleBar, pointsBox, scrollPane);
 
-        // Make scrollPane take remaining space
+        
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
     }
 
     private BorderPane createSkillCard(SkillType skillType) {
-        // [Original createSkillCard method remains unchanged]
+        
         BorderPane card = new BorderPane();
         card.setPadding(new Insets(10));
         card.setStyle("-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 1; " +
                 "-fx-border-radius: 5; -fx-background-radius: 5; " +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
 
-        // Left side - Skill info
+        
         VBox infoBox = new VBox(5);
         Label nameLabel = new Label(skillType.getName());
         nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -156,7 +156,7 @@ public class SkillPointsWindow extends VBox {
                 if (currentLevel >= 2) {
                     bonusText += " (Firewall management unlocked)";
                     
-                    // Add payment bonus information
+                    
                     if (currentLevel == 2) {
                         bonusText += ", +3% VM payment bonus";
                     } else if (currentLevel == 3) {
@@ -210,9 +210,9 @@ public class SkillPointsWindow extends VBox {
             if (skillPointsSystem.upgradeSkill(skillType)) {
                 updateUI();
                 
-                // If upgrading RACK_SLOTS, notify parent to update rack UI
+                
                 if (skillType == SkillType.RACK_SLOTS) {
-                    // Update any open RackManagementUI instances
+                    
                     ResourceManager.getInstance().notifyRackUIUpdate();
                 }
             }
@@ -232,7 +232,7 @@ public class SkillPointsWindow extends VBox {
     public void updateUI() {
         availablePointsLabel.setText(String.valueOf(skillPointsSystem.getAvailablePoints()));
 
-        // Update skills container within scroll pane
+        
         ScrollPane scrollPane = (ScrollPane) getChildren().get(2);
         VBox scrollContent = (VBox) scrollPane.getContent();
         VBox skillsContainer = (VBox) scrollContent.getChildren().get(0);

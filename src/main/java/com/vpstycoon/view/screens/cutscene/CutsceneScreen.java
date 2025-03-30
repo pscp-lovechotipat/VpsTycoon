@@ -16,18 +16,14 @@ import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 
-/**
- * หน้าจอ Cutscene สำหรับแสดงเนื้อเรื่องในเกม
- */
+
 public class CutsceneScreen extends GameScreen {
     
     private final GameConfig config;
     private final ScreenManager screenManager;
     private final INavigator navigator;
     
-    /**
-     * สร้าง CutsceneScreen
-     */
+    
     public CutsceneScreen(GameConfig config, ScreenManager screenManager, INavigator navigator) {
         this.config = config;
         this.screenManager = screenManager;
@@ -36,12 +32,12 @@ public class CutsceneScreen extends GameScreen {
         createUI();
     }
     
-    // สร้าง UI สำหรับหน้าจอ
+    
     private void createUI() {
         StackPane rootPane = new StackPane();
         rootPane.setStyle("-fx-background-color: black;");
         
-        // สร้างเนื้อหา cutscene แบบง่าย
+        
         VBox contentBox = new VBox(20);
         contentBox.setAlignment(Pos.CENTER);
         contentBox.setMaxWidth(800);
@@ -65,7 +61,7 @@ public class CutsceneScreen extends GameScreen {
         
         root = rootPane;
         
-        // เพิ่ม transition
+        
         FadeTransition fadeIn = new FadeTransition(Duration.seconds(2), rootPane);
         fadeIn.setFromValue(0);
         fadeIn.setToValue(1);
@@ -74,16 +70,16 @@ public class CutsceneScreen extends GameScreen {
 
     @Override
     public void onShow() {
-        // อาจเพิ่มคำสั่งเริ่มเพลงหรือแอนิเมชัน
+        
     }
 
     @Override
     public void onHide() {
-        // ทำความสะอาดทรัพยากร
+        
     }
 
     @Override
     public void onResize(double width, double height) {
-        // ปรับขนาดตามหน้าจอ
+        
     }
 } 

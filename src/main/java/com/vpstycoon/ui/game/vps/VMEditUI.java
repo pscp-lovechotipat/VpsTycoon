@@ -25,12 +25,12 @@ public class VMEditUI {
     }
 
     public void openEditVMPage(VPSOptimization.VM vm, VPSOptimization vps) {
-        // สร้างหน้าหลักสำหรับแก้ไข VM
+        
         BorderPane editVMPane = new BorderPane();
         editVMPane.setPrefSize(800, 600);
         editVMPane.setStyle("-fx-background-color: linear-gradient(to bottom, #1E0033, #2D0A4E); -fx-padding: 20px;");
         
-        // Add a cyber grid background effect
+        
         GridPane cyberGrid = new GridPane();
         cyberGrid.setHgap(1);
         cyberGrid.setVgap(1);
@@ -44,15 +44,15 @@ public class VMEditUI {
         }
         editVMPane.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
         
-        // Add the grid as the background
+        
         StackPane contentContainer = new StackPane();
         contentContainer.getChildren().addAll(cyberGrid);
         
-        // Hide the menu bars
+        
         parent.getMenuBar().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
         
-        // ส่วนหัว
+        
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
         topBar.setStyle("-fx-background-color: #3A0066; -fx-padding: 15px; -fx-background-radius: 5px; -fx-border-color: #8A2BE2; -fx-border-width: 2px; -fx-effect: dropshadow(gaussian, rgba(170, 80, 255, 0.7), 10, 0, 0, 5);");
@@ -70,13 +70,13 @@ public class VMEditUI {
         backButton.setOnAction(e -> parent.openVMInfoPage(vm, vps));
         topBar.getChildren().addAll(backButton, titleLabel);
         
-        // ฟอร์มสำหรับแก้ไขข้อมูล
+        
         VBox formBox = new VBox(20);
         formBox.setAlignment(Pos.CENTER);
         formBox.setPadding(new Insets(25));
         formBox.setStyle("-fx-background-color: rgba(40, 10, 60, 0.7); -fx-background-radius: 10px; -fx-border-color: #8A2BE2; -fx-border-width: 1px; -fx-border-radius: 10px; -fx-effect: dropshadow(gaussian, rgba(170, 80, 255, 0.5), 10, 0, 0, 5);");
 
-        // ส่วนข้อมูลพื้นฐาน
+        
         VBox infoSection = createCyberSection("BASIC CONFIG");
         
         HBox nameBox = new HBox(15);
@@ -98,10 +98,10 @@ public class VMEditUI {
         ipBox.getChildren().addAll(ipLabel, ipField);
         infoSection.getChildren().addAll(nameBox, ipBox);
 
-        // ส่วนการตั้งค่าประสิทธิภาพ
+        
         VBox perfSection = createCyberSection("HARDWARE SPECS");
         
-        // VCPU controls with +/- buttons
+        
         HBox vcpuBox = new HBox(15);
         vcpuBox.setAlignment(Pos.CENTER_LEFT);
         Label vcpuLabel = new Label("vCPUs:");
@@ -135,12 +135,12 @@ public class VMEditUI {
             }
         });
         
-        // RAM controls
+        
         Label ramLabel = new Label("RAM:");
         ramLabel.setStyle("-fx-text-fill: #BB99FF; -fx-font-family: 'Courier New'; -fx-font-weight: bold;");
         TextField ramField = createCyberTextField(vm.getRam());
         
-        // Disk controls
+        
         Label diskLabel = new Label("DISK:");
         diskLabel.setStyle("-fx-text-fill: #BB99FF; -fx-font-family: 'Courier New'; -fx-font-weight: bold;");
         TextField diskField = createCyberTextField(vm.getDisk());
@@ -149,7 +149,7 @@ public class VMEditUI {
         
         perfSection.getChildren().add(vcpuBox);
 
-        // ส่วนสถานะ
+        
         VBox statusSection = createCyberSection("OPERATIONAL STATUS");
         HBox statusBox = new HBox(15);
         statusBox.setAlignment(Pos.CENTER_LEFT);
@@ -161,7 +161,7 @@ public class VMEditUI {
         statusChoice.setValue(vm.getStatus());
         statusChoice.setStyle("-fx-background-color: #330055; -fx-mark-color: #AA66FF; -fx-text-fill: #DDAAFF;");
         
-        // Status indicator light
+        
         StackPane statusLight = new StackPane();
         statusLight.setPrefSize(15, 15);
         statusLight.setStyle("-fx-background-radius: 10; -fx-background-color: " + 
@@ -183,7 +183,7 @@ public class VMEditUI {
 
         formBox.getChildren().addAll(infoSection, perfSection, statusSection);
 
-        // ปุ่มควบคุม
+        
         HBox buttonBox = new HBox(20);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
         buttonBox.setPadding(new Insets(15));
@@ -213,7 +213,7 @@ public class VMEditUI {
         editVMPane.setCenter(formBox);
         editVMPane.setBottom(buttonBox);
 
-        // แสดงผล
+        
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(editVMPane);
     }

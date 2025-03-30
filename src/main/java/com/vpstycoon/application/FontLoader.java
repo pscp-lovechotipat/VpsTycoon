@@ -17,7 +17,7 @@ public class FontLoader {
         LABEL_FONT = loadFont(22);
     }
 
-    // โหลดฟอนต์ตามขนาดที่กำหนด
+    
     public static Font loadFont(double size) {
         String path = Objects.requireNonNull(
                 FontLoader.class.getResource("/fonts/Px_basic_font3-Regular.ttf"), "ไม่พบไฟล์ฟอนต์"

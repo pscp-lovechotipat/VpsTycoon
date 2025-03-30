@@ -35,24 +35,24 @@ public class GameState implements Serializable {
     private long lastSaveTime;
     private List<GameObject> gameObjects;
     
-    // เพิ่มฟิลด์สำหรับเก็บข้อมูล Rack และ VPS Inventory
-    private Map<String, Object> rackConfiguration; // เก็บข้อมูลการตั้งค่า Rack
-    private Map<String, Object> vpsInventoryData; // เก็บข้อมูล VPS ที่ยังไม่ได้ติดตั้ง
     
-    // เพิ่มฟิลด์สำหรับเก็บจำนวน free VM
+    private Map<String, Object> rackConfiguration; 
+    private Map<String, Object> vpsInventoryData; 
+    
+    
     private int freeVmCount;
     
-    // เพิ่มฟิลด์สำหรับเก็บประวัติแชท
+    
     private Map<CustomerRequest, List<ChatMessage>> chatHistory;
     
-    // เพิ่มฟิลด์สำหรับเก็บข้อมูล pendingRequests และ completedRequests
+    
     private ArrayList<CustomerRequest> pendingRequests;
     private ArrayList<CustomerRequest> completedRequests;
     
-    // เพิ่มฟิลด์สำหรับเก็บการเชื่อมโยงระหว่าง VM และ CustomerRequest
-    private Map<String, String> vmAssignments; // vmId -> requestId
     
-    // เพิ่มฟิลด์สำหรับเก็บระดับทักษะ (skill levels)
+    private Map<String, String> vmAssignments; 
+    
+    
     private Map<SkillType, Integer> skillLevels;
 
     public GameState() {
@@ -63,7 +63,7 @@ public class GameState implements Serializable {
         this.lastSaveTime = System.currentTimeMillis();
         this.gameObjects = new ArrayList<>();
         
-        // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
+        
         this.rackConfiguration = new HashMap<>();
         this.vpsInventoryData = new HashMap<>();
         this.freeVmCount = 0;
@@ -78,7 +78,7 @@ public class GameState implements Serializable {
     }
     
     public GameState(ArrayList<GameObject> gameObjects) {
-        this();  // เรียกคอนสตรัคเตอร์หลัก
+        this();  
         if (gameObjects != null) {
             this.gameObjects = new ArrayList<>(gameObjects);
         }
@@ -91,7 +91,7 @@ public class GameState implements Serializable {
         this.gameObjects = new ArrayList<>(gameObjects != null ? gameObjects : new ArrayList<>());
         this.lastSaveTime = System.currentTimeMillis();
         
-        // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
+        
         this.rackConfiguration = new HashMap<>();
         this.vpsInventoryData = new HashMap<>();
         this.freeVmCount = 0;
@@ -101,7 +101,7 @@ public class GameState implements Serializable {
         this.vmAssignments = new HashMap<>();
         this.skillLevels = new HashMap<>();
         
-        // กำหนดค่าเริ่มต้นของเวลา
+        
         this.localDateTime = new SimpleObjectProperty<>(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
 
@@ -112,7 +112,7 @@ public class GameState implements Serializable {
         this.gameObjects = new ArrayList<>();
         this.lastSaveTime = System.currentTimeMillis();
         
-        // เพิ่มการเริ่มต้นค่าสำหรับฟิลด์ใหม่
+        
         this.rackConfiguration = new HashMap<>();
         this.vpsInventoryData = new HashMap<>();
         this.freeVmCount = 0;
@@ -122,11 +122,11 @@ public class GameState implements Serializable {
         this.vmAssignments = new HashMap<>();
         this.skillLevels = new HashMap<>();
         
-        // กำหนดค่าเริ่มต้นของเวลา
+        
         this.localDateTime = new SimpleObjectProperty<>(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
 
-    // Getter และ Setter สำหรับ freeVmCount
+    
     public int getFreeVmCount() {
         return freeVmCount;
     }
@@ -135,7 +135,7 @@ public class GameState implements Serializable {
         this.freeVmCount = freeVmCount;
     }
 
-    // Getter และ Setter สำหรับ Rack Configuration
+    
     public Map<String, Object> getRackConfiguration() {
         return rackConfiguration;
     }
@@ -144,7 +144,7 @@ public class GameState implements Serializable {
         this.rackConfiguration = rackConfiguration;
     }
     
-    // Getter และ Setter สำหรับ VPS Inventory Data
+    
     public Map<String, Object> getVpsInventoryData() {
         return vpsInventoryData;
     }
@@ -153,7 +153,7 @@ public class GameState implements Serializable {
         this.vpsInventoryData = vpsInventoryData;
     }
     
-    // Getter และ Setter สำหรับประวัติแชท
+    
     public Map<CustomerRequest, List<ChatMessage>> getChatHistory() {
         return chatHistory;
     }
@@ -162,13 +162,13 @@ public class GameState implements Serializable {
         this.chatHistory = chatHistory;
     }
 
-    // Add getters and setters for pendingRequests and completedRequests
+    
     public List<CustomerRequest> getPendingRequests() {
         return pendingRequests;
     }
     
     public void setPendingRequests(List<CustomerRequest> pendingRequests) {
-        // สร้าง ArrayList ใหม่ในกรณีที่ได้รับ ObservableList เข้ามา
+        
         if (pendingRequests != null) {
             this.pendingRequests = new ArrayList<>(pendingRequests);
         } else {
@@ -181,7 +181,7 @@ public class GameState implements Serializable {
     }
     
     public void setCompletedRequests(List<CustomerRequest> completedRequests) {
-        // สร้าง ArrayList ใหม่ในกรณีที่ได้รับ ObservableList เข้ามา
+        
         if (completedRequests != null) {
             this.completedRequests = new ArrayList<>(completedRequests);
         } else {
@@ -189,7 +189,7 @@ public class GameState implements Serializable {
         }
     }
 
-    // Getter และ Setter สำหรับ vmAssignments
+    
     public Map<String, String> getVmAssignments() {
         return vmAssignments;
     }
@@ -205,7 +205,7 @@ public class GameState implements Serializable {
         gameObjects.add(obj);
     }
 
-    // Getters and setters
+    
     public List<GameObject> getGameObjects() {
         return gameObjects;
     }
@@ -257,7 +257,7 @@ public class GameState implements Serializable {
         return localDateTime;
     }
 
-    // ต้องจัดการ serialization ด้วย เพราะ ObjectProperty ไม่ได้ implements Serializable โดยตรง
+    
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
@@ -277,7 +277,7 @@ public class GameState implements Serializable {
         return gameTimeMs;
     }
 
-    // Getter และ Setter สำหรับ skillLevels
+    
     public Map<SkillType, Integer> getSkillLevels() {
         return skillLevels;
     }
@@ -286,29 +286,27 @@ public class GameState implements Serializable {
         this.skillLevels = skillLevels;
     }
     
-    /**
-     * ล้างค่าทั้งหมดกลับเป็นค่าเริ่มต้น สำหรับการเริ่มเกมใหม่
-     */
+    
     public void clearState() {
-        // ล้างข้อมูลทั้งหมด
+        
         resources.clear();
         upgrades.clear();
         
-        // ตรวจสอบ gameObjects ว่าเป็น null หรือไม่ก่อนเรียก clear()
+        
         if (gameObjects != null) {
             gameObjects.clear();
         } else {
             gameObjects = new ArrayList<>();
         }
         
-        // ตรวจสอบ rackConfiguration ว่าเป็น null หรือไม่ก่อนเรียก clear()
+        
         if (rackConfiguration != null) {
             rackConfiguration.clear();
         } else {
             rackConfiguration = new HashMap<>();
         }
         
-        // ตรวจสอบ vpsInventoryData ว่าเป็น null หรือไม่ก่อนเรียก clear()
+        
         if (vpsInventoryData != null) {
             vpsInventoryData.clear();
         } else {
@@ -317,14 +315,14 @@ public class GameState implements Serializable {
         
         freeVmCount = 0;
         
-        // ล้างข้อมูลการแชท
+        
         if (chatHistory != null) {
             chatHistory.clear();
         } else {
             chatHistory = new HashMap<>();
         }
         
-        // ล้างข้อมูล requests
+        
         if (pendingRequests != null) {
             pendingRequests.clear();
         } else {
@@ -343,14 +341,14 @@ public class GameState implements Serializable {
             vmAssignments = new HashMap<>();
         }
         
-        // ล้างข้อมูล skills
+        
         if (skillLevels != null) {
             skillLevels.clear();
         } else {
             skillLevels = new HashMap<>();
         }
         
-        // ตั้งเวลาให้กลับไปที่เริ่มต้น
+        
         localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
         gameTimeMs = 0;
         

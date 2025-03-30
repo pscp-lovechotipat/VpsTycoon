@@ -26,9 +26,9 @@ public class VMProvisioningManager {
     private final Random random = new Random();
     private final long[] DEPLOY_TIMES = {10000, 5000, 2000, 1000};
     
-    // เปลี่ยนไปใช้ VMProvisioningManagerImpl ที่อยู่ใน package เดียวกัน
+    
     private final VMProvisioningManagerImpl gameVMProvisioningManager;
-    // เพิ่มตัวแปรเพื่อเข้าถึง SkillPointsSystem
+    
     private final SkillPointsSystem skillPointsSystem;
 
     public VMProvisioningManager(ChatHistoryManager chatHistoryManager, ChatAreaView chatAreaView,
@@ -37,11 +37,11 @@ public class VMProvisioningManager {
         this.chatAreaView = chatAreaView;
         this.provisioningProgressBars = provisioningProgressBars;
         
-        // เข้าถึง VMProvisioningManagerImpl จาก ResourceManager
+        
         Company company = ResourceManager.getInstance().getCompany();
         this.gameVMProvisioningManager = new VMProvisioningManagerImpl(company);
         
-        // เข้าถึง SkillPointsSystem จาก ResourceManager
+        
         this.skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
     }
 
@@ -49,13 +49,13 @@ public class VMProvisioningManager {
         chatAreaView.addSystemMessage("Starting VM provisioning...");
         sendInitialMessages(request);
 
-        // ให้เริ่มการทำ UI animation
+        
         int provisioningDelay = calculateProvisioningDelay();
         final int[] progress = {0};
         final int totalSteps = provisioningDelay * 10;
         final long startTime = System.currentTimeMillis();
 
-        // สร้าง UI component
+        
         HBox progressContainer = new HBox();
         progressContainer.setAlignment(Pos.CENTER);
         progressContainer.setPadding(new Insets(10, 0, 10, 0));
@@ -78,15 +78,15 @@ public class VMProvisioningManager {
         Platform.runLater(() -> chatAreaView.getMessagesBox().getChildren().add(progressContainer));
         provisioningProgressBars.put(request, progressBar);
 
-        // บันทึกข้อความลงใน chatHistory พร้อม metadata
+        
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("startTime", startTime);
         metadata.put("provisioningDelay", provisioningDelay);
         metadata.put("isProvisioning", true);
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "Starting VM provisioning...", metadata));
 
-        // แทนที่จะใช้ CompletableFuture จาก gameVMManager
-        // ให้ใช้ Timer จัดการการแสดงผล UI animation เท่านั้น
+        
+        
         Timer progressTimer = new Timer();
         progressTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -103,7 +103,7 @@ public class VMProvisioningManager {
                         this.cancel();
                         provisioningProgressBars.remove(request);
                         
-                        // เมื่อ UI animation เสร็จสิ้น ให้แสดงรายละเอียด VM และเรียก onComplete
+                        
                         sendVMDetails(request, vm);
                         timeRemainingLabel.setText("VM provisioning completed.");
                         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed.", new HashMap<>()));
@@ -114,10 +114,10 @@ public class VMProvisioningManager {
                     }
                 });
             }
-        }, 0, 100); // อัปเดตทุก 100 มิลลิวินาที
+        }, 0, 100); 
     }
     
-    // ฟังก์ชั่นสำหรับหา VPS ที่ VM อยู่
+    
     private VPSOptimization findVPSForVM(VPSOptimization.VM targetVM) {
         ResourceManager resourceManager = ResourceManager.getInstance();
         for (VPSOptimization vps : resourceManager.getRack().getInstalledVPS()) {
@@ -130,21 +130,21 @@ public class VMProvisioningManager {
         return null;
     }
     
-    // ฟังก์ชั่นสำหรับแปลงค่า RAM จากสตริงเป็นตัวเลข
+    
     private int parseRAMValue(String ramString) {
         try {
             return Integer.parseInt(ramString.split(" ")[0]);
         } catch (Exception e) {
-            return 2; // ค่าเริ่มต้นถ้าแปลงไม่ได้
+            return 2; 
         }
     }
     
-    // ฟังก์ชั่นสำหรับแปลงค่า Disk จากสตริงเป็นตัวเลข
+    
     private int parseDiskValue(String diskString) {
         try {
             return Integer.parseInt(diskString.split(" ")[0]);
         } catch (Exception e) {
-            return 20; // ค่าเริ่มต้นถ้าแปลงไม่ได้
+            return 20; 
         }
     }
 
@@ -158,16 +158,16 @@ public class VMProvisioningManager {
     }
 
     private int calculateProvisioningDelay() {
-        // Get the deploy skill level
+        
         int deployLevel = skillPointsSystem.getSkillLevel(SkillPointsSystem.SkillType.DEPLOY);
-        // Get deployment time based on skill level
+        
         long deploymentTime = DEPLOY_TIMES[Math.max(0, Math.min(deployLevel - 1, DEPLOY_TIMES.length - 1))];
         
         int minDelay = 5;
         int maxDelay = 30;
         int provisioningDelay = minDelay + random.nextInt(maxDelay - minDelay + 1);
         
-        // Apply time reduction based on skill level
+        
         double reduction = skillPointsSystem.getDeploymentTimeReduction();
         return Math.max(minDelay, (int)(provisioningDelay * (1.0 - reduction)));
     }
@@ -215,19 +215,12 @@ public class VMProvisioningManager {
         return new String(passwordArray);
     }
 
-    // Method is no longer needed as we use SkillPointsSystem directly
+    
     public void setDeployLevel(int deployLevel) {
-        // ไม่ได้ใช้แล้ว เนื่องจากเราใช้ SkillPointsSystem โดยตรง
+        
     }
 
-    /**
-     * Calculate the rating change based on how well the provided VM matches the customer's requirements
-     * @param request The customer request
-     * @param providedVCPUs Number of vCPUs provided
-     * @param providedRamGB Amount of RAM provided in GB
-     * @param providedDiskGB Amount of disk space provided in GB
-     * @return The rating change (positive or negative)
-     */
+    
     public double calculateRatingChange(
             CustomerRequest request, 
             int providedVCPUs, 
@@ -236,38 +229,38 @@ public class VMProvisioningManager {
         
         Company company = ResourceManager.getInstance().getCompany();
         
-        // Get the required resources
+        
         int requiredVCPUs = request.getRequiredVCPUs();
         int requiredRamGB = request.getRequiredRamGB();
         int requiredDiskGB = request.getRequiredDiskGB();
         
-        // Use the company rating calculation method
+        
         double ratingChange = company.calculateVMAssignmentRatingChange(
             requiredVCPUs, requiredRamGB, requiredDiskGB,
             providedVCPUs, providedRamGB, providedDiskGB
         );
         
-        // Adjust rating based on customer type (higher-tier customers are harder to please)
+        
         switch (request.getCustomerType()) {
             case INDIVIDUAL:
-                ratingChange *= 1.2; // Individuals are easier to please
+                ratingChange *= 1.2; 
                 break;
             case SMALL_BUSINESS:
                 ratingChange *= 1.1;
                 break;
             case MEDIUM_BUSINESS:
-                ratingChange *= 1.0; // Neutral
+                ratingChange *= 1.0; 
                 break;
             case LARGE_BUSINESS:
                 ratingChange *= 0.9;
                 break;
             case ENTERPRISE:
             case BUSINESS:
-                ratingChange *= 0.8; // Enterprises are harder to please
+                ratingChange *= 0.8; 
                 break;
         }
         
-        // Limit the rating change to a reasonable range
+        
         return Math.max(-0.5, Math.min(0.5, ratingChange));
     }
 }

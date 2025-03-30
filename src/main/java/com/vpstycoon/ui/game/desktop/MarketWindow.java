@@ -29,43 +29,43 @@ public class MarketWindow extends BorderPane {
     private Label moneyDisplay;
     private VBox mainContent;
     private ScrollPane contentArea;
-    private String currentFilter = "ALL"; // Default to show all products
+    private String currentFilter = "ALL"; 
 
     public MarketWindow(Runnable onClose, Runnable onClose2, VPSManager vpsManager, GameplayContentPane parent) {
         this.parent = parent;
         this.vpsManager = vpsManager;
         
-        // เก็บสถานะการแสดงผลปัจจุบันของ UI elements
+        
         final boolean dateViewWasVisible = parent.getDateView().isVisible();
         final boolean moneyUIWasVisible = parent.getMoneyUI().isVisible(); 
         final boolean menuBarWasVisible = parent.getMenuBar().isVisible();
         final boolean marketMenuBarWasVisible = parent.getInGameMarketMenuBar().isVisible();
         
-        // บันทึก runnable ที่ใช้เมื่อปิด window และจะคืนค่า UI ตามสถานะเดิม
+        
         this.onClose = () -> {
-            // ให้หน้าต่างค่อยๆ จางหายไปด้วย fade-out animation
+            
             javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
                 javafx.util.Duration.millis(300), this);
             fadeOut.setFromValue(1.0);
             fadeOut.setToValue(0);
             fadeOut.setOnFinished(event -> {
-                // 1. ลบ MarketWindow ออกจาก gameArea
+                
                 parent.getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
                 
-                // 2. คืนค่าสถานะการแสดงผลของ UI elements
+                
                 parent.getDateView().setVisible(dateViewWasVisible);
                 parent.getMoneyUI().setVisible(moneyUIWasVisible);
                 parent.getMenuBar().setVisible(menuBarWasVisible);
                 parent.getInGameMarketMenuBar().setVisible(marketMenuBarWasVisible);
                 
-                // 3. ให้ UI ค่อยๆ ปรากฏด้วย fade-in
+                
                 javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
                     javafx.util.Duration.millis(300), parent.getGameArea());
                 fadeIn.setFromValue(0.8);
                 fadeIn.setToValue(1.0);
                 fadeIn.play();
                 
-                // 4. เรียก callback เดิมถ้ามี
+                
                 if (onClose2 != null) {
                     onClose2.run();
                 }
@@ -73,10 +73,10 @@ public class MarketWindow extends BorderPane {
             fadeOut.play();
         };
 
-        // ซ่อน parent menus เมื่อเปิด market window
+        
         parent.hideMenus();
         
-        // Main container setup with enhanced Cyberpunk theme
+        
         setStyle("""
             -fx-background-color: #0a0a0a;
             -fx-border-color: #9a30fa;
@@ -84,25 +84,25 @@ public class MarketWindow extends BorderPane {
             -fx-border-style: solid;
             """);
         
-        // Set maximum size to use full available space
-        setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        setPrefSize(1200, 800); // Set preferred size larger
         
-        // Set z-index to ensure window stays on top
+        setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        setPrefSize(1200, 800); 
+        
+        
         setViewOrder(-10);
         
-        // Reduce padding to utilize more space
+        
         setPadding(new Insets(10, 10, 10, 10));
 
-        // Left menu with Cyberpunk theme
+        
         VBox leftMenu = createLeftMenu();
         setLeft(leftMenu);
 
-        // Content area with Cyberpunk theme
+        
         contentArea = new ScrollPane();
         contentArea.setFitToWidth(true);
-        contentArea.setFitToHeight(true); // Make content area fit height
-        contentArea.setPrefViewportWidth(900); // Set preferred width larger
+        contentArea.setFitToHeight(true); 
+        contentArea.setPrefViewportWidth(900); 
         contentArea.setStyle("""
             -fx-background: transparent;
             -fx-background-color: transparent;
@@ -113,13 +113,13 @@ public class MarketWindow extends BorderPane {
         contentArea.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         contentArea.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        // Create main content container
+        
         mainContent = new VBox(20);
         mainContent.setAlignment(Pos.TOP_CENTER);
         mainContent.setPadding(new Insets(20, 20, 20, 20));
-        mainContent.setMaxWidth(Double.MAX_VALUE); // Allow content to expand horizontally
+        mainContent.setMaxWidth(Double.MAX_VALUE); 
 
-        // Load all products initially
+        
         updateProductDisplay();
         
         contentArea.setContent(mainContent);
@@ -135,10 +135,10 @@ public class MarketWindow extends BorderPane {
             -fx-border-style: solid;
             """);
         menu.setPadding(new Insets(25));
-        menu.setPrefWidth(250); // Increase menu width slightly
+        menu.setPrefWidth(250); 
         menu.setAlignment(Pos.TOP_CENTER);
 
-        // Menu title
+        
         Label menuTitle = new Label("MARKET MENU");
         menuTitle.setStyle("""
             -fx-text-fill: #9a30fa;
@@ -149,7 +149,7 @@ public class MarketWindow extends BorderPane {
             """);
         menu.getChildren().add(menuTitle);
         
-        // Money display
+        
         HBox moneyContainer = new HBox(5);
         moneyContainer.setAlignment(Pos.CENTER);
         moneyContainer.setPadding(new Insets(10, 0, 15, 0));
@@ -174,13 +174,13 @@ public class MarketWindow extends BorderPane {
         moneyContainer.getChildren().addAll(moneyLabel, moneyDisplay);
         menu.getChildren().add(moneyContainer);
 
-        // Create all buttons first so they can reference each other
+        
         Button allButton = new Button("ALL PRODUCTS");
         Button vpsButton = new Button("SERVER PRODUCTS");
         Button rackButton = new Button("RACK PRODUCTS");
         Button closeButton = new Button("CLOSE MARKET");
         
-        // Style and configure buttons
+        
         styleButton(allButton);
         allButton.setOnAction(e -> {
             currentFilter = "ALL";
@@ -207,7 +207,7 @@ public class MarketWindow extends BorderPane {
 
         menu.getChildren().addAll(allButton, vpsButton, rackButton, closeButton);
         
-        // Set the initial "ALL" button as active
+        
         highlightActiveButton(allButton, vpsButton, rackButton);
         
         return menu;
@@ -307,7 +307,7 @@ public class MarketWindow extends BorderPane {
         mainContent.getChildren().clear();
         
         if (currentFilter.equals("ALL") || currentFilter.equals("SERVER")) {
-            // VPS Products Section
+            
             Label vpsTitle = new Label("SERVER PRODUCTS");
             vpsTitle.setStyle("""
                 -fx-text-fill: #9a30fa;
@@ -318,20 +318,20 @@ public class MarketWindow extends BorderPane {
                 """);
             mainContent.getChildren().add(vpsTitle);
 
-            // Products grid
+            
             GridPane productsGrid = new GridPane();
             productsGrid.setHgap(20);
             productsGrid.setVgap(20);
             productsGrid.setAlignment(Pos.CENTER);
-            productsGrid.setMaxWidth(Double.MAX_VALUE); // Allow grid to expand horizontally
+            productsGrid.setMaxWidth(Double.MAX_VALUE); 
 
             int column = 0;
             int row = 0;
-            int columnCount = 3; // Display 3 items per row by default
+            int columnCount = 3; 
             
-            // Check window width and adjust column count if needed
+            
             if (getWidth() > 1400) {
-                columnCount = 4; // Display 4 items per row on wider screens
+                columnCount = 4; 
             }
             
             for (VPSProduct product : VPSProduct.values()) {
@@ -348,7 +348,7 @@ public class MarketWindow extends BorderPane {
         }
         
         if (currentFilter.equals("ALL") || currentFilter.equals("RACK")) {
-            // Rack Products Section
+            
             Label rackTitle = new Label("RACK PRODUCTS");
             rackTitle.setStyle("""
                 -fx-text-fill: #9a30fa;
@@ -359,20 +359,20 @@ public class MarketWindow extends BorderPane {
                 """);
             mainContent.getChildren().add(rackTitle);
 
-            // Rack Products grid
+            
             GridPane rackProductsGrid = new GridPane();
             rackProductsGrid.setHgap(20);
             rackProductsGrid.setVgap(20);
             rackProductsGrid.setAlignment(Pos.CENTER);
-            rackProductsGrid.setMaxWidth(Double.MAX_VALUE); // Allow grid to expand horizontally
+            rackProductsGrid.setMaxWidth(Double.MAX_VALUE); 
 
             int column = 0;
             int row = 0;
-            int columnCount = 3; // Display 3 items per row by default
+            int columnCount = 3; 
             
-            // Check window width and adjust column count if needed
+            
             if (getWidth() > 1400) {
-                columnCount = 4; // Display 4 items per row on wider screens
+                columnCount = 4; 
             }
             
             for (RackProduct product : RackProduct.values()) {
@@ -388,7 +388,7 @@ public class MarketWindow extends BorderPane {
             mainContent.getChildren().add(rackProductsGrid);
         }
         
-        // Scroll to top
+        
         contentArea.setVvalue(0);
     }
 
@@ -404,7 +404,7 @@ public class MarketWindow extends BorderPane {
             -fx-border-style: solid;
             """);
 
-        // Section title
+        
         Label title = new Label("Server Products");
         title.setStyle("""
             -fx-text-fill: #9a30fa;
@@ -415,7 +415,7 @@ public class MarketWindow extends BorderPane {
             """);
         vpsSection.getChildren().add(title);
 
-        // Products grid
+        
         GridPane productsGrid = new GridPane();
         productsGrid.setHgap(20);
         productsGrid.setVgap(20);
@@ -451,7 +451,7 @@ public class MarketWindow extends BorderPane {
             -fx-border-style: solid;
             """);
 
-        // Section title
+        
         Label title = new Label("Rack Products");
         title.setStyle("""
             -fx-text-fill: #9a30fa;
@@ -462,7 +462,7 @@ public class MarketWindow extends BorderPane {
             """);
         rackSection.getChildren().add(title);
 
-        // Products grid
+        
         GridPane productsGrid = new GridPane();
         productsGrid.setHgap(20);
         productsGrid.setVgap(20);
@@ -497,13 +497,13 @@ public class MarketWindow extends BorderPane {
             -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
 
-        // Get marketing discount
+        
         SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         int discountPercent = skillPointsSystem.getMarketDiscount();
         double discountMultiplier = 1.0 - (discountPercent / 100.0);
         double finalPrice = Math.round(product.getPrice() * discountMultiplier);
 
-        // Product name
+        
         Label nameLabel = new Label(product.getName());
         nameLabel.setStyle("""
             -fx-text-fill: #9a30fa;
@@ -513,7 +513,7 @@ public class MarketWindow extends BorderPane {
             -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
 
-        // Product description
+        
         Label descLabel = new Label(product.getDescription());
         descLabel.setStyle("""
             -fx-text-fill: #b19cd9;
@@ -522,7 +522,7 @@ public class MarketWindow extends BorderPane {
             """);
         descLabel.setWrapText(true);
 
-        // Price
+        
         String priceText = discountPercent > 0 
             ? "$" + finalPrice + " (" + product.getPriceDisplay() + " - " + discountPercent + "%)"
             : product.getPriceDisplay();
@@ -536,7 +536,7 @@ public class MarketWindow extends BorderPane {
             -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
             """);
 
-        // Buy button
+        
         String buyButtonText = discountPercent > 0 
             ? "BUY NOW - " + discountPercent + "%"
             : "BUY NOW";
@@ -581,7 +581,7 @@ public class MarketWindow extends BorderPane {
         );
 
         buyButton.setOnAction(e -> {
-            // Apply discount to final price
+            
             long actualPrice = Math.round(finalPrice);
             
             if (parent.getCompany().getMoney() < actualPrice) {
@@ -590,12 +590,12 @@ public class MarketWindow extends BorderPane {
             }
 
             parent.getCompany().setMoney(parent.getCompany().getMoney() - actualPrice);
-            // Update money display after purchase
+            
             updateMoneyDisplay();
 
-            // สร้าง VPSOptimization instance จาก VPSProduct
+            
             VPSOptimization vps = new VPSOptimization();
-            // ใช้ ID ที่มีรูปแบบที่แน่นอนมากขึ้น ไม่ใช้ name เป็น ID
+            
             String vpsId = "vps-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
             vps.setVpsId(vpsId);
             vps.setName(product.getName());
@@ -603,33 +603,33 @@ public class MarketWindow extends BorderPane {
             vps.setRamInGB(product.getRam());
             vps.setDiskInGB(product.getStorage());
             vps.setSize(product.getSize());
-            vps.setInstalled(false); // ยืนยันว่าเป็น VPS ที่ยังไม่ติดตั้ง
+            vps.setInstalled(false); 
 
-            // เพิ่ม VPS เข้าไปใน inventory ของ GameplayContentPane
+            
             parent.getVpsInventory().addVPS(vpsId, vps);
             System.out.println("เพิ่ม VPS เข้า GameplayContentPane inventory: " + vpsId);
             
-            // อัปเดต GameManager ด้วย (เพื่อให้ข้อมูลถูกบันทึกไว้)
+            
             GameManager.getInstance().getVpsInventory().addVPS(vpsId, vps);
             System.out.println("เพิ่ม VPS เข้า GameManager inventory: " + vpsId);
             
-            // บันทึกสถานะเกมทันที เพื่อให้แน่ใจว่าข้อมูลจะไม่หาย
+            
             GameManager.getInstance().saveState();
             System.out.println("บันทึกเกมหลังซื้อ VPS เรียบร้อย");
 
-            // แสดง notification
+            
             parent.pushNotification("PURCHASE SUCCESSFUL",
                     "ACQUIRED " + product.getName() + " FOR " + product.getPriceDisplay() + 
                     "\nVPS added to your inventory!");
 
-            // ปิด market window (ซึ่งจะทำให้ menubar กลับมาแสดง)
+            
             onClose.run();
             
-            // ซ่อน MenuBar ก่อนเปิดหน้า inventory
+            
             parent.getMenuBar().setVisible(false);
             parent.getInGameMarketMenuBar().setVisible(false);
             
-            // เปิดหน้า inventory ทันทีหลังซื้อ เพื่อให้ผู้เล่นเห็นว่าได้ VPS มาแล้ว
+            
             parent.openVPSInventory();
         });
 
@@ -650,13 +650,13 @@ public class MarketWindow extends BorderPane {
             -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
 
-        // Get marketing discount
+        
         SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         int discountPercent = skillPointsSystem.getMarketDiscount();
         double discountMultiplier = 1.0 - (discountPercent / 100.0);
         double finalPrice = Math.round(product.getPrice() * discountMultiplier);
 
-        // Product name
+        
         Label nameLabel = new Label(product.getName());
         nameLabel.setStyle("""
             -fx-text-fill: #9a30fa;
@@ -666,7 +666,7 @@ public class MarketWindow extends BorderPane {
             -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
             """);
 
-        // Product description
+        
         Label descLabel = new Label(product.getDescription());
         descLabel.setStyle("""
             -fx-text-fill: #b19cd9;
@@ -675,7 +675,7 @@ public class MarketWindow extends BorderPane {
             """);
         descLabel.setWrapText(true);
 
-        // Price
+        
         String priceText = discountPercent > 0 
             ? "$" + finalPrice + " (" + product.getPriceDisplay() + " - " + discountPercent + "%)"
             : product.getPriceDisplay();
@@ -689,7 +689,7 @@ public class MarketWindow extends BorderPane {
             -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
             """);
 
-        // Buy button
+        
         String buyButtonText = discountPercent > 0 
             ? "BUY NOW - " + discountPercent + "%"
             : "BUY NOW";
@@ -734,7 +734,7 @@ public class MarketWindow extends BorderPane {
         );
 
         buyButton.setOnAction(e -> {
-            // Apply discount to final price
+            
             long actualPrice = Math.round(finalPrice);
             
             if (parent.getCompany().getMoney() < actualPrice) {
@@ -743,23 +743,23 @@ public class MarketWindow extends BorderPane {
             }
 
             parent.getCompany().setMoney(parent.getCompany().getMoney() - actualPrice);
-            // Update money display after purchase
+            
             updateMoneyDisplay();
             
-            // Add new rack to the list
+            
             parent.getRack().addRack(product.getSlots());
             
-            // Navigate to the newest rack (the one we just purchased)
+            
             parent.getRack().goToLatestRack();
 
             parent.pushNotification("PURCHASE SUCCESSFUL", 
                 "ACQUIRED " + product.getName() + ". NEW RACK INSTALLED WITH " + 
                 product.getSlots() + " SLOTS.");
 
-            // Close market window and open rack management
+            
             onClose.run();
             
-            // Hide menu bars before opening rack info
+            
             parent.getMenuBar().setVisible(false);
             parent.getInGameMarketMenuBar().setVisible(false);
             
@@ -770,7 +770,7 @@ public class MarketWindow extends BorderPane {
         return card;
     }
     
-    // Helper method to update money display
+    
     private void updateMoneyDisplay() {
         moneyDisplay.setText("$" + parent.getCompany().getMoney());
     }

@@ -41,60 +41,60 @@ public class SettingsScreen extends StackPane {
         this.onCloseSettings = onCloseSettings;
         this.audioManager = ResourceManager.getInstance().getAudioManager();
         
-        // Set a high z-index to ensure this screen is displayed on top
+        
         setViewOrder(-1000);
         
         setupUI();
     }
     
-    // Alternative constructor for when ScreenManager is not available
+    
     public SettingsScreen(GameConfig config, Navigator navigator, Runnable onCloseSettings) {
         this.navigator = navigator;
         this.config = config;
-        this.screenManager = null; // Not used in popup mode
+        this.screenManager = null; 
         this.onCloseSettings = onCloseSettings;
         this.audioManager = ResourceManager.getInstance().getAudioManager();
         
-        // Set a high z-index to ensure this screen is displayed on top
+        
         setViewOrder(-1000);
         
         setupUI();
     }
 
     private void setupUI() {
-        // Cyberpunk gradient background
+        
         Rectangle background = new Rectangle();
         background.widthProperty().bind(widthProperty());
         background.heightProperty().bind(heightProperty());
         
-        // Replace gradient with solid color to eliminate shaking
-        background.setFill(Color.rgb(30, 15, 50, 0.9));  // Dark purple solid color
         
-        // Add some pixel-like noise effect to the background
+        background.setFill(Color.rgb(30, 15, 50, 0.9));  
+        
+        
         background.setStroke(Color.rgb(180, 50, 255, 0.2));
         background.setStrokeWidth(1);
 
-        // Title with cyber styling
+        
         Label titleLabel = createTitleLabel("Settings");
 
-        // Create settings container
+        
         VBox settingsContainer = createSettingsContainer();
         settingsContainer.setMaxWidth(500);
         settingsContainer.setMaxHeight(450);
         
-        // Add buttons at the bottom
+        
         HBox buttonsRow = new HBox(20);
         buttonsRow.setAlignment(Pos.CENTER);
         buttonsRow.getChildren().addAll(createBackButton(), createApplyButton());
         
-        // Main container for all content
+        
         VBox contentBox = new VBox(20);
         contentBox.setAlignment(Pos.CENTER);
         contentBox.setPadding(new Insets(30));
         contentBox.setMaxWidth(450);
         contentBox.setMaxHeight(550);
         
-        // Cyberpunk styled container background with pixel-like border - Matching exactly with ResumeScreen
+        
         contentBox.setStyle(
             "-fx-background-color: rgba(30, 15, 50, 0.8);" +
             "-fx-background-radius: 2;" +
@@ -107,13 +107,13 @@ public class SettingsScreen extends StackPane {
         
         contentBox.getChildren().addAll(titleLabel, settingsContainer, buttonsRow);
 
-        // Add a border pane to center the content box
+        
         BorderPane centerPane = new BorderPane();
         centerPane.setCenter(contentBox);
 
         getChildren().addAll(background, centerPane);
 
-        // Click outside to close
+        
         background.setOnMouseClicked(e -> {
             if (e.getTarget() == background) {
                 onCloseSettings.run();
@@ -129,7 +129,7 @@ public class SettingsScreen extends StackPane {
             -fx-effect: dropshadow(gaussian, #ff00ff, 4, 0.3, 0, 0);
             """);
 
-        // Add glow effect to the title
+        
         Glow glow = new Glow(0.8);
         DropShadow shadow = new DropShadow();
         shadow.setColor(Color.rgb(255, 0, 255, 0.7));
@@ -152,7 +152,7 @@ public class SettingsScreen extends StackPane {
             -fx-effect: dropshadow(gaussian, #800fd1, 5, 0.3, 0, 0);
             """);
 
-        // Volume controls
+        
         container.getChildren().addAll(
             createVolumeControls(),
             new Separator() {{
@@ -204,7 +204,7 @@ public class SettingsScreen extends StackPane {
             -fx-background-color: rgba(50, 20, 80, 0.3);
             """);
 
-        // Resolution ComboBox
+        
         resolutionComboBox = new ComboBox<>();
         resolutionComboBox.getItems().addAll(ScreenResolution.values());
         resolutionComboBox.setValue(config.getResolution());
@@ -212,7 +212,7 @@ public class SettingsScreen extends StackPane {
             config.setResolution(resolutionComboBox.getValue());
         });
 
-        // Checkboxes with cyber styling
+        
         fullscreenCheckBox = new CheckBox("Fullscreen");
         fullscreenCheckBox.setSelected(config.isFullscreen());
         fullscreenCheckBox.setOnAction(e -> config.setFullscreen(fullscreenCheckBox.isSelected()));
@@ -280,7 +280,7 @@ public class SettingsScreen extends StackPane {
         """);
         label.setPrefWidth(100);
 
-        // Style ComboBox if that's the control type
+        
         if (control instanceof ComboBox) {
             control.setStyle("""
                 -fx-background-color: #1a0933;
@@ -304,7 +304,7 @@ public class SettingsScreen extends StackPane {
            -fx-tick-label-fill: #00ffff;
         """);
         
-        // Add a hover effect
+        
         checkBox.setOnMouseEntered(e -> {
             checkBox.setStyle("""
                 -fx-text-fill: #00ffff;
@@ -339,20 +339,20 @@ public class SettingsScreen extends StackPane {
             audioManager.playSoundEffect("click.wav");
             config.save();
             
-            // Apply resolution changes immediately
+            
             if (screenManager != null) {
-                // Get the current scene and stage to apply to
+                
                 javafx.stage.Stage stage = (javafx.stage.Stage) getScene().getWindow();
                 javafx.scene.Scene scene = getScene();
                 
-                // Apply the resolution settings directly
+                
                 screenManager.applySettings(stage, scene);
             }
             
-            // Then publish the event for other settings
+            
             GameEventBus.getInstance().publish(new SettingsChangedEvent(config));
             
-            // Close settings screen
+            
             onCloseSettings.run();
         });
         
@@ -362,13 +362,13 @@ public class SettingsScreen extends StackPane {
     }
     
     private void styleMenuButton(MenuButton button) {
-        // Add glow effect to buttons - Match styling with ResumeScreen
+        
         DropShadow buttonGlow = new DropShadow();
         buttonGlow.setColor(Color.rgb(180, 50, 255, 0.7));
         buttonGlow.setRadius(5);
         button.setEffect(buttonGlow);
         
-        // Make buttons slightly larger to match ResumeScreen
+        
         button.setPrefWidth(250);
     }
 
@@ -378,13 +378,13 @@ public class SettingsScreen extends StackPane {
     }
 
     public void show() {
-        // If screenManager is not available, we can't show as standalone screen
+        
         if (screenManager == null) {
             System.err.println("Cannot show SettingsScreen as standalone: screenManager is null");
             return;
         }
         
-        // Using screenManager to directly switch to this StackPane
+        
         screenManager.switchScreen(this);
     }
 } 

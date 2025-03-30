@@ -10,13 +10,11 @@ import javafx.scene.control.Separator;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-/**
- * Modal dialog for showing GameObject details.
- */
+
 public class GameObjectDetailsModal {
 
     public static void show(StackPane gameArea, GameObject obj, GameFlowManager gameFlowManager) {
-        // Create modal container
+        
         VBox modalContainer = new VBox(10);
         modalContainer.setStyle("""
                 -fx-background-color: rgba(0, 0, 0, 0.7);
@@ -25,7 +23,7 @@ public class GameObjectDetailsModal {
         modalContainer.setAlignment(Pos.CENTER);
         modalContainer.setPrefSize(gameArea.getWidth(), gameArea.getHeight());
 
-        // Create modal content
+        
         VBox modalContent = new VBox(15);
         modalContent.setStyle("""
                 -fx-background-color: white;
@@ -36,15 +34,15 @@ public class GameObjectDetailsModal {
                 """);
         modalContent.setAlignment(Pos.CENTER);
 
-        // Title
+        
         Label titleLabel = new Label(obj.getName());
         titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
 
-        // Status and level
+        
         Label statusLabel = new Label("Status: " + obj.getStatus());
         Label levelLabel = new Label("Level: " + obj.getLevel());
 
-        // Upgrade button
+        
         Button upgradeButton = ButtonUtils.createModalButton("Upgrade");
         upgradeButton.setOnAction(e -> {
             obj.upgrade(null);
@@ -53,22 +51,22 @@ public class GameObjectDetailsModal {
             gameFlowManager.saveGame();
         });
 
-        // Close button
+        
         Button closeButton = ButtonUtils.createModalButton("Close");
         closeButton.setOnAction(e -> gameArea.getChildren().remove(modalContainer));
 
-        // Add everything to modal
+        
         modalContent.getChildren().addAll(titleLabel, new Separator(), statusLabel, levelLabel, upgradeButton, closeButton);
         modalContainer.getChildren().add(modalContent);
 
-        // Close on background click
+        
         modalContainer.setOnMouseClicked(e -> {
             if (e.getTarget() == modalContainer) {
                 gameArea.getChildren().remove(modalContainer);
             }
         });
 
-        // Add to game area
+        
         gameArea.getChildren().add(modalContainer);
     }
 } 

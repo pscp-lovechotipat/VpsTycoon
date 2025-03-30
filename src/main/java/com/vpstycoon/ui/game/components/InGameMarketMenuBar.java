@@ -20,10 +20,10 @@ public class InGameMarketMenuBar extends StackPane {
         Button openMarketButton = UIUtils.createModernButton("Open Market", "#FF9800");
         setPadding(new Insets(40));
         openMarketButton.setOnAction(e -> {
-            // ซ่อนปุ่ม Open Market
+            
             setVisible(false);
 
-            // ซ่อน MenuBar
+            
             parent.getMenuBar().setVisible(false);
             parent.getMoneyUI().setVisible(false);
             parent.getDateView().setVisible(false);
@@ -31,11 +31,11 @@ public class InGameMarketMenuBar extends StackPane {
             openMarketWindow();
         });
 
-        // วางปุ่มที่ด้านล่างขวา
+        
         StackPane.setAlignment(openMarketButton, Pos.BOTTOM_RIGHT);
 
-        // เพิ่มปุ่มเข้า StackPane
-        // this.getChildren().add(openMarketButton);
+        
+        
     }
 
     private void openMarketWindow() {
