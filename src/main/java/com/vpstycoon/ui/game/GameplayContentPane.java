@@ -45,17 +45,25 @@ import com.vpstycoon.ui.game.status.money.MoneyModel;
 import com.vpstycoon.ui.game.status.money.MoneyUI;
 import com.vpstycoon.ui.game.vps.*;
 import com.vpstycoon.ui.navigation.Navigator;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.transform.Affine;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -250,77 +258,98 @@ public class GameplayContentPane extends BorderPane {
 
     private synchronized void setupUI() {
         System.out.println("กำลังตั้งค่า UI ใหม่...");
-        
-        
+
         ScreenResolution resolution = DefaultGameConfig.getInstance().getResolution();
-        
-        
+
+
         gameArea.getChildren().clear();
-        
-        
+
+
         rootStack.setPrefSize(resolution.getWidth(), resolution.getHeight());
         rootStack.setMinSize(resolution.getWidth(), resolution.getHeight());
         rootStack.setMaxSize(resolution.getWidth(), resolution.getHeight());
-        
+
         gameArea.setPrefSize(resolution.getWidth(), resolution.getHeight());
         gameArea.setMinSize(resolution.getWidth(), resolution.getHeight());
         gameArea.setMaxSize(resolution.getWidth(), resolution.getHeight());
-        
-        
-        Image backgroundImage = RoomObjectsLayer.loadImage("/images/rooms/room.gif");
-        
-        
-        Pane backgroundLayer = createBackgroundLayer(backgroundImage);
 
-        
+
+        Image backgroundImage = RoomObjectsLayer.loadImage("/images/rooms/room.gif");
+        Image windowImage = RoomObjectsLayer.loadImage("/images/wallpaper/BackgroundWindow2.gif");
+
+        Pane backgroundLayer = createBackgroundLayer(backgroundImage, windowImage);
+
+
         this.rootStack.getChildren().clear();
         System.out.println("ล้าง rootStack เรียบร้อย");
 
-        
         roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo, this::openKeroro, this::openMusicBox, this::openMusicStop);
-        System.out.println("สร้าง roomObjects ใหม่เรียบร้อย");
-        
-        
-        worldGroup = new Group(backgroundLayer, roomObjects.getServerLayer(), roomObjects.getMonitorLayer(), 
-                roomObjects.getKeroroLayer(), roomObjects.getMusicBoxLayer(), roomObjects.getMusicStopLayer());
-        System.out.println("สร้าง worldGroup ใหม่เรียบร้อย");
-        
-        
+        System.out.println("สร้าง roomObjects ใหม่เรียบร้อย : " + roomObjects.getClass().getSimpleName());
+
+        // สร้าง worldGroup ทันทีแทนที่จะสร้างใน Platform.runLater
+        worldGroup = new Group();
+        Group worldGroup2 = new Group();
+
+        worldGroup2.getChildren().addAll(
+                roomObjects.getServerLayer(),
+                roomObjects.getMonitorLayer(),
+                roomObjects.getKeroroLayer(),
+                roomObjects.getMusicBoxLayer(),
+                roomObjects.getMusicStopLayer()
+        );
+
+        // จัดตำแหน่งของ roomObjects ให้อยู่กลางหน้าจอ
+        worldGroup2.setTranslateX(1870); // ปรับค่าให้เหมาะสม
+        worldGroup2.setTranslateY(1070);  // ปรับค่าให้เหมาะสม
+
+        // กำหนดลำดับการซ้อนทับให้ชัดเจน โดยให้ worldGroup2 (รูมออบเจค) อยู่ด้านบนสุด
+        worldGroup.getChildren().add(backgroundLayer);  // เพิ่ม backgroundLayer เป็นลำดับแรก (อยู่ด้านล่างสุด)
+        worldGroup.getChildren().add(worldGroup2);      // เพิ่ม worldGroup2 เป็นลำดับสอง (อยู่ด้านบนสุด)
+
+        // ตั้งค่า z-index เพื่อบังคับลำดับการแสดงผลให้ชัดเจนยิ่งขึ้น
+        backgroundLayer.setViewOrder(100.0);  // ค่ามาก = อยู่ด้านหลัง
+        worldGroup2.setViewOrder(1.0);        // ค่าน้อย = อยู่ด้านหน้า
+
+        System.out.println("สร้าง worldGroup ใหม่เรียบร้อย " + worldGroup.getChildren().size());
+
+
         double centerX = (resolution.getWidth() - backgroundLayer.getPrefWidth()) / 2.0;
         double centerY = (resolution.getHeight() - backgroundLayer.getPrefHeight()) / 2.0;
         worldGroup.setLayoutX(centerX);
         worldGroup.setLayoutY(centerY);
-        
-        
+
+
         worldGroup.setScaleX(1.0);
         worldGroup.setScaleY(1.0);
         worldGroup.setTranslateX(0);
         worldGroup.setTranslateY(0);
-        
-        
-        gameArea.getChildren().add(worldGroup);
+
+
+        gameArea.getChildren().addAll(worldGroup);
         System.out.println("เพิ่ม worldGroup เข้า gameArea เรียบร้อย");
 
-        
+
         VBox debugOverlay = debugOverlayManager.getDebugOverlay();
-        
-        
-        rootStack.getChildren().add(gameArea);
-        
-        
-        rootStack.getChildren().addAll(
-                moneyUI, menuBar, dateView,
-                inGameMarketMenuBar,
-                resourceManager.getMouseNotificationView(),
-                resourceManager.getNotificationView(),
-                resourceManager.getCenterNotificationView(),
-                debugOverlay
-        );
-        
-        System.out.println("เพิ่ม UI elements เข้า rootStack เรียบร้อย (" + 
+
+        Platform.runLater(() -> {
+            rootStack.getChildren().add(gameArea);
+
+
+            rootStack.getChildren().addAll(
+                    moneyUI, menuBar, dateView,
+                    inGameMarketMenuBar,
+                    resourceManager.getMouseNotificationView(),
+                    resourceManager.getNotificationView(),
+                    resourceManager.getCenterNotificationView(),
+                    debugOverlay
+            );
+        });
+
+
+        System.out.println("เพิ่ม UI elements เข้า rootStack เรียบร้อย (" +
                            (rootStack.getChildren().size() - 1) + " elements)");
 
-        
+
         menuBar.setVisible(true);
         menuBar.setPickOnBounds(false);
 
@@ -338,7 +367,7 @@ public class GameplayContentPane extends BorderPane {
 
         dateView.setVisible(true);
 
-        
+
         StackPane.setMargin(moneyUI, new Insets(40));
 
         StackPane.setAlignment(debugOverlay, Pos.BOTTOM_LEFT);
@@ -349,62 +378,74 @@ public class GameplayContentPane extends BorderPane {
         StackPane.setAlignment(inGameMarketMenuBar, Pos.TOP_CENTER);
         StackPane.setMargin(inGameMarketMenuBar, new Insets(50, 0, 0, 0));
 
-        
+
         debugOverlayManager.startTimer();
-        
-        
+
+
         if (zoomPanHandler != null) {
-            zoomPanHandler.cleanup(); 
+            zoomPanHandler.cleanup();
         }
-        
+
         zoomPanHandler = new ZoomPanHandler(worldGroup, gameArea, debugOverlayManager, showDebug);
         zoomPanHandler.setup();
 
-        
+
         resourceManager.initializeGameEvent(this);
 
-        
+
         setStyle("-fx-background-color: #000000;");
     }
 
-    private Pane createBackgroundLayer(Image backgroundImage) {
+    private Pane createBackgroundLayer(Image backgroundImage, Image windowImage) {
         Pane backgroundLayer = new Pane();
-        
-        
-        
-        double fixedScaleFactor = 0.26;
-        
-        
-        double fixedWidth = backgroundImage.getWidth() * fixedScaleFactor;
-        double fixedHeight = backgroundImage.getHeight() * fixedScaleFactor;
-        
-        
-        backgroundLayer.setPrefWidth(fixedWidth);
-        backgroundLayer.setPrefHeight(fixedHeight);
-        backgroundLayer.setMinWidth(fixedWidth);
-        backgroundLayer.setMinHeight(fixedHeight);
-        backgroundLayer.setMaxWidth(fixedWidth);
-        backgroundLayer.setMaxHeight(fixedHeight);
-        
-        
-        backgroundLayer.setStyle("""
-        -fx-background-image: url("/images/rooms/room.gif");
-        -fx-background-size: contain;
-        -fx-background-repeat: no-repeat;
-        -fx-background-position: center;
-        """);
-        
-        System.out.println("Created background layer with fixed dimensions: " + 
-                          fixedWidth + "x" + fixedHeight);
-                          
-        return backgroundLayer;
-    }
 
-    
-    private Pane createBackgroundLayer() {
-        
-        Image backgroundImage = com.vpstycoon.ui.game.components.RoomObjectsLayer.loadImage("/images/rooms/room.gif");
-        return createBackgroundLayer(backgroundImage);
+        // ค่าปรับขนาด (scale factor) สำหรับ backgroundImage และ windowImage
+        double scaleFactor = 0.26;  // ค่าปรับขนาดสำหรับทั้งสองภาพ
+        double scaleFactor2 = 0.20;  // ค่าปรับขนาดสำหรับทั้งสองภาพ
+
+        // สร้าง ImageView สำหรับ backgroundImage (room.gif)
+        ImageView backgroundImageView = new ImageView(backgroundImage);
+        backgroundImageView.setPreserveRatio(true);
+        // ใช้ scaleFactor กับ setScaleX และ setScaleY สำหรับ backgroundImage
+        backgroundImageView.setScaleX(scaleFactor);
+        backgroundImageView.setScaleY(scaleFactor);
+        // ปรับขนาดให้ fit กับ parent (backgroundLayer)
+        backgroundImageView.fitWidthProperty().bind(backgroundLayer.widthProperty());
+        backgroundImageView.fitHeightProperty().bind(backgroundLayer.heightProperty());
+
+        // สร้าง ImageView สำหรับ windowImage (BackgroundWindow.gif)
+        ImageView windowImageView = new ImageView(windowImage);
+        windowImageView.setPreserveRatio(true); // รักษาสัดส่วนของ windowImage
+        // ใช้ scaleFactor กับ setScaleX และ setScaleY สำหรับ windowImage
+        windowImageView.setScaleX(scaleFactor2);
+        windowImageView.setScaleY(scaleFactor2);
+
+        // จัดตำแหน่ง windowImageView ให้อยู่กึ่งกลางของ backgroundLayer
+        windowImageView.layoutXProperty().bind(
+                backgroundLayer.widthProperty().subtract(windowImageView.getBoundsInLocal().getWidth() * scaleFactor).divide(2)
+        );
+        windowImageView.layoutYProperty().bind(
+                backgroundLayer.heightProperty().subtract(windowImageView.getBoundsInLocal().getHeight() * scaleFactor).divide(2)
+        );
+
+        // เลื่อน windowImage ไปทางขวาด้วย reductionPixels (50 พิกเซล)
+        windowImageView.setTranslateX(-650);
+        windowImageView.setTranslateY(-650);
+
+        Affine skewTransform = new Affine();
+        double skewX = -0.05;  // ค่าการเอียงในแกน X (ปรับได้ตามต้องการ)
+        double skewY = 0.265;  // ค่าการเอียงในแกน Y (ปรับได้ตามต้องการ)
+        skewTransform.setMxy(skewX);  // Skew X: บิดเอียงในแนวนอน
+        skewTransform.setMyx(skewY);  // Skew Y: บิดเอียงในแนวตั้ง
+        windowImageView.getTransforms().add(skewTransform);
+
+        // เพิ่ม ImageView ทั้งสองเข้าไปใน backgroundLayer โดยให้ backgroundImage อยู่ด้านล่าง
+        backgroundLayer.getChildren().addAll(windowImageView, backgroundImageView);
+
+        // ตั้งค่า backgroundLayer ให้โปร่งใส
+        backgroundLayer.setStyle("-fx-background-color: transparent;");
+
+        return backgroundLayer;
     }
 
     private void setupDebugFeatures() {

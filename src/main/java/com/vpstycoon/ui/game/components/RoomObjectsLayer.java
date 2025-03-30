@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class RoomObjectsLayer {
     private final Pane monitorLayer;
-    private final Pane tableLayer;
     private final Pane serverLayer;
     private final Pane keroroLayer;
     private final Pane musicBoxLayer;
@@ -112,9 +111,7 @@ public class RoomObjectsLayer {
         this.onMonitorClick = onMonitorClick;
         this.onServerClick = onServerClick;
         this.audioManager = ResourceManager.getInstance().getAudioManager();
-        
-        
-        this.tableLayer = createTableLayer();
+
         this.monitorLayer = createMonitorLayer();
         this.serverLayer = createServerLayer();
         this.keroroLayer = createKeroroLayer();
@@ -131,8 +128,8 @@ public class RoomObjectsLayer {
         musicBoxLayer.setPrefHeight(28);
         musicBoxLayer.setScaleX(3);
         musicBoxLayer.setScaleY(3);
-        musicBoxLayer.setTranslateX(155);
-        musicBoxLayer.setTranslateY(235);
+        musicBoxLayer.setTranslateX(130);
+        musicBoxLayer.setTranslateY(225);
 
         if (!run) {
             musicBoxLayer.setVisible(false);
@@ -172,8 +169,8 @@ public class RoomObjectsLayer {
         musicStopLayer.setPrefHeight(28);
         musicStopLayer.setScaleX(3);
         musicStopLayer.setScaleY(3);
-        musicStopLayer.setTranslateX(155);
-        musicStopLayer.setTranslateY(235);
+        musicStopLayer.setTranslateX(130);
+        musicStopLayer.setTranslateY(225);
         if (run) {
             musicStopLayer.setVisible(false);
             this.setRun(true);
@@ -213,7 +210,7 @@ public class RoomObjectsLayer {
         keroroLayer.setPrefHeight(19);
         keroroLayer.setScaleX(3);
         keroroLayer.setScaleY(3);
-        keroroLayer.setTranslateX(130);
+        keroroLayer.setTranslateX(100);
         keroroLayer.setTranslateY(410);
 
         String normalStyle = ("""
@@ -248,7 +245,7 @@ public class RoomObjectsLayer {
         monitorLayer.setScaleX(2);
         monitorLayer.setScaleY(2);
         monitorLayer.setTranslateX(375);
-        monitorLayer.setTranslateY(235);
+        monitorLayer.setTranslateY(225);
 
         String normalStyle = ("""
             -fx-background-image: url('/images/Moniter/MoniterF2.png');
@@ -346,10 +343,6 @@ public class RoomObjectsLayer {
 
     public Pane getMonitorLayer() {
         return monitorLayer;
-    }
-
-    public Pane getTableLayer() {
-        return tableLayer;
     }
 
     public Pane getServerLayer() {
