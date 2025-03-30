@@ -1,6 +1,6 @@
 package com.vpstycoon.ui.game.notification.center;
 
-import com.vpstycoon.FontLoader;
+import com.vpstycoon.application.FontLoader;
 import com.vpstycoon.audio.AudioManager;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;

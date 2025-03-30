@@ -1,4 +1,4 @@
-package com.vpstycoon;
+package com.vpstycoon.application;
 
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.DefaultGameConfig;
@@ -15,6 +15,7 @@ import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.SceneController;
 import com.vpstycoon.ui.cutscene.CutsceneScreen;
 import com.vpstycoon.ui.game.GameplayScreen;
+import com.vpstycoon.ui.game.components.RoomObjectsLayer;
 import com.vpstycoon.ui.menu.MainMenuScreen;
 import com.vpstycoon.ui.navigation.Navigator;
 import com.vpstycoon.ui.screen.GameScreen;
@@ -816,6 +817,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
             "/images/Object/MusicboxOn.gif",
             "/images/Object/MusicboxOff.png",
             "/images/Object/Table.png",
+            "/images/wallpaper/BackgroundWindow.gif"
         };
 
         final String[] soundFiles = {
@@ -827,7 +829,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
         };
         
 
-        com.vpstycoon.ui.game.components.RoomObjectsLayer.preloadImages();
+        RoomObjectsLayer.preloadImages();
         
 
         Thread preloadThread = new Thread(() -> {

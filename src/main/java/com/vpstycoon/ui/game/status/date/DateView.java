@@ -1,6 +1,6 @@
 package com.vpstycoon.ui.game.status.date;
 
-import com.vpstycoon.FontLoader;
+import com.vpstycoon.application.FontLoader;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.beans.binding.StringBinding;
 import javafx.geometry.Insets;

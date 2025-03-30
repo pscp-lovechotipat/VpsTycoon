@@ -1,5 +1,6 @@
 package com.vpstycoon.game.thread.task;
 
+import com.vpstycoon.application.FontLoader;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
@@ -20,7 +21,6 @@ import javafx.scene.effect.DropShadow;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import com.vpstycoon.FontLoader;
 
 
 public class FirewallDefenseTask extends GameTask {

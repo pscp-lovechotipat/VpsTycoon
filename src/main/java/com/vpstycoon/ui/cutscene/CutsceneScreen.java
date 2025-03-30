@@ -1,5 +1,6 @@
 package com.vpstycoon.ui.cutscene;
 
+import com.vpstycoon.application.FontLoader;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.navigation.Navigator;
@@ -16,7 +17,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
-import com.vpstycoon.FontLoader;
 import javafx.geometry.Pos;
 import java.util.Arrays;
 import java.util.List;

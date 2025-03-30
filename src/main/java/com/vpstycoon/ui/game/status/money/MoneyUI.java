@@ -1,6 +1,6 @@
 package com.vpstycoon.ui.game.status.money;
 
-import com.vpstycoon.FontLoader;
+import com.vpstycoon.application.FontLoader;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

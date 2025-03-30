@@ -1,6 +1,6 @@
 package com.vpstycoon.ui.settings;
 
-import com.vpstycoon.FontLoader;
+import com.vpstycoon.application.FontLoader;
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
@@ -121,7 +121,7 @@ public class SettingsScreen extends StackPane {
         });
     }
 
-    private Label createTitleLabel(String text) {
+    private synchronized Label createTitleLabel(String text) {
         Label label = new Label(text);
         label.setFont(FontLoader.SUBTITLE_FONT);
         label.setStyle("""

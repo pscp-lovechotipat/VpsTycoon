@@ -1,6 +1,6 @@
 package com.vpstycoon.ui.game;
 
-import com.vpstycoon.FontLoader;
+import com.vpstycoon.application.FontLoader;
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;

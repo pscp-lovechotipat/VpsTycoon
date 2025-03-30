@@ -1,6 +1,6 @@
 package com.vpstycoon.game.thread.task;
 
-import com.vpstycoon.FontLoader;
+import com.vpstycoon.application.FontLoader;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;

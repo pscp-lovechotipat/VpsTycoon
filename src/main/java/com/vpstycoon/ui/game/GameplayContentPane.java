@@ -267,14 +267,11 @@ public class GameplayContentPane extends BorderPane {
         gameArea.setMaxSize(resolution.getWidth(), resolution.getHeight());
         
         
-        Image backgroundImage = com.vpstycoon.ui.game.components.RoomObjectsLayer.loadImage("/images/rooms/room.gif");
+        Image backgroundImage = RoomObjectsLayer.loadImage("/images/rooms/room.gif");
         
         
         Pane backgroundLayer = createBackgroundLayer(backgroundImage);
-        
-        
-        
-        
+
         
         this.rootStack.getChildren().clear();
         System.out.println("ล้าง rootStack เรียบร้อย");

@@ -1,6 +1,6 @@
 package com.vpstycoon.ui.game.utils;
 
-import com.vpstycoon.FontLoader;
+import com.vpstycoon.application.FontLoader;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;

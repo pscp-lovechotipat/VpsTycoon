@@ -1,6 +1,5 @@
 package com.vpstycoon.service.tasks;
 
-import com.vpstycoon.FontLoader;
 import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.service.tasks.interfaces.IGameTask;

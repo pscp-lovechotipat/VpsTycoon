@@ -1,4 +1,4 @@
-package com.vpstycoon;
+package com.vpstycoon.application;
 
 import javafx.scene.text.Font;
 

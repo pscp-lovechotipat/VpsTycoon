@@ -1,6 +1,6 @@
 package com.vpstycoon.game.thread.task;
 
-import com.vpstycoon.FontLoader;
+import com.vpstycoon.application.FontLoader;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;

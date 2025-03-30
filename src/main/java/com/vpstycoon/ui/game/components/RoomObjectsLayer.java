@@ -43,25 +43,67 @@ public class RoomObjectsLayer {
         }
 
         System.out.println("Preloading room object images");
-        loadImage("/images/Object/MusicboxOn.gif");
-        loadImage("/images/Object/MusicboxOff.png");
-        loadImage("/images/Object/Keroro.png");
-        loadImage("/images/Moniter/MoniterF2.png");
-        loadImage("/images/Object/Table.png");
-        loadImage("/images/servers/server2.gif");
-        loadImage("/images/rooms/room.gif");
         
+        // รายการไฟล์ที่ต้องโหลด
+        String[] imagePaths = {
+            "/images/Object/MusicboxOn.gif", 
+            "/images/Object/MusicboxOff.png",
+            "/images/Object/Keroro.png",
+            "/images/Moniter/MoniterF2.png",
+            "/images/Object/Table.png",
+            "/images/servers/server2.gif",
+            "/images/wallpaper/BackgroundWindow.gif",
+            "/images/rooms/room.gif"
+        };
+        
+        boolean allSuccess = true;
+        
+        // ลองโหลดแต่ละภาพและแสดงสถานะ
+        for (String path : imagePaths) {
+            Image img = loadImage(path);
+            if (img == null) {
+                System.err.println("ไม่สามารถโหลดรูปภาพ: " + path);
+                allSuccess = false;
+            } else {
+                System.out.println("โหลดรูปภาพสำเร็จ: " + path);
+            }
+        }
+        
+        if (!allSuccess) {
+            System.err.println("มีปัญหาในการโหลดรูปภาพบางรายการ กรุณาตรวจสอบว่าไฟล์มีอยู่จริง");
+            System.err.println("หรือลองรันคำสั่ง 'mvn clean package' เพื่อสร้างไฟล์ resources ใหม่");
+        }
+
         imagesPreloaded = true;
-        System.out.println("Room object images preloading complete");
+        System.out.println("Room object images preloading complete" + (allSuccess ? " (all succeeded)" : " (some failed)"));
     }
     
     
     public static Image loadImage(String path) {
         if (!imageCache.containsKey(path)) {
-            
-            Image image = new Image(path, true);
-            imageCache.put(path, image);
-            return image;
+            try {
+                // ใช้ method ที่เหมาะสมสำหรับการโหลดรูปภาพจาก resources
+                String resourcePath = path;
+                
+                // ตรวจสอบว่ามี URL สำหรับ resource นี้หรือไม่
+                java.io.InputStream resourceStream = RoomObjectsLayer.class.getResourceAsStream(resourcePath);
+                
+                if (resourceStream == null) {
+                    System.err.println("ไม่พบรูปภาพ: " + path);
+                    imageCache.put(path, null);
+                    return null;
+                }
+                
+                // สร้าง Image จาก InputStream
+                Image image = new Image(resourceStream);
+                imageCache.put(path, image);
+                return image;
+            } catch (Exception e) {
+                System.err.println("เกิดข้อผิดพลาดในการโหลดรูปภาพ " + path + ": " + e.getMessage());
+                e.printStackTrace();
+                imageCache.put(path, null);
+                return null;
+            }
         }
         return imageCache.get(path);
     }
