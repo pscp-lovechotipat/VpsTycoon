@@ -70,6 +70,7 @@ public class ResourceManager implements Serializable {
     private GameManager gameManager; 
 
     private RequestManager requestManager;
+    private RequestGenerator requestGenerator;
     private final AudioManager audioManager;
     private GameTimeController gameTimeController;
 
@@ -780,7 +781,12 @@ public class ResourceManager implements Serializable {
     }
 
     public RequestGenerator getRequestGenerator() {
-        return getGameManager().getRequestGenerator();
+        return requestGenerator;
+    }
+    
+    public void setRequestGenerator(RequestGenerator generator) {
+        this.requestGenerator = generator;
+        System.out.println("ตั้งค่า RequestGenerator ใหม่ใน ResourceManager");
     }
 
     public void deleteSaveFile() {
@@ -1120,5 +1126,14 @@ public class ResourceManager implements Serializable {
     
     public void setGameManager(GameManager manager) {
         this.gameManager = manager;
+    }
+
+    public void resetSkillPointsSystem() {
+        if (this.company != null) {
+            System.out.println("รีเซ็ต SkillPointsSystem");
+            this.skillPointsSystem = new SkillPointsSystem(this.company);
+        } else {
+            System.out.println("ไม่สามารถรีเซ็ต SkillPointsSystem ได้เนื่องจาก company เป็น null");
+        }
     }
 }

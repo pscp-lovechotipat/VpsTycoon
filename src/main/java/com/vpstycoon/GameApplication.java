@@ -38,6 +38,8 @@ import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 import javafx.animation.PauseTransition;
 import javafx.animation.FadeTransition;
 import javafx.util.Duration;
+import com.vpstycoon.game.thread.RequestGenerator;
+import com.vpstycoon.game.manager.RequestManager;
 
 
 public class GameApplication extends Application implements Navigator, ResourceManager.ResourceLoadingListener {
@@ -349,9 +351,28 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 ResourceManager.getInstance().setCurrentState(newState);
                 System.out.println("อัพเดท GameState ใน ResourceManager แล้ว");
                 
+                // สร้าง SkillPointsSystem ใหม่และเซฟลงใน GameState
+                System.out.println("สร้าง SkillPointsSystem ใหม่");
+                ResourceManager resourceManager = ResourceManager.getInstance();
+                resourceManager.resetSkillPointsSystem();
+                
+                // บันทึก SkillPointsSystem ลงใน GameState
+                if (resourceManager.getSkillPointsSystem() != null) {
+                    newState.setSkillLevels(resourceManager.getSkillPointsSystem().getSkillLevelsMap());
+                    System.out.println("บันทึก SkillLevels ลงใน GameState เรียบร้อย");
+                }
+                
 
                 com.vpstycoon.ui.game.components.RoomObjectsLayer.preloadImages();
                 
+                // เริ่มทำงาน RequestGenerator
+                if (ResourceManager.getInstance().getRequestGenerator() != null) {
+                    ResourceManager.getInstance().getRequestGenerator().stopGenerator();
+                }
+                RequestGenerator requestGenerator = new RequestGenerator(ResourceManager.getInstance().getRequestManager());
+                ResourceManager.getInstance().setRequestGenerator(requestGenerator);
+                requestGenerator.start();
+                System.out.println("เริ่มการทำงานของ RequestGenerator แล้ว");
 
                 final GameState finalState = newState;
                 Platform.runLater(() -> {
@@ -492,6 +513,25 @@ public class GameApplication extends Application implements Navigator, ResourceM
                     ChatHistoryManager chatManager = ChatHistoryManager.getInstance();
                     System.out.println("โหลดข้อมูลประวัติแชทเรียบร้อยแล้ว");
                     
+                    // สร้างและเริ่ม RequestGenerator ก่อนที่จะเริ่มเกม
+                    System.out.println("=========== สร้าง RequestGenerator ใน continueGame ===========");
+                    RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
+                    if (requestManager == null) {
+                        System.out.println("สร้าง RequestManager ใหม่ใน continueGame");
+                        requestManager = new RequestManager(ResourceManager.getInstance().getCompany());
+                        ResourceManager.getInstance().setRequestManager(requestManager);
+                    }
+                    
+                    // หยุด RequestGenerator เดิมถ้ามี
+                    if (ResourceManager.getInstance().getRequestGenerator() != null) {
+                        ResourceManager.getInstance().getRequestGenerator().stopGenerator();
+                    }
+                    
+                    // สร้างและเริ่ม RequestGenerator ใหม่
+                    RequestGenerator requestGenerator = new RequestGenerator(requestManager);
+                    ResourceManager.getInstance().setRequestGenerator(requestGenerator);
+                    requestGenerator.start();
+                    System.out.println("เริ่ม RequestGenerator ใน continueGame เรียบร้อยแล้ว");
 
                     savedState = ResourceManager.getInstance().loadGameState();
                     
@@ -566,6 +606,38 @@ public class GameApplication extends Application implements Navigator, ResourceM
         if (gameplayScreen != null) {
             gameplayScreen.release();
         }
+        
+        // เริ่มทำงาน RequestGenerator
+        System.out.println("======== กำลังเริ่ม RequestGenerator ในฟังก์ชัน startGame (continue game) ========");
+        if (ResourceManager.getInstance().getRequestGenerator() != null) {
+            ResourceManager.getInstance().getRequestGenerator().stopGenerator();
+            System.out.println("หยุด RequestGenerator เดิม");
+        }
+        
+        try {
+            RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
+            if (requestManager == null) {
+                System.out.println("สร้าง RequestManager ใหม่เนื่องจากไม่พบตัวเดิม");
+                requestManager = new RequestManager(ResourceManager.getInstance().getCompany());
+                ResourceManager.getInstance().setRequestManager(requestManager);
+            }
+            
+            RequestGenerator requestGenerator = new RequestGenerator(requestManager);
+            ResourceManager.getInstance().setRequestGenerator(requestGenerator);
+            requestGenerator.start();
+            System.out.println("เริ่มการทำงานของ RequestGenerator แล้ว");
+            
+            // ตรวจสอบว่า thread กำลังทำงานอยู่หรือไม่
+            if (requestGenerator.isAlive()) {
+                System.out.println("✅ RequestGenerator กำลังทำงาน (Thread ID: " + requestGenerator.getId() + ")");
+            } else {
+                System.out.println("❌ RequestGenerator ไม่ได้ทำงาน");
+            }
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการสร้าง RequestGenerator: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
         gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, state);
         gameplayScreen.show();
         System.out.println("เริ่มเกมด้วย GameplayScreen ซึ่งจะเริ่มการเดินเวลาเกม");

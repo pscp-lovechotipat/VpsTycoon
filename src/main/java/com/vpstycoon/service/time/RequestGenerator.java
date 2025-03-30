@@ -1,45 +1,42 @@
-package com.vpstycoon.game.thread;
+package com.vpstycoon.service.time;
 
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
+import com.vpstycoon.service.time.interfaces.IRequestGenerator;
 
 import java.util.Random;
 
-public class RequestGenerator extends Thread {
+/**
+ * สร้างคำขอจากลูกค้าโดยอัตโนมัติ ทำงานในรูปแบบ background thread
+ */
+public class RequestGenerator extends Thread implements IRequestGenerator {
     private final RequestManager requestManager;
     private volatile boolean running = true;
     private volatile boolean paused = false;
-    private final int minDelayMs = 10_000;
-    private final int maxDelayMs = 30_000;
-    private final int rateLimitSleepTime = 5_000;
-    private int maxPendingRequests = 20;
-    
-    
+    private final int minDelayMs = 30_000; 
+    private final int maxDelayMs = 90_000; 
+    private final int rateLimitSleepTime = 10_000; 
+    private int maxPendingRequests = 10; 
     private double requestRateMultiplier = 1.0;
 
+    /**
+     * สร้าง RequestGenerator ใหม่ที่ใช้ RequestManager ที่กำหนด
+     */
     public RequestGenerator(RequestManager requestManager) {
         this.requestManager = requestManager;
         this.setDaemon(true);
         this.setName("RequestGenerator");
     }
 
+    /**
+     * เริ่มการทำงานของตัวสร้างคำขอ
+     */
     @Override
     public void run() {
         Random random = new Random();
-        System.out.println("===== RequestGenerator เริ่มทำงาน (Thread ID: " + this.getId() + ") =====");
-        long startTime = System.currentTimeMillis();
-        int generatedRequestCount = 0;
 
         while (!interrupted() && running) {
             try {
-                // แสดงสถานะทุก 10 วินาที
-                long currentTime = System.currentTimeMillis();
-                if (currentTime - startTime > 10000) {
-                    System.out.println("RequestGenerator ทำงานมา " + ((currentTime - startTime) / 1000) + " วินาที, สร้าง " + generatedRequestCount + " requests");
-                    startTime = currentTime;
-                }
-                
-                // ถ้า paused ให้รอ
                 if (paused) {
                     synchronized (this) {
                         while (paused) {
@@ -49,30 +46,23 @@ public class RequestGenerator extends Thread {
                     }
                 }
                 
-                // ตรวจสอบจำนวน requests ว่าเต็มหรือยัง
                 if (requestManager.getRequests().size() >= maxPendingRequests) {
                     System.out.println("RequestGenerator: request limit reached (" + maxPendingRequests + ")");
                     Thread.sleep(rateLimitSleepTime);
                     continue;
                 }
 
-                // คำนวณเวลารอระหว่างการสร้าง request
                 updateRequestRateMultiplier();
                 int adjustedMinDelay = (int)(minDelayMs / requestRateMultiplier);
                 int adjustedMaxDelay = (int)(maxDelayMs / requestRateMultiplier);
                 int delay = adjustedMinDelay + random.nextInt(adjustedMaxDelay - adjustedMinDelay);
                 
-                // รอตามเวลาที่กำหนด
                 Thread.sleep(delay);
 
-                // สร้าง request ใหม่
                 CustomerRequest newRequest = requestManager.generateRandomRequest();
-                
-                // เพิ่ม request เข้าไปใน requestManager
                 requestManager.addRequest(newRequest);
-                generatedRequestCount++;
                 
-                System.out.println("[RequestGenerator] สร้าง Request ใหม่: " + newRequest.getName() +
+                System.out.println("New Customer Request: " + newRequest.getName() +
                         " | Type: " + newRequest.getCustomerType() +
                         " | Request: " + newRequest.getRequestType() +
                         " | Period: " + newRequest.getRentalPeriodType().getDisplayName() +
@@ -87,39 +77,41 @@ public class RequestGenerator extends Thread {
         }
     }
     
-    
+    /**
+     * ปรับค่า multiplier สำหรับอัตราการสร้างคำขอ ตามคะแนนของบริษัท
+     */
     private void updateRequestRateMultiplier() {
         double companyRating = 1.0;
         try {
             companyRating = requestManager.getVmProvisioningManager().getCompany().getRating();
         } catch (Exception e) {
-            
             companyRating = 1.0;
         }
         
-        
         requestRateMultiplier = 1.0 + (companyRating - 1.0) * 0.5;
-        
-        
         requestRateMultiplier = Math.max(0.5, Math.min(3.0, requestRateMultiplier));
     }
 
-    
+    /**
+     * หยุดการทำงานของตัวสร้างคำขอ
+     */
+    @Override
     public void stopGenerator() {
         running = false;
         this.interrupt();
     }
     
-    
+    /**
+     * รีเซ็ตตัวสร้างคำขอกลับเป็นค่าเริ่มต้น
+     */
+    @Override
     public void resetGenerator() {
-        
         running = false;
         this.interrupt();
         
         try {
-            
             this.paused = false;
-            this.maxPendingRequests = 20;
+            this.maxPendingRequests = 10;
             this.requestRateMultiplier = 1.0;
             
             System.out.println("RequestGenerator ถูกรีเซ็ตกลับเป็นค่าเริ่มต้นแล้ว");
@@ -129,13 +121,19 @@ public class RequestGenerator extends Thread {
         }
     }
     
-    
+    /**
+     * หยุดการทำงานชั่วคราว
+     */
+    @Override
     public synchronized void pauseGenerator() {
         System.out.println("RequestGenerator is pausing");
         paused = true;
     }
     
-    
+    /**
+     * เริ่มการทำงานต่อหลังจากหยุดชั่วคราว
+     */
+    @Override
     public synchronized void resumeGenerator() {
         if (paused) {
             System.out.println("RequestGenerator is resuming");
@@ -148,12 +146,9 @@ public class RequestGenerator extends Thread {
                 System.err.println("Error in resumeGenerator: " + e.getMessage());
                 e.printStackTrace();
                 
-                
                 if (!isAlive()) {
                     System.err.println("RequestGenerator thread is not alive, attempting to restart");
                     try {
-                        
-                        
                         this.start();
                     } catch (IllegalThreadStateException ex) {
                         System.err.println("Cannot restart thread: " + ex.getMessage());
@@ -163,14 +158,19 @@ public class RequestGenerator extends Thread {
         }
     }
     
-    
+    /**
+     * ตรวจสอบว่ากำลังหยุดชั่วคราวอยู่หรือไม่
+     */
+    @Override
     public boolean isPaused() {
         return paused;
     }
     
-    
+    /**
+     * กำหนดจำนวนคำขอสูงสุดที่รอตอบรับได้
+     */
+    @Override
     public void setMaxPendingRequests(int maxRequests) {
         this.maxPendingRequests = maxRequests;
     }
-}
-
+} 

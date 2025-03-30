@@ -169,14 +169,40 @@ public class GameplayScreen extends GameScreen {
         state.setGameObjects(gameObjects);
 
         try {
+            System.out.println("================= เริ่มการสร้าง RequestGenerator ใน GameplayScreen =================");
             RequestGenerator existingGenerator = ResourceManager.getInstance().getRequestGenerator();
             if (existingGenerator != null) {
-                existingGenerator.stopGenerator();
-                System.out.println("หยุด RequestGenerator เดิม");
+                if (existingGenerator.isAlive()) {
+                    System.out.println("❌ พบ RequestGenerator เดิมกำลังทำงานอยู่ (Thread ID: " + existingGenerator.getId() + ")");
+                    existingGenerator.stopGenerator();
+                    System.out.println("✅ หยุด RequestGenerator เดิมแล้ว");
+                } else {
+                    System.out.println("❌ พบ RequestGenerator เดิมไม่ได้ทำงาน");
+                }
+            } else {
+                System.out.println("❌ ไม่พบ RequestGenerator ใน ResourceManager");
             }
+            
+            RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
+            if (requestManager == null) {
+                System.out.println("❌ ไม่พบ RequestManager - กำลังสร้างใหม่");
+                requestManager = new RequestManager(ResourceManager.getInstance().getCompany());
+                ResourceManager.getInstance().setRequestManager(requestManager);
+            } else {
+                System.out.println("✅ พบ RequestManager พร้อมใช้งาน");
+            }
+            
             RequestGenerator requestGenerator = new RequestGenerator(requestManager);
+            ResourceManager.getInstance().setRequestGenerator(requestGenerator);
             requestGenerator.start();
-            System.out.println("สร้างและเริ่ม RequestGenerator ใหม่");
+            
+            if (requestGenerator.isAlive()) {
+                System.out.println("✅ RequestGenerator ใหม่เริ่มทำงานแล้ว (Thread ID: " + requestGenerator.getId() + ")");
+            } else {
+                System.out.println("❌ RequestGenerator ใหม่ไม่ได้ทำงาน");
+            }
+            
+            System.out.println("RequestGenerator ทำงานเรียบร้อยแล้ว");
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการสร้าง RequestGenerator: " + e.getMessage());
             e.printStackTrace();
@@ -256,6 +282,17 @@ public class GameplayScreen extends GameScreen {
                 }
             }
             
+            // หยุด RequestGenerator เมื่อออกจากหน้าเกม
+            try {
+                RequestGenerator generator = ResourceManager.getInstance().getRequestGenerator();
+                if (generator != null && generator.isAlive()) {
+                    System.out.println("หยุด RequestGenerator เมื่อออกจากหน้าเกม (Thread ID: " + generator.getId() + ")");
+                    generator.pauseGenerator();
+                }
+            } catch (Exception e) {
+                System.err.println("เกิดข้อผิดพลาดในการหยุด RequestGenerator: " + e.getMessage());
+            }
+            
             if (gameObjects != null) {
                 gameObjects.clear();
             }
@@ -279,5 +316,56 @@ public class GameplayScreen extends GameScreen {
                 }
             })
         );
+    }
+
+    @Override
+    public void show() {
+        super.show();
+        validateRequestGenerator();
+        System.out.println("GameplayScreen - show() พร้อมใช้งาน RequestGenerator เรียบร้อยแล้ว");
+    }
+    
+    private void validateRequestGenerator() {
+        try {
+            System.out.println("GameplayScreen - กำลังตรวจสอบ RequestGenerator เมื่อแสดงหน้าเกม");
+            RequestGenerator generator = ResourceManager.getInstance().getRequestGenerator();
+            
+            if (generator == null) {
+                System.out.println("GameplayScreen - ไม่พบ RequestGenerator - กำลังสร้างใหม่");
+                RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
+                if (requestManager == null) {
+                    System.out.println("GameplayScreen - ไม่พบ RequestManager - กำลังสร้างใหม่");
+                    requestManager = new RequestManager(ResourceManager.getInstance().getCompany());
+                    ResourceManager.getInstance().setRequestManager(requestManager);
+                }
+                
+                generator = new RequestGenerator(requestManager);
+                ResourceManager.getInstance().setRequestGenerator(generator);
+                generator.start();
+                System.out.println("GameplayScreen - สร้าง RequestGenerator ใหม่และเริ่มทำงานแล้ว (Thread ID: " + generator.getId() + ")");
+            } else if (!generator.isAlive()) {
+                System.out.println("GameplayScreen - พบ RequestGenerator แต่ไม่ทำงาน - กำลังรีสตาร์ท");
+                RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
+                if (requestManager == null) {
+                    System.out.println("GameplayScreen - ไม่พบ RequestManager - กำลังสร้างใหม่");
+                    requestManager = new RequestManager(ResourceManager.getInstance().getCompany());
+                    ResourceManager.getInstance().setRequestManager(requestManager);
+                }
+                
+                generator = new RequestGenerator(requestManager);
+                ResourceManager.getInstance().setRequestGenerator(generator);
+                generator.start();
+                System.out.println("GameplayScreen - รีสตาร์ท RequestGenerator แล้ว (Thread ID: " + generator.getId() + ")");
+            } else if (generator.isPaused()) {
+                System.out.println("GameplayScreen - RequestGenerator ถูกพักการทำงาน - กำลังเริ่มต่อ");
+                generator.resumeGenerator();
+                System.out.println("GameplayScreen - เริ่มการทำงาน RequestGenerator ต่อแล้ว (Thread ID: " + generator.getId() + ")");
+            } else {
+                System.out.println("GameplayScreen - RequestGenerator กำลังทำงานอยู่ (Thread ID: " + generator.getId() + ")");
+            }
+        } catch (Exception e) {
+            System.err.println("GameplayScreen - เกิดข้อผิดพลาดในการตรวจสอบ RequestGenerator: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

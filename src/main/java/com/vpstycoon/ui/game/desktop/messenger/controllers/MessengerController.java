@@ -135,6 +135,11 @@ public class MessengerController {
             System.out.println("ข้อมูลเริ่มต้น: อัพเดต Dashboard ครั้งแรกหลังจากตั้งค่าทั้งหมดเรียบร้อยแล้ว");
             updateDashboard();
         });
+
+        // โหลดคำขอที่กำลังดำเนินการอยู่และประวัติแชทจาก GameState
+        loadActiveRequestsFromGameState();
+
+        System.out.println("Messenger Controller initialized: MessengerWindow created and listeners setup");
     }
 
     private void setupListeners() {
@@ -411,11 +416,8 @@ public class MessengerController {
         if (requests == null) {
             System.out.println("⚠️ Error: requests from requestManager is null");
             
-            System.out.println("ลองสร้าง CustomerRequest ใหม่...");
+            System.out.println("สร้าง ObservableList สำหรับการจัดเก็บ Request...");
             requestManager.setRequests(FXCollections.observableArrayList());
-            CustomerRequest newRequest = requestManager.generateRandomRequest();
-            requestManager.addRequest(newRequest);
-            System.out.println("สร้าง CustomerRequest ใหม่: " + newRequest.getName());
             
             requests = requestManager.getRequests();
             if (requests == null) {
@@ -424,7 +426,7 @@ public class MessengerController {
             }
         }
         
-        System.out.println("�� กำลังอัปเดตรายการคำขอ: พบ " + requests.size() + " รายการ");
+        System.out.println("กำลังอัปเดตรายการคำขอ: พบ " + requests.size() + " รายการ");
         for (CustomerRequest req : requests) {
             if (req != null) {
                 System.out.println("- " + req.getName() + " | " + req.getTitle() + 
@@ -454,12 +456,7 @@ public class MessengerController {
         requestListView.updateRequestList(validRequests);
         
         if (validRequests.isEmpty()) {
-            System.out.println("ไม่พบ CustomerRequest ที่สมบูรณ์ กำลังสร้างตัวอย่าง...");
-            CustomerRequest sampleRequest = requestManager.generateRandomRequest();
-            requestManager.addRequest(sampleRequest);
-            System.out.println("สร้าง CustomerRequest ตัวอย่าง: " + sampleRequest.getName());
-            
-            updateRequestList();
+            System.out.println("ไม่พบ CustomerRequest ที่สมบูรณ์");
         }
     }
 
@@ -1613,5 +1610,51 @@ public class MessengerController {
     
     public RequestManager getRequestManager() {
         return requestManager;
+    }
+
+    private void loadActiveRequestsFromGameState() {
+        ResourceManager resourceManager = ResourceManager.getInstance();
+        GameState currentState = resourceManager.getCurrentState();
+        
+        if (currentState != null && currentState.getPendingRequests() != null) {
+            
+            System.out.println("กำลังโหลดคำขอที่กำลังดำเนินการอยู่จาก GameState...");
+            requestManager.setRequests(currentState.getPendingRequests());
+            
+            // โหลด chatHistory สำหรับแต่ละคำขอ
+            for (CustomerRequest request : requestManager.getRequests()) {
+                List<ChatMessage> chatHistory = chatHistoryManager.getChatHistory(request);
+                if (chatHistory != null && !chatHistory.isEmpty()) {
+                    System.out.println("โหลดประวัติแชทสำหรับคำขอของ " + request.getName() + 
+                                      " พบข้อความ " + chatHistory.size() + " ข้อความ");
+                } else {
+                    System.out.println("ไม่พบประวัติแชทสำหรับคำขอของ " + request.getName());
+                }
+            }
+            
+            System.out.println("โหลดคำขอที่กำลังดำเนินการอยู่สำเร็จ: " + 
+                              requestManager.getRequests().size() + " รายการ");
+        } else {
+            System.out.println("ไม่พบคำขอที่กำลังดำเนินการอยู่ใน GameState");
+        }
+        
+        if (currentState != null && currentState.getCompletedRequests() != null) {
+            System.out.println("กำลังโหลดคำขอที่เสร็จสิ้นแล้วจาก GameState...");
+            requestManager.setCompletedRequests(currentState.getCompletedRequests());
+            
+            // โหลด chatHistory สำหรับแต่ละคำขอที่เสร็จสิ้นแล้ว
+            for (CustomerRequest request : requestManager.getCompletedRequests()) {
+                List<ChatMessage> chatHistory = chatHistoryManager.getChatHistory(request);
+                if (chatHistory != null && !chatHistory.isEmpty()) {
+                    System.out.println("โหลดประวัติแชทสำหรับคำขอที่เสร็จสิ้นแล้วของ " + request.getName() + 
+                                      " พบข้อความ " + chatHistory.size() + " ข้อความ");
+                }
+            }
+            
+            System.out.println("โหลดคำขอที่เสร็จสิ้นแล้วสำเร็จ: " + 
+                              requestManager.getCompletedRequests().size() + " รายการ");
+        } else {
+            System.out.println("ไม่พบคำขอที่เสร็จสิ้นแล้วใน GameState");
+        }
     }
 }
