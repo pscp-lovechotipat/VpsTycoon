@@ -53,6 +53,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.Random;
+import javafx.collections.FXCollections;
 
 public class MessengerController {
     private final RequestManager requestManager;
@@ -400,43 +401,66 @@ public class MessengerController {
     }
 
     private void updateRequestList() {
-        
         if (requestManager == null) {
             System.out.println("⚠️ Error: requestManager is null");
             return;
         }
         
-        
         ObservableList<CustomerRequest> requests = requestManager.getRequests();
-        
         
         if (requests == null) {
             System.out.println("⚠️ Error: requests from requestManager is null");
-            return;
+            
+            System.out.println("ลองสร้าง CustomerRequest ใหม่...");
+            requestManager.setRequests(FXCollections.observableArrayList());
+            CustomerRequest newRequest = requestManager.generateRandomRequest();
+            requestManager.addRequest(newRequest);
+            System.out.println("สร้าง CustomerRequest ใหม่: " + newRequest.getName());
+            
+            requests = requestManager.getRequests();
+            if (requests == null) {
+                System.out.println("⚠️ Error: ยังไม่สามารถสร้าง requests ได้");
+                return;
+            }
         }
         
-        
-        System.out.println("📋 กำลังอัปเดตรายการคำขอ: พบ " + requests.size() + " รายการ");
-        
+        System.out.println("�� กำลังอัปเดตรายการคำขอ: พบ " + requests.size() + " รายการ");
+        for (CustomerRequest req : requests) {
+            if (req != null) {
+                System.out.println("- " + req.getName() + " | " + req.getTitle() + 
+                      " | VCPU: " + req.getRequiredVCPUs() + 
+                      " | เป็น active: " + req.isActive());
+            } else {
+                System.out.println("- พบ CustomerRequest เป็น null");
+            }
+        }
         
         List<CustomerRequest> validRequests = new ArrayList<>();
         for (CustomerRequest request : requests) {
             if (request != null) {
                 if (request.getTitle() == null || request.getRequiredVCPUs() <= 0) {
-                    System.out.println("⚠️ พบข้อมูลคำขอที่ไม่สมบูรณ์: ข้าม");
+                    System.out.println("⚠️ พบข้อมูลคำขอที่ไม่สมบูรณ์: " + 
+                          (request.getName() != null ? request.getName() : "ไม่มีชื่อ") + " - ข้าม");
                 } else {
                     validRequests.add(request);
                 }
             }
         }
         
-        
         if (validRequests.size() != requests.size()) {
             System.out.println("ℹ️ กรองข้อมูลคำขอ: จำนวนที่สมบูรณ์ = " + validRequests.size() + "/" + requests.size());
         }
         
-        
         requestListView.updateRequestList(validRequests);
+        
+        if (validRequests.isEmpty()) {
+            System.out.println("ไม่พบ CustomerRequest ที่สมบูรณ์ กำลังสร้างตัวอย่าง...");
+            CustomerRequest sampleRequest = requestManager.generateRandomRequest();
+            requestManager.addRequest(sampleRequest);
+            System.out.println("สร้าง CustomerRequest ตัวอย่าง: " + sampleRequest.getName());
+            
+            updateRequestList();
+        }
     }
 
     private void updateDashboard() {

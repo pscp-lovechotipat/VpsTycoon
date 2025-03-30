@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
 
 public class ChatHistoryManager implements Serializable{
     private static ChatHistoryManager instance;
@@ -86,70 +87,81 @@ public class ChatHistoryManager implements Serializable{
         
         Map<CustomerRequest, List<ChatMessage>> updatedHistory = new HashMap<>();
         
-        
+        // รวบรวม CustomerRequest ทั้งหมดที่มีอยู่ในปัจจุบัน
         List<CustomerRequest> currentRequests = new ArrayList<>();
         
-        
+        // เพิ่ม request ที่กำลังดำเนินการและ request ที่เสร็จสิ้นแล้ว
         if (messengerController.getRequestManager() != null) {
-            currentRequests.addAll(messengerController.getRequestManager().getRequests());
+            RequestManager requestManager = messengerController.getRequestManager();
+            if (requestManager.getRequests() != null) {
+                currentRequests.addAll(requestManager.getRequests());
+            }
             
-            
-            currentRequests.addAll(messengerController.getRequestManager().getCompletedRequests());
+            if (requestManager.getCompletedRequests() != null) {
+                currentRequests.addAll(requestManager.getCompletedRequests());
+            }
         }
         
         System.out.println("กำลังปรับปรุงการอ้างอิง CustomerRequest...");
         System.out.println("จำนวน CustomerRequest ปัจจุบันในเกม: " + currentRequests.size());
         System.out.println("จำนวน CustomerRequest ในประวัติแชท: " + customerChatHistory.size());
         
+        // สร้าง Map ที่จับคู่ระหว่าง CustomerRequest ในประวัติกับ CustomerRequest ปัจจุบัน
+        Map<String, CustomerRequest> nameToCurrentRequest = new HashMap<>();
+        Map<Long, CustomerRequest> idToCurrentRequest = new HashMap<>();
         
-        Map<CustomerRequest, CustomerRequest> customerRequestMap = new HashMap<>();
-        
-        
-        for (CustomerRequest historyChatRequest : customerChatHistory.keySet()) {
-            boolean found = false;
-            
-            
-            for (CustomerRequest currentRequest : currentRequests) {
-                if (historyChatRequest.equals(currentRequest)) {
-                    customerRequestMap.put(historyChatRequest, currentRequest);
-                    System.out.println("พบ CustomerRequest ตรงกันโดยใช้ equals(): " + currentRequest.getName());
-                    found = true;
-                    break;
-                }
+        // จัดเก็บ CustomerRequest ปัจจุบันตามชื่อและ ID
+        for (CustomerRequest request : currentRequests) {
+            if (request.getName() != null && !request.getName().isEmpty()) {
+                nameToCurrentRequest.put(request.getName(), request);
             }
-            
-            
-            if (!found) {
-                CustomerRequest matchedRequest = messengerController.findMatchingCustomerRequest(historyChatRequest);
-                if (matchedRequest != null) {
-                    customerRequestMap.put(historyChatRequest, matchedRequest);
-                    System.out.println("พบ CustomerRequest ตรงกันโดยใช้ findMatchingCustomerRequest(): " + matchedRequest.getName());
-                    found = true;
-                }
-            }
-            
-            
-            if (!found) {
-                customerRequestMap.put(historyChatRequest, historyChatRequest);
-                System.out.println("ไม่พบ CustomerRequest ที่ตรงกับ: " + historyChatRequest.getName() + " - คงใช้ตัวเดิม");
+            if (request.getId() != 0) {
+                idToCurrentRequest.put(Long.valueOf(request.getId()), request);
             }
         }
         
-        
+        // จับคู่ CustomerRequest จากประวัติกับ CustomerRequest ปัจจุบัน
         for (Map.Entry<CustomerRequest, List<ChatMessage>> entry : customerChatHistory.entrySet()) {
             CustomerRequest historyChatRequest = entry.getKey();
             List<ChatMessage> messages = entry.getValue();
+            CustomerRequest matchedRequest = null;
             
+            // ค้นหาตาม ID
+            if (historyChatRequest.getId() != 0 && idToCurrentRequest.containsKey(Long.valueOf(historyChatRequest.getId()))) {
+                matchedRequest = idToCurrentRequest.get(Long.valueOf(historyChatRequest.getId()));
+                System.out.println("พบ CustomerRequest ตรงกันโดยใช้ ID: " + matchedRequest.getId());
+            }
+            // ค้นหาตามชื่อถ้าไม่พบตาม ID
+            else if (historyChatRequest.getName() != null && !historyChatRequest.getName().isEmpty() 
+                    && nameToCurrentRequest.containsKey(historyChatRequest.getName())) {
+                matchedRequest = nameToCurrentRequest.get(historyChatRequest.getName());
+                System.out.println("พบ CustomerRequest ตรงกันโดยใช้ชื่อ: " + matchedRequest.getName());
+            }
+            // ใช้วิธีค้นหาแบบละเอียดถ้าไม่พบด้วยวิธีข้างต้น
+            else {
+                matchedRequest = messengerController.findMatchingCustomerRequest(historyChatRequest);
+                if (matchedRequest != null) {
+                    System.out.println("พบ CustomerRequest ตรงกันโดยใช้ findMatchingCustomerRequest(): " + matchedRequest.getName());
+                }
+            }
             
-            CustomerRequest matchedRequest = customerRequestMap.get(historyChatRequest);
+            // เมื่อหา request ที่ตรงกันได้แล้ว ให้ปรับปรุงข้อมูลใน VM ด้วยถ้าจำเป็น
             if (matchedRequest != null) {
+                // ถ้า request ในประวัติมีการกำหนด VM แต่ request ปัจจุบันยังไม่มี
+                if (historyChatRequest.isAssignedToVM() && !matchedRequest.isAssignedToVM()) {
+                    matchedRequest.assignToVM(historyChatRequest.getAssignedVmId());
+                }
                 updatedHistory.put(matchedRequest, messages);
             } else {
+                // ถ้าไม่พบคู่ที่ตรงกัน ให้ใช้ request จากประวัติต่อไป
+                System.out.println("ไม่พบ CustomerRequest ที่ตรงกับ: " + 
+                    (historyChatRequest.getName() != null ? historyChatRequest.getName() : "ไม่มีชื่อ") + 
+                    " - คงใช้ตัวเดิม");
                 updatedHistory.put(historyChatRequest, messages);
             }
         }
         
-        
+        // ปรับปรุงข้อมูลประวัติแชท
         customerChatHistory.clear();
         customerChatHistory.putAll(updatedHistory);
         
@@ -236,36 +248,51 @@ public class ChatHistoryManager implements Serializable{
     
     private void saveChatHistoryToFile() {
         try {
-            
+            // สร้าง object สำหรับบันทึกข้อมูลแชท
             ChatHistorySaveData saveData = new ChatHistorySaveData();
             saveData.setChatHistory(customerChatHistory);
             
-            
+            // เพิ่มข้อมูลเกี่ยวกับ requests ที่กำลังดำเนินการและเสร็จสิ้นแล้ว
             if (messengerController != null && messengerController.getRequestManager() != null) {
+                RequestManager requestManager = messengerController.getRequestManager();
                 
-                List<CustomerRequest> pendingRequestsList = new ArrayList<>(messengerController.getRequestManager().getRequests());
-                saveData.setPendingRequests(pendingRequestsList);
+                // จัดเก็บ pending requests
+                if (requestManager.getRequests() != null) {
+                    List<CustomerRequest> pendingRequestsList = new ArrayList<>(requestManager.getRequests());
+                    saveData.setPendingRequests(pendingRequestsList);
+                }
                 
-                List<CustomerRequest> completedRequestsList = new ArrayList<>(messengerController.getRequestManager().getCompletedRequests());
-                saveData.setCompletedRequests(completedRequestsList);
+                // จัดเก็บ completed requests
+                if (requestManager.getCompletedRequests() != null) {
+                    List<CustomerRequest> completedRequestsList = new ArrayList<>(requestManager.getCompletedRequests());
+                    saveData.setCompletedRequests(completedRequestsList);
+                }
                 
-                
+                // จัดเก็บข้อมูลการเชื่อมโยงระหว่าง VM และ request
                 Map<String, String> vmAssignments = new HashMap<>();
                 for (CustomerRequest request : customerChatHistory.keySet()) {
-                    if (request.isAssignedToVM()) {
-                        vmAssignments.put(request.getAssignedVmId(), request.getName());
+                    if (request != null && request.isAssignedToVM()) {
+                        String vmId = request.getAssignedVmId();
+                        String requestId = String.valueOf(request.getId());
+                        String requestName = request.getName();
+                        
+                        // เก็บทั้ง vmId -> requestId และ vmId -> requestName เพื่อช่วยในการกู้คืนข้อมูล
+                        vmAssignments.put(vmId + "_id", requestId);
+                        vmAssignments.put(vmId + "_name", requestName);
                     }
                 }
                 
                 saveData.setVmAssignments(vmAssignments);
             }
             
+            // บันทึกข้อมูลลงไฟล์
             try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(CHAT_HISTORY_FILE))) {
                 oos.writeObject(saveData);
-                System.out.println("Chat history saved successfully to file " + new File(CHAT_HISTORY_FILE).getAbsolutePath());
+                System.out.println("บันทึกประวัติแชทสำเร็จลงไฟล์ " + new File(CHAT_HISTORY_FILE).getAbsolutePath() + 
+                      " มีการสนทนา " + customerChatHistory.size() + " รายการ");
             }
         } catch (IOException e) {
-            System.err.println("Error saving chat history to file: " + e.getMessage());
+            System.err.println("เกิดข้อผิดพลาดในการบันทึกประวัติแชทลงไฟล์: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -327,7 +354,7 @@ public class ChatHistoryManager implements Serializable{
     private Map<CustomerRequest, List<ChatMessage>> loadChatHistoryFromFile() {
         File file = new File(CHAT_HISTORY_FILE);
         if (!file.exists()) {
-            System.out.println("Chat history file does not exist at: " + file.getAbsolutePath());
+            System.out.println("ไม่พบไฟล์ประวัติแชทที่: " + file.getAbsolutePath());
             return new HashMap<>();
         }
         
@@ -335,67 +362,97 @@ public class ChatHistoryManager implements Serializable{
             Object obj = ois.readObject();
             Map<CustomerRequest, List<ChatMessage>> history;
             
-            
+            // ตรวจสอบประเภทของข้อมูลที่โหลดมา
             if (obj instanceof ChatHistorySaveData) {
                 ChatHistorySaveData saveData = (ChatHistorySaveData) obj;
                 history = saveData.getChatHistory();
                 
-                
+                // กู้คืน requests และ VM assignments ถ้ามี MessengerController
                 if (messengerController != null && messengerController.getRequestManager() != null) {
                     RequestManager requestManager = messengerController.getRequestManager();
                     
+                    // กู้คืน pending requests
                     if (saveData.getPendingRequests() != null) {
-                        
                         List<CustomerRequest> pendingList = new ArrayList<>(saveData.getPendingRequests());
                         requestManager.setRequests(pendingList);
+                        System.out.println("โหลด pending requests จำนวน " + pendingList.size() + " รายการ");
                     }
                     
+                    // กู้คืน completed requests
                     if (saveData.getCompletedRequests() != null) {
-                        
                         List<CustomerRequest> completedList = new ArrayList<>(saveData.getCompletedRequests());
                         requestManager.setCompletedRequests(completedList);
+                        System.out.println("โหลด completed requests จำนวน " + completedList.size() + " รายการ");
                     }
                     
-                    
+                    // กู้คืนข้อมูลการกำหนด VM โดยใช้ทั้ง ID และชื่อ
                     if (saveData.getVmAssignments() != null) {
-                        for (Map.Entry<String, String> entry : saveData.getVmAssignments().entrySet()) {
-                            String vmId = entry.getKey();
-                            String requestName = entry.getValue();
-                            
-                            
-                            for (CustomerRequest request : history.keySet()) {
-                                if (request.getName().equals(requestName)) {
-                                    request.assignToVM(vmId);
-                                    break;
+                        Map<String, String> vmAssignments = saveData.getVmAssignments();
+                        Map<String, CustomerRequest> idToRequest = new HashMap<>();
+                        Map<String, CustomerRequest> nameToRequest = new HashMap<>();
+                        
+                        // สร้าง maps เพื่อค้นหา requests ตาม ID และชื่อได้เร็วขึ้น
+                        for (CustomerRequest request : history.keySet()) {
+                            if (request.getId() != 0) {
+                                idToRequest.put(String.valueOf(request.getId()), request);
+                            }
+                            if (request.getName() != null && !request.getName().isEmpty()) {
+                                nameToRequest.put(request.getName(), request);
+                            }
+                        }
+                        
+                        // ตรวจสอบทุก VM assignment
+                        for (String vmId : new HashSet<>(vmAssignments.keySet())) {
+                            if (vmId.endsWith("_id")) {
+                                String originalVmId = vmId.substring(0, vmId.length() - 3);
+                                String requestId = vmAssignments.get(vmId);
+                                String requestName = vmAssignments.get(originalVmId + "_name");
+                                
+                                // ค้นหา request ตาม ID ก่อน แล้วค่อยใช้ชื่อถ้าไม่พบตาม ID
+                                CustomerRequest request = idToRequest.get(requestId);
+                                if (request == null && requestName != null) {
+                                    request = nameToRequest.get(requestName);
+                                }
+                                
+                                // กำหนด VM ให้กับ request ที่พบ
+                                if (request != null) {
+                                    request.assignToVM(originalVmId);
+                                    System.out.println("กำหนด VM " + originalVmId + " ให้กับ request " + 
+                                          (request.getName() != null ? request.getName() : "ไม่มีชื่อ"));
                                 }
                             }
                         }
                     }
                 }
             } else if (obj instanceof Map) {
-                
+                // กรณีรูปแบบข้อมูลเก่า (รองรับการอ่านข้อมูลเดิม)
                 try {
                     history = (Map<CustomerRequest, List<ChatMessage>>) obj;
                 } catch (ClassCastException e) {
-                    System.err.println("Cannot cast saved object to Map<CustomerRequest, List<ChatMessage>>: " + e.getMessage());
+                    System.err.println("ไม่สามารถแปลงข้อมูลที่บันทึกไว้เป็น Map<CustomerRequest, List<ChatMessage>>: " + e.getMessage());
                     return new HashMap<>();
                 }
             } else {
-                System.err.println("Unknown object type in chat history file: " + obj.getClass().getName());
+                System.err.println("พบข้อมูลประเภทที่ไม่รู้จักในไฟล์ประวัติแชท: " + obj.getClass().getName());
                 return new HashMap<>();
             }
             
-            System.out.println("Chat history loaded successfully from file " + file.getAbsolutePath() + 
-                  " with " + history.size() + " conversations");
+            System.out.println("โหลดประวัติแชทสำเร็จจากไฟล์ " + file.getAbsolutePath() + 
+                  " มีการสนทนา " + history.size() + " รายการ");
             return history;
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error loading chat history from file: " + e.getMessage());
+            System.err.println("เกิดข้อผิดพลาดในการโหลดประวัติแชทจากไฟล์: " + e.getMessage());
             e.printStackTrace();
             
+            // สำรองไฟล์ที่มีปัญหาไว้
             if (file.exists()) {
                 File backupFile = new File(CHAT_HISTORY_FILE + ".bak");
-                file.renameTo(backupFile);
-                System.out.println("Renamed corrupt chat history file to " + backupFile.getAbsolutePath());
+                boolean renamed = file.renameTo(backupFile);
+                if (renamed) {
+                    System.out.println("ย้ายไฟล์ประวัติแชทที่เสียหายไปที่ " + backupFile.getAbsolutePath());
+                } else {
+                    System.err.println("ไม่สามารถย้ายไฟล์ประวัติแชทที่เสียหาย");
+                }
             }
             return new HashMap<>();
         }

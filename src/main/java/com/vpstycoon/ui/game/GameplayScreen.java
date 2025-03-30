@@ -30,6 +30,7 @@ import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.GameManager;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
+import com.vpstycoon.game.manager.CustomerRequest;
 
 public class GameplayScreen extends GameScreen {
     private GameState state;
@@ -56,10 +57,7 @@ public class GameplayScreen extends GameScreen {
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
-        
-        
         subscribeToSettingsChanges();
-
         loadGame();
     }
 
@@ -67,42 +65,28 @@ public class GameplayScreen extends GameScreen {
         super(config, screenManager);
         this.navigator = navigator;
         this.saveManager = new GameSaveManager();
-        
-        
         this.state = gameState;
-        
-        
         if (gameState.getGameObjects() != null) {
             this.gameObjects = new ArrayList<>(gameState.getGameObjects());
-            
-            
             System.out.println("จำนวน GameObjects ที่ได้รับ: " + gameState.getGameObjects().size());
         } else {
             this.gameObjects = new ArrayList<>();
             System.out.println("ไม่มี GameObjects ใน GameState ที่ได้รับ");
         }
-        
-        
         if (gameState.getCompany() != null) {
             this.company = gameState.getCompany();
-            
             ResourceManager.getInstance().setCompany(this.company);
             System.out.println("ตั้งค่า Company จาก GameState: Money = $" + this.company.getMoney());
         } else {
             this.company = ResourceManager.getInstance().getCompany();
             System.out.println("ใช้ค่า Company จาก ResourceManager: Money = $" + this.company.getMoney());
         }
-        
         this.chatSystem = new ChatSystem();
         this.requestManager = ResourceManager.getInstance().getRequestManager();
         this.vpsManager = new VPSManager();
         this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
-        
-        
         subscribeToSettingsChanges();
-
-        
         loadGame(gameState);
     }
 
@@ -126,12 +110,9 @@ public class GameplayScreen extends GameScreen {
     private void loadGame(GameState gameState) {
         if (gameState != null) {
             this.state = gameState;
-            
             if (gameState.getGameObjects() != null && !gameState.getGameObjects().isEmpty()) {
                 this.gameObjects = new ArrayList<>(gameState.getGameObjects());
                 System.out.println("โหลดเกมสำเร็จจาก GameState ที่ได้รับ มี GameObjects จำนวน: " + gameState.getGameObjects().size());
-                
-                
                 if (gameState.getCompany() != null) {
                     System.out.println("โหลด Company พร้อมเงิน: $" + gameState.getCompany().getMoney());
                 }
@@ -139,25 +120,13 @@ public class GameplayScreen extends GameScreen {
                 System.out.println("GameState ไม่มี GameObjects, เริ่มเกมใหม่");
                 initializeGameObjects();
             }
-            
-            
             if (gameState.getCompany() != null && gameState.getCompany().getMoney() == 10000 && 
                 gameState.getLocalDateTime() != null && 
                 gameState.getLocalDateTime().getYear() == 2000 &&
                 gameState.getLocalDateTime().getMonthValue() == 1 &&
                 gameState.getLocalDateTime().getDayOfMonth() == 1) {
-                
                 System.out.println("เริ่มเกมใหม่ ไม่ต้องบันทึกทันที");
-                
             } 
-            
-            
-            
-            
-            
-            
-            
-            
             gameTimeController = ResourceManager.getInstance().getGameTimeController();
             if (gameTimeController != null) {
                 gameTimeController.startTime();
@@ -199,19 +168,28 @@ public class GameplayScreen extends GameScreen {
 
         state.setGameObjects(gameObjects);
 
-        
-        RequestGenerator existingGenerator = ResourceManager.getInstance().getRequestGenerator();
-        if (existingGenerator == null) {
+        try {
+            RequestGenerator existingGenerator = ResourceManager.getInstance().getRequestGenerator();
+            if (existingGenerator != null) {
+                existingGenerator.stopGenerator();
+                System.out.println("หยุด RequestGenerator เดิม");
+            }
             RequestGenerator requestGenerator = new RequestGenerator(requestManager);
             requestGenerator.start();
-            System.out.println("Created and started new RequestGenerator");
-        } else {
-            System.out.println("Using existing RequestGenerator from ResourceManager");
-            
-            if (existingGenerator.isPaused()) {
-                existingGenerator.resumeGenerator();
-                System.out.println("Resumed existing RequestGenerator");
+            System.out.println("สร้างและเริ่ม RequestGenerator ใหม่");
+            if (requestManager.getRequests().isEmpty()) {
+                System.out.println("ไม่พบ requests ในระบบ กำลังสร้างตัวอย่าง...");
+                for (int i = 0; i < 3; i++) {
+                    CustomerRequest request = requestManager.generateRandomRequest();
+                    requestManager.addRequest(request);
+                    System.out.println("สร้าง request ตัวอย่าง: " + request.getName());
+                }
+            } else {
+                System.out.println("พบ requests " + requestManager.getRequests().size() + " รายการในระบบ");
             }
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการสร้าง RequestGenerator: " + e.getMessage());
+            e.printStackTrace();
         }
         
         gameTimeController = ResourceManager.getInstance().getGameTimeController();
@@ -220,7 +198,6 @@ public class GameplayScreen extends GameScreen {
 
     @Override
     protected Region createContent() {
-        
         contentPane = new GameplayContentPane(
                 this.gameObjects,
                 this.navigator,
@@ -233,48 +210,33 @@ public class GameplayScreen extends GameScreen {
                 ResourceManager.getInstance().getRack()
         );
         
-        
-        
         Platform.runLater(() -> {
             try {
-                
                 new Timer().schedule(
                     new java.util.TimerTask() {
                         @Override
                         public void run() {
-                            
                             Platform.runLater(() -> {
-                                
                                 if (gameFlowManager != null) {
-                                    
                                     Rack rack = ResourceManager.getInstance().getRack();
                                     if (rack != null) {
-                                        System.out.println("กำลังตรวจสอบความพร้อมของข้อมูลก่อนบันทึกเกม...");
-                                        System.out.println("- จำนวน rack: " + rack.getMaxRacks());
+                                        System.out.println("ข้อมูล rack:");
                                         System.out.println("- rack index ปัจจุบัน: " + rack.getCurrentRackIndex());
                                         System.out.println("- จำนวน slot ที่ปลดล็อค: " + rack.getUnlockedSlotUnits());
                                         
-                                        
                                         List<VPSOptimization> allVPS = rack.getAllInstalledVPS();
                                         System.out.println("- จำนวน VPS ทั้งหมดที่ติดตั้งในทุก rack: " + allVPS.size());
-                                        
                                         
                                         GameManager gameManager = GameManager.getInstance();
                                         System.out.println("- จำนวน VPS ที่ติดตั้งใน GameManager: " + gameManager.getInstalledServers().size());
                                         System.out.println("- จำนวน VPS ใน Inventory: " + gameManager.getVpsInventory().getSize());
                                         
-                                        
-                                        
                                         System.out.println("ยกเลิกการบันทึกเกมอัตโนมัติหลังโหลด เพื่อป้องกันข้อมูลไม่สมบูรณ์");
                                         System.out.println("กรุณาบันทึกเกมด้วยตนเองหลังจากเริ่มเล่นเกม");
-                                        
                                         
                                         if (contentPane != null) {
                                             
                                         }
-                                        
-                                        
-                                        
                                     } else {
                                         System.out.println("ไม่พบข้อมูล Rack ในระบบ - ยกเลิกการบันทึกอัตโนมัติ");
                                     }
@@ -292,11 +254,9 @@ public class GameplayScreen extends GameScreen {
         return contentPane;
     }
 
-    
     public void release() {
         try {
             System.out.println("Releasing GameplayScreen resources");
-            
             
             if (gameTimeController != null) {
                 try {
@@ -306,12 +266,9 @@ public class GameplayScreen extends GameScreen {
                 }
             }
             
-            
             if (gameObjects != null) {
                 gameObjects.clear();
             }
-            
-            
             
             System.gc();
             
@@ -322,12 +279,10 @@ public class GameplayScreen extends GameScreen {
         }
     }
 
-    
     private void subscribeToSettingsChanges() {
         GameEventBus.getInstance().subscribe(
             SettingsChangedEvent.class,
             event -> Platform.runLater(() -> {
-                
                 if (contentPane != null) {
                     System.out.println("Resolution changed, updating game screen layout");
                     contentPane.updateResolution();

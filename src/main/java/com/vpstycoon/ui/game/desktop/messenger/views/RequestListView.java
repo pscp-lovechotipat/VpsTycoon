@@ -177,37 +177,42 @@ public class RequestListView extends VBox {
     public void updateRequestList(List<CustomerRequest> requests) {
         requestView.getItems().clear();
         
-        
         System.out.println("โหลดข้อมูล CustomerRequest จำนวน: " + (requests != null ? requests.size() : 0) + " รายการ");
-        
         
         if (requests == null || requests.isEmpty()) {
             System.out.println("ไม่พบข้อมูล CustomerRequest");
             
-            
             Label countLabel = (Label) ((HBox) getChildren().get(0)).getChildren().get(2);
             countLabel.setText("[ 0 ]");
+            
+            requestView.setPlaceholder(new Label("ไม่มีคำขอที่รอดำเนินการ"));
             return;
         }
         
-        
-        requestView.getItems().addAll(requests);
-        
-        
-        int validCount = 0;
-        for (CustomerRequest request : requests) {
-            if (request.getTitle() != null && request.getRequiredVCPUs() > 0) {
-                validCount++;
-            } else {
-                System.out.println("พบข้อมูล CustomerRequest ที่ไม่สมบูรณ์: " + 
-                    (request.getTitle() != null ? request.getTitle() : "null"));
+        try {
+            requestView.getItems().addAll(requests);
+            
+            int validCount = 0;
+            for (CustomerRequest request : requests) {
+                if (request != null && request.getTitle() != null && request.getRequiredVCPUs() > 0) {
+                    validCount++;
+                } else {
+                    System.out.println("พบข้อมูล CustomerRequest ที่ไม่สมบูรณ์: " + 
+                        (request != null && request.getTitle() != null ? request.getTitle() : "null"));
+                }
             }
+            System.out.println("จำนวน CustomerRequest ที่สมบูรณ์: " + validCount + "/" + requests.size());
+            
+            Label countLabel = (Label) ((HBox) getChildren().get(0)).getChildren().get(2);
+            countLabel.setText("[ " + requests.size() + " ]");
+            
+            if (!requests.isEmpty()) {
+                requestView.getSelectionModel().select(0);
+            }
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการอัปเดตรายการคำขอ: " + e.getMessage());
+            e.printStackTrace();
         }
-        System.out.println("จำนวน CustomerRequest ที่สมบูรณ์: " + validCount + "/" + requests.size());
-        
-        
-        Label countLabel = (Label) ((HBox) getChildren().get(0)).getChildren().get(2);
-        countLabel.setText("[ " + requests.size() + " ]");
     }
 
     public CustomerRequest getSelectedRequest() {

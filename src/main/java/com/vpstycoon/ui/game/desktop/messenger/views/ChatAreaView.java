@@ -186,79 +186,94 @@ public class ChatAreaView extends VBox {
 
     public void loadChatHistory(CustomerRequest request) {
         messagesBox.getChildren().clear(); 
-        if (request == null) return;
+        
+        if (request == null) {
+            addSystemMessageFromHistory("กรุณาเลือกลูกค้าจากรายการเพื่อดูการสนทนา");
+            return;
+        }
 
         List<ChatMessage> history = chatHistoryManager.getChatHistory(request);
-        if (history.isEmpty()) {
+        
+        if (history == null || history.isEmpty()) {
             System.out.println("ไม่พบประวัติแชทสำหรับ: " + request.getName());
+            addSystemMessageFromHistory("ยินดีต้อนรับ " + request.getName() + " เริ่มการสนทนาใหม่");
+            addSystemMessageFromHistory("รายละเอียดคำขอ: " + request.getTitle());
+            addSystemMessageFromHistory("CPU: " + request.getRequiredVCPUs() + " cores | RAM: " + request.getRequiredRam() + " | Disk: " + request.getRequiredDisk());
+            addSystemMessageFromHistory("ระยะเวลา: " + request.getRentalPeriodType().getDisplayName() + " | มูลค่าสัญญา: $" + String.format("%.2f", request.getMonthlyPayment()));
             return;
         }
         
         System.out.println("โหลดประวัติแชทสำหรับ: " + request.getName() + " จำนวน " + history.size() + " ข้อความ");
         
         for (ChatMessage message : history) {
-            switch (message.getType()) {
-                case CUSTOMER:
-                    addCustomerMessageFromHistory(request, message.getContent());
-                    break;
-                case USER:
-                    addUserMessageFromHistory(message.getContent());
-                    break;
-                case SYSTEM:
-                    if (message.getContent().startsWith("Starting VM provisioning...")) {
-                        Map<String, Object> metadata = message.getMetadata();
-                        if (metadata.containsKey("isProvisioning") && (boolean) metadata.get("isProvisioning")) {
-                            long startTime = (long) metadata.get("startTime");
-                            int provisioningDelay = (int) metadata.get("provisioningDelay");
-                            long elapsedTime = System.currentTimeMillis() - startTime;
-                            int remainingSeconds = (int) Math.max(0, provisioningDelay - (elapsedTime / 1000));
+            try {
+                switch (message.getType()) {
+                    case CUSTOMER:
+                        addCustomerMessageFromHistory(request, message.getContent());
+                        break;
+                    case USER:
+                        addUserMessageFromHistory(message.getContent());
+                        break;
+                    case SYSTEM:
+                        if (message.getContent() != null && message.getContent().startsWith("Starting VM provisioning...")) {
+                            Map<String, Object> metadata = message.getMetadata();
+                            if (metadata != null && metadata.containsKey("isProvisioning") && 
+                                (boolean) metadata.get("isProvisioning")) {
+                                
+                                long startTime = (long) metadata.get("startTime");
+                                int provisioningDelay = (int) metadata.get("provisioningDelay");
+                                long elapsedTime = System.currentTimeMillis() - startTime;
+                                int remainingSeconds = (int) Math.max(0, provisioningDelay - (elapsedTime / 1000));
 
-                            HBox progressContainer = new HBox();
-                            progressContainer.setAlignment(Pos.CENTER);
-                            progressContainer.setPadding(new Insets(10, 0, 10, 0));
-                            progressContainer.getStyleClass().add("message-container");
+                                HBox progressContainer = new HBox();
+                                progressContainer.setAlignment(Pos.CENTER);
+                                progressContainer.setPadding(new Insets(10, 0, 10, 0));
+                                progressContainer.getStyleClass().add("message-container");
 
-                            VBox progressBox = new VBox(5);
-                            progressBox.setAlignment(Pos.CENTER);
-                            progressBox.setPadding(new Insets(10));
-                            progressBox.setStyle("-fx-background-color: rgba(52, 152, 219, 0.2); -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
+                                VBox progressBox = new VBox(5);
+                                progressBox.setAlignment(Pos.CENTER);
+                                progressBox.setPadding(new Insets(10));
+                                progressBox.setStyle("-fx-background-color: rgba(52, 152, 219, 0.2); -fx-padding: 10px; -fx-border-radius: 5px; -fx-background-radius: 5px;");
 
-                            Label timeRemainingLabel = new Label("Starting VM provisioning in " + remainingSeconds + " seconds...");
-                            timeRemainingLabel.setStyle("-fx-text-fill: white;");
-                            ProgressBar progressBar = new ProgressBar((double) elapsedTime / (provisioningDelay * 1000));
-                            progressBar.setPrefWidth(200);
-                            progressBar.setStyle("-fx-accent: #3498db;");
+                                Label timeRemainingLabel = new Label("Starting VM provisioning in " + remainingSeconds + " seconds...");
+                                timeRemainingLabel.setStyle("-fx-text-fill: white;");
+                                ProgressBar progressBar = new ProgressBar((double) elapsedTime / (provisioningDelay * 1000));
+                                progressBar.setPrefWidth(200);
+                                progressBar.setStyle("-fx-accent: #3498db;");
 
-                            progressBox.getChildren().addAll(timeRemainingLabel, progressBar);
-                            progressContainer.getChildren().add(progressBox);
+                                progressBox.getChildren().addAll(timeRemainingLabel, progressBar);
+                                progressContainer.getChildren().add(progressBox);
 
-                            Platform.runLater(() -> messagesBox.getChildren().add(progressContainer));
+                                Platform.runLater(() -> messagesBox.getChildren().add(progressContainer));
 
-                            
-                            Timer timer = new Timer();
-                            timer.scheduleAtFixedRate(new TimerTask() {
-                                @Override
-                                public void run() {
-                                    long currentElapsed = System.currentTimeMillis() - startTime;
-                                    int currentRemaining = (int) Math.max(0, provisioningDelay - (currentElapsed / 1000));
-                                    double progressValue = (double) currentElapsed / (provisioningDelay * 1000);
-                                    Platform.runLater(() -> {
-                                        timeRemainingLabel.setText("Starting VM provisioning in " + currentRemaining + " seconds...");
-                                        progressBar.setProgress(progressValue);
-                                        if (currentRemaining <= 0) {
-                                            timeRemainingLabel.setText("VM provisioning completed.");
-                                            timer.cancel();
-                                        }
-                                    });
-                                }
-                            }, 0, 1000); 
+                                Timer timer = new Timer();
+                                timer.scheduleAtFixedRate(new TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        long currentElapsed = System.currentTimeMillis() - startTime;
+                                        int currentRemaining = (int) Math.max(0, provisioningDelay - (currentElapsed / 1000));
+                                        double progressValue = (double) currentElapsed / (provisioningDelay * 1000);
+                                        Platform.runLater(() -> {
+                                            timeRemainingLabel.setText("Starting VM provisioning in " + currentRemaining + " seconds...");
+                                            progressBar.setProgress(progressValue);
+                                            if (currentRemaining <= 0) {
+                                                timeRemainingLabel.setText("VM provisioning completed.");
+                                                timer.cancel();
+                                            }
+                                        });
+                                    }
+                                }, 0, 1000); 
+                            } else {
+                                addSystemMessageFromHistory(message.getContent());
+                            }
                         } else {
                             addSystemMessageFromHistory(message.getContent());
                         }
-                    } else {
-                        addSystemMessageFromHistory(message.getContent());
-                    }
-                    break;
+                        break;
+                }
+            } catch (Exception e) {
+                System.err.println("เกิดข้อผิดพลาดในการแสดงข้อความ: " + e.getMessage());
+                addSystemMessageFromHistory("ไม่สามารถแสดงข้อความบางส่วนได้");
             }
         }
     }

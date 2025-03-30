@@ -303,14 +303,17 @@ public class CustomerRequest extends Customer implements Serializable {
         
         CustomerRequest other = (CustomerRequest) obj;
         
+        if (this.getId() != 0 && other.getId() != 0) {
+            return this.getId() == other.getId();
+        }
         
-        if (this.getId() == other.getId() && this.getName().equals(other.getName())) {
+        if (this.getName() != null && other.getName() != null 
+            && !this.getName().isEmpty() && !other.getName().isEmpty()
+            && this.getName().equals(other.getName())) {
             return true;
         }
         
-        
-        return this.getName().equals(other.getName()) &&
-               this.customerType == other.customerType &&
+        return this.customerType == other.customerType &&
                this.requestType == other.requestType &&
                this.requiredVCPUs == other.requiredVCPUs &&
                this.requiredRamGB == other.requiredRamGB &&
@@ -320,9 +323,16 @@ public class CustomerRequest extends Customer implements Serializable {
     
     @Override
     public int hashCode() {
-        int result = getName().hashCode();
-        result = 31 * result + customerType.hashCode();
-        result = 31 * result + requestType.hashCode();
+        if (this.getId() != 0) {
+            return Long.hashCode(this.getId());
+        }
+        
+        if (this.getName() != null && !this.getName().isEmpty()) {
+            return this.getName().hashCode();
+        }
+        
+        int result = customerType != null ? customerType.hashCode() : 0;
+        result = 31 * result + (requestType != null ? requestType.hashCode() : 0);
         result = 31 * result + requiredVCPUs;
         result = 31 * result + requiredRamGB;
         result = 31 * result + requiredDiskGB;

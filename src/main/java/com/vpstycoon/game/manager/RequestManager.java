@@ -59,7 +59,22 @@ public class RequestManager implements Serializable {
     }
 
     private void initializeSampleRequests() {
+        // สร้าง CustomerRequest ตัวอย่างเมื่อเริ่มเกม
+        System.out.println("กำลังสร้าง CustomerRequest ตัวอย่าง...");
         
+        // สร้าง CustomerRequest จำนวน 3-5 รายการ
+        Random random = new Random();
+        int numRequests = random.nextInt(3) + 3; // สร้าง 3-5 รายการ
+        
+        for (int i = 0; i < numRequests; i++) {
+            CustomerRequest request = generateRandomRequest();
+            pendingRequests.add(request);
+            System.out.println("สร้าง CustomerRequest ตัวอย่าง: " + request.getName() + 
+                " | Type: " + request.getCustomerType() + 
+                " | Request: " + request.getRequestType());
+        }
+        
+        System.out.println("สร้าง CustomerRequest ตัวอย่างเสร็จสิ้น จำนวน " + numRequests + " รายการ");
     }
 
     
