@@ -1,8 +1,8 @@
-package com.vpstycoon.application;
-
-import java.util.Objects;
+package com.vpstycoon;
 
 import javafx.scene.text.Font;
+
+import java.util.Objects;
 
 public class FontLoader {
     public static Font TITLE_FONT;
@@ -17,15 +17,15 @@ public class FontLoader {
         LABEL_FONT = loadFont(22);
     }
 
-    
     public static Font loadFont(double size) {
         String path = Objects.requireNonNull(
-                FontLoader.class.getResource("/fonts/Px_basic_font3-Regular.ttf"), "ไม่พบไฟล์ฟอนต์"
+                FontLoader.class.getResource("/fonts/Px_basic_font3-Regular.ttf"), "Font not found"
         ).toExternalForm();
         Font font = Font.loadFont(path, size);
         if (font == null) {
-            System.out.println("โหลดฟอนต์ล้มเหลว: " + path);
+            System.out.println("Failed to load font at: " + path);
         }
         return font;
     }
-} 
+}
+
