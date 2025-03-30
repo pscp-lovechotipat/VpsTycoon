@@ -36,14 +36,12 @@ public class RequestManager implements Serializable {
         
         
         GameState currentState = ResourceManager.getInstance().getCurrentState();
-        boolean hasExistingRequests = false;
         
         if (currentState != null && currentState.getPendingRequests() != null 
             && !currentState.getPendingRequests().isEmpty()) {
             
             pendingRequests.addAll(currentState.getPendingRequests());
             System.out.println("โหลด pendingRequests จาก GameState: " + pendingRequests.size() + " รายการ");
-            hasExistingRequests = true;
             
             
             if (currentState.getCompletedRequests() != null) {
@@ -51,30 +49,6 @@ public class RequestManager implements Serializable {
                 System.out.println("โหลด completedRequests จาก GameState: " + completedRequests.size() + " รายการ");
             }
         }
-        
-        
-        if (!hasExistingRequests) {
-            initializeSampleRequests();
-        }
-    }
-
-    private void initializeSampleRequests() {
-        // สร้าง CustomerRequest ตัวอย่างเมื่อเริ่มเกม
-        System.out.println("กำลังสร้าง CustomerRequest ตัวอย่าง...");
-        
-        // สร้าง CustomerRequest จำนวน 3-5 รายการ
-        Random random = new Random();
-        int numRequests = random.nextInt(3) + 3; // สร้าง 3-5 รายการ
-        
-        for (int i = 0; i < numRequests; i++) {
-            CustomerRequest request = generateRandomRequest();
-            pendingRequests.add(request);
-            System.out.println("สร้าง CustomerRequest ตัวอย่าง: " + request.getName() + 
-                " | Type: " + request.getCustomerType() + 
-                " | Request: " + request.getRequestType());
-        }
-        
-        System.out.println("สร้าง CustomerRequest ตัวอย่างเสร็จสิ้น จำนวน " + numRequests + " รายการ");
     }
 
     
