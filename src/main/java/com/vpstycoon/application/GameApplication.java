@@ -69,6 +69,21 @@ public class GameApplication extends Application implements Navigator, ResourceM
         this.screenManager = new JavaFXScreenManager(gameConfig, primaryStage);
         this.gameManager = GameManager.getInstance();
 
+        // ตั้งค่าไอคอนแอพพลิเคชัน
+        try {
+            System.out.println("กำลังโหลดไอคอนแอพพลิเคชัน...");
+            Image appIcon = new Image(getClass().getResourceAsStream("/images/logo/GameIcon.PNG"));
+            if (appIcon.isError()) {
+                System.err.println("เกิดข้อผิดพลาดขณะโหลดไอคอน: " + appIcon.getException().getMessage());
+            } else {
+                System.out.println("โหลดไอคอนสำเร็จ ขนาด: " + appIcon.getWidth() + "x" + appIcon.getHeight());
+                primaryStage.getIcons().add(appIcon);
+                System.out.println("เพิ่มไอคอนให้ Stage เรียบร้อยแล้ว");
+            }
+        } catch (Exception e) {
+            System.err.println("ไม่สามารถโหลดไอคอนแอพพลิเคชันได้: " + e.getMessage());
+            e.printStackTrace();
+        }
 
         initializeLoadingScreen();
         

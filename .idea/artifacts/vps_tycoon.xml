@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="vps-tycoon">
+    <output-path>$PROJECT_DIR$/out/artifacts/vps_tycoon</output-path>
+    <root id="root">
+      <element id="archive" name="vps_tycoon.jar">
+        <element id="module-output" name="vps-tycoon" />
+      </element>
+    </root>
+  </artifact>
+</component>

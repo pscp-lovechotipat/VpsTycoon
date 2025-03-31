@@ -45,3 +45,6 @@ savegame.dat
 chat_history.dat
 *.dat
 game_config.properties
+out/artifacts/vps_tycoon_jar/vps-tycoon.jar
+.idea/artifacts/vps_tycoon_jar.xml
+.idea/artifacts/vps_tycoon.xml
