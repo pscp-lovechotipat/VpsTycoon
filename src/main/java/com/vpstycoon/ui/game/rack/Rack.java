@@ -21,9 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Rack extends StackPane implements Serializable {
-    private static final long serialVersionUID = 1L;
-    
-    
+
     private transient List<VBox> racks;
     private transient Button prevButton;
     private transient Button nextButton;
