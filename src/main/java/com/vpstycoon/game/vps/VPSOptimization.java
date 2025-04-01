@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Random;
 
 public class VPSOptimization extends GameObject implements Serializable {
-    private static final long serialVersionUID = 1L;
     private final List<VM> vms;
     private VPSStatus status;
     
@@ -258,7 +257,6 @@ public class VPSOptimization extends GameObject implements Serializable {
     }
 
     public static class VM implements Serializable {
-        private static final long serialVersionUID = 1L;
         private String name;
         private String id;
         private int vCPUs;
