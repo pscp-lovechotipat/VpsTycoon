@@ -126,6 +126,12 @@ public class GameplayScreen extends GameScreen {
             } 
             gameTimeController = ResourceManager.getInstance().getGameTimeController();
             if (gameTimeController != null) {
+                if (gameState.getLocalDateTime() != null) {
+                    System.out.println("กำลังตั้งค่าเวลาเกมจาก GameState: " + gameState.getLocalDateTime() + 
+                                      " (GameTimeMs: " + gameState.getGameTimeMs() + ")");
+                    gameTimeController.resetTime(gameState.getLocalDateTime());
+                }
+                
                 gameTimeController.startTime();
                 System.out.println("เริ่มการเดินเวลาเกมหลังจากโหลด GameState");
             } else {

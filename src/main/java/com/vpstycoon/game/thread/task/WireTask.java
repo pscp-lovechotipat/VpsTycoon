@@ -131,8 +131,8 @@ public class WireTask extends GameTask {
                 log("Connected wire " + wireIndex + " to connector " + i);
                 
                 
-                String leftColor = ((javafx.scene.paint.Color)leftConnectors[wireIndex].getFill()).toString();
-                String rightColor = ((javafx.scene.paint.Color)rightConnectors[i].getFill()).toString();
+                String leftColor = ((Color)leftConnectors[wireIndex].getFill()).toString();
+                String rightColor = ((Color)rightConnectors[i].getFill()).toString();
                 log("Left color: " + leftColor + ", Right color: " + rightColor + ", Match: " + leftColor.equals(rightColor));
                 
                 
@@ -141,7 +141,7 @@ public class WireTask extends GameTask {
                 
                 
                 int[] currentConnections = new int[lines.length];
-                java.util.Arrays.fill(currentConnections, -1); 
+                Arrays.fill(currentConnections, -1);
                 
                 
                 for (int j = 0; j < lines.length; j++) {
@@ -163,8 +163,8 @@ public class WireTask extends GameTask {
                             foundConnection = true;
                             
                             
-                            String leftWireColor = ((javafx.scene.paint.Color)leftConnectors[j].getFill()).toString();
-                            String rightWireColor = ((javafx.scene.paint.Color)rightConnectors[k].getFill()).toString();
+                            String leftWireColor = ((Color)leftConnectors[j].getFill()).toString();
+                            String rightWireColor = ((Color)rightConnectors[k].getFill()).toString();
                             
                             if (!leftWireColor.equals(rightWireColor)) {
                                 log("Color mismatch: wire " + j + " (color " + leftWireColor + 

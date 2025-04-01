@@ -61,10 +61,6 @@
                         <option>--add-modules</option>
                         <option>javafx.controls,javafx.fxml,javafx.media</option>
                     </options>
-                    <jfxAppOutputDir>${project.build.directory}</jfxAppOutputDir>
-                    <appName>${project.name}</appName>
-                    <nativeReleaseVersion>${project.version}</nativeReleaseVersion>
-                    <icon>${project.basedir}/src/main/resources/images/logo/GameIcon.PNG</icon>
                 </configuration>
             </plugin>
         </plugins>

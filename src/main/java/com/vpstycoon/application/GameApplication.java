@@ -13,6 +13,7 @@ import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.thread.RequestGenerator;
+import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.screen.JavaFXScreenManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.SceneController;
@@ -519,6 +520,20 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 GameState savedState = ResourceManager.getInstance().loadGameState();
                 
                 if (savedState != null && savedState.getCompany() != null) {
+                    // ตั้งค่าเวลาเกมจาก GameState ที่โหลดมา
+                    if (savedState.getLocalDateTime() != null) {
+                        System.out.println("กำลังตั้งค่าเวลาเกมที่บันทึกไว้: " + savedState.getLocalDateTime() + 
+                                         " (GameTimeMs: " + savedState.getGameTimeMs() + ")");
+                        
+                        // ตรวจสอบว่ามี GameTimeController แล้วหรือไม่
+                        GameTimeController gameTimeController = ResourceManager.getInstance().getGameTimeController();
+                        if (gameTimeController != null) {
+                            gameTimeController.resetTime(savedState.getLocalDateTime());
+                            System.out.println("ตั้งค่าเวลาเกมเรียบร้อยแล้ว");
+                        } else {
+                            System.out.println("ไม่พบ GameTimeController ใน ResourceManager");
+                        }
+                    }
 
                     System.out.println("กำลังโหลดข้อมูลทั้งหมดในระบบ...");
                     gameManager.loadState();

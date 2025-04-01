@@ -205,7 +205,6 @@ public class GameplayContentPane extends BorderPane {
         if (gameTimeController != null) {
             System.out.println("GameplayContentPane: เริ่มการเดินเวลาเกม (startTime)");
             try {
-                
                 boolean isRunning = gameTimeController.getGameTimeManager().isRunning();
                 System.out.println("GameplayContentPane: สถานะ gameTimeManager.isRunning=" + isRunning);
                 gameTimeController.startTime();

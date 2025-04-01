@@ -248,11 +248,21 @@ public class GameTimeManager {
 
         gameDateTime = newStartDateTime;
         
-
-        realTimeMs.set(0);
-        lastProcessedMonth = newStartDateTime.getMonthValue() - 1;
+        // รีเซ็ต realTimeMs โดยคำนวณจากระยะเวลาตั้งแต่วันเริ่มต้น (startDateTime) ถึง newStartDateTime
+        if (newStartDateTime != null && startDateTime != null) {
+            long millisBetween = ChronoUnit.MILLIS.between(startDateTime, newStartDateTime);
+            long newRealTimeMs = (long)(millisBetween / SCALE_FACTOR);
+            this.realTimeMs.set(newRealTimeMs);
+            System.out.println("รีเซ็ต realTimeMs เป็น " + newRealTimeMs + 
+                              " ms (คำนวณจากเวลาที่ต่างกัน " + millisBetween + " ms)");
+        } else {
+            this.realTimeMs.set(0);
+            System.out.println("รีเซ็ต realTimeMs เป็น 0 ms (เริ่มนับเวลาใหม่)");
+        }
         
-
+        lastProcessedMonth = gameDateTime.getMonthValue();
+        
+        // ตั้งค่าให้พร้อมทำงานต่อ
         running = true;
         
         System.out.println("รีเซ็ตเวลาใน GameTimeManager เป็น: " + newStartDateTime + " (running=" + running + ")");

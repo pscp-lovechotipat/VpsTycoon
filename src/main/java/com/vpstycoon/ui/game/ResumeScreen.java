@@ -74,6 +74,8 @@ public class ResumeScreen extends StackPane {
         menuBox.setPadding(new Insets(30));
         menuBox.setMaxWidth(350);
         menuBox.setMaxHeight(450);
+        menuBox.setMinWidth(350);
+        menuBox.setMinHeight(450);
         
 
         menuBox.setStyle(

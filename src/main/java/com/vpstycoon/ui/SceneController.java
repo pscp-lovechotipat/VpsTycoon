@@ -3,9 +3,12 @@ package com.vpstycoon.ui;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class SceneController {
@@ -41,7 +44,7 @@ public class SceneController {
         
         
         mainScene = new Scene(rootContainer);
-        mainScene.setFill(javafx.scene.paint.Color.BLACK);
+        mainScene.setFill(Color.BLACK);
         
         
         stage.setScene(mainScene);
@@ -70,16 +73,16 @@ public class SceneController {
         screenManager.applySettings(stage, mainScene);
         
         
-        mainScene.setFill(javafx.scene.paint.Color.BLACK);
+        mainScene.setFill(Color.BLACK);
         
         
         rootContainer.requestLayout();
         
         
         if (!rootContainer.getChildren().isEmpty()) {
-            for (javafx.scene.Node child : rootContainer.getChildren()) {
-                if (child instanceof javafx.scene.layout.Region) {
-                    javafx.scene.layout.Region region = (javafx.scene.layout.Region) child;
+            for (Node child : rootContainer.getChildren()) {
+                if (child instanceof Region) {
+                    Region region = (javafx.scene.layout.Region) child;
                     region.setPrefWidth(resolution.getWidth());
                     region.setPrefHeight(resolution.getHeight());
                     region.setMinWidth(resolution.getWidth());
