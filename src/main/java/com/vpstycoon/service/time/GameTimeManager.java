@@ -18,7 +18,6 @@ import java.util.List;
 
 public class GameTimeManager implements IGameTimeManager {
     public static final long GAME_DAY_MS = GameTimeModel.DEFAULT_GAME_DAY_MS;
-    public static final long GAME_WEEK_MS = GAME_DAY_MS * 7;
     public static final long GAME_MONTH_MS = GAME_DAY_MS * 30;
     public static final long GAME_YEAR_MS = GAME_MONTH_MS * 12;
     public static final long TICK_INTERVAL_MS = 1000;
