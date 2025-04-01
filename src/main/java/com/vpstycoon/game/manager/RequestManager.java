@@ -17,8 +17,6 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 public class RequestManager implements Serializable {
-    private static final long serialVersionUID = 1L;
-    
     private final ObservableList<CustomerRequest> pendingRequests;
     private final List<CustomerRequest> completedRequests;
     private final VMProvisioningManagerImpl vmProvisioningManager;
