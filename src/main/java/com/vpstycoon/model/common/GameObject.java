@@ -8,7 +8,6 @@ import java.util.Map;
 
 
 public class GameObject implements Serializable {
-    private static final long serialVersionUID = 1L;
 
     private static final double CELL_SIZE = 64.0;  
 
