@@ -19,9 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GameState implements Serializable {
-    private transient int temporaryValue;
-
-    private static final long serialVersionUID = 1L;
+    
     private transient ObjectProperty<LocalDateTime> localDateTime = new SimpleObjectProperty<>();
     private long gameTimeMs;
 
