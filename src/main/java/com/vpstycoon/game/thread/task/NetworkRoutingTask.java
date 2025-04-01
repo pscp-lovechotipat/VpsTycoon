@@ -30,8 +30,7 @@ public class NetworkRoutingTask extends GameTask {
     private static final Random random = new Random();
     
     private static final int NUM_NODES = 7;
-    private static final int NUM_REQUIRED_CONNECTIONS = 5;
-    
+
     private final List<NetworkNode> nodes = new ArrayList<>();
     private final List<NetworkConnection> connections = new ArrayList<>();
     private final List<NetworkConnection> optimalConnections = new ArrayList<>();

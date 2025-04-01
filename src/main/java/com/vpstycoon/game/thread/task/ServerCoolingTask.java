@@ -28,12 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Logger;
-
 
 public class ServerCoolingTask extends GameTask {
 
-    private static final Logger LOGGER = Logger.getLogger(ServerCoolingTask.class.getName());
     private static final Random random = new Random();
     
     private static final int NUM_SERVERS = 4;
@@ -59,8 +56,7 @@ public class ServerCoolingTask extends GameTask {
     private final AtomicBoolean running = new AtomicBoolean(true);
     private Thread temperatureThread;
     private Thread autoAssistThread;
-    
-    
+
     private double managementEfficiency = 1.0;
     private int managementLevel = 1;
 
@@ -75,13 +71,11 @@ public class ServerCoolingTask extends GameTask {
                 60    
         );
         
-        
         SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         if (skillPointsSystem != null) {
             managementEfficiency = skillPointsSystem.getManagementEfficiency();
             managementLevel = skillPointsSystem.getSkillLevel(SkillPointsSystem.SkillType.MANAGEMENT);
         }
-        
         
         for (int i = 0; i < NUM_SERVERS; i++) {
             
@@ -101,16 +95,13 @@ public class ServerCoolingTask extends GameTask {
         taskPane.setPrefSize(600, 450);
         taskPane.setPadding(new Insets(20));
         
-        
         CyberpunkEffects.addAnimatedBackground(taskPane);
-        
-        
+
         VBox headerBox = new VBox(10);
         headerBox.setAlignment(Pos.CENTER);
         Text titleText = CyberpunkEffects.createTaskTitle("SERVER COOLING MANAGEMENT");
         Text descText = CyberpunkEffects.createTaskDescription("Balance cooling resources to stabilize server temperatures");
-        
-        
+
         if (managementLevel > 1) {
             Text managementText = new Text("Management Skill Level " + managementLevel + 
                                          " (+" + (int)((managementEfficiency - 1.0) * 100) + "% Efficiency)");
@@ -120,14 +111,10 @@ public class ServerCoolingTask extends GameTask {
         } else {
             headerBox.getChildren().addAll(titleText, descText);
         }
-        
-        
-        
-        
+
         VBox centerContent = new VBox(20);
         centerContent.setAlignment(Pos.CENTER);
-        
-        
+
         HBox powerBox = new HBox(15);
         powerBox.setAlignment(Pos.CENTER_LEFT);
         Label powerHeaderLabel = CyberpunkEffects.createGlowingLabel("COOLING POWER: ", "#00FFFF");
@@ -142,29 +129,25 @@ public class ServerCoolingTask extends GameTask {
         
         powerBox.getChildren().addAll(powerHeaderLabel, powerBar, powerLabel);
         centerContent.getChildren().add(powerBox);
-        
-        
+
         GridPane serverGrid = new GridPane();
         serverGrid.setHgap(15);
         serverGrid.setVgap(20);
         serverGrid.setAlignment(Pos.CENTER);
-        
-        
+
         for (int i = 0; i < NUM_SERVERS; i++) {
             VBox serverBox = createServerBox(i);
             serverGrid.add(serverBox, i % 2, i / 2);
         }
         
         centerContent.getChildren().add(serverGrid);
-        
-        
+
         statusLabel = new Label("MONITORING SERVER TEMPERATURE");
         statusLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 16));
         statusLabel.setTextFill(Color.web("#00FFFF"));
         CyberpunkEffects.pulseNode(statusLabel);
         centerContent.getChildren().add(statusLabel);
-        
-        
+
         HBox buttonBox = new HBox(20);
         buttonBox.setAlignment(Pos.CENTER);
         
@@ -178,30 +161,25 @@ public class ServerCoolingTask extends GameTask {
         centerContent.getChildren().add(buttonBox);
         
         taskPane.setCenter(centerContent);
-        
-        
+
         CyberpunkEffects.addScanningEffect(taskPane);
-        
-        
+
         gamePane.getChildren().add(taskPane);
-        
-        
+
         startTemperatureSimulation();
-        
-        
+
         if (managementLevel >= 3) {
             startAutoAssist();
         }
     }
-    
-    
+
     private VBox createServerBox(int serverIndex) {
+
         VBox serverBox = new VBox(10);
         serverBox.setAlignment(Pos.CENTER);
         serverBox.setPadding(new Insets(10));
         serverBox.setStyle("-fx-background-color: rgba(20, 20, 40, 0.7); -fx-border-color: #303060; -fx-border-width: 1px;");
-        
-        
+
         StackPane serverVisual = new StackPane();
         serverVisual.setPrefSize(120, 80);
         
@@ -217,19 +195,16 @@ public class ServerCoolingTask extends GameTask {
         
         serverVisual.getChildren().addAll(serverRect, serverLabel);
         
-        
         ProgressBar tempBar = new ProgressBar(serverTemperatures.get(serverIndex) / MAX_TEMPERATURE);
         tempBar.setPrefWidth(120);
         tempBar.setStyle("-fx-accent: " + getTemperatureColorString(serverTemperatures.get(serverIndex)) + ";");
         tempBars.add(tempBar);
         
-        
         Label tempLabel = new Label(String.format("%.1f°C", serverTemperatures.get(serverIndex)));
         tempLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 14));
         tempLabel.setTextFill(getTemperatureColor(serverTemperatures.get(serverIndex)));
         tempLabels.add(tempLabel);
-        
-        
+
         HBox coolingControl = new HBox(10);
         coolingControl.setAlignment(Pos.CENTER);
         
@@ -245,49 +220,42 @@ public class ServerCoolingTask extends GameTask {
         );
         coolingSliders.add(coolingSlider);
         
-        
         final int index = serverIndex;
         coolingSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             double oldCooling = coolingRates.get(index);
             double newCooling = MIN_COOLING_EFFECT + newVal.doubleValue() * (MAX_COOLING_EFFECT - MIN_COOLING_EFFECT) / 2.0;
             
-            
             totalPower -= (newCooling - oldCooling) * 25;
             updatePowerDisplay();
-            
             
             coolingRates.set(index, newCooling);
         });
         
         coolingControl.getChildren().addAll(coolingLabel, coolingSlider);
         
-        
         serverBox.getChildren().addAll(serverVisual, tempBar, tempLabel, coolingControl);
-        
+
         return serverBox;
     }
     
-    
+
     private void startTemperatureSimulation() {
         temperatureThread = new Thread(() -> {
             while (running.get()) {
                 try {
                     
                     updateTemperatures();
-                    
-                    
+
                     if (checkServerFailure()) {
                         break;
                     }
-                    
                     
                     if (checkAllServersSafe()) {
                         completed = true;
                         Platform.runLater(this::completeTask);
                         break;
                     }
-                    
-                    
+
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -295,94 +263,36 @@ public class ServerCoolingTask extends GameTask {
                 }
             }
         });
+
         temperatureThread.setDaemon(true);
         temperatureThread.start();
+
     }
-    
-    
+
     private void updateTemperatures() {
         Platform.runLater(() -> {
-            
-            
+
             double baseHeatIncrease = 0.3 / managementEfficiency;
             
             for (int i = 0; i < NUM_SERVERS; i++) {
                 
                 double heatChange = baseHeatIncrease - coolingRates.get(i) * 0.15;
                 
-                
+
                 double newTemp = serverTemperatures.get(i) + heatChange;
-                
-                
+
+
                 newTemp = Math.max(20.0, Math.min(MAX_TEMPERATURE, newTemp));
-                
-                
+
+
                 serverTemperatures.set(i, newTemp);
-                
-                
+
+
                 updateServerUI(i);
             }
         });
     }
-    
-    
-    private void updateUI() {
-        
-        for (int i = 0; i < NUM_SERVERS; i++) {
-            double temp = serverTemperatures.get(i);
-            
-            
-            tempBars.get(i).setProgress(temp / MAX_TEMPERATURE);
-            tempBars.get(i).setStyle("-fx-accent: " + getTemperatureColorString(temp) + ";");
-            
-            
-            tempLabels.get(i).setText(String.format("%.1f°C", temp));
-            tempLabels.get(i).setTextFill(getTemperatureColor(temp));
-            
-            
-            Rectangle serverRect = serverRects.get(i);
-            serverRect.setFill(getTemperatureColor(temp));
-            
-            
-            if (temp > CRITICAL_TEMP) {
-                if (!tempLabels.get(i).getStyleClass().contains("critical")) {
-                    tempLabels.get(i).getStyleClass().add("critical");
-                    CyberpunkEffects.pulseNode(tempLabels.get(i));
-                }
-            } else {
-                tempLabels.get(i).getStyleClass().remove("critical");
-            }
-        }
-        
-        
-        updatePowerDisplay();
-        
-        
-        int criticalCount = 0;
-        int safeCount = 0;
-        
-        for (Double temp : serverTemperatures) {
-            if (temp > CRITICAL_TEMP) {
-                criticalCount++;
-            }
-            if (temp < SAFE_TEMP) {
-                safeCount++;
-            }
-        }
-        
-        if (criticalCount > 0) {
-            statusLabel.setText(criticalCount + " SERVER(S) CRITICAL!");
-            statusLabel.setTextFill(Color.web("#FF0000"));
-        } else if (safeCount == NUM_SERVERS) {
-            statusLabel.setText("ALL SERVERS OPERATING NORMALLY");
-            statusLabel.setTextFill(Color.web("#00FF00"));
-        } else {
-            statusLabel.setText("MONITORING SERVER TEMPERATURE");
-            statusLabel.setTextFill(Color.web("#00FFFF"));
-        }
-    }
-    
-    
+
     private void updatePowerDisplay() {
         double powerRatio = totalPower / 100.0;
         powerBar.setProgress(powerRatio);
@@ -400,8 +310,7 @@ public class ServerCoolingTask extends GameTask {
             powerLabel.setTextFill(Color.web("#39FF14"));
         }
     }
-    
-    
+
     private void activateEmergencyCooling() {
         
         double emergencyCost = 30.0 / managementEfficiency;
@@ -423,13 +332,10 @@ public class ServerCoolingTask extends GameTask {
             
             return;
         }
-        
-        
+
         emergencyMode = true;
         totalPower -= emergencyCost;
-        
-        
-        
+
         double coolingBoost = MAX_COOLING_EFFECT * (1.0 + (managementEfficiency - 1.0) * 0.5);
         
         for (int i = 0; i < NUM_SERVERS; i++) {
@@ -439,16 +345,13 @@ public class ServerCoolingTask extends GameTask {
         
         statusLabel.setText("EMERGENCY COOLING ACTIVATED");
         statusLabel.setTextFill(Color.web("#00FFFF"));
-        
-        
+
         DropShadow blueGlow = new DropShadow();
         blueGlow.setColor(Color.web("#00FFFF"));
         blueGlow.setRadius(20);
         blueGlow.setSpread(0.5);
         taskPane.setEffect(blueGlow);
-        
-        
-        
+
         int duration = 5 + (int)((managementEfficiency - 1.0) * 5.0);
         
         Timeline resetTimeline = new Timeline(
@@ -475,27 +378,21 @@ public class ServerCoolingTask extends GameTask {
             double needed = 0.5 + (temp / MAX_TEMPERATURE) * 1.5;
             totalNeeded += needed;
         }
-        
-        
-        
+
         double autoBalanceBonus = 1.0 + (managementEfficiency - 1.0) * 0.5;
         double scaleFactor = Math.min(1.0, 4.0 * autoBalanceBonus / totalNeeded);
-        
-        
+
         for (int i = 0; i < NUM_SERVERS; i++) {
             double temp = serverTemperatures.get(i);
             double needed = 0.5 + (temp / MAX_TEMPERATURE) * 1.5;
             double newCooling = needed * scaleFactor;
-            
-            
+
             coolingRates.set(i, newCooling);
-            
-            
+
             double sliderValue = (newCooling - MIN_COOLING_EFFECT) / (MAX_COOLING_EFFECT - MIN_COOLING_EFFECT) * 2.0;
             coolingSliders.get(i).setValue(sliderValue);
         }
-        
-        
+
         double powerUsage = coolingRates.stream().mapToDouble(Double::doubleValue).sum() * 25 - NUM_SERVERS * 25;
         
         powerUsage = powerUsage / (1.0 + (managementEfficiency - 1.0) * 0.3);
@@ -506,8 +403,7 @@ public class ServerCoolingTask extends GameTask {
         statusLabel.setText("COOLING RESOURCES AUTO-BALANCED");
         statusLabel.setTextFill(Color.web("#00FFFF"));
     }
-    
-    
+
     private boolean checkServerFailure() {
         for (int i = 0; i < NUM_SERVERS; i++) {
             if (serverTemperatures.get(i) >= MAX_TEMPERATURE) {
@@ -516,11 +412,9 @@ public class ServerCoolingTask extends GameTask {
                 Platform.runLater(() -> {
                     statusLabel.setText("SERVER " + failedServer + " CRITICAL FAILURE!");
                     statusLabel.setTextFill(Color.web("#FF0000"));
-                    
-                    
+
                     CyberpunkEffects.styleFailureEffect(taskPane);
-                    
-                    
+
                     failTask();
                 });
                 return true;
@@ -528,8 +422,7 @@ public class ServerCoolingTask extends GameTask {
         }
         return false;
     }
-    
-    
+
     private boolean checkAllServersSafe() {
         for (Double temp : serverTemperatures) {
             if (temp > SAFE_TEMP) {
@@ -538,8 +431,7 @@ public class ServerCoolingTask extends GameTask {
         }
         return true;
     }
-    
-    
+
     private Color getTemperatureColor(double temperature) {
         if (temperature >= CRITICAL_TEMP) {
             return Color.web("#FF0000"); 
@@ -551,8 +443,7 @@ public class ServerCoolingTask extends GameTask {
             return Color.web("#00CC00"); 
         }
     }
-    
-    
+
     private String getTemperatureColorString(double temperature) {
         if (temperature >= CRITICAL_TEMP) {
             return "#FF0000"; 
@@ -564,8 +455,7 @@ public class ServerCoolingTask extends GameTask {
             return "#00CC00"; 
         }
     }
-    
-    
+
     private void cleanupResources() {
         running.set(false);
         if (temperatureThread != null) {
@@ -587,15 +477,12 @@ public class ServerCoolingTask extends GameTask {
         tempBars.get(serverIndex).setProgress(serverTemperatures.get(serverIndex) / MAX_TEMPERATURE);
         tempBars.get(serverIndex).setStyle("-fx-accent: " + 
             getTemperatureColorString(serverTemperatures.get(serverIndex)) + ";");
-        
-        
+
         tempLabels.get(serverIndex).setText(String.format("%.1f°C", serverTemperatures.get(serverIndex)));
         tempLabels.get(serverIndex).setTextFill(getTemperatureColor(serverTemperatures.get(serverIndex)));
-        
-        
+
         serverRects.get(serverIndex).setFill(getTemperatureColor(serverTemperatures.get(serverIndex)));
-        
-        
+
         if (serverTemperatures.get(serverIndex) >= CRITICAL_TEMP) {
             if (!tempLabels.get(serverIndex).getStyleClass().contains("critical")) {
                 tempLabels.get(serverIndex).getStyleClass().add("critical");
@@ -606,13 +493,11 @@ public class ServerCoolingTask extends GameTask {
         }
     }
 
-    
     private void startAutoAssist() {
         autoAssistThread = new Thread(() -> {
             while (running.get()) {
                 try {
-                    
-                    
+
                     double assistChance = managementLevel == 3 ? 0.15 : 0.30;
                     
                     if (random.nextDouble() < assistChance) {
@@ -677,7 +562,6 @@ public class ServerCoolingTask extends GameTask {
         return hottestIndex;
     }
 
-    
     private void animateSliderValue(Slider slider, double targetValue) {
         Timeline timeline = new Timeline(
             new KeyFrame(Duration.ZERO, new KeyValue(slider.valueProperty(), slider.getValue())),
@@ -686,7 +570,6 @@ public class ServerCoolingTask extends GameTask {
         timeline.play();
     }
 
-    
     private void showAssistNotification(int serverIndex, String message) {
         
         Label assistLabel = new Label(message);
@@ -694,10 +577,8 @@ public class ServerCoolingTask extends GameTask {
         assistLabel.setTextFill(Color.web("#00FFFF"));
         assistLabel.setStyle("-fx-background-color: rgba(0, 30, 60, 0.7); -fx-padding: 5px;");
         
-        
         Glow glow = new Glow(0.8);
         assistLabel.setEffect(glow);
-        
         
         Bounds serverBounds = serverRects.get(serverIndex).localToScene(serverRects.get(serverIndex).getBoundsInLocal());
         
@@ -705,10 +586,8 @@ public class ServerCoolingTask extends GameTask {
             serverBounds.getMinY() - 30, 0, 0, serverBounds.getMinX() - 20
         ));
         
-        
         gamePane.getChildren().add(assistLabel);
-        
-        
+
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(2.5), assistLabel);
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);

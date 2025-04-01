@@ -58,10 +58,6 @@ public abstract class GameTask {
     protected StackPane gamePane;
     protected VBox controlPane;
     
-    
-    protected Stage taskStage;
-
-    
     private static boolean isTaskActive = false;
 
     
@@ -139,7 +135,7 @@ public abstract class GameTask {
                 if (resource != null) {
                     return new AudioClip(resource.toExternalForm());
                 }
-            } catch (Exception e) {
+            } catch (Exception _) {
                 
             }
         }

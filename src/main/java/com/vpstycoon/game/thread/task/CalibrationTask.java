@@ -22,12 +22,10 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
 
 
 public class CalibrationTask extends GameTask {
 
-    private static final Logger LOGGER = Logger.getLogger(CalibrationTask.class.getName());
     private static final Random random = new Random();
     private static final int GRID_SIZE = 4;
     private static final int SEQUENCE_LENGTH = 5;
@@ -262,12 +260,12 @@ public class CalibrationTask extends GameTask {
             int component = sequence.get(i);
             
             
-            KeyFrame startFrame = new KeyFrame(Duration.seconds(i * 1), event -> {
+            KeyFrame startFrame = new KeyFrame(Duration.seconds(i), event -> {
                 activateComponent(component, true);
             });
             
             
-            KeyFrame endFrame = new KeyFrame(Duration.seconds(i * 1 + 0.7), event -> {
+            KeyFrame endFrame = new KeyFrame(Duration.seconds(i + 0.7), event -> {
                 activateComponent(component, false);
             });
             
@@ -275,7 +273,7 @@ public class CalibrationTask extends GameTask {
         }
         
         
-        KeyFrame finishFrame = new KeyFrame(Duration.seconds(sequence.size() * 1 + 1), event -> {
+        KeyFrame finishFrame = new KeyFrame(Duration.seconds(sequence.size() + 1), event -> {
             showingSequence = false;
             statusLabel.setText("REPEAT SEQUENCE");
             statusLabel.setTextFill(Color.web("#FFFFFF"));

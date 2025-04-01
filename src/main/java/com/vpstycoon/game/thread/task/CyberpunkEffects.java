@@ -42,8 +42,7 @@ public class CyberpunkEffects {
     
     public static final String CYBERPUNK_FONT_PRIMARY = "Orbitron";
     public static final String CYBERPUNK_FONT_SECONDARY = "Share Tech Mono";
-    public static final String CYBERPUNK_FONT_FALLBACK = "Courier New";
-    
+
     
     public static void styleTaskPane(BorderPane pane) {
         pane.setStyle(

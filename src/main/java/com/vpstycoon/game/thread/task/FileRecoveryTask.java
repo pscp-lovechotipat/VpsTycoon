@@ -16,12 +16,10 @@ import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 
 public class FileRecoveryTask extends GameTask {
 
-    private static final Logger LOGGER = Logger.getLogger(FileRecoveryTask.class.getName());
     private static final Random random = new Random();
     private static final int GRID_SIZE = 3; 
     private static final int NUM_FRAGMENTS = GRID_SIZE * GRID_SIZE;

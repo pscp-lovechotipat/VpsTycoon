@@ -22,12 +22,10 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Logger;
 
 
 public class ResourceOptimizationTask extends GameTask {
 
-    private static final Logger LOGGER = Logger.getLogger(ResourceOptimizationTask.class.getName());
     private static final int NUM_RESOURCES = 4;
     private static final Random random = new Random();
     

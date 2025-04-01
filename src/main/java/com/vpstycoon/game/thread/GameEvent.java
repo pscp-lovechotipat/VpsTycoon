@@ -36,15 +36,15 @@ public class GameEvent implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(GameEvent.class.getName());
     
     // Timing constants for tasks
-//     private static final int INITIAL_TASK_DELAY = 5 * 1000; // 20 seconds initial delay before tasks start
-//     private static final int MIN_TASK_INTERVAL = 5 * 1000; // Minimum 30 seconds between tasks
-//     private static final int MAX_TASK_INTERVAL = 5 * 1000; // Maximum 90 seconds between tasks
-//     private static final int DEBUG_INTERVAL = 1 * 1000;
+     private static final int INITIAL_TASK_DELAY = 5 * 1000; // 20 seconds initial delay before tasks start
+     private static final int MIN_TASK_INTERVAL = 5 * 1000; // Minimum 30 seconds between tasks
+     private static final int MAX_TASK_INTERVAL = 5 * 1000; // Maximum 90 seconds between tasks
+     private static final int DEBUG_INTERVAL = 1 * 1000;
 
-   private static final int INITIAL_TASK_DELAY = 5 * 60 * 1000; // 30 seconds initial delay before tasks start
-   private static final int MIN_TASK_INTERVAL = 2 * 60 * 1000; // Minimum 1 minute between tasks
-   private static final int MAX_TASK_INTERVAL = 10 * 60 * 1000; // Maximum 2 minutes between tasks
-   private static final int DEBUG_INTERVAL = 5 * 1000; // Debug output every 5 seconds
+//   private static final int INITIAL_TASK_DELAY = 5 * 60 * 1000; // 30 seconds initial delay before tasks start
+//   private static final int MIN_TASK_INTERVAL = 2 * 60 * 1000; // Minimum 1 minute between tasks
+//   private static final int MAX_TASK_INTERVAL = 10 * 60 * 1000; // Maximum 2 minutes between tasks
+//   private static final int DEBUG_INTERVAL = 5 * 1000; // Debug output every 5 seconds
 
     private final GameplayContentPane gameplayContentPane;
     private final ResourceManager resourceManager;
@@ -75,37 +75,37 @@ public class GameEvent implements Runnable {
     @SuppressWarnings("unchecked")
     private final Supplier<GameTask>[] taskFactories = new Supplier[] {
 
-        () -> new WireTask(random.nextInt(3) + 3),
+//        () -> new WireTask(random.nextInt(3) + 3), // Makufff check leaw jaa
 
-        
+
         () -> new DataDecryptionTask(random.nextInt(3) + 3),
-
-
-        () -> new FirewallDefenseTask(),
-        
-
-        () -> new DataSortingTask(),
-        
-
-        () -> new PasswordCrackingTask(),
-        
-
-        () -> new NetworkRoutingTask(),
-        
-
-        () -> new ServerCoolingTask(),
-        
-
-        () -> new ResourceOptimizationTask(),
-        
-
-        () -> new CalibrationTask(),
-        
-
-        () -> new FileRecoveryTask(),
-        
-
-        () -> new HackingTask()
+//
+//
+//        () -> new FirewallDefenseTask(),
+//
+//
+//        () -> new DataSortingTask(),
+//
+//
+//        () -> new PasswordCrackingTask(),
+//
+//
+//        () -> new NetworkRoutingTask(),
+//
+//
+//        () -> new ServerCoolingTask(),
+//
+//
+//        () -> new ResourceOptimizationTask(),
+//
+//
+//        () -> new CalibrationTask(),
+//
+//
+//        () -> new FileRecoveryTask(),
+//
+//
+//        () -> new HackingTask()
     };
 
 
@@ -403,7 +403,7 @@ public class GameEvent implements Runnable {
             
 
             if (resourceManager != null && resourceManager.getAudioManager() != null) {
-                resourceManager.getAudioManager().playSoundEffect("task-fail.mp3");
+                resourceManager.getAudioManager().playSoundEffect("failure.mp3");
             }
             
 
@@ -574,7 +574,7 @@ public class GameEvent implements Runnable {
             completedTaskCount++;
             
 
-            resourceManager.getAudioManager().playSoundEffect("task-complete.mp3");
+            resourceManager.getAudioManager().playSoundEffect("reward.mp3");
             
 
             GameState gameState = resourceManager.getCurrentState();
@@ -625,7 +625,7 @@ public class GameEvent implements Runnable {
             failedTaskCount++;
             
 
-            resourceManager.getAudioManager().playSoundEffect("task-fail.mp3");
+            resourceManager.getAudioManager().playSoundEffect("failure.mp3");
             
 
             if (task.getPenaltyRating() > 0) {

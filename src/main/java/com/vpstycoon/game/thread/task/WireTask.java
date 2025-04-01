@@ -24,18 +24,10 @@ public class WireTask extends GameTask {
     };
     
     private final int wireCount;
-    private final Map<Circle, Circle> wireConnections = new HashMap<>();
-    private final List<Circle> leftWires = new ArrayList<>();
-    private final List<Circle> rightWires = new ArrayList<>();
-    
+
     private Circle[] leftConnectors;
     private Circle[] rightConnectors;
     private Line[] connectionLines;
-    
-    private Circle selectedWire = null;
-    private Line currentLine = null;
-    private final List<Line> connectedLines = new ArrayList<>();
-
     
     public WireTask() {
         super(
@@ -64,12 +56,10 @@ public class WireTask extends GameTask {
         this.wireCount = Math.min(wireCount, WIRE_COLORS.length);
     }
     
-    
     private String[] getRandomColors(int count) {
         String[] colors = Arrays.copyOf(WIRE_COLORS, Math.min(count, WIRE_COLORS.length));
         return colors;
     }
-    
     
     private void shuffleArray(String[] array) {
         for (int i = array.length - 1; i > 0; i--) {
@@ -81,7 +71,6 @@ public class WireTask extends GameTask {
         }
     }
     
-    
     private void startConnection(int wireIndex, Circle[] connectors, Line[] lines) {
         
         lines[wireIndex].setStroke(Color.web(WIRE_COLORS[wireIndex]));
@@ -91,14 +80,12 @@ public class WireTask extends GameTask {
         lines[wireIndex].setEndY(connectors[wireIndex].getLayoutY());
     }
     
-    
     private void updateConnection(javafx.scene.input.MouseEvent e, int wireIndex, Line[] lines) {
         
         javafx.geometry.Point2D point = lines[wireIndex].getParent().sceneToLocal(e.getSceneX(), e.getSceneY());
         lines[wireIndex].setEndX(point.getX());
         lines[wireIndex].setEndY(point.getY());
     }
-    
     
     private void finishConnection(javafx.scene.input.MouseEvent e, int wireIndex, Circle[] rightConnectors, Line[] lines, String[] rightColors) {
         
