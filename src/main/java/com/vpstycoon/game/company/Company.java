@@ -38,7 +38,7 @@ public class Company implements Serializable {
         this.name = "New Company";
         this.rating = 1.0;
         this.marketingPoints = 0;
-        this.skillPointsAvailable = 1000;
+        this.skillPointsAvailable = 0;
         this.money = 100_000; 
         this.totalRevenue = 0;
         this.totalExpenses = 0;

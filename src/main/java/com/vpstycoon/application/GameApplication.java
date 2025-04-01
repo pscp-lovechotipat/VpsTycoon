@@ -357,7 +357,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 
 
                 Company newCompany = new Company();
-                newCompany.setMoney(50_000);
+                newCompany.setMoney(25_000);
                 newCompany.setRating(1.0);
                 newState.setCompany(newCompany);
                 

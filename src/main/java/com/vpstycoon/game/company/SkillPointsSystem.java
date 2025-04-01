@@ -134,7 +134,7 @@ public class SkillPointsSystem implements Serializable {
     
     public int calculateUpgradeCost(int currentLevel) {
         
-        return currentLevel + 1;
+        return currentLevel * 100;
     }
     
     
