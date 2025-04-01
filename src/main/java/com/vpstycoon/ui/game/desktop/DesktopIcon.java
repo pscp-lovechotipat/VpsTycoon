@@ -39,3 +39,4 @@ public class DesktopIcon extends VBox {
         setOnMouseExited(e -> setStyle("-fx-padding: 10;"));
     }
 } 
+

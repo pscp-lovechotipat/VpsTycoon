@@ -195,3 +195,4 @@ public class VPSCreationUI {
         parent.getGameArea().getChildren().add(createVPSPane);
     }
 }
+

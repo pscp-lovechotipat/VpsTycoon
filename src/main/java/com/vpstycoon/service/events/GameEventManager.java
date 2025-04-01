@@ -29,23 +29,21 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * จัดการกิจกรรม (event) ในเกม ซึ่งรวมถึงการสร้างและแสดง task ต่างๆให้ผู้เล่น
- */
+
 public class GameEventManager implements IGameEventManager, Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(GameEventManager.class.getName());
 
-    // Timing constants for tasks (เวลาตั้งต้น)
-    private static final int INITIAL_TASK_DELAY = 5 * 1000; // 5 นาทีก่อน task แรกจะปรากฎ
-    private static final int MIN_TASK_INTERVAL = 5 * 1000; // ต่ำสุด 3 นาทีระหว่าง task
-    private static final int MAX_TASK_INTERVAL = 5 * 1000; // สูงสุด 7 นาทีระหว่าง task
-    private static final int DEBUG_INTERVAL = 1 * 1000; // แสดงข้อมูล debug ทุก 5 วินาที
+    
+    private static final int INITIAL_TASK_DELAY = 5 * 1000; 
+    private static final int MIN_TASK_INTERVAL = 5 * 1000; 
+    private static final int MAX_TASK_INTERVAL = 5 * 1000; 
+    private static final int DEBUG_INTERVAL = 1 * 1000; 
 
-//    private static final int INITIAL_TASK_DELAY = 5 * 60 * 1000; // 5 นาทีก่อน task แรกจะปรากฎ
-//    private static final int MIN_TASK_INTERVAL = 3 * 60 * 1000; // ต่ำสุด 3 นาทีระหว่าง task
-//    private static final int MAX_TASK_INTERVAL = 7 * 60 * 1000; // สูงสุด 7 นาทีระหว่าง task
-//    private static final int DEBUG_INTERVAL = 5 * 1000; // แสดงข้อมูล debug ทุก 5 วินาที
+
+
+
+
 
     private final GameplayContentPane gameplayContentPane;
     private final ResourceManager resourceManager;
@@ -66,7 +64,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
     private StackPane debugOverlay;
     private Label debugLabel;
     
-    // ความถี่ในการสร้าง task (สามารถปรับได้)
+    
     private int minTaskInterval = MIN_TASK_INTERVAL;
     private int maxTaskInterval = MAX_TASK_INTERVAL;
 
@@ -85,9 +83,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
         () -> new HackingTask()
     };
 
-    /**
-     * สร้าง GameEventManager ด้วยข้อมูลตั้งต้น
-     */
+    
     public GameEventManager(GameplayContentPane gameplayContentPane, GameState gameState) {
         try {
             System.out.println("[GAMEEVENT] Initializing GameEvent system");
@@ -136,9 +132,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
         }
     }
 
-    /**
-     * เตรียม overlay สำหรับแสดง task
-     */
+    
     private void initializeTaskOverlay() {
         try {
             System.out.println("[GAMEEVENT] Initializing task overlay");
@@ -191,9 +185,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
         }
     }
 
-    /**
-     * เพิ่มเอฟเฟคกลิตช์ (glitch) ให้กับ UI
-     */
+    
     private void addGlitchEffect(StackPane pane) {
         try {
             Rectangle glitchRect = new Rectangle();
@@ -222,9 +214,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
         }
     }
 
-    /**
-     * เริ่มการทำงานของระบบกิจกรรม
-     */
+    
     @Override
     public void start() {
         if (isRunning) {
@@ -242,18 +232,14 @@ public class GameEventManager implements IGameEventManager, Runnable {
         eventThread.start();
     }
 
-    /**
-     * หยุดการทำงานของระบบกิจกรรม
-     */
+    
     @Override
     public void stop() {
         System.out.println("[GAMEEVENT] Stopping event system");
         isRunning = false;
     }
 
-    /**
-     * ฟังก์ชันหลักที่ใช้ในการทำงานบน thread
-     */
+    
     @Override
     public void run() {
         System.out.println("[GAMEEVENT] Thread started");
@@ -262,7 +248,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
             while (isRunning && !Thread.currentThread().isInterrupted()) {
                 long currentTime = System.currentTimeMillis();
                 
-                // ตรวจสอบว่าถึงเวลาสร้าง task ใหม่หรือไม่
+                
                 if (currentTime >= nextTaskTime && !taskActive.get()) {
                     createRandomTask();
                     int interval = minTaskInterval + random.nextInt(maxTaskInterval - minTaskInterval);
@@ -270,7 +256,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
                     System.out.println("[GAMEEVENT] Scheduled next task in " + (interval / 1000) + " seconds");
                 }
                 
-                // แสดงข้อมูล debug ถ้าเปิดโหมด debug
+                
                 if (debugMode && currentTime - lastDebugTime > DEBUG_INTERVAL) {
                     lastDebugTime = currentTime;
                     final long timeRemaining = Math.max(0, nextTaskTime - currentTime);
@@ -305,9 +291,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
         }
     }
 
-    /**
-     * สร้าง task สุ่มใหม่และนำเสนอให้ผู้เล่น
-     */
+    
     @Override
     public void createRandomTask() {
         try {
@@ -321,11 +305,11 @@ public class GameEventManager implements IGameEventManager, Runnable {
                 return;
             }
             
-            // เลือก task ที่จะสร้างแบบสุ่ม
+            
             int taskIndex = random.nextInt(taskFactories.length);
             GameTask task = taskFactories[taskIndex].get();
             
-            // ตรวจสอบว่าค่าที่ได้ไม่ใช่ null
+            
             if (task == null) {
                 System.err.println("[GAMEEVENT] Factory returned null task at index " + taskIndex);
                 return;
@@ -338,9 +322,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
         }
     }
 
-    /**
-     * แสดง task ที่กำหนด
-     */
+    
     @Override
     public void showTask(GameTask task) {
         try {
@@ -359,13 +341,13 @@ public class GameEventManager implements IGameEventManager, Runnable {
             
             task.setTaskContainer(taskOverlay);
             
-            // กำหนด callback เมื่อ task เสร็จสิ้น
+            
             task.showTask(() -> onTaskCompleted(task, task.isCompleted()));
             
-            // แสดงการแจ้งเตือนว่ามี task ใหม่
+            
             Platform.runLater(() -> {
                 try {
-                    // ใช้วิธีแสดงการแจ้งเตือนแบบง่ายๆแทน ถ้า CenterNotificationView.showNotification ไม่สามารถใช้ได้
+                    
                     Label notificationLabel = new Label("New Task Available: " + task.getTaskName());
                     notificationLabel.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7); -fx-text-fill: white; -fx-padding: 10;");
                     notificationLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
@@ -393,9 +375,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
         }
     }
 
-    /**
-     * ตั้งค่าความถี่ในการสร้าง task
-     */
+    
     @Override
     public void setTaskFrequency(int minIntervalMs, int maxIntervalMs) {
         if (minIntervalMs > 0 && maxIntervalMs > minIntervalMs) {
@@ -408,9 +388,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
         }
     }
 
-    /**
-     * รับการแจ้งเตือนเมื่อเสร็จสิ้น task
-     */
+    
     @Override
     public void onTaskCompleted(GameTask task, boolean success) {
         try {
@@ -423,7 +401,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
                 
                 if (gameState != null) {
                     gameState.getCompany().addMoney(task.getRewardAmount());
-                    // ปรับเพิ่มความน่าเชื่อถือของบริษัทโดยเรียกใช้เมธอดที่มีอยู่
+                    
                     double currentRating = gameState.getCompany().getRating();
                     gameState.getCompany().setRating(currentRating + 0.05);
                     
@@ -465,7 +443,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
                 
                 if (gameState != null) {
                     double penaltyFactor = task.getPenaltyRating() * 0.01;
-                    // ปรับลดความน่าเชื่อถือของบริษัทโดยเรียกใช้เมธอดที่มีอยู่
+                    
                     double currentRating = gameState.getCompany().getRating();
                     gameState.getCompany().setRating(currentRating - penaltyFactor);
                 }
@@ -479,9 +457,7 @@ public class GameEventManager implements IGameEventManager, Runnable {
         }
     }
 
-    /**
-     * ปรับโหมดการทำงาน (debug / non-debug)
-     */
+    
     @Override
     public void setDebugMode(boolean debugMode) {
         this.debugMode = debugMode;
@@ -509,17 +485,13 @@ public class GameEventManager implements IGameEventManager, Runnable {
         });
     }
 
-    /**
-     * ตรวจสอบว่ากำลังทำงานอยู่หรือไม่
-     */
+    
     @Override
     public boolean isRunning() {
         return isRunning;
     }
 
-    /**
-     * ตรวจสอบว่ามี task ที่กำลังทำงานอยู่หรือไม่
-     */
+    
     @Override
     public boolean isTaskActive() {
         return taskActive.get();

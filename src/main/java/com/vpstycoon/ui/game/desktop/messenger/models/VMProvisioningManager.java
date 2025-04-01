@@ -262,3 +262,4 @@ public class VMProvisioningManager {
         return Math.max(-0.5, Math.min(0.5, ratingChange));
     }
 }
+

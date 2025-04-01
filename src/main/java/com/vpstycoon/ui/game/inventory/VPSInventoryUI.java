@@ -344,3 +344,4 @@ public class VPSInventoryUI {
         parent.getGameArea().getChildren().add(detailsPane);
     }
 } 
+

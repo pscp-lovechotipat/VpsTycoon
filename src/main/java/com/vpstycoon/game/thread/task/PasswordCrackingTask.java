@@ -589,3 +589,4 @@ public class PasswordCrackingTask extends GameTask {
         cleanupResources();
     }
 }
+

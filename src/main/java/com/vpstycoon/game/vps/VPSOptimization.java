@@ -400,3 +400,4 @@ public class VPSOptimization extends GameObject implements Serializable {
         this.vpsId = vpsId;
     }
 }
+

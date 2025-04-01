@@ -16,3 +16,4 @@ public interface GameConfig {
     void save();
     void load();
 } 
+

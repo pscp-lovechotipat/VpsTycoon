@@ -4,3 +4,4 @@ package com.vpstycoon.event;
 public interface EventListener<T> {
     void onEvent(T event);
 } 
+

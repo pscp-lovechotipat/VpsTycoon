@@ -63,3 +63,4 @@ public class VPSInventory implements Serializable {
         inventory.clear();
     }
 } 
+

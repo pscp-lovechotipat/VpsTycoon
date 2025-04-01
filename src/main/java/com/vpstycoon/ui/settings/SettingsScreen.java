@@ -389,3 +389,4 @@ public class SettingsScreen extends StackPane {
         screenManager.switchScreen(this);
     }
 } 
+

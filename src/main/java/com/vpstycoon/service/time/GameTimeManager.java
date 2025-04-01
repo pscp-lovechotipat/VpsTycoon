@@ -15,9 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * จัดการเวลาในเกม รวมทั้งการคำนวณเวลาและการแจ้งเตือนเมื่อเวลาเปลี่ยนแปลง
- */
+
 public class GameTimeManager implements IGameTimeManager {
     public static final long GAME_DAY_MS = GameTimeModel.DEFAULT_GAME_DAY_MS;
     public static final long GAME_WEEK_MS = GAME_DAY_MS * 7;
@@ -35,9 +33,7 @@ public class GameTimeManager implements IGameTimeManager {
 
     private final List<GameTimeListener> timeListeners = new ArrayList<>();
 
-    /**
-     * สร้าง GameTimeManager ใหม่ด้วยข้อมูลเริ่มต้น
-     */
+    
     public GameTimeManager(Company company, RequestManager requestManager, Rack rack, LocalDateTime startTime) {
         this.company = company;
         this.requestManager = requestManager;
@@ -46,9 +42,7 @@ public class GameTimeManager implements IGameTimeManager {
         this.lastProcessedMonth = gameTimeModel.getCurrentDateTime().getMonthValue();
     }
 
-    /**
-     * เริ่มการทำงานของระบบเวลา ใช้สำหรับรันเป็น thread
-     */
+    
     @Override
     public void start() {
         running = true;
@@ -69,20 +63,20 @@ public class GameTimeManager implements IGameTimeManager {
                     long elapsedMs = currentTime - lastTickTime;
                     lastTickTime = currentTime;
 
-                    // เพิ่มเวลาที่ผ่านไปให้กับโมเดลเวลา
+                    
                     gameTimeModel.addRealTimeMs(elapsedMs);
                     
-                    // ตรวจสอบว่าต้องทำงานเดือนใหม่หรือไม่
+                    
                     LocalDateTime gameDateTime = gameTimeModel.getCurrentDateTime();
                     if (gameDateTime.getMonthValue() != lastProcessedMonth) {
                         processMonthlyKeepUp();
                         lastProcessedMonth = gameDateTime.getMonthValue();
                     }
 
-                    // แจ้งเตือน listeners
+                    
                     notifyTimeListeners();
 
-                    // ตรวจสอบการจ่ายเงิน
+                    
                     if (currentTime - lastPaymentCheckTime >= GAME_DAY_MS) {
                         if (requestManager != null) {
                             requestManager.processPayments(gameTimeModel.getGameTimeMs());
@@ -109,25 +103,25 @@ public class GameTimeManager implements IGameTimeManager {
                         lastPaymentCheckTime = currentTime;
                     }
 
-                    // ตรวจสอบค่าใช้จ่าย overhead
+                    
                     if (currentTime - lastOverheadTime >= OVERHEAD_INTERVAL) {
                         lastOverheadTime = currentTime;
                     }
 
-                    // ตรวจสอบการหมดอายุของการเช่า VPS
+                    
                     if (currentTime - lastRentalCheckTime >= GAME_DAY_MS) {
                         checkRentalExpirations(gameTimeModel.getGameTimeMs());
                         lastRentalCheckTime = currentTime;
                     }
 
-                    // แสดง debug ข้อมูล
+                    
                     tickCounter++;
                     if (tickCounter % 10 == 0) {
                         System.out.println("GameTime Update: " + gameDateTime + 
                                           " (GameTimeMs: " + gameTimeModel.getGameTimeMs() + ")");
                     }
 
-                    // ตรวจสอบการ interrupt
+                    
                     if (Thread.currentThread().isInterrupted()) {
                         System.out.println("Thread TimeManager ถูก interrupt - กำลังหยุด");
                         running = false;
@@ -148,9 +142,7 @@ public class GameTimeManager implements IGameTimeManager {
         }
     }
 
-    /**
-     * ตรวจสอบการหมดอายุของการเช่า VPS
-     */
+    
     private void checkRentalExpirations(long currentGameTimeMs) {
         if (requestManager == null) {
             System.err.println("Warning: requestManager is null in checkRentalExpirations");
@@ -185,9 +177,7 @@ public class GameTimeManager implements IGameTimeManager {
         }
     }
 
-    /**
-     * คำนวณและหักค่าใช้จ่ายประจำเดือน
-     */
+    
     private void processMonthlyKeepUp() {
         long totalKeepUpCost = 0;
         List<VPSOptimization> installedVPS = rack.getInstalledVPS();
@@ -211,9 +201,7 @@ public class GameTimeManager implements IGameTimeManager {
         }
     }
 
-    /**
-     * แจ้งเตือน listeners ทุกตัวเมื่อเวลาเปลี่ยนแปลง
-     */
+    
     private void notifyTimeListeners() {
         LocalDateTime currentTime = gameTimeModel.getCurrentDateTime();
         long gameTimeMs = gameTimeModel.getGameTimeMs();
@@ -223,65 +211,49 @@ public class GameTimeManager implements IGameTimeManager {
         }
     }
 
-    /**
-     * เพิ่ม VPS เข้าไปในระบบ
-     */
+    
     @Override
     public void addVPSServer(VPSOptimization vps) {
         rack.installVPS(vps);
     }
 
-    /**
-     * ลบ VPS ออกจากระบบ
-     */
+    
     @Override
     public void removeVPSServer(VPSOptimization vps) {
         rack.uninstallVPS(vps);
     }
 
-    /**
-     * เพิ่ม listener สำหรับการแจ้งเตือนเมื่อเวลาเปลี่ยนแปลง
-     */
+    
     @Override
     public void addTimeListener(GameTimeListener listener) {
         timeListeners.add(listener);
     }
 
-    /**
-     * ลบ listener สำหรับการแจ้งเตือนเมื่อเวลาเปลี่ยนแปลง
-     */
+    
     @Override
     public void removeTimeListener(GameTimeListener listener) {
         timeListeners.remove(listener);
     }
 
-    /**
-     * ดึงค่าเวลาปัจจุบันในเกม
-     */
+    
     @Override
     public LocalDateTime getGameDateTime() {
         return gameTimeModel.getCurrentDateTime();
     }
 
-    /**
-     * ดึงค่าเวลาในเกมในรูปแบบมิลลิวินาที
-     */
+    
     @Override
     public long getGameTimeMs() {
         return gameTimeModel.getGameTimeMs();
     }
 
-    /**
-     * หยุดการทำงานของระบบเวลา
-     */
+    
     @Override
     public void stop() {
         running = false;
     }
 
-    /**
-     * รีเซ็ตเวลาเกมเป็นค่าที่กำหนด
-     */
+    
     @Override
     public void resetTime(LocalDateTime newStartDateTime) {
         stop();
@@ -291,17 +263,13 @@ public class GameTimeManager implements IGameTimeManager {
         System.out.println("GameTimeManager: Reset time to " + newStartDateTime);
     }
 
-    /**
-     * ตรวจสอบว่าระบบเวลากำลังทำงานอยู่หรือไม่
-     */
+    
     @Override
     public boolean isRunning() {
         return running;
     }
     
-    /**
-     * ดึงโมเดลเวลาที่ใช้งานอยู่
-     */
+    
     public IGameTime getGameTimeModel() {
         return gameTimeModel;
     }

@@ -29,3 +29,4 @@ public class SkillPointsManager {
         chatAreaView.addSystemMessage("Earned " + points + " skill points! Total: " + skillPointsSystem.getAvailablePoints());
     }
 }
+

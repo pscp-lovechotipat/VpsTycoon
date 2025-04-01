@@ -24,9 +24,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * คลาสจัดการทรัพยากรในเกม
- */
+
 public class ResourceManager implements Serializable, IResourceManager {
     private static final long serialVersionUID = 1L;
 
@@ -65,9 +63,7 @@ public class ResourceManager implements Serializable, IResourceManager {
         return instance;
     }
 
-    /**
-     * สร้างไดเรกทอรีสำรองข้อมูล
-     */
+    
     private void createBackupDirectory() {
         try {
             Path backupPath = Paths.get(BACKUP_DIR);
@@ -79,9 +75,7 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    /**
-     * สร้างสำเนาไฟล์ที่เสียหาย
-     */
+    
     private void createCorruptedFileBackup(File originalFile) {
         try {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
@@ -93,18 +87,14 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    /**
-     * ล้างแคชทั้งหมด
-     */
+    
     @Override
     public void clearCache() {
         imageCache.clear();
         textCache.clear();
     }
 
-    /**
-     * ลบไฟล์เซฟเกม
-     */
+    
     @Override
     public void deleteSaveFile() {
         File file = new File(SAVE_FILE);
@@ -117,17 +107,13 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    /**
-     * ตรวจสอบว่ามีไฟล์เซฟเกมหรือไม่
-     */
+    
     @Override
     public boolean hasSaveFile() {
         return new File(SAVE_FILE).exists();
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     @Override
     public String getText(String path) {
         return textCache.computeIfAbsent(path, k -> {
@@ -142,9 +128,7 @@ public class ResourceManager implements Serializable, IResourceManager {
         });
     }
 
-    /**
-     * รับสถานะเกมปัจจุบัน
-     */
+    
     @Override
     public GameState getCurrentState() {
         if (currentState == null) {
@@ -153,9 +137,7 @@ public class ResourceManager implements Serializable, IResourceManager {
         return currentState;
     }
 
-    /**
-     * ตั้งค่าสถานะเกมปัจจุบัน
-     */
+    
     @Override
     public void setCurrentState(GameState state) {
         if (state != null) {
@@ -168,47 +150,35 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    /**
-     * รับบริษัทปัจจุบัน
-     */
+    
     @Override
     public ICompany getCompany() {
         return company;
     }
 
-    /**
-     * ตั้งค่าบริษัทปัจจุบัน
-     */
+    
     @Override
     public void setCompany(ICompany company) {
         this.company = company;
     }
 
-    /**
-     * รับตัวจัดการเสียง
-     */
+    
     public IAudioManager getAudioManager() {
         return audioManager;
     }
 
-    /**
-     * สร้างวัตถุในเกมใหม่
-     */
+    
     @Override
     public GameObject createGameObject(String id, String type, int gridX, int gridY) {
         return new GameObject(id, type, gridX, gridY);
     }
 
-    /**
-     * ตรวจสอบว่าดนตรีกำลังเล่นอยู่หรือไม่
-     */
+    
     public boolean isMusicRunning() {
         return musicRunning;
     }
 
-    /**
-     * ตั้งค่าสถานะการเล่นดนตรี
-     */
+    
     public void setMusicRunning(boolean running) {
         this.musicRunning = running;
         if (running) {
@@ -218,25 +188,19 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    /**
-     * ตั้งค่าผู้ฟังการโหลดทรัพยากร
-     */
+    
     @Override
     public void setResourceLoadingListener(ResourceLoadingListener listener) {
         this.resourceLoadingListener = listener;
     }
 
-    /**
-     * ตรวจสอบว่าการโหลดทรัพยากรล่วงหน้าเสร็จสิ้นหรือไม่
-     */
+    
     @Override
     public boolean isPreloadComplete() {
         return preloadComplete;
     }
 
-    /**
-     * รอการโหลดทรัพยากรล่วงหน้าให้เสร็จสิ้น
-     */
+    
     @Override
     public boolean waitForPreload(long timeoutMs) {
         if (preloadComplete) {
@@ -254,143 +218,108 @@ public class ResourceManager implements Serializable, IResourceManager {
         }
     }
 
-    /**
-     * รับภาพที่โหลดล่วงหน้า
-     */
+    
     @Override
     public Image getPreloadedImage(String path) {
         return imageCache.get(path);
     }
 
-    /**
-     * โหลดทรัพยากรล่วงหน้า
-     */
+    
     @Override
     public void preloadAssets() {
-        // ต้องเพิ่มการโหลดทรัพยากรล่วงหน้าในอนาคต
+        
         preloadComplete = true;
     }
 
-    /**
-     * รีเซ็ตข้อมูล Messenger
-     */
+    
     @Override
     public void resetMessengerData() {
-        // ต้องเพิ่มการรีเซ็ตข้อมูล Messenger ในอนาคต
+        
     }
 
-    /**
-     * รีเซ็ตเวลาเกม
-     */
+    
     @Override
     public void resetGameTime() {
-        // ต้องเพิ่มการรีเซ็ตเวลาเกมในอนาคต
+        
     }
 
-    /**
-     * รีเซ็ต Rack และ Inventory
-     */
+    
     @Override
     public void resetRackAndInventory() {
-        // ต้องเพิ่มการรีเซ็ต Rack และ Inventory ในอนาคต
+        
     }
 
-    /**
-     * บันทึกสถานะเกม
-     */
+    
     @Override
     public void saveGameState(GameState state) {
-        // ต้องเพิ่มการบันทึกสถานะเกมในอนาคต
+        
     }
 
-    /**
-     * โหลดสถานะเกม
-     */
+    
     @Override
     public GameState loadGameState() {
-        // ต้องเพิ่มการโหลดสถานะเกมในอนาคต
+        
         return new GameState(company);
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     public static String getImagePath(String name) {
         return IMAGES_PATH + name;
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     public static String getSoundPath(String name) {
         return SOUNDS_PATH + name;
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     public static String getMusicPath(String name) {
         return MUSIC_PATH + name;
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     public static URL getResource(String path) {
         return ResourceManager.class.getResource(path);
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     public static String getTextPath(String name) {
         return TEXT_PATH + name;
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     public static InputStream getResourceAsStream(String path) {
         return ResourceManager.class.getResourceAsStream(path);
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     @Override
     public void pushNotification(String title, String content) {
-        // ต้องเพิ่มการส่งการแจ้งเตือนในอนาคต
+        
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     @Override
     public void pushMouseNotification(String content) {
-        // ต้องเพิ่มการส่งการแจ้งเตือนในอนาคต
+        
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     @Override
     public void pushCenterNotification(String title, String content) {
         pushCenterNotification(title, content, null);
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     @Override
     public void pushCenterNotification(String title, String content, String image) {
-        // ต้องเพิ่มการส่งการแจ้งเตือนในอนาคต
+        
     }
 
-    /**
-     * รับข้อความจากไฟล์
-     */
+    
     @Override
     public void pushCenterNotificationAutoClose(String title, String content, String image, long autoCloseMillis) {
-        // ต้องเพิ่มการส่งการแจ้งเตือนในอนาคต
+        
     }
 } 
+

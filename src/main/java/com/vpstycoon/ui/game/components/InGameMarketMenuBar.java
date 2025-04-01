@@ -61,3 +61,4 @@ public class InGameMarketMenuBar extends StackPane {
         parent.getGameArea().getChildren().add(marketWindow);
     }
 }
+

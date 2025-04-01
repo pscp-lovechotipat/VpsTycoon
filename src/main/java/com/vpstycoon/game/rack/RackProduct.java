@@ -47,3 +47,4 @@ public enum RackProduct {
         return String.format("$%,d", maintenanceCost);
     }
 } 
+

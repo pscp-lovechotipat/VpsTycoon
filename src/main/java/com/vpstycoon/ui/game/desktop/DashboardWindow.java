@@ -598,3 +598,4 @@ public class DashboardWindow extends VBox {
         });
     }
 }
+

@@ -345,14 +345,11 @@ public class CustomerRequest extends Customer implements Serializable {
     }
     
     
-    /**
-     * กำหนด VM ให้กับคำขอนี้
-     * การเปลี่ยน assignedToVmId ไม่ควรทำให้คำขอกลายเป็น active โดยอัตโนมัติ
-     */
+    
     public void assignToVM(String vmId) {
         this.assignedToVmId = vmId;
-        // ลบการ activate โดยอัตโนมัติออก
-        // ให้การ activate เป็นหน้าที่ของการกดปุ่ม assign VM ในหน้า UI เท่านั้น
+        
+        
     }
     
     
@@ -365,3 +362,4 @@ public class CustomerRequest extends Customer implements Serializable {
         return assignedToVmId;
     }
 }
+

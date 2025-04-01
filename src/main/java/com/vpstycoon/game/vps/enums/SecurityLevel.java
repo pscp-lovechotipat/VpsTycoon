@@ -16,3 +16,4 @@ public enum SecurityLevel {
         return score;
     }
 } 
+

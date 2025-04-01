@@ -773,3 +773,4 @@ public class MarketWindow extends BorderPane {
         moneyDisplay.setText("$" + parent.getCompany().getMoney());
     }
 }
+

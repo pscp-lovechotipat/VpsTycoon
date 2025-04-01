@@ -11,9 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * คลาสสำหรับเก็บข้อมูลสถานะเกม
- */
+
 public class GameState implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -33,9 +31,7 @@ public class GameState implements Serializable {
     private Map<String, String> vmAssignments; 
     private Map<String, Integer> skillLevels;
 
-    /**
-     * สร้างสถานะเกมเปล่า
-     */
+    
     public GameState() {
         this.resources = new HashMap<>();
         this.upgrades = new HashMap<>();
@@ -53,9 +49,7 @@ public class GameState implements Serializable {
         this.localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
 
-    /**
-     * สร้างสถานะเกมด้วยรายการวัตถุในเกม
-     */
+    
     public GameState(ArrayList<GameObject> gameObjects) {
         this();  
         if (gameObjects != null) {
@@ -63,9 +57,7 @@ public class GameState implements Serializable {
         }
     }
 
-    /**
-     * สร้างสถานะเกมด้วยบริษัทและรายการวัตถุในเกม
-     */
+    
     public GameState(ICompany company, List<GameObject> gameObjects) {
         this.company = company;
         this.resources = new HashMap<>();
@@ -83,9 +75,7 @@ public class GameState implements Serializable {
         this.localDateTime = new SimpleObjectProperty<>(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
 
-    /**
-     * สร้างสถานะเกมด้วยบริษัท
-     */
+    
     public GameState(ICompany company) {
         this.company = company;
         this.resources = new HashMap<>();
@@ -103,9 +93,7 @@ public class GameState implements Serializable {
         this.localDateTime = new SimpleObjectProperty<>(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
 
-    /**
-     * เพิ่มวัตถุเกมใหม่ลงในสถานะ
-     */
+    
     public void addGameObject(GameObject obj) {
         if (gameObjects == null) {
             gameObjects = new ArrayList<>();
@@ -113,9 +101,7 @@ public class GameState implements Serializable {
         gameObjects.add(obj);
     }
 
-    /**
-     * ลบวัตถุเกมออกจากสถานะ
-     */
+    
     public void removeGameObject(GameObject obj) {
         if (gameObjects != null) {
             gameObjects.remove(obj);
@@ -230,18 +216,14 @@ public class GameState implements Serializable {
         return localDateTime;
     }
 
-    /**
-     * การซีเรียไลซ์ custom เพื่อบันทึก localDateTime
-     */
+    
     @Serial
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
         out.writeObject(localDateTime.get());
     }
 
-    /**
-     * การดีซีเรียไลซ์ custom เพื่อเรียกคืน localDateTime
-     */
+    
     @Serial
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

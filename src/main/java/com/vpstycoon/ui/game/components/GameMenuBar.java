@@ -91,3 +91,4 @@ public class GameMenuBar extends HBox {
         return statusButton.getContainer();
     }
 } 
+

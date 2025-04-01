@@ -75,7 +75,7 @@ public class CutsceneScreen extends StackPane {
         
         javafx.scene.image.Image creditsImage = new javafx.scene.image.Image(getClass().getResourceAsStream("/images/others/Credits.gif"));
             
-        // Debug if image is loaded
+        
         if (creditsImage.isError()) {
             System.err.println("Error loading Credits.gif: " + creditsImage.getException().getMessage());
         }
@@ -84,11 +84,11 @@ public class CutsceneScreen extends StackPane {
         creditsImageView.setFitWidth(960);
         creditsImageView.setPreserveRatio(true);
         
-        // Store the ImageView in creditsBox field
+        
         creditsBox = new VBox();
         creditsBox.setAlignment(Pos.CENTER);
         creditsBox.getChildren().add(creditsImageView);
-        creditsBox.setOpacity(0); // Only set opacity on container
+        creditsBox.setOpacity(0); 
 
         
         getChildren().addAll(logoLabel, subtitleLabel, creditsBox);
@@ -218,3 +218,4 @@ public class CutsceneScreen extends StackPane {
         sequentialTransition.play();
     }
 } 
+

@@ -243,3 +243,4 @@ public class SkillPointsWindow extends VBox {
         }
     }
 }
+

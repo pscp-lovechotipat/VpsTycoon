@@ -13,3 +13,4 @@ public class SettingsChangedEvent {
         return newConfig;
     }
 } 
+

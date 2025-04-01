@@ -4,3 +4,4 @@ public enum MessageType {
     USER, CUSTOMER, SYSTEM
 }
 
+

@@ -160,3 +160,4 @@ public class GameObject implements Serializable {
         this.company = company;
     }
 }
+

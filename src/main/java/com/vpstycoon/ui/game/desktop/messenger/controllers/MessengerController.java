@@ -49,7 +49,7 @@ public class MessengerController {
     private final RentalManager rentalManager;
     private final SkillPointsManager skillPointsManager;
     
-    // เพิ่มตัวแปรสำหรับตรวจสอบว่ากำลังโหลดแบบเริ่มต้นอยู่หรือไม่
+    
     private boolean isLoadingRequests = true;
 
     public MessengerController(RequestManager requestManager, VPSManager vpsManager, Company company,
@@ -114,7 +114,7 @@ public class MessengerController {
             updateDashboard();
         });
 
-        // โหลดคำขอที่กำลังดำเนินการอยู่และประวัติแชทจาก GameState
+        
         loadActiveRequestsFromGameState();
 
         System.out.println("Messenger Controller initialized: MessengerWindow created and listeners setup");
@@ -126,7 +126,7 @@ public class MessengerController {
                 System.out.println("มีการเปลี่ยนแปลงรายการคำขอ...");
                 System.out.println("จำนวน free VM ก่อนอัพเดต: " + company.getAvailableVMs());
                 
-                // ไม่ต้องแสดง notification ที่นี่ เพราะ notification จะถูกแสดงโดย RequestGenerator โดยตรง
+                
                 
                 updateRequestList();
                 
@@ -144,7 +144,7 @@ public class MessengerController {
         requestListView.getRequestView().getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             chatAreaView.updateChatHeader(newVal);
             
-            // ตรวจสอบว่ามี VM ว่างและลูกค้ามี VM แล้วหรือยัง
+            
             boolean hasAvailableVMs = false;
             boolean customerAlreadyHasVM = false;
             
@@ -154,11 +154,11 @@ public class MessengerController {
                                   ", expired: " + newVal.isExpired() + 
                                   ", assignedToVM: " + newVal.isAssignedToVM() + ")");
                 
-                // ตรวจสอบว่า request นี้มีการกำหนด VM แล้วหรือไม่
+                
                 customerAlreadyHasVM = isRequestAssigned(newVal);
                 
                 if (!newVal.isActive() && !newVal.isExpired() && !customerAlreadyHasVM) {
-                    // นับจำนวน VM ที่ว่างในระบบทั้งหมด
+                    
                     for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                         hasAvailableVMs = vps.getVms().stream()
                                 .anyMatch(vm -> "Running".equals(vm.getStatus()) && 
@@ -169,21 +169,21 @@ public class MessengerController {
                 }
             }
             
-            // กำหนดสถานะปุ่ม Assign VM ตามเงื่อนไข
+            
             chatAreaView.getAssignVMButton().setDisable(newVal == null || newVal.isActive() || 
                                                      newVal.isExpired() || !hasAvailableVMs || 
                                                      customerAlreadyHasVM);
             
-            // กำหนดสถานะปุ่ม Archive ตามเงื่อนไข - ต้อง active หรือ expired จึงจะ archive ได้
+            
             chatAreaView.getArchiveButton().setDisable(newVal == null || (!newVal.isActive() && !newVal.isExpired()));
             
             if (newVal != null) {
-                // แสดงข้อความแชตของคำขอที่เลือก
+                
                 updateChatWithRequestDetails(newVal);
                 
-                // ถ้าลูกค้ามี VM อยู่แล้วและคำขอไม่หมดอายุ
+                
                 if (customerAlreadyHasVM && !newVal.isExpired()) {
-                    // หา VM ที่กำหนดให้กับลูกค้าคนนี้
+                    
                     VPSOptimization.VM assignedVM = null;
                     for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
                         if (entry.getValue().equals(newVal)) {
@@ -192,15 +192,15 @@ public class MessengerController {
                         }
                     }
                     
-                    // ถ้า request ยังไม่ active แต่มี VM แล้ว ให้ปรับเป็น active
+                    
                     if (!newVal.isActive() && assignedVM != null) {
                         newVal.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
                         System.out.println("ปรับสถานะลูกค้า " + newVal.getName() + " เป็น active เนื่องจากมี VM อยู่แล้ว");
                     
-                        // แสดงข้อความเกี่ยวกับ VM ที่กำหนดให้กับลูกค้า (เฉพาะกรณีที่พบ VM จริงเท่านั้น)
+                        
                         chatAreaView.addSystemMessage("ลูกค้ารายนี้มี VM " + assignedVM.getName() + " ถูกกำหนดไว้แล้ว");
                         
-                        // ตรวจสอบว่า VM มีการบันทึกข้อมูลลูกค้าแล้วหรือไม่
+                        
                         if (!assignedVM.isAssignedToCustomer()) {
                             assignedVM.assignToCustomer(
                                 String.valueOf(newVal.getId()),
@@ -211,7 +211,7 @@ public class MessengerController {
                         }
                     }
                     
-                    // ปรับปุ่ม UI ให้เหมาะสม
+                    
                     chatAreaView.getAssignVMButton().setDisable(true);
                     chatAreaView.getArchiveButton().setDisable(false);
                     chatAreaView.updateChatHeader(newVal);
@@ -983,7 +983,7 @@ public class MessengerController {
         if (request != null) {
             List<ChatMessage> chatHistory = chatHistoryManager.getChatHistory(request);
             if (chatHistory == null || chatHistory.isEmpty()) {
-                // เพิ่มข้อความคำขอเริ่มต้นจากลูกค้า
+                
                 String requestMessage = "Hello! I need a VM with the following specs:\n" +
                         "• " + request.getRequiredVCPUs() + " vCPUs\n" +
                         "• " + request.getRequiredRam() + " RAM\n" +
@@ -991,17 +991,17 @@ public class MessengerController {
                         "Can you help me set this up?";
                 chatHistoryManager.addMessage(request, new ChatMessage(MessageType.CUSTOMER, requestMessage, new HashMap<>()));
 
-                // เพิ่มข้อความระบบเฉพาะกรณี request หมดอายุแล้วเท่านั้น
+                
                 if (request.isExpired()) {
                     chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, 
                         "This contract has expired and is waiting to be archived.", new HashMap<>()));
                 }
             }
             
-            // โหลดประวัติแชตจาก chatHistoryManager
+            
             chatAreaView.loadChatHistory(request);
             
-            // เฉพาะกรณี request หมดอายุและไม่มี VM ที่กำลังใช้งานอยู่ ให้แสดงข้อความเพิ่มเติม
+            
             if (request.isExpired() && !vmAssignments.containsValue(request)) {
                 chatAreaView.addSystemMessage("This request can be archived now to free up space in the request list.");
             }
@@ -1097,7 +1097,7 @@ public class MessengerController {
                               ", isAssignedToVM: " + selected.isAssignedToVM() +
                               ", assignedVmId: " + selected.getAssignedVmId() + ")");
             
-            // ตรวจสอบเพื่อหา VM ที่เกี่ยวข้องกับคำขอนี้
+            
             VPSOptimization.VM assignedVM = vmAssignments.entrySet().stream()
                     .filter(entry -> entry.getValue() == selected)
                     .map(Map.Entry::getKey)
@@ -1107,14 +1107,14 @@ public class MessengerController {
             if (assignedVM != null) {
                 System.out.println("พบ VM ที่กำหนดให้คำขอนี้ใน vmAssignments: " + assignedVM.getName());
                 
-                // คืน VM กลับมาใช้งานใหม่
+                
                 releaseVM(assignedVM, true);
             } else if (selected.isAssignedToVM()) {
-                // กรณีพบว่า request ระบุว่ามี VM แต่ไม่พบใน vmAssignments
+                
                 System.out.println("⚠️ คำขอระบุว่ามี VM (ID: " + selected.getAssignedVmId() + 
                                  ") แต่ไม่พบใน vmAssignments - ตรวจสอบ VM ทั้งหมด");
                 
-                // ค้นหา VM ที่อาจตรงกับ assignedVmId ในคำขอ
+                
                 boolean foundMatchingVM = false;
                 for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                     for (VPSOptimization.VM vm : vps.getVms()) {
@@ -1129,11 +1129,11 @@ public class MessengerController {
                 }
                 
                 if (!foundMatchingVM) {
-                    // ไม่พบ VM ที่ตรงกัน ให้ล้างค่าใน request และดำเนินการต่อ
+                    
                     System.out.println("ไม่พบ VM ตรงกับ ID: " + selected.getAssignedVmId() + " - จะล้างค่าใน request");
                     selected.unassignFromVM();
                     
-                    // นับจำนวน VM ที่ว่างจริงเพื่อตรวจสอบความไม่สอดคล้อง
+                    
                     int countFromVMs = 0;
                     for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                         countFromVMs += (int) vps.getVms().stream()
@@ -1143,10 +1143,10 @@ public class MessengerController {
                                 .count();
                     }
                     
-                    // เปรียบเทียบกับค่าที่เก็บไว้
+                    
                     int storedAvailableVMs = company.getAvailableVMs();
                     
-                    // ปรับให้ตรงกับความเป็นจริง ถ้าไม่ตรงกัน
+                    
                     if (countFromVMs != storedAvailableVMs) {
                         company.setAvailableVMs(countFromVMs);
                         ResourceManager.getInstance().getCurrentState().setFreeVmCount(countFromVMs);
@@ -1155,10 +1155,10 @@ public class MessengerController {
                     }
                 }
             } else if (selected.isExpired()) {
-                // กรณีคำขอหมดอายุและไม่พบ VM ที่เกี่ยวข้อง
+                
                 System.out.println("คำขอหมดอายุและไม่มี VM ที่เกี่ยวข้อง: " + selected.getName());
                 
-                // ตรวจสอบความไม่สอดคล้องของจำนวน VM
+                
                 int countFromVMs = 0;
                 for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                     countFromVMs += (int) vps.getVms().stream()
@@ -1178,16 +1178,16 @@ public class MessengerController {
                 }
             }
             
-            // ลบคำขอออกจากรายการ
+            
             requestManager.getRequests().remove(selected);
             chatAreaView.clearMessages();
             chatAreaView.getAssignVMButton().setDisable(false);
             
-            // อัพเดต UI
+            
             updateRequestList();
             updateDashboard();
             
-            // บันทึกข้อมูลเกมหลังจาก archive คำขอ
+            
             try {
                 if (ResourceManager.getInstance().getCurrentState() != null) {
                     ResourceManager.getInstance().saveGameState(ResourceManager.getInstance().getCurrentState());
@@ -1207,13 +1207,13 @@ public class MessengerController {
     }
 
     public void releaseVM(VPSOptimization.VM vm, boolean isArchiving) {
-        // ตรวจสอบว่า vm ไม่เป็น null
+        
         if (vm == null) {
             System.err.println("ไม่สามารถปล่อย VM คืนได้เนื่องจาก VM เป็น null");
             return;
         }
         
-        // หาคำขอที่เกี่ยวข้องกับ VM
+        
         CustomerRequest requestToRelease = null;
         for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
             if (entry.getKey().equals(vm)) {
@@ -1232,37 +1232,37 @@ public class MessengerController {
             System.out.println(logMessage);
             
             if (isArchiving) {
-                // ถ้าคืน VM เพราะกำลัง archive คำขอ
+                
                 chatHistoryManager.addMessage(requestToRelease, new ChatMessage(MessageType.SYSTEM,
                     "Request archived and VM released.", new HashMap<>()));
                 chatAreaView.addSystemMessage("Request archived and VM released.");
                 
-                // ลบคำขอออกจากรายการ
+                
                 requestManager.getRequests().remove(requestToRelease);
             } else {
-                // ถ้าคืน VM เพราะคำขอหมดอายุ
+                
                 requestToRelease.markAsExpired();
                 chatHistoryManager.addMessage(requestToRelease, new ChatMessage(MessageType.SYSTEM,
                     "Contract expired and VM released.", new HashMap<>()));
                 chatAreaView.addSystemMessage("Contract expired and VM released.");
             }
             
-            // คืนสถานะ VM
+            
             System.out.println("คืนสถานะ VM: " + vm.getName() + " (customerId: " + vm.getCustomerId() + ")");
             vm.releaseFromCustomer();
             System.out.println("หลังจากคืนสถานะ VM: " + vm.getName() + " (customerId: " + 
                               (vm.getCustomerId() == null ? "null" : vm.getCustomerId()) + 
                               ", isAssigned: " + vm.isAssignedToCustomer() + ")");
             
-            // ลบการเชื่อมโยงกับคำขอ
+            
             requestToRelease.unassignFromVM();
             System.out.println("ลบการเชื่อมโยง assignToVM ของ request " + requestToRelease.getName() + 
                               " (assignedVmId: " + requestToRelease.getAssignedVmId() + ")");
             
-            // ลบ VM จากแมป vmAssignments
+            
             vmAssignments.remove(vm);
             
-            // ตรวจสอบว่า VM ถูกลบออกจาก vmAssignments แล้วจริง ๆ
+            
             boolean stillAssigned = false;
             for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
                 if (entry.getKey().equals(vm) || entry.getValue().equals(requestToRelease)) {
@@ -1273,17 +1273,17 @@ public class MessengerController {
             }
             
             if (!stillAssigned) {
-                // เพิ่มจำนวน available VMs กลับคืนมา
+                
                 int currentAvailableVMs = company.getAvailableVMs();
                 currentAvailableVMs++;
                 company.setAvailableVMs(currentAvailableVMs);
                 
-                // บันทึกจำนวน VM ที่ว่างลงใน GameState
+                
                 if (ResourceManager.getInstance().getCurrentState() != null) {
                     ResourceManager.getInstance().getCurrentState().setFreeVmCount(currentAvailableVMs);
                     System.out.println("เพิ่มจำนวน available VM เป็น " + currentAvailableVMs + " และบันทึกลง GameState");
                     
-                    // บันทึกข้อมูลเกมหลังจากคืน VM
+                    
                     try {
                         ResourceManager.getInstance().saveGameState(ResourceManager.getInstance().getCurrentState());
                         System.out.println("บันทึกข้อมูลเกมหลังจากคืน VM เรียบร้อยแล้ว");
@@ -1294,18 +1294,18 @@ public class MessengerController {
                     System.out.println("เพิ่มจำนวน available VM เป็น " + currentAvailableVMs + " (แต่ไม่มี GameState)");
                 }
                 
-                // อัพเดตหน้า UI
+                
                 updateDashboard();
                 updateRequestList();
                 
-                // อัพเดตสถานะปุ่ม Archive ใน UI ตามความเหมาะสม
+                
                 CustomerRequest selectedRequest = requestListView.getSelectedRequest();
                 if (selectedRequest != null) {
                     boolean shouldEnableArchive = selectedRequest.isActive() || selectedRequest.isExpired();
                     chatAreaView.getArchiveButton().setDisable(!shouldEnableArchive);
                 }
                 
-                // ตรวจสอบความถูกต้องของ VM ทั้งหมดในระบบ
+                
                 validateVMConsistency();
             } else {
                 System.err.println("ไม่ได้เพิ่มจำนวน available VM เนื่องจากการลบ VM จาก vmAssignments ไม่สำเร็จ");
@@ -1586,7 +1586,7 @@ public class MessengerController {
     private boolean isRequestAssigned(CustomerRequest request) {
         if (request == null) return false;
         
-        // ตรวจสอบว่ารายการ vmAssignments มี request นี้หรือไม่
+        
         for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
             if (entry.getValue().equals(request)) {
                 System.out.println("ตรวจพบว่าคำขอของ " + request.getName() + " มี VM ใน vmAssignments แล้ว");
@@ -1594,13 +1594,13 @@ public class MessengerController {
             }
         }
         
-        // ตรวจสอบจาก isAssignedToVM() ของ request
-        // แต่ไม่ทำการเปลี่ยนแปลงข้อมูลใดๆ
+        
+        
         if (request.isAssignedToVM()) {
             String vmId = request.getAssignedVmId();
             System.out.println("คำขอของ " + request.getName() + " มีการกำหนด assignedVmId = " + vmId);
             
-            // ตรวจสอบว่า VM นี้มีอยู่ใน vmAssignments แล้ว
+            
             boolean vmExists = false;
             for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
                 if (entry.getKey().getId() != null && entry.getKey().getId().equals(vmId)) {
@@ -1675,7 +1675,7 @@ public class MessengerController {
             System.out.println("กำลังโหลดคำขอที่กำลังดำเนินการอยู่จาก GameState...");
             requestManager.setRequests(currentState.getPendingRequests());
             
-            // โหลด chatHistory สำหรับแต่ละคำขอ
+            
             for (CustomerRequest request : requestManager.getRequests()) {
                 List<ChatMessage> chatHistory = chatHistoryManager.getChatHistory(request);
                 if (chatHistory != null && !chatHistory.isEmpty()) {
@@ -1696,7 +1696,7 @@ public class MessengerController {
             System.out.println("กำลังโหลดคำขอที่เสร็จสิ้นแล้วจาก GameState...");
             requestManager.setCompletedRequests(currentState.getCompletedRequests());
             
-            // โหลด chatHistory สำหรับแต่ละคำขอที่เสร็จสิ้นแล้ว
+            
             for (CustomerRequest request : requestManager.getCompletedRequests()) {
                 List<ChatMessage> chatHistory = chatHistoryManager.getChatHistory(request);
                 if (chatHistory != null && !chatHistory.isEmpty()) {
@@ -1711,8 +1711,9 @@ public class MessengerController {
             System.out.println("ไม่พบคำขอที่เสร็จสิ้นแล้วใน GameState");
         }
         
-        // หลังจากโหลด requests เสร็จแล้ว กำหนดให้ isLoadingRequests เป็น false
-        // เพื่อให้การเพิ่ม request ในครั้งถัดไปแสดง notification
+        
+        
         isLoadingRequests = false;
     }
 }
+

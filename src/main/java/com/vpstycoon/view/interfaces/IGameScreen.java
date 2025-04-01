@@ -17,3 +17,4 @@ public interface IGameScreen extends IView {
     
     void onResize(double width, double height);
 } 
+

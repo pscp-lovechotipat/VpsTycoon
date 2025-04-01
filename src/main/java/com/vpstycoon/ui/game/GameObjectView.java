@@ -63,3 +63,4 @@ public class GameObjectView extends StackPane {
         setTranslateY(gameObject.getY() - 100); 
     }
 }
+

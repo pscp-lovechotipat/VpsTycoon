@@ -24,3 +24,4 @@ public class NotificationController {
         this.view = notificationView;
     }
 }
+

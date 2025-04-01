@@ -207,7 +207,7 @@ public class ResourceManager implements Serializable {
         if (gameTimeController == null) {
             System.out.println("กำลังสร้าง GameTimeController ใหม่...");
             
-            // สร้าง RequestManager ก่อนถ้ายังไม่มี
+            
             if (requestManager == null) {
                 try {
                     System.out.println("สร้าง RequestManager ก่อนเริ่มต้น GameTimeController");
@@ -1137,3 +1137,4 @@ public class ResourceManager implements Serializable {
         }
     }
 }
+

@@ -15,9 +15,7 @@ import javafx.stage.Stage;
 
 import java.util.Random;
 
-/**
- * คลาสพื้นฐานสำหรับงาน (task) ในเกม มีการจัดการส่วนที่ใช้ร่วมกันเช่น UI พื้นฐานและเวลา
- */
+
 public abstract class AbstractGameTask implements IGameTask {
     protected final ResourceManager resourceManager = ResourceManager.getInstance();
     protected final Random random = new Random();
@@ -58,9 +56,7 @@ public abstract class AbstractGameTask implements IGameTask {
     private AudioClip taskFailSound;
     private AudioClip taskTickSound;
 
-    /**
-     * สร้าง AbstractGameTask ใหม่ด้วยค่าพื้นฐาน
-     */
+    
     public AbstractGameTask(String taskName, String taskDescription, String imagePath, 
                     int rewardAmount, int penaltyRating, int difficultyLevel, int timeLimit) {
         this.taskName = taskName;
@@ -84,9 +80,7 @@ public abstract class AbstractGameTask implements IGameTask {
         }
     }
 
-    /**
-     * โหลดเสียงที่ใช้ใน task
-     */
+    
     private void loadSoundEffects() {
         String[][] soundPaths = {
             {"/sounds/task_start.mp3", "/audio/task_start.mp3", "/sfx/task_start.mp3"},
@@ -105,9 +99,7 @@ public abstract class AbstractGameTask implements IGameTask {
         }
     }
     
-    /**
-     * พยายามโหลดเสียงจากไฟล์หลายที่
-     */
+    
     private AudioClip loadSoundWithFallback(String[] paths) {
         for (String path : paths) {
             try {
@@ -116,16 +108,14 @@ public abstract class AbstractGameTask implements IGameTask {
                     return new AudioClip(resource.toExternalForm());
                 }
             } catch (Exception e) {
-                // ไม่ต้องทำอะไร ลองไฟล์ถัดไป
+                
             }
         }
         
         return null;
     }
     
-    /**
-     * เล่นเสียงอย่างปลอดภัย
-     */
+    
     protected void safePlaySound(AudioClip clip, double volume) {
         if (clip != null) {
             try {
@@ -136,35 +126,27 @@ public abstract class AbstractGameTask implements IGameTask {
         }
     }
 
-    /**
-     * กำหนด container สำหรับแสดงผล task
-     */
+    
     @Override
     public void setTaskContainer(StackPane container) {
         this.taskContainer = container;
     }
 
-    /**
-     * ตรวจสอบว่า task มีการแสดงผลอยู่หรือไม่
-     */
+    
     public static boolean isTaskActive() {
         synchronized(taskLock) {
             return isTaskActive;
         }
     }
 
-    /**
-     * กำหนดว่า task มีการแสดงผลอยู่หรือไม่
-     */
+    
     protected static void setTaskActive(boolean active) {
         synchronized(taskLock) {
             isTaskActive = active;
         }
     }
 
-    /**
-     * แสดง task ให้ผู้เล่น
-     */
+    
     @Override
     public void showTask(Runnable onComplete) {
         try {
@@ -206,9 +188,7 @@ public abstract class AbstractGameTask implements IGameTask {
         }
     }
 
-    /**
-     * เริ่มจับเวลาสำหรับทำ task
-     */
+    
     @Override
     public void startTimer() {
         if (timerThread != null && timerThread.isAlive()) {
@@ -271,9 +251,7 @@ public abstract class AbstractGameTask implements IGameTask {
         timerThread.start();
     }
 
-    /**
-     * หยุดจับเวลา
-     */
+    
     @Override
     public void stopTimer() {
         if (timerThread != null) {
@@ -282,9 +260,7 @@ public abstract class AbstractGameTask implements IGameTask {
         }
     }
     
-    /**
-     * จบการทำ task ด้วยสถานะสำเร็จหรือล้มเหลว
-     */
+    
     protected void completeTask(boolean success) {
         if (completed || failed) return;
         
@@ -330,108 +306,80 @@ public abstract class AbstractGameTask implements IGameTask {
         });
     }
     
-    /**
-     * แสดงข้อความบันทึกใน console
-     */
+    
     protected void log(String message) {
         System.out.println("[" + getClass().getSimpleName() + "] " + message);
     }
     
-    /**
-     * เก็บค่าว่า task ถูกทำเสร็จสิ้นแล้ว
-     */
+    
     @Override
     public void setCompleted(boolean completed) {
         this.completed = completed;
     }
     
-    /**
-     * เก็บค่าว่า task ล้มเหลว
-     */
+    
     @Override
     public void setFailed(boolean failed) {
         this.failed = failed;
     }
 
-    /**
-     * ตรวจสอบว่า task ทำสำเร็จแล้วหรือไม่
-     */
+    
     @Override
     public boolean isCompleted() {
         return completed;
     }
     
-    /**
-     * ตรวจสอบว่า task ล้มเหลวหรือไม่
-     */
+    
     @Override
     public boolean isFailed() {
         return failed;
     }
     
-    /**
-     * ดึงชื่อ task
-     */
+    
     @Override
     public String getTaskName() {
         return taskName;
     }
     
-    /**
-     * ดึงคำอธิบาย task
-     */
+    
     @Override
     public String getTaskDescription() {
         return taskDescription;
     }
     
-    /**
-     * ดึงค่ารางวัลเมื่อทำ task สำเร็จ
-     */
+    
     @Override
     public int getRewardAmount() {
         return rewardAmount;
     }
     
-    /**
-     * ดึงบทลงโทษเมื่อทำ task ไม่สำเร็จ
-     */
+    
     @Override
     public int getPenaltyRating() {
         return penaltyRating;
     }
     
-    /**
-     * ดึงระดับความยากของ task
-     */
+    
     @Override
     public int getDifficultyLevel() {
         return difficultyLevel;
     }
     
-    /**
-     * ดึงระยะเวลาที่จำกัดในการทำ task
-     */
+    
     @Override
     public int getTimeLimit() {
         return timeLimit;
     }
 
-    /**
-     * สร้าง UI สำหรับ task
-     */
+    
     @Override
     public abstract void createTaskUI();
     
-    /**
-     * แสดงผลลัพธ์เมื่อทำ task สำเร็จ
-     */
+    
     @Override
     public abstract void showSuccess();
     
-    /**
-     * แสดงผลลัพธ์เมื่อทำ task ไม่สำเร็จ
-     */
+    
     @Override
     public abstract void showFailure();
 } 

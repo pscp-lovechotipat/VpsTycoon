@@ -30,12 +30,12 @@ public class NotificationView extends VBox {
     public void addNotificationPane(String title, String content) {
         Pane notificationPane = createNotificationPane(title, content);
         
-        // เพิ่มการตรวจสอบเพื่อป้องกันการเพิ่ม Node ซ้ำกัน
-        // เนื่องจาก JavaFX ไม่อนุญาตให้เพิ่ม Node เดียวกันหลายครั้ง
+        
+        
         javafx.application.Platform.runLater(() -> {
             getChildren().add(notificationPane);
             
-            // ส่วนอื่นๆ คงเดิม
+            
             TranslateTransition translateOutTransition = new TranslateTransition(Duration.seconds(0.3), notificationPane);
             translateOutTransition.setFromX(0); 
             translateOutTransition.setToX(300); 
@@ -122,3 +122,4 @@ public class NotificationView extends VBox {
         return pane;
     }
 }
+

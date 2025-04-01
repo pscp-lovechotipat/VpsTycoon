@@ -26,3 +26,4 @@ public abstract class GameScreen implements IGameScreen {
     @Override
     public abstract void onResize(double width, double height);
 } 
+

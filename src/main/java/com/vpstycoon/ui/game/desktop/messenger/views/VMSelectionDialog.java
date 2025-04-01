@@ -307,3 +307,4 @@ public class VMSelectionDialog extends VBox {
         this.onConfirm = onConfirm;
     }
 }
+

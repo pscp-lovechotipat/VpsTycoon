@@ -43,7 +43,7 @@ public class RoomObjectsLayer {
 
         System.out.println("Preloading room object images");
         
-        // รายการไฟล์ที่ต้องโหลด
+        
         String[] imagePaths = {
             "/images/Object/MusicboxOn.gif", 
             "/images/Object/MusicboxOff.png",
@@ -57,7 +57,7 @@ public class RoomObjectsLayer {
         
         boolean allSuccess = true;
         
-        // ลองโหลดแต่ละภาพและแสดงสถานะ
+        
         for (String path : imagePaths) {
             Image img = loadImage(path);
             if (img == null) {
@@ -81,10 +81,10 @@ public class RoomObjectsLayer {
     public static Image loadImage(String path) {
         if (!imageCache.containsKey(path)) {
             try {
-                // ใช้ method ที่เหมาะสมสำหรับการโหลดรูปภาพจาก resources
+                
                 String resourcePath = path;
                 
-                // ตรวจสอบว่ามี URL สำหรับ resource นี้หรือไม่
+                
                 java.io.InputStream resourceStream = RoomObjectsLayer.class.getResourceAsStream(resourcePath);
                 
                 if (resourceStream == null) {
@@ -93,7 +93,7 @@ public class RoomObjectsLayer {
                     return null;
                 }
                 
-                // สร้าง Image จาก InputStream
+                
                 Image image = new Image(resourceStream);
                 imageCache.put(path, image);
                 return image;
@@ -365,4 +365,5 @@ public class RoomObjectsLayer {
         System.out.println("Music Run State: " + run);
     }
 }
+
 

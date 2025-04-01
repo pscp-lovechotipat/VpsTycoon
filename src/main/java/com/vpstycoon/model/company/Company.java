@@ -8,9 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * คลาสสำหรับบริษัทในเกม
- */
+
 public class Company implements Serializable, ICompany {
     private static final long serialVersionUID = 1L;
     
@@ -30,9 +28,7 @@ public class Company implements Serializable, ICompany {
     private final transient List<RatingObserver> ratingObservers = new ArrayList<>();
     private final transient List<MoneyTransactionObserver> moneyObservers = new ArrayList<>();
 
-    /**
-     * สร้างบริษัทใหม่ด้วยค่าเริ่มต้น
-     */
+    
     public Company() {
         this.name = "New Company";
         this.rating = 1.0;
@@ -85,9 +81,7 @@ public class Company implements Serializable, ICompany {
         updateRating();
     }
     
-    /**
-     * อัปเดตคะแนนบริษัทจากปัจจัยต่างๆ
-     */
+    
     private void updateRating() {
         double satisfactionRating = customerSatisfaction / 33.33;
         
@@ -196,11 +190,9 @@ public class Company implements Serializable, ICompany {
         return true;
     }
 
-    /**
-     * ส่งการแจ้งเตือนเกี่ยวกับธุรกรรมเงิน
-     */
+    
     private void pushMoneyNotification(long amount, long newBalance, boolean isIncome) {
-        // ต้องเพิ่มระบบแจ้งเตือนในอนาคต
+        
     }
 
     @Override
@@ -227,27 +219,21 @@ public class Company implements Serializable, ICompany {
         moneyObservers.remove(observer);
     }
 
-    /**
-     * แจ้งเตือนผู้ติดตามเมื่อคะแนนบริษัทเปลี่ยน
-     */
+    
     private void notifyRatingObservers() {
         for (RatingObserver observer : new ArrayList<>(ratingObservers)) {
             observer.onRatingChanged(this.rating);
         }
     }
     
-    /**
-     * แจ้งเตือนผู้ติดตามเมื่อมีธุรกรรมเงิน
-     */
+    
     private void notifyMoneyObservers(long amount, long newBalance, boolean isIncome) {
         for (MoneyTransactionObserver observer : new ArrayList<>(moneyObservers)) {
             observer.onMoneyTransaction(amount, newBalance, isIncome);
         }
     }
     
-    /**
-     * Custom deserialization สำหรับฟิลด์ transient
-     */
+    
     @Serial
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();

@@ -68,7 +68,7 @@ public class SimulationDesktopUI {
         
         final int rootStackChildCount = parent.getRootStack().getChildren().size();
         
-        // Store original game area content before replacing it
+        
         final List<Node> originalContent = new ArrayList<>(parent.getGameArea().getChildren());
 
         Runnable onExit = () -> {
@@ -173,3 +173,4 @@ public class SimulationDesktopUI {
         parent.getInGameMarketMenuBar().setVisible(false);
     }
 }
+

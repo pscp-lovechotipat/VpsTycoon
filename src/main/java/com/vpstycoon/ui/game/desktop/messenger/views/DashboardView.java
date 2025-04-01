@@ -80,3 +80,4 @@ public class DashboardView extends VBox {
         totalVPSLabel.setText(String.valueOf(totalVPS));
     }
 }
+

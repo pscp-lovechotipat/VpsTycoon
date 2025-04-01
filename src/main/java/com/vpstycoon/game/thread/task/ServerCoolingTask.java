@@ -717,3 +717,4 @@ public class ServerCoolingTask extends GameTask {
         fadeOut.play();
     }
 } 
+

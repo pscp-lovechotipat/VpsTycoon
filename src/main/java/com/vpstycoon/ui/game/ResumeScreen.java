@@ -227,12 +227,12 @@ public class ResumeScreen extends StackPane {
         if (ResourceManager.getInstance().getGameEvent() != null &&
             ResourceManager.getInstance().getGameEvent().isRunning()) {
             System.out.println("หยุด GameEvent อย่างถาวรก่อนออกไปเมนูหลัก");
-            ResourceManager.getInstance().getGameEvent().stopEvent(); // ใช้ stopEvent แทน pauseEvent
+            ResourceManager.getInstance().getGameEvent().stopEvent(); 
         }
 
         if (ResourceManager.getInstance().getRequestGenerator() != null) {
             System.out.println("หยุด RequestGenerator อย่างถาวรก่อนออกไปเมนูหลัก");
-            ResourceManager.getInstance().getRequestGenerator().stopGenerator(); // ใช้ stopGenerator แทน pauseGenerator ถ้ามี
+            ResourceManager.getInstance().getRequestGenerator().stopGenerator(); 
         }
     }
 
@@ -253,3 +253,4 @@ public class ResumeScreen extends StackPane {
         }
     }
 }
+

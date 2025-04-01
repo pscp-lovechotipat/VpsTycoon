@@ -6,9 +6,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * คลาสพื้นฐานสำหรับวัตถุในเกม
- */
+
 public class GameObject implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -25,9 +23,7 @@ public class GameObject implements Serializable {
     private String status;
     private ICompany company;
 
-    /**
-     * สร้างวัตถุเกมเปล่า
-     */
+    
     public GameObject() {
         this.id = "";
         this.type = "";
@@ -40,9 +36,7 @@ public class GameObject implements Serializable {
         this.status = "Active";
     }
 
-    /**
-     * สร้างวัตถุเกมใหม่ด้วยพารามิเตอร์ที่ระบุ
-     */
+    
     public GameObject(String id, String type, int gridX, int gridY) {
         this.id = id;
         this.type = type;
@@ -54,9 +48,7 @@ public class GameObject implements Serializable {
         setGridPosition(gridX, gridY);
     }
 
-    /**
-     * สร้างวัตถุเกมใหม่ด้วย ID และระดับที่ระบุ
-     */
+    
     public GameObject(String id, int level) {
         this.id = id;
         this.properties = new HashMap<>();
@@ -65,9 +57,7 @@ public class GameObject implements Serializable {
         this.status = "Active";
     }
 
-    /**
-     * สร้างวัตถุเกมใหม่ด้วย ID และตำแหน่งกริด
-     */
+    
     public GameObject(String id, int x, int y) {
         this.id = id;
         this.gridX = x;
@@ -86,16 +76,12 @@ public class GameObject implements Serializable {
         return type;
     }
 
-    /**
-     * แปลงตำแหน่งกริด X เป็นตำแหน่งพิกเซล
-     */
+    
     public double getX() {
         return gridX * CELL_SIZE;
     }
 
-    /**
-     * แปลงตำแหน่งกริด Y เป็นตำแหน่งพิกเซล
-     */
+    
     public double getY() {
         return gridY * CELL_SIZE;
     }
@@ -108,9 +94,7 @@ public class GameObject implements Serializable {
         return gridY;
     }
 
-    /**
-     * ตั้งค่าตำแหน่งกริดของวัตถุ
-     */
+    
     public void setGridPosition(int gridX, int gridY) {
         this.gridX = gridX;
         this.gridY = gridY;
@@ -160,19 +144,15 @@ public class GameObject implements Serializable {
         this.status = status;
     }
 
-    /**
-     * อัพเกรดวัตถุเกม เพิ่มระดับและอัพเดทสถานะ
-     */
+    
     public void upgrade(GameState gameState) {
         this.level++;
         this.status = "Upgraded (Level " + this.level + ")";
     }
 
-    /**
-     * หยุดการทำงานของวัตถุเกม
-     */
+    
     public void stop() {
-        // ให้คลาสลูกทำการ override
+        
     }
 
     public ICompany getCompany() {

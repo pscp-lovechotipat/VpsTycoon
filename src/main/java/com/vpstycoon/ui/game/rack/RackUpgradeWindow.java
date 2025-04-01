@@ -260,3 +260,4 @@ public class RackUpgradeWindow extends VBox {
         this.maxNumberOfRacks += additionalSlots;
     }
 }
+

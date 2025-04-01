@@ -51,3 +51,4 @@ public class ChatSystem {
         return customerTypePoints.getOrDefault(type, 0);
     }
 } 
+

@@ -70,3 +70,4 @@ public class GameObjectDetailsModal {
         gameArea.getChildren().add(modalContainer);
     }
 } 
+

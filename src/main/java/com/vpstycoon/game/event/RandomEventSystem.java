@@ -217,3 +217,4 @@ public class RandomEventSystem {
         String apply(Company company);
     }
 } 
+

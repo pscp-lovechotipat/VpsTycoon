@@ -37,3 +37,4 @@ public abstract class GameScreen {
         root.setMaxHeight(resolution.getHeight());
     }
 } 
+

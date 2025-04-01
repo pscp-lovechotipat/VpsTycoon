@@ -251,3 +251,4 @@ public class ResourceOptimizationTask extends GameTask {
         optimizeButton.setDisable(optimizedCount < NUM_RESOURCES);
     }
 } 
+

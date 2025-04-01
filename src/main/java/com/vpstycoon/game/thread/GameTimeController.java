@@ -53,13 +53,13 @@ public class GameTimeController {
         timeManager.stop();
         if (timeThread != null) {
             try {
-                // ตั้งค่าให้ thread interrupt เพื่อให้หยุดเร็วขึ้น
+                
                 timeThread.interrupt();
                 
-                // รอ thread หยุดภายใน 1000ms
+                
                 timeThread.join(1000);
                 
-                // ตรวจสอบว่า thread ยังทำงานอยู่หรือไม่
+                
                 if (timeThread.isAlive()) {
                     System.out.println("WARNING: timeThread ยังทำงานอยู่หลังจากพยายามหยุดแล้ว");
                 } else {
@@ -121,3 +121,4 @@ public class GameTimeController {
         resetTime(null);
     }
 }
+

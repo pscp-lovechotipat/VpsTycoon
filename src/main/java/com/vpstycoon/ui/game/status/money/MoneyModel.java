@@ -38,3 +38,4 @@ public class MoneyModel {
         return rating;
     }
 }
+

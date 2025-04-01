@@ -8,23 +8,17 @@ import com.vpstycoon.ui.game.rack.Rack;
 
 import java.time.LocalDateTime;
 
-/**
- * ควบคุมการทำงานของระบบเวลาในเกม
- */
+
 public class GameTimeController implements IGameTimeController {
     private final IGameTimeManager timeManager;
     private Thread timeThread;
 
-    /**
-     * สร้าง GameTimeController ใหม่พร้อมกับ GameTimeManager
-     */
+    
     public GameTimeController(Company company, RequestManager requestManager, Rack rack, LocalDateTime startTime) {
         this.timeManager = new GameTimeManager(company, requestManager, rack, startTime);
     }
 
-    /**
-     * เริ่มระบบเวลาในเกม
-     */
+    
     @Override
     public synchronized void startTime() {
         if (timeThread != null) {
@@ -56,22 +50,20 @@ public class GameTimeController implements IGameTimeController {
         System.out.println("เริ่ม timeThread ใหม่สำเร็จ");
     }
 
-    /**
-     * หยุดระบบเวลาในเกม
-     */
+    
     @Override
     public synchronized void stopTime() {
         System.out.println("GameTimeController: กำลังหยุด timeManager และ timeThread");
         timeManager.stop();
         if (timeThread != null) {
             try {
-                // ตั้งค่าให้ thread interrupt เพื่อให้หยุดเร็วขึ้น
+                
                 timeThread.interrupt();
                 
-                // รอ thread หยุดภายใน 1000ms
+                
                 timeThread.join(1000);
                 
-                // ตรวจสอบว่า thread ยังทำงานอยู่หรือไม่
+                
                 if (timeThread.isAlive()) {
                     System.out.println("WARNING: timeThread ยังทำงานอยู่หลังจากพยายามหยุดแล้ว");
                 } else {
@@ -87,49 +79,37 @@ public class GameTimeController implements IGameTimeController {
         }
     }
 
-    /**
-     * เพิ่ม listener สำหรับรับการแจ้งเตือนเมื่อเวลาเปลี่ยนแปลง
-     */
+    
     @Override
     public void addTimeListener(IGameTimeManager.GameTimeListener listener) {
         timeManager.addTimeListener(listener);
     }
 
-    /**
-     * ลบ listener สำหรับรับการแจ้งเตือนเมื่อเวลาเปลี่ยนแปลง
-     */
+    
     @Override
     public void removeTimeListener(IGameTimeManager.GameTimeListener listener) {
         timeManager.removeTimeListener(listener);
     }
 
-    /**
-     * ดึงค่าเวลาปัจจุบันในเกม
-     */
+    
     @Override
     public LocalDateTime getGameDateTime() {
         return timeManager.getGameDateTime();
     }
 
-    /**
-     * ดึง GameTimeManager ที่ใช้งานอยู่
-     */
+    
     @Override
     public IGameTimeManager getGameTimeManager() {
         return timeManager;
     }
 
-    /**
-     * ดึงค่าเวลาในเกมในรูปแบบมิลลิวินาที
-     */
+    
     @Override
     public long getGameTimeMs() {
         return timeManager.getGameTimeMs();
     }
     
-    /**
-     * รีเซ็ตเวลาเกมเป็นค่าที่กำหนด
-     */
+    
     @Override
     public void resetTime(LocalDateTime startTime) {
         stopTime();
@@ -145,9 +125,7 @@ public class GameTimeController implements IGameTimeController {
         System.out.println("รีเซ็ตและเริ่มเวลาเกมใหม่เป็น: " + startTime);
     }
     
-    /**
-     * รีเซ็ตเวลาเกมเป็นค่าเริ่มต้น
-     */
+    
     @Override
     public void resetTime() {
         resetTime(null);

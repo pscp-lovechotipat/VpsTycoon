@@ -5,3 +5,4 @@ public enum RequestType {
     SECURITY_FOCUSED,
     WEB_HOSTING, DATABASE, APP_SERVER, STABILITY_FOCUSED
 } 
+

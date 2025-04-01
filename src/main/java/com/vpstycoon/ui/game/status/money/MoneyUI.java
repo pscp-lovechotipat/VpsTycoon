@@ -79,3 +79,4 @@ public class MoneyUI extends VBox {
         this.setMaxHeight(Region.USE_PREF_SIZE);
     }
 }
+

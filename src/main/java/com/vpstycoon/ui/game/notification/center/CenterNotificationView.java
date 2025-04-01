@@ -452,3 +452,4 @@ public class CenterNotificationView extends StackPane {
         }
     }
 }
+

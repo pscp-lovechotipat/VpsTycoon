@@ -34,11 +34,11 @@ public class DesktopScreen extends StackPane {
     private MessengerWindow chatWindow;
     private MessengerController chatController;
     
-    // Add static image cache
+    
     private static Map<String, Image> imageCache = new HashMap<>();
     private static boolean imagesPreloaded = false;
     
-    // List of all desktop images that need to be preloaded
+    
     private static final String[] DESKTOP_IMAGES = {
         "/images/wallpaper/Desktop.gif",
         "/images/buttons/MessengerDesktop.png",
@@ -99,47 +99,47 @@ public class DesktopScreen extends StackPane {
     private void setupUI() {
         ScreenResolution resolution = DefaultGameConfig.getInstance().getResolution();
 
-        // กำหนดพื้นหลังสีดำ
+        
         setStyle("-fx-background-color: black;");
         
-        // โหลดภาพพื้นหลังจากแคช
+        
         javafx.scene.image.Image backgroundImage = loadImage("/images/wallpaper/Desktop.gif");
         
-        // สร้าง Pane สำหรับพื้นหลังที่มีขนาดคงที่
+        
         Pane backgroundLayer = createBackgroundLayer(backgroundImage);
         
-        // สร้างปุ่มต่างๆ
+        
         double fixedScaleFactor = 0.3;
         Pane messengerButton = createMessengerButton(fixedScaleFactor);
         Pane marketButton = createMarketButton(fixedScaleFactor);
         Pane roomButton = createRoomButton(fixedScaleFactor);
         Pane serverButton = createServerButton(fixedScaleFactor);
         
-        // สร้าง Group เพื่อรวมเลเยอร์ต่างๆ (พื้นหลังและองค์ประกอบอื่นๆ)
+        
         Group desktopGroup = new Group(backgroundLayer, messengerButton, marketButton, roomButton, serverButton);
         
-        // จัดตำแหน่งกลางหน้าจอ
+        
         double centerX = (resolution.getWidth() - backgroundLayer.getPrefWidth()) / 2.0;
         double centerY = (resolution.getHeight() - backgroundLayer.getPrefHeight()) / 2.0;
         desktopGroup.setLayoutX(centerX);
         desktopGroup.setLayoutY(centerY);
         
-        // เพิ่ม Group เข้าไปใน StackPane
+        
         getChildren().add(desktopGroup);
         
-        // เพิ่ม debug log
+        
         System.out.println("Screen resolution: " + resolution.getWidth() + "x" + resolution.getHeight());
     }
 
     private Pane createBackgroundLayer(Image backgroundImage) {
         Pane backgroundLayer = new Pane();
         
-        // กำหนดขนาดคงที่ (ไม่ขึ้นกับขนาดจอ)
+        
         double fixedScaleFactor = 0.3;
         double fixedWidth = backgroundImage != null ? backgroundImage.getWidth() * fixedScaleFactor : 1920 * fixedScaleFactor;
         double fixedHeight = backgroundImage != null ? backgroundImage.getHeight() * fixedScaleFactor : 1080 * fixedScaleFactor;
         
-        // กำหนดขนาดของ Pane
+        
         backgroundLayer.setPrefWidth(fixedWidth);
         backgroundLayer.setPrefHeight(fixedHeight);
         backgroundLayer.setMinWidth(fixedWidth);
@@ -147,10 +147,10 @@ public class DesktopScreen extends StackPane {
         backgroundLayer.setMaxWidth(fixedWidth);
         backgroundLayer.setMaxHeight(fixedHeight);
         
-        // Use the cached image path
+        
         String imageUrl = "/images/wallpaper/Desktop.gif";
         
-        // กำหนดภาพพื้นหลังด้วย CSS
+        
         backgroundLayer.setStyle(String.format("""
             -fx-background-image: url("%s");
             -fx-background-size: %fpx %fpx;
@@ -172,9 +172,9 @@ public class DesktopScreen extends StackPane {
         messengerButton.setTranslateX(-176);
         messengerButton.setTranslateY(127);
         
-        // Reference the cached image
+        
         String imageUrl = "/images/buttons/MessengerDesktop.png";
-        loadImage(imageUrl); // Ensure it's loaded
+        loadImage(imageUrl); 
         
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
@@ -208,9 +208,9 @@ public class DesktopScreen extends StackPane {
         marketButton.setTranslateX(-176);
         marketButton.setTranslateY(192);
         
-        // Reference the cached image
+        
         String imageUrl = "/images/buttons/MarketDesktop.png";
-        loadImage(imageUrl); // Ensure it's loaded
+        loadImage(imageUrl); 
         
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
@@ -244,9 +244,9 @@ public class DesktopScreen extends StackPane {
         roomButton.setTranslateX(-365);
         roomButton.setTranslateY(-290);
         
-        // Reference the cached image
+        
         String imageUrl = "/images/buttons/RoomDesktop.gif";
-        loadImage(imageUrl); // Ensure it's loaded
+        loadImage(imageUrl); 
         
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
@@ -280,9 +280,9 @@ public class DesktopScreen extends StackPane {
         serverButton.setTranslateX(644);
         serverButton.setTranslateY(-475);
         
-        // Reference the cached image
+        
         String imageUrl = "/images/buttons/ServerDesktop.gif";
-        loadImage(imageUrl); // Ensure it's loaded
+        loadImage(imageUrl); 
         
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
@@ -373,3 +373,4 @@ public class DesktopScreen extends StackPane {
         getChildren().add(dashboardWindow);
     }
 }
+

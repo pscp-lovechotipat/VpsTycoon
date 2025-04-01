@@ -309,3 +309,4 @@ public class SkillPointsSystem implements Serializable {
         return skillLevel > 1 ? (skillLevel - 1) * 10 : 0;
     }
 } 
+

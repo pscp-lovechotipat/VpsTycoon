@@ -391,3 +391,4 @@ public class ChatAreaView extends VBox {
     public TextField getMessageInput() { return messageInput; }
     public VBox getMessagesBox() { return messagesBox; }
 }
+

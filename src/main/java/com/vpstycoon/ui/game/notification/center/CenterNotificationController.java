@@ -29,3 +29,4 @@ public class CenterNotificationController {
         this.view = centerNotificationView;
     }
 }
+

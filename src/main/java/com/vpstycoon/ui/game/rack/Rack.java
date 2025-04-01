@@ -878,3 +878,4 @@ public class Rack extends StackPane implements Serializable {
         return installedSlots;
     }
 }
+

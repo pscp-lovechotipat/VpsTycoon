@@ -70,7 +70,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
         this.screenManager = new JavaFXScreenManager(gameConfig, primaryStage);
         this.gameManager = GameManager.getInstance();
 
-        // ตั้งค่าไอคอนแอพพลิเคชัน
+        
         try {
             System.out.println("กำลังโหลดไอคอนแอพพลิเคชัน...");
             Image appIcon = new Image(getClass().getResourceAsStream("/images/logo/GameIcon.PNG"));
@@ -368,12 +368,12 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 ResourceManager.getInstance().setCurrentState(newState);
                 System.out.println("อัพเดท GameState ใน ResourceManager แล้ว");
                 
-                // สร้าง SkillPointsSystem ใหม่และเซฟลงใน GameState
+                
                 System.out.println("สร้าง SkillPointsSystem ใหม่");
                 ResourceManager resourceManager = ResourceManager.getInstance();
                 resourceManager.resetSkillPointsSystem();
                 
-                // บันทึก SkillPointsSystem ลงใน GameState
+                
                 if (resourceManager.getSkillPointsSystem() != null) {
                     newState.setSkillLevels(resourceManager.getSkillPointsSystem().getSkillLevelsMap());
                     System.out.println("บันทึก SkillLevels ลงใน GameState เรียบร้อย");
@@ -382,7 +382,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
 
                 com.vpstycoon.ui.game.components.RoomObjectsLayer.preloadImages();
                 
-                // เริ่มทำงาน RequestGenerator
+                
                 if (ResourceManager.getInstance().getRequestGenerator() != null) {
                     ResourceManager.getInstance().getRequestGenerator().stopGenerator();
                 }
@@ -520,12 +520,12 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 GameState savedState = ResourceManager.getInstance().loadGameState();
                 
                 if (savedState != null && savedState.getCompany() != null) {
-                    // ตั้งค่าเวลาเกมจาก GameState ที่โหลดมา
+                    
                     if (savedState.getLocalDateTime() != null) {
                         System.out.println("กำลังตั้งค่าเวลาเกมที่บันทึกไว้: " + savedState.getLocalDateTime() + 
                                          " (GameTimeMs: " + savedState.getGameTimeMs() + ")");
                         
-                        // ตรวจสอบว่ามี GameTimeController แล้วหรือไม่
+                        
                         GameTimeController gameTimeController = ResourceManager.getInstance().getGameTimeController();
                         if (gameTimeController != null) {
                             gameTimeController.resetTime(savedState.getLocalDateTime());
@@ -544,7 +544,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
                     ChatHistoryManager chatManager = ChatHistoryManager.getInstance();
                     System.out.println("โหลดข้อมูลประวัติแชทเรียบร้อยแล้ว");
                     
-                    // สร้างและเริ่ม RequestGenerator ก่อนที่จะเริ่มเกม
+                    
                     System.out.println("=========== สร้าง RequestGenerator ใน continueGame ===========");
                     RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
                     if (requestManager == null) {
@@ -553,12 +553,12 @@ public class GameApplication extends Application implements Navigator, ResourceM
                         ResourceManager.getInstance().setRequestManager(requestManager);
                     }
                     
-                    // หยุด RequestGenerator เดิมถ้ามี
+                    
                     if (ResourceManager.getInstance().getRequestGenerator() != null) {
                         ResourceManager.getInstance().getRequestGenerator().stopGenerator();
                     }
                     
-                    // สร้างและเริ่ม RequestGenerator ใหม่
+                    
                     RequestGenerator requestGenerator = new RequestGenerator(requestManager);
                     ResourceManager.getInstance().setRequestGenerator(requestGenerator);
                     requestGenerator.start();
@@ -638,7 +638,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
             gameplayScreen.release();
         }
         
-        // เริ่มทำงาน RequestGenerator
+        
         System.out.println("======== กำลังเริ่ม RequestGenerator ในฟังก์ชัน startGame (continue game) ========");
         if (ResourceManager.getInstance().getRequestGenerator() != null) {
             ResourceManager.getInstance().getRequestGenerator().stopGenerator();
@@ -658,7 +658,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
             requestGenerator.start();
             System.out.println("เริ่มการทำงานของ RequestGenerator แล้ว");
             
-            // ตรวจสอบว่า thread กำลังทำงานอยู่หรือไม่
+            
             if (requestGenerator.isAlive()) {
                 System.out.println("✅ RequestGenerator กำลังทำงาน (Thread ID: " + requestGenerator.getId() + ")");
             } else {
@@ -768,9 +768,9 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 Label titleLabel = new Label("VPS Tycoon");
                 titleLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white; -fx-font-weight: bold;");
                 
-                // เพิ่ม glow effect ให้ title คล้ายกับใน cutscene
+                
                 javafx.scene.effect.DropShadow glow = new javafx.scene.effect.DropShadow();
-                glow.setColor(javafx.scene.paint.Color.web("#8A2BE2"));  // สีม่วง
+                glow.setColor(javafx.scene.paint.Color.web("#8A2BE2"));  
                 glow.setRadius(20);
                 glow.setSpread(0.2);
                 titleLabel.setEffect(glow);
@@ -1022,3 +1022,4 @@ public class GameApplication extends Application implements Navigator, ResourceM
         launch(args);
     }
 }
+

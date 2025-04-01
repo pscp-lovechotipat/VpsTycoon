@@ -35,3 +35,4 @@ public class ChatMessage implements Serializable {
         return metadata;
     }
 }
+

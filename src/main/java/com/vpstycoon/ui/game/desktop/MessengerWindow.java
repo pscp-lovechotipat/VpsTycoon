@@ -150,3 +150,4 @@ public class MessengerWindow extends VBox {
         return (Button) titleBar.getChildren().get(2);
     }
 }
+

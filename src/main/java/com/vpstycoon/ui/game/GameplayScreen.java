@@ -285,7 +285,7 @@ public class GameplayScreen extends GameScreen {
                 }
             }
             
-            // หยุด RequestGenerator เมื่อออกจากหน้าเกม
+            
             try {
                 RequestGenerator generator = ResourceManager.getInstance().getRequestGenerator();
                 if (generator != null && generator.isAlive()) {
@@ -372,3 +372,4 @@ public class GameplayScreen extends GameScreen {
         }
     }
 }
+

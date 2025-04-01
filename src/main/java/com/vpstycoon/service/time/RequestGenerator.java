@@ -7,9 +7,7 @@ import com.vpstycoon.service.time.interfaces.IRequestGenerator;
 
 import java.util.Random;
 
-/**
- * สร้างคำขอจากลูกค้าโดยอัตโนมัติ ทำงานในรูปแบบ background thread
- */
+
 public class RequestGenerator extends Thread implements IRequestGenerator {
     private final RequestManager requestManager;
     private volatile boolean running = true;
@@ -20,18 +18,14 @@ public class RequestGenerator extends Thread implements IRequestGenerator {
     private int maxPendingRequests = 10; 
     private double requestRateMultiplier = 1.0;
 
-    /**
-     * สร้าง RequestGenerator ใหม่ที่ใช้ RequestManager ที่กำหนด
-     */
+    
     public RequestGenerator(RequestManager requestManager) {
         this.requestManager = requestManager;
         this.setDaemon(true);
         this.setName("RequestGenerator");
     }
 
-    /**
-     * เริ่มการทำงานของตัวสร้างคำขอ
-     */
+    
     @Override
     public void run() {
         Random random = new Random();
@@ -63,7 +57,7 @@ public class RequestGenerator extends Thread implements IRequestGenerator {
                 CustomerRequest newRequest = requestManager.generateRandomRequest();
                 requestManager.addRequest(newRequest);
                 
-                // บันทึกข้อมูลเกมเมื่อมีคำขอใหม่
+                
                 try {
                     if (ResourceManager.getInstance().getCurrentState() != null) {
                         ResourceManager.getInstance().saveGameState(ResourceManager.getInstance().getCurrentState());
@@ -90,9 +84,7 @@ public class RequestGenerator extends Thread implements IRequestGenerator {
         }
     }
     
-    /**
-     * ปรับค่า multiplier สำหรับอัตราการสร้างคำขอ ตามคะแนนของบริษัท
-     */
+    
     private void updateRequestRateMultiplier() {
         double companyRating = 1.0;
         try {
@@ -105,18 +97,14 @@ public class RequestGenerator extends Thread implements IRequestGenerator {
         requestRateMultiplier = Math.max(0.5, Math.min(3.0, requestRateMultiplier));
     }
 
-    /**
-     * หยุดการทำงานของตัวสร้างคำขอ
-     */
+    
     @Override
     public void stopGenerator() {
         running = false;
         this.interrupt();
     }
     
-    /**
-     * รีเซ็ตตัวสร้างคำขอกลับเป็นค่าเริ่มต้น
-     */
+    
     @Override
     public void resetGenerator() {
         running = false;
@@ -134,18 +122,14 @@ public class RequestGenerator extends Thread implements IRequestGenerator {
         }
     }
     
-    /**
-     * หยุดการทำงานชั่วคราว
-     */
+    
     @Override
     public synchronized void pauseGenerator() {
         System.out.println("RequestGenerator is pausing");
         paused = true;
     }
     
-    /**
-     * เริ่มการทำงานต่อหลังจากหยุดชั่วคราว
-     */
+    
     @Override
     public synchronized void resumeGenerator() {
         if (paused) {
@@ -171,17 +155,13 @@ public class RequestGenerator extends Thread implements IRequestGenerator {
         }
     }
     
-    /**
-     * ตรวจสอบว่ากำลังหยุดชั่วคราวอยู่หรือไม่
-     */
+    
     @Override
     public boolean isPaused() {
         return paused;
     }
     
-    /**
-     * กำหนดจำนวนคำขอสูงสุดที่รอตอบรับได้
-     */
+    
     @Override
     public void setMaxPendingRequests(int maxRequests) {
         this.maxPendingRequests = maxRequests;

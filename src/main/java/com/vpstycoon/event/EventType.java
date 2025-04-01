@@ -49,3 +49,4 @@ public enum EventType {
         return Math.round(baseCost * (1 + variation));
     }
 }
+

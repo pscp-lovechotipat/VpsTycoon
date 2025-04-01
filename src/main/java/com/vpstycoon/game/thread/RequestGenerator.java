@@ -33,14 +33,14 @@ public class RequestGenerator extends Thread {
 
         while (!interrupted() && running) {
             try {
-                // แสดงสถานะทุก 10 วินาที
+                
                 long currentTime = System.currentTimeMillis();
                 if (currentTime - startTime > 10000) {
                     System.out.println("RequestGenerator ทำงานมา " + ((currentTime - startTime) / 1000) + " วินาที, สร้าง " + generatedRequestCount + " requests");
                     startTime = currentTime;
                 }
                 
-                // ถ้า paused ให้รอ
+                
                 if (paused) {
                     synchronized (this) {
                         while (paused) {
@@ -50,30 +50,30 @@ public class RequestGenerator extends Thread {
                     }
                 }
                 
-                // ตรวจสอบจำนวน requests ว่าเต็มหรือยัง
+                
                 if (requestManager.getRequests().size() >= maxPendingRequests) {
                     System.out.println("RequestGenerator: request limit reached (" + maxPendingRequests + ")");
                     Thread.sleep(rateLimitSleepTime);
                     continue;
                 }
 
-                // คำนวณเวลารอระหว่างการสร้าง request
+                
                 updateRequestRateMultiplier();
                 int adjustedMinDelay = (int)(minDelayMs / requestRateMultiplier);
                 int adjustedMaxDelay = (int)(maxDelayMs / requestRateMultiplier);
                 int delay = adjustedMinDelay + random.nextInt(adjustedMaxDelay - adjustedMinDelay);
                 
-                // รอตามเวลาที่กำหนด
+                
                 Thread.sleep(delay);
 
-                // สร้าง request ใหม่
+                
                 CustomerRequest newRequest = requestManager.generateRandomRequest();
                 
-                // เพิ่ม request เข้าไปใน requestManager
+                
                 requestManager.addRequest(newRequest);
                 generatedRequestCount++;
                 
-                // แสดง notification เมื่อมี request ใหม่
+                
                 try {
                     com.vpstycoon.game.resource.ResourceManager.getInstance().pushNotification(
                         "คำขอใหม่จาก " + newRequest.getName(),
@@ -85,7 +85,7 @@ public class RequestGenerator extends Thread {
                     System.err.println("ไม่สามารถแสดง notification สำหรับคำขอใหม่: " + e.getMessage());
                 }
                 
-                // บันทึกข้อมูลเกมเมื่อมีคำขอใหม่
+                
                 try {
                     if (ResourceManager.getInstance().getCurrentState() != null) {
                         ResourceManager.getInstance().saveGameState(ResourceManager.getInstance().getCurrentState());
@@ -198,4 +198,5 @@ public class RequestGenerator extends Thread {
         this.maxPendingRequests = maxRequests;
     }
 }
+
 

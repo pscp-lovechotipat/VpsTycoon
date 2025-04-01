@@ -404,3 +404,4 @@ public class CircleStatusButton {
         this.onClickAction = action;
     }
 }
+

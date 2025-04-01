@@ -66,3 +66,4 @@ public enum ScreenResolution {
         return displayName;
     }
 } 
+

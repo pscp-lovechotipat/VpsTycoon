@@ -270,7 +270,7 @@ public class GameplayContentPane extends BorderPane {
         roomObjects = new RoomObjectsLayer(this::openSimulationDesktop, this::openRackInfo, this::openKeroro, this::openMusicBox, this::openMusicStop);
         System.out.println("สร้าง roomObjects ใหม่เรียบร้อย : " + roomObjects.getClass().getSimpleName());
 
-        // สร้าง worldGroup ทันทีแทนที่จะสร้างใน Platform.runLater
+        
         worldGroup = new Group();
         Group worldGroup2 = new Group();
 
@@ -282,17 +282,17 @@ public class GameplayContentPane extends BorderPane {
                 roomObjects.getMusicStopLayer()
         );
 
-        // จัดตำแหน่งของ roomObjects ให้อยู่กลางหน้าจอ
-        worldGroup2.setTranslateX(1870); // ปรับค่าให้เหมาะสม
-        worldGroup2.setTranslateY(1070);  // ปรับค่าให้เหมาะสม
+        
+        worldGroup2.setTranslateX(1870); 
+        worldGroup2.setTranslateY(1070);  
 
-        // กำหนดลำดับการซ้อนทับให้ชัดเจน โดยให้ worldGroup2 (รูมออบเจค) อยู่ด้านบนสุด
-        worldGroup.getChildren().add(backgroundLayer);  // เพิ่ม backgroundLayer เป็นลำดับแรก (อยู่ด้านล่างสุด)
-        worldGroup.getChildren().add(worldGroup2);      // เพิ่ม worldGroup2 เป็นลำดับสอง (อยู่ด้านบนสุด)
+        
+        worldGroup.getChildren().add(backgroundLayer);  
+        worldGroup.getChildren().add(worldGroup2);      
 
-        // ตั้งค่า z-index เพื่อบังคับลำดับการแสดงผลให้ชัดเจนยิ่งขึ้น
-        backgroundLayer.setViewOrder(100.0);  // ค่ามาก = อยู่ด้านหลัง
-        worldGroup2.setViewOrder(1.0);        // ค่าน้อย = อยู่ด้านหน้า
+        
+        backgroundLayer.setViewOrder(100.0);  
+        worldGroup2.setViewOrder(1.0);        
 
         System.out.println("สร้าง worldGroup ใหม่เรียบร้อย " + worldGroup.getChildren().size());
 
@@ -383,28 +383,28 @@ public class GameplayContentPane extends BorderPane {
     private Pane createBackgroundLayer(Image backgroundImage, Image windowImage) {
         Pane backgroundLayer = new Pane();
 
-        // ค่าปรับขนาด (scale factor) สำหรับ backgroundImage และ windowImage
-        double scaleFactor = 0.26;  // ค่าปรับขนาดสำหรับทั้งสองภาพ
-        double scaleFactor2 = 0.20;  // ค่าปรับขนาดสำหรับทั้งสองภาพ
+        
+        double scaleFactor = 0.26;  
+        double scaleFactor2 = 0.20;  
 
-        // สร้าง ImageView สำหรับ backgroundImage (room.gif)
+        
         ImageView backgroundImageView = new ImageView(backgroundImage);
         backgroundImageView.setPreserveRatio(true);
-        // ใช้ scaleFactor กับ setScaleX และ setScaleY สำหรับ backgroundImage
+        
         backgroundImageView.setScaleX(scaleFactor);
         backgroundImageView.setScaleY(scaleFactor);
-        // ปรับขนาดให้ fit กับ parent (backgroundLayer)
+        
         backgroundImageView.fitWidthProperty().bind(backgroundLayer.widthProperty());
         backgroundImageView.fitHeightProperty().bind(backgroundLayer.heightProperty());
 
-        // สร้าง ImageView สำหรับ windowImage (BackgroundWindow.gif)
+        
         ImageView windowImageView = new ImageView(windowImage);
-        windowImageView.setPreserveRatio(true); // รักษาสัดส่วนของ windowImage
-        // ใช้ scaleFactor กับ setScaleX และ setScaleY สำหรับ windowImage
+        windowImageView.setPreserveRatio(true); 
+        
         windowImageView.setScaleX(scaleFactor2);
         windowImageView.setScaleY(scaleFactor2);
 
-        // จัดตำแหน่ง windowImageView ให้อยู่กึ่งกลางของ backgroundLayer
+        
         windowImageView.layoutXProperty().bind(
                 backgroundLayer.widthProperty().subtract(windowImageView.getBoundsInLocal().getWidth() * scaleFactor).divide(2)
         );
@@ -412,21 +412,21 @@ public class GameplayContentPane extends BorderPane {
                 backgroundLayer.heightProperty().subtract(windowImageView.getBoundsInLocal().getHeight() * scaleFactor).divide(2)
         );
 
-        // เลื่อน windowImage ไปทางขวาด้วย reductionPixels (50 พิกเซล)
+        
         windowImageView.setTranslateX(-650);
         windowImageView.setTranslateY(-650);
 
         Affine skewTransform = new Affine();
-        double skewX = -0.05;  // ค่าการเอียงในแกน X (ปรับได้ตามต้องการ)
-        double skewY = 0.265;  // ค่าการเอียงในแกน Y (ปรับได้ตามต้องการ)
-        skewTransform.setMxy(skewX);  // Skew X: บิดเอียงในแนวนอน
-        skewTransform.setMyx(skewY);  // Skew Y: บิดเอียงในแนวตั้ง
+        double skewX = -0.05;  
+        double skewY = 0.265;  
+        skewTransform.setMxy(skewX);  
+        skewTransform.setMyx(skewY);  
         windowImageView.getTransforms().add(skewTransform);
 
-        // เพิ่ม ImageView ทั้งสองเข้าไปใน backgroundLayer โดยให้ backgroundImage อยู่ด้านล่าง
+        
         backgroundLayer.getChildren().addAll(windowImageView, backgroundImageView);
 
-        // ตั้งค่า backgroundLayer ให้โปร่งใส
+        
         backgroundLayer.setStyle("-fx-background-color: transparent;");
 
         return backgroundLayer;
@@ -840,7 +840,7 @@ public class GameplayContentPane extends BorderPane {
             return false;
         }
         
-        // ตรวจสอบว่ามีพื้นที่ว่างพอในแร็คหรือไม่
+        
         if (vps.getSlotsRequired() > rack.getAvailableSlotUnits()) {
             pushNotification("Installation Failed",
                     "Not enough slots available in the rack. You need " + vps.getSlotsRequired() +
@@ -1187,3 +1187,4 @@ public class GameplayContentPane extends BorderPane {
         }
     }
 }
+

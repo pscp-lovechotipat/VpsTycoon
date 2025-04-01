@@ -364,3 +364,4 @@ public class WireTask extends GameTask {
         gamePane.getChildren().add(taskContent);
     }
 } 
+

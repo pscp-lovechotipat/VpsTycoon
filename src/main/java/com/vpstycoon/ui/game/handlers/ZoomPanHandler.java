@@ -190,3 +190,4 @@ public class ZoomPanHandler {
         System.out.println("ZoomPanHandler event handlers removed");
     }
 } 
+

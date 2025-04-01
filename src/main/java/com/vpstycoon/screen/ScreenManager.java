@@ -15,3 +15,4 @@ public interface ScreenManager {
     void prepareScreen(GameScreen screen);
     void updateScreenResolution();
 }
+

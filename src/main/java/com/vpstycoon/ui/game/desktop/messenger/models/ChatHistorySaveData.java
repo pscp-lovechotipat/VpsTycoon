@@ -74,3 +74,4 @@ public class ChatHistorySaveData implements Serializable {
         return vmAssignments;
     }
 } 
+

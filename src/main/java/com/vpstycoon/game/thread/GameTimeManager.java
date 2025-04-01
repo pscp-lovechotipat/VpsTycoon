@@ -87,10 +87,10 @@ public class GameTimeManager {
                             requestManager.processPayments(realTimeMs.get());
                         } else {
                             System.err.println("Warning: requestManager is null, cannot process payments");
-                            // พยายามสร้าง RequestManager ใหม่
+                            
                             if (company != null) {
                                 try {
-                                    // ลองหา RequestManager จาก ResourceManager ก่อน
+                                    
                                     com.vpstycoon.game.resource.ResourceManager resourceManager = 
                                         com.vpstycoon.game.resource.ResourceManager.getInstance();
                                     RequestManager rm = resourceManager.getRequestManager();
@@ -99,7 +99,7 @@ public class GameTimeManager {
                                         System.out.println("พบ RequestManager จาก ResourceManager, นำมาใช้งาน");
                                         requestManager = rm;
                                     } else {
-                                        // สร้างใหม่ถ้าไม่พบ
+                                        
                                         requestManager = new com.vpstycoon.game.manager.RequestManager(company);
                                         resourceManager.setRequestManager(requestManager);
                                         System.out.println("สร้าง RequestManager ใหม่สำเร็จใน GameTimeManager และตั้งค่าให้ ResourceManager");
@@ -248,7 +248,7 @@ public class GameTimeManager {
 
         gameDateTime = newStartDateTime;
         
-        // รีเซ็ต realTimeMs โดยคำนวณจากระยะเวลาตั้งแต่วันเริ่มต้น (startDateTime) ถึง newStartDateTime
+        
         if (newStartDateTime != null && startDateTime != null) {
             long millisBetween = ChronoUnit.MILLIS.between(startDateTime, newStartDateTime);
             long newRealTimeMs = (long)(millisBetween / SCALE_FACTOR);
@@ -262,7 +262,7 @@ public class GameTimeManager {
         
         lastProcessedMonth = gameDateTime.getMonthValue();
         
-        // ตั้งค่าให้พร้อมทำงานต่อ
+        
         running = true;
         
         System.out.println("รีเซ็ตเวลาใน GameTimeManager เป็น: " + newStartDateTime + " (running=" + running + ")");
@@ -273,3 +273,4 @@ public class GameTimeManager {
         return running;
     }
 }
+

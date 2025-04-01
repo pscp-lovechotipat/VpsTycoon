@@ -25,3 +25,4 @@ public enum CustomerType {
         return displayName;
     }
 } 
+

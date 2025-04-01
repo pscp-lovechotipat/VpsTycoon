@@ -18,3 +18,4 @@ public interface INavigator {
     
     void saveAndExitToMainMenu();
 } 
+

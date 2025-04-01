@@ -353,3 +353,4 @@ public class GameState implements Serializable {
         System.out.println("ล้างข้อมูล GameState เรียบร้อยแล้ว");
     }
 }
+

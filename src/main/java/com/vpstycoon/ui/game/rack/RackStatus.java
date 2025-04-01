@@ -238,3 +238,4 @@ public class RackStatus extends VBox {
         return currentUnlocked * 1000; 
     }
 } 
+
