@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ResourceManager implements Serializable, IResourceManager {
-    private static final long serialVersionUID = 1L;
 
     private static final ResourceManager instance = new ResourceManager();
 
