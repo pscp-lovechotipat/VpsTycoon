@@ -8,14 +8,12 @@ public interface ICompany {
         
         void onRatingChanged(double newRating);
     }
-    
-    
+
     interface MoneyTransactionObserver {
         
         void onMoneyTransaction(long amount, long newBalance, boolean isIncome);
     }
-    
-    
+
     String getName();
     
     

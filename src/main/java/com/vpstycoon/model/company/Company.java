@@ -10,8 +10,7 @@ import java.util.List;
 
 
 public class Company implements Serializable, ICompany {
-    private static final long serialVersionUID = 1L;
-    
+
     private String name;
     private double rating;
     private int marketingPoints;
