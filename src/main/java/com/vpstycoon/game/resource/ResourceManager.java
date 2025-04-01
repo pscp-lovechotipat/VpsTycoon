@@ -49,8 +49,9 @@ public class ResourceManager implements Serializable {
     private static final String SOUNDS_PATH = "/sounds/";
     private static final String MUSIC_PATH = "/music/";
     private static final String TEXT_PATH = "/text/";
-    private static final String SAVE_FILE = "savegame.dat";
-    private static final String BACKUP_DIR = "backups";
+    private static final String GAME_FOLDER = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "VpsTycoon";
+    private static final String SAVE_FILE = GAME_FOLDER + File.separator + "savegame.dat";
+    private static final String BACKUP_DIR = GAME_FOLDER + File.separator + "backups";
 
     private final Map<String, Image> imageCache = new ConcurrentHashMap<>();
     private final Map<String, String> textCache = new ConcurrentHashMap<>();
@@ -797,9 +798,29 @@ public class ResourceManager implements Serializable {
     }
 
     private void createBackupDirectory() {
-        File backupDir = new File(BACKUP_DIR);
-        if (!backupDir.exists()) {
-            backupDir.mkdir();
+        try {
+            File gameDir = new File(GAME_FOLDER);
+            if (!gameDir.exists()) {
+                boolean created = gameDir.mkdirs();
+                if (created) {
+                    System.out.println("สร้างโฟลเดอร์เกม: " + gameDir.getAbsolutePath());
+                } else {
+                    System.err.println("ไม่สามารถสร้างโฟลเดอร์เกม: " + gameDir.getAbsolutePath());
+                }
+            }
+            
+            File backupDir = new File(BACKUP_DIR);
+            if (!backupDir.exists()) {
+                boolean created = backupDir.mkdirs();
+                if (created) {
+                    System.out.println("สร้างโฟลเดอร์สำรองข้อมูล: " + backupDir.getAbsolutePath());
+                } else {
+                    System.err.println("ไม่สามารถสร้างโฟลเดอร์สำรองข้อมูล: " + backupDir.getAbsolutePath());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการสร้างโฟลเดอร์: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

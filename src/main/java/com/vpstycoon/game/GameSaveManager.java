@@ -7,21 +7,44 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class GameSaveManager {
-    private static final String SAVE_FILE = "savegame.dat"; 
-    private static final String CHAT_SAVE_FILE = "save.dat"; 
-    private static final String BACKUP_DIR = "backups";     
+    private static final String GAME_FOLDER = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "VpsTycoon";
+    private static final String SAVE_FILE = GAME_FOLDER + File.separator + "savegame.dat"; 
+    private static final String CHAT_SAVE_FILE = GAME_FOLDER + File.separator + "save.dat"; 
+    private static final String BACKUP_DIR = GAME_FOLDER + File.separator + "backups";     
 
     public GameSaveManager() {
-        createBackupDirectory();
+        createGameDirectory();
     }
 
     
-    private void createBackupDirectory() {
-        File backupDir = new File(BACKUP_DIR);
-        if (!backupDir.exists()) {
-            backupDir.mkdir();
+    private void createGameDirectory() {
+        try {
+            File gameDir = new File(GAME_FOLDER);
+            if (!gameDir.exists()) {
+                boolean created = gameDir.mkdirs();
+                if (created) {
+                    System.out.println("สร้างโฟลเดอร์เกม: " + gameDir.getAbsolutePath());
+                } else {
+                    System.err.println("ไม่สามารถสร้างโฟลเดอร์เกม: " + gameDir.getAbsolutePath());
+                }
+            }
+            
+            File backupDir = new File(BACKUP_DIR);
+            if (!backupDir.exists()) {
+                boolean created = backupDir.mkdirs();
+                if (created) {
+                    System.out.println("สร้างโฟลเดอร์สำรองข้อมูล: " + backupDir.getAbsolutePath());
+                } else {
+                    System.err.println("ไม่สามารถสร้างโฟลเดอร์สำรองข้อมูล: " + backupDir.getAbsolutePath());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการสร้างโฟลเดอร์: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

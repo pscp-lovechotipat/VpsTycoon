@@ -12,10 +12,12 @@ import java.util.*;
 public class ChatHistoryManager implements Serializable{
     private static ChatHistoryManager instance;
     private Map<CustomerRequest, List<ChatMessage>> customerChatHistory;
-    private static final String CHAT_HISTORY_FILE = "save.dat";
+    private static final String GAME_FOLDER = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "VpsTycoon";
+    private static final String CHAT_HISTORY_FILE = GAME_FOLDER + File.separator + "save.dat";
     private transient MessengerController messengerController;
 
     public ChatHistoryManager() {
+        createGameDirectory();
         
         customerChatHistory = loadChatHistoryFromGameState();
         if (customerChatHistory.isEmpty()) {
@@ -26,6 +28,23 @@ public class ChatHistoryManager implements Serializable{
                 
                 deleteChatHistoryFile();
             }
+        }
+    }
+
+    private void createGameDirectory() {
+        try {
+            File gameDir = new File(GAME_FOLDER);
+            if (!gameDir.exists()) {
+                boolean created = gameDir.mkdirs();
+                if (created) {
+                    System.out.println("สร้างโฟลเดอร์เกม: " + gameDir.getAbsolutePath());
+                } else {
+                    System.err.println("ไม่สามารถสร้างโฟลเดอร์เกม: " + gameDir.getAbsolutePath());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("เกิดข้อผิดพลาดในการสร้างโฟลเดอร์: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
