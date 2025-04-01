@@ -75,37 +75,37 @@ public class GameEvent implements Runnable {
     @SuppressWarnings("unchecked")
     private final Supplier<GameTask>[] taskFactories = new Supplier[] {
 
-//        () -> new WireTask(random.nextInt(3) + 3), // Makufff check leaw jaa
+        () -> new WireTask(random.nextInt(3) + 3), // Makufff check leaw jaa
 
 
-        () -> new DataDecryptionTask(random.nextInt(3) + 3),
-//
-//
-//        () -> new FirewallDefenseTask(),
-//
-//
-//        () -> new DataSortingTask(),
-//
-//
-//        () -> new PasswordCrackingTask(),
-//
-//
-//        () -> new NetworkRoutingTask(),
-//
-//
-//        () -> new ServerCoolingTask(),
-//
-//
-//        () -> new ResourceOptimizationTask(),
-//
-//
-//        () -> new CalibrationTask(),
-//
-//
-//        () -> new FileRecoveryTask(),
-//
-//
-//        () -> new HackingTask()
+        () -> new DataDecryptionTask(random.nextInt(3) + 3), // Makufff check leaw jaa
+
+
+        () -> new FirewallDefenseTask(), // Makufff check leaw jaa
+
+
+        () -> new DataSortingTask(), // Makufff check leaw jaa
+
+
+        () -> new PasswordCrackingTask(), // Makufff check leaw jaa
+
+
+        () -> new NetworkRoutingTask(), // Makufff check leaw jaa
+
+
+        () -> new ServerCoolingTask(), // Makufff check leaw jaa
+
+
+        () -> new ResourceOptimizationTask(), // Makufff check leaw jaa
+
+
+        () -> new CalibrationTask(), // Makufff check leaw jaa
+
+
+        () -> new FileRecoveryTask(), // Makufff check leaw jaa
+
+
+        () -> new HackingTask() // Makufff check leaw jaa
     };
 
 

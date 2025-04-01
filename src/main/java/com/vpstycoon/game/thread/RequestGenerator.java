@@ -14,8 +14,7 @@ public class RequestGenerator extends Thread {
     private final int maxDelayMs = 120_000;
     private final int rateLimitSleepTime = 5_000;
     private int maxPendingRequests = 20;
-    
-    
+
     private double requestRateMultiplier = 1.0;
 
     public RequestGenerator(RequestManager requestManager) {

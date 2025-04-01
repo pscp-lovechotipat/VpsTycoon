@@ -55,11 +55,9 @@ public class GameTimeController {
             try {
                 
                 timeThread.interrupt();
-                
-                
+
                 timeThread.join(1000);
-                
-                
+
                 if (timeThread.isAlive()) {
                     System.out.println("WARNING: timeThread ยังทำงานอยู่หลังจากพยายามหยุดแล้ว");
                 } else {
@@ -74,8 +72,6 @@ public class GameTimeController {
             System.out.println("timeThread เป็น null อยู่แล้ว ไม่จำเป็นต้องหยุด");
         }
     }
-
-    
 
     public void addTimeListener(GameTimeManager.GameTimeListener listener) {
         timeManager.addTimeListener(listener);
@@ -115,7 +111,6 @@ public class GameTimeController {
         
         System.out.println("รีเซ็ตและเริ่มเวลาเกมใหม่เป็น: " + startTime);
     }
-    
     
     public void resetTime() {
         resetTime(null);
