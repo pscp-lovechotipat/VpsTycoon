@@ -27,8 +27,9 @@ import java.util.List;
 public class RackManagementUI implements RackUIUpdateListener {
     private final GameplayContentPane parent;
 
-    private Label networkValueEmpty;
-    private Label networkValuePopulated;
+    private static final String STATUS_TEXT_STYLE = "-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;";
+
+    private Label networkValueLabel;
 
     public RackManagementUI(GameplayContentPane parent) {
         this.parent = parent;
@@ -74,6 +75,35 @@ public class RackManagementUI implements RackUIUpdateListener {
         parent.getMoneyUI().setVisible(false);
         parent.getDateView().setVisible(false);
 
+        BorderPane contentBox = new BorderPane();
+        contentBox.setPadding(new Insets(10));
+        contentBox.setStyle("""
+            -fx-background-color: #12071e;
+            -fx-padding: 10px;
+            -fx-border-color: #8a2be2;
+            -fx-border-width: 2px;
+            -fx-border-style: solid;
+            -fx-background-radius: 0px;
+            -fx-effect: dropshadow(gaussian, #8a2be2, 10, 0, 0, 0);
+            """);
+
+        if (parent.getRack().getMaxSlotUnits() == 0) {
+            contentBox.setCenter(createNoRackMessage());
+        } else {
+            contentBox.setCenter(createRackLayout());
+        }
+
+        rackPane.setTop(createTopBar());
+        rackPane.setCenter(contentBox);
+        BorderPane.setMargin(contentBox, new Insets(10, 0, 10, 0));
+
+        parent.getGameArea().getChildren().clear();
+        parent.getGameArea().getChildren().add(rackPane);
+
+        rackPane.getStylesheets().add(getClass().getResource("/css/rackinfo-pane.css").toExternalForm());
+    }
+
+    private HBox createTopBar() {
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
         topBar.setPadding(new Insets(15));
@@ -141,219 +171,214 @@ public class RackManagementUI implements RackUIUpdateListener {
         navigationBox.getChildren().addAll(prevRackButton, rackIndexLabel, nextRackButton);
 
         topBar.getChildren().addAll(titleLabel, navigationBox, closeButton);
+        return topBar;
+    }
 
-        BorderPane contentBox = new BorderPane();
-        contentBox.setPadding(new Insets(10));
-        contentBox.setStyle("""
-            -fx-background-color: #12071e;
-            -fx-padding: 10px;
+    private VBox createNoRackMessage() {
+        VBox noRackMessage = new VBox(20);
+        noRackMessage.setAlignment(Pos.CENTER);
+        noRackMessage.setSpacing(20);
+
+        Label messageLabel = new Label("RACK NOT DETECTED");
+        messageLabel.setStyle("""
+            -fx-font-family: 'Courier New';
+            -fx-font-size: 24px;
+            -fx-text-fill: #ff00ff;
+            -fx-font-weight: bold;
+            -fx-effect: dropshadow(gaussian, #ff00ff, 10, 0, 0, 0);
+        """);
+
+        Label descriptionLabel = new Label("INITIATE PROCUREMENT PROTOCOL: RACK ACQUISITION REQUIRED");
+        descriptionLabel.setStyle("""
+            -fx-font-family: 'Courier New';
+            -fx-font-size: 16px;
+            -fx-text-fill: #00ffff;
+        """);
+
+        Button marketButton = createPixelButton("ACCESS MARKET TERMINAL", "#6a00ff");
+        marketButton.setOnAction(e -> parent.openMarket());
+
+        noRackMessage.getChildren().addAll(messageLabel, descriptionLabel, marketButton);
+        return noRackMessage;
+    }
+
+    private HBox createRackLayout() {
+        boolean rackIsEmpty = parent.getVpsList().isEmpty();
+
+        VBox rackContainerWithSpacer = new VBox();
+        rackContainerWithSpacer.setAlignment(Pos.BOTTOM_CENTER);
+        rackContainerWithSpacer.setPrefWidth(500);
+
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+
+        rackContainerWithSpacer.getChildren().addAll(spacer, createRackCabinet());
+
+        VBox infoPane = createInfoPane(rackIsEmpty);
+
+        HBox mainLayout = new HBox(20);
+        mainLayout.getChildren().addAll(rackContainerWithSpacer, infoPane);
+        HBox.setHgrow(infoPane, Priority.ALWAYS);
+        mainLayout.setAlignment(Pos.CENTER);
+        return mainLayout;
+    }
+
+    private VBox createRackCabinet() {
+        VBox rackCabinet = new VBox(0);
+        rackCabinet.setPadding(new Insets(0));
+        rackCabinet.setPrefWidth(500);
+        rackCabinet.setMinHeight(500);
+        rackCabinet.setMaxHeight(Double.MAX_VALUE);
+
+        BorderPane rackFrame = new BorderPane();
+        rackFrame.setPrefWidth(500);
+        rackFrame.setMaxHeight(Double.MAX_VALUE);
+        rackFrame.setStyle("""
+            -fx-background-color: #191919;
+            -fx-border-color: #00ffff;
+            -fx-border-width: 2;
+            -fx-border-style: solid;
+            -fx-effect: dropshadow(gaussian, #00ffff, 5, 0, 0, 0);
+            """);
+
+        ScrollPane slotContainer = new ScrollPane();
+        slotContainer.setFitToWidth(true);
+        slotContainer.setFitToHeight(true);
+        slotContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        slotContainer.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        slotContainer.setStyle("""
+            -fx-background-color: transparent;
+            -fx-background: transparent;
+            -fx-background-insets: 0;
+            -fx-padding: 0;
+            """);
+
+        GridPane rackSlots = new GridPane();
+        rackSlots.setVgap(2);
+        rackSlots.setHgap(0);
+        rackSlots.setPadding(new Insets(0));
+        rackSlots.setStyle("""
+            -fx-background-color: #141414;
+            """);
+
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPrefWidth(450);
+        col1.setHgrow(Priority.ALWAYS);
+
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPrefWidth(50);
+
+        rackSlots.getColumnConstraints().addAll(col1, col2);
+
+        int slotUnitHeight = 40;
+
+        for (int i = 0; i < parent.getRack().getMaxSlotUnits(); i++) {
+            RowConstraints row = new RowConstraints();
+            row.setPrefHeight(slotUnitHeight);
+            row.setMinHeight(slotUnitHeight);
+            rackSlots.getRowConstraints().add(row);
+
+            Label unitLabel = new Label(String.format("U%02d", i + 1));
+            unitLabel.setStyle("""
+                -fx-font-family: 'Courier New';
+                -fx-font-size: 10px;
+                -fx-text-fill: #666666;
+                """);
+            StackPane unitLabelBox = new StackPane(unitLabel);
+            unitLabelBox.setPrefHeight(slotUnitHeight);
+            unitLabelBox.setAlignment(Pos.CENTER);
+            rackSlots.add(unitLabelBox, 1, i);
+        }
+
+        createEnhancedRackSlots(rackSlots, slotUnitHeight);
+
+        slotContainer.setContent(rackSlots);
+
+        GridPane topVents = new GridPane();
+        topVents.setPrefHeight(15);
+        topVents.setHgap(4);
+        topVents.setVgap(2);
+        topVents.setAlignment(Pos.CENTER);
+        topVents.setStyle("-fx-background-color: #222222;");
+
+        for (int i = 0; i < 20; i++) {
+            Rectangle vent = new Rectangle(15, 3);
+            vent.setFill(Color.web("#111111"));
+            vent.setArcWidth(1);
+            vent.setArcHeight(1);
+            topVents.add(vent, i % 10, i / 10);
+        }
+
+        HBox powerSupply = new HBox(10);
+        powerSupply.setPrefHeight(20);
+        powerSupply.setStyle("-fx-background-color: #222222;");
+        powerSupply.setAlignment(Pos.CENTER_RIGHT);
+
+        Rectangle powerButton = new Rectangle(8, 8);
+        powerButton.setFill(Color.web("#00ff00"));
+
+        Timeline pulseTimeline = new Timeline(
+            new KeyFrame(Duration.ZERO,
+                new KeyValue(powerButton.opacityProperty(), 1.0)),
+            new KeyFrame(Duration.seconds(1.5),
+                new KeyValue(powerButton.opacityProperty(), 0.5)),
+            new KeyFrame(Duration.seconds(3),
+                new KeyValue(powerButton.opacityProperty(), 1.0))
+        );
+        pulseTimeline.setCycleCount(Timeline.INDEFINITE);
+        pulseTimeline.play();
+
+        Rectangle powerMeter1 = new Rectangle(4, 6);
+        powerMeter1.setFill(Color.web("#ff0000"));
+        Rectangle powerMeter2 = new Rectangle(4, 6);
+        powerMeter2.setFill(Color.web("#ffff00"));
+        Rectangle powerMeter3 = new Rectangle(4, 6);
+        powerMeter3.setFill(Color.web("#00ff00"));
+
+        powerSupply.getChildren().addAll(powerMeter1, powerMeter2, powerMeter3, powerButton);
+        powerSupply.setPadding(new Insets(0, 20, 0, 0));
+
+        rackFrame.setCenter(slotContainer);
+        rackCabinet.getChildren().addAll(topVents, rackFrame, powerSupply);
+        return rackCabinet;
+    }
+
+    private VBox createInfoPane(boolean rackIsEmpty) {
+        VBox infoPane = new VBox(15);
+        infoPane.setPrefWidth(250);
+        infoPane.setMinHeight(550);
+        infoPane.setPrefHeight(600);
+        infoPane.setMaxHeight(Double.MAX_VALUE);
+        VBox.setVgrow(infoPane, Priority.ALWAYS);
+        infoPane.setStyle("""
+            -fx-background-color: #280042;
+            -fx-padding: 15px;
             -fx-border-color: #8a2be2;
             -fx-border-width: 2px;
             -fx-border-style: solid;
             -fx-background-radius: 0px;
-            -fx-effect: dropshadow(gaussian, #8a2be2, 10, 0, 0, 0);
+            -fx-effect: dropshadow(gaussian, #8a2be2, 5, 0, 0, 0);
             """);
 
-        if (parent.getRack().getMaxSlotUnits() == 0) {
-            VBox noRackMessage = new VBox(20);
-            noRackMessage.setAlignment(Pos.CENTER);
-            noRackMessage.setSpacing(20);
+        Label infoTitle = new Label("RACK INFO");
+        infoTitle.setMaxWidth(Double.MAX_VALUE);
+        infoTitle.setAlignment(Pos.CENTER);
+        infoTitle.setStyle("""
+            -fx-font-family: 'Courier New';
+            -fx-font-size: 18px;
+            -fx-font-weight: bold;
+            -fx-text-fill: #ff00ff;
+            -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
+            -fx-padding: 5px;
+            -fx-background-color: #12071e;
+            -fx-background-radius: 0px;
+            -fx-border-color: #ff00ff;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
+        """);
+        infoPane.getChildren().add(infoTitle);
 
-            Label messageLabel = new Label("RACK NOT DETECTED");
-            messageLabel.setStyle("""
-                -fx-font-family: 'Courier New';
-                -fx-font-size: 24px;
-                -fx-text-fill: #ff00ff;
-                -fx-font-weight: bold;
-                -fx-effect: dropshadow(gaussian, #ff00ff, 10, 0, 0, 0);
-            """);
-
-            Label descriptionLabel = new Label("INITIATE PROCUREMENT PROTOCOL: RACK ACQUISITION REQUIRED");
-            descriptionLabel.setStyle("""
-                -fx-font-family: 'Courier New';
-                -fx-font-size: 16px;
-                -fx-text-fill: #00ffff;
-            """);
-
-            Button marketButton = createPixelButton("ACCESS MARKET TERMINAL", "#6a00ff");
-            marketButton.setOnAction(e -> {
-                parent.openMarket();
-            });
-
-            noRackMessage.getChildren().addAll(messageLabel, descriptionLabel, marketButton);
-            contentBox.setCenter(noRackMessage);
-        } else if (parent.getVpsList().isEmpty()) {
-            HBox mainLayout = new HBox(20);
-            mainLayout.setAlignment(Pos.CENTER_LEFT);
-
-            VBox rackCabinet = new VBox(0);
-            rackCabinet.setPadding(new Insets(0));
-            rackCabinet.setPrefWidth(500);
-            rackCabinet.setMinHeight(500);
-            rackCabinet.setMaxHeight(Double.MAX_VALUE);
-
-            BorderPane rackFrame = new BorderPane();
-            rackFrame.setPrefWidth(500);
-            rackFrame.setMaxHeight(Double.MAX_VALUE);
-            rackFrame.setStyle("""
-                -fx-background-color: #191919;
-                -fx-border-color: #00ffff;
-                -fx-border-width: 2;
-                -fx-border-style: solid;
-                -fx-effect: dropshadow(gaussian, #00ffff, 5, 0, 0, 0);
-                """);
-
-            VBox unitMarkings = new VBox(0);
-            unitMarkings.setPrefWidth(30);
-            unitMarkings.setStyle("""
-                -fx-background-color: #111111;
-                -fx-border-color: #333333;
-                -fx-border-width: 0 1 0 0;
-                """);
-
-            ScrollPane slotContainer = new ScrollPane();
-            slotContainer.setFitToWidth(true);
-            slotContainer.setFitToHeight(true);
-            slotContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-            slotContainer.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-            slotContainer.setStyle("""
-                -fx-background-color: transparent;
-                -fx-background: transparent;
-                -fx-background-insets: 0;
-                -fx-padding: 0;
-                """);
-
-            GridPane rackSlots = new GridPane();
-            rackSlots.setVgap(2);
-            rackSlots.setHgap(0);
-            rackSlots.setPadding(new Insets(0));
-            rackSlots.setStyle("""
-                -fx-background-color: #141414;
-                """);
-
-            ColumnConstraints col1 = new ColumnConstraints();
-            col1.setPrefWidth(450);
-            col1.setHgrow(Priority.ALWAYS);
-
-            ColumnConstraints col2 = new ColumnConstraints();
-            col2.setPrefWidth(50);
-
-            rackSlots.getColumnConstraints().addAll(col1, col2);
-
-            int slotUnitHeight = 40;
-
-            for (int i = 0; i < parent.getRack().getMaxSlotUnits(); i++) {
-                RowConstraints row = new RowConstraints();
-                row.setPrefHeight(slotUnitHeight);
-                row.setMinHeight(slotUnitHeight);
-                rackSlots.getRowConstraints().add(row);
-
-                Label unitLabel = new Label(String.format("U%02d", i + 1));
-                unitLabel.setStyle("""
-                -fx-font-family: 'Courier New';
-                    -fx-font-size: 10px;
-                    -fx-text-fill: #666666;
-                    """);
-                StackPane unitLabelBox = new StackPane(unitLabel);
-                unitLabelBox.setPrefHeight(slotUnitHeight);
-                unitLabelBox.setAlignment(Pos.CENTER);
-                rackSlots.add(unitLabelBox, 1, i);
-
-                Pane slot = createEnhancedRackSlot(i, null, i < parent.getRack().getUnlockedSlotUnits(), slotUnitHeight);
-                rackSlots.add(slot, 0, i);
-            }
-
-            slotContainer.setContent(rackSlots);
-
-            GridPane topVents = new GridPane();
-            topVents.setPrefHeight(15);
-            topVents.setHgap(4);
-            topVents.setVgap(2);
-            topVents.setAlignment(Pos.CENTER);
-            topVents.setStyle("-fx-background-color: #222222;");
-
-            for (int i = 0; i < 20; i++) {
-                Rectangle vent = new Rectangle(15, 3);
-                vent.setFill(Color.web("#111111"));
-                vent.setArcWidth(1);
-                vent.setArcHeight(1);
-                topVents.add(vent, i % 10, i / 10);
-            }
-
-            HBox powerSupply = new HBox(10);
-            powerSupply.setPrefHeight(20);
-            powerSupply.setStyle("-fx-background-color: #222222;");
-            powerSupply.setAlignment(Pos.CENTER_RIGHT);
-
-            Rectangle powerButton = new Rectangle(8, 8);
-            powerButton.setFill(Color.web("#00ff00"));
-
-            Timeline pulseTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                    new KeyValue(powerButton.opacityProperty(), 1.0)),
-                new KeyFrame(Duration.seconds(1.5),
-                    new KeyValue(powerButton.opacityProperty(), 0.5)),
-                new KeyFrame(Duration.seconds(3),
-                    new KeyValue(powerButton.opacityProperty(), 1.0))
-            );
-            pulseTimeline.setCycleCount(Timeline.INDEFINITE);
-            pulseTimeline.play();
-
-            Rectangle powerMeter1 = new Rectangle(4, 6);
-            powerMeter1.setFill(Color.web("#ff0000"));
-            Rectangle powerMeter2 = new Rectangle(4, 6);
-            powerMeter2.setFill(Color.web("#ffff00"));
-            Rectangle powerMeter3 = new Rectangle(4, 6);
-            powerMeter3.setFill(Color.web("#00ff00"));
-
-            powerSupply.getChildren().addAll(powerMeter1, powerMeter2, powerMeter3, powerButton);
-            powerSupply.setPadding(new Insets(0, 20, 0, 0));
-
-            rackFrame.setCenter(slotContainer);
-            rackCabinet.getChildren().addAll(topVents, rackFrame, powerSupply);
-
-            VBox rackContainerWithSpacer = new VBox();
-            rackContainerWithSpacer.setAlignment(Pos.BOTTOM_CENTER);
-            rackContainerWithSpacer.setPrefWidth(500);
-
-            Region spacer = new Region();
-            VBox.setVgrow(spacer, Priority.ALWAYS);
-
-            rackContainerWithSpacer.getChildren().addAll(spacer, rackCabinet);
-
-            VBox infoPane = new VBox(15);
-            infoPane.setPrefWidth(250);
-            infoPane.setMinHeight(550);
-            infoPane.setPrefHeight(600);
-            infoPane.setMaxHeight(Double.MAX_VALUE);
-            VBox.setVgrow(infoPane, Priority.ALWAYS);
-            infoPane.setStyle("""
-                -fx-background-color: #280042;
-                -fx-padding: 15px;
-                -fx-border-color: #8a2be2;
-                -fx-border-width: 2px;
-                -fx-border-style: solid;
-                -fx-background-radius: 0px;
-                -fx-effect: dropshadow(gaussian, #8a2be2, 5, 0, 0, 0);
-                """);
-
-            Label infoTitle = new Label("RACK INFO");
-            infoTitle.setMaxWidth(Double.MAX_VALUE);
-            infoTitle.setAlignment(Pos.CENTER);
-            infoTitle.setStyle("""
-                -fx-font-family: 'Courier New';
-                -fx-font-size: 18px;
-                -fx-font-weight: bold;
-                -fx-text-fill: #ff00ff;
-                -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
-                -fx-padding: 5px;
-                -fx-background-color: #12071e;
-                -fx-background-radius: 0px;
-                -fx-border-color: #ff00ff;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-            """);
-
+        if (rackIsEmpty) {
             Label emptyRackMessage = new Label("NO SERVERS INSTALLED");
             emptyRackMessage.setMaxWidth(Double.MAX_VALUE);
             emptyRackMessage.setAlignment(Pos.CENTER);
@@ -371,727 +396,276 @@ public class RackManagementUI implements RackUIUpdateListener {
                 -fx-border-style: solid;
                 -fx-alignment: center;
             """);
-
-            VBox statusPanel = new VBox(8);
-            statusPanel.setMaxWidth(Double.MAX_VALUE);
-            statusPanel.setStyle("""
-                -fx-background-color: #1a0033;
-                -fx-padding: 10px;
-                -fx-background-radius: 0px;
-                -fx-border-color: #00ffff;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                """);
-
-            GridPane statusGrid = new GridPane();
-            statusGrid.setMaxWidth(Double.MAX_VALUE);
-            statusGrid.setHgap(10);
-            statusGrid.setVgap(8);
-
-            int usedSlots = parent.getRack().getOccupiedSlotUnits();
-
-            Label serversLabel = new Label("SERVERS:");
-            serversLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            Label serversValue = new Label("0");
-            serversValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-
-            Label slotsLabel = new Label("SLOTS:");
-            slotsLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            Label slotsValue = new Label(usedSlots + "/" + parent.getRack().getMaxSlotUnits() +
-                            " (" + parent.getRack().getAvailableSlotUnits() + " AVAILABLE)");
-            slotsValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-
-            Label networkLabel = new Label("NETWORK:");
-            networkLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-
-            int baseNetworkSpeed = 10;
-            int networkSpeedBonus = ResourceManager.getInstance().getSkillPointsSystem().getRackNetworkSpeedBonus();
-            int totalNetworkSpeed = baseNetworkSpeed + networkSpeedBonus;
-            networkValueEmpty = new Label(totalNetworkSpeed + " Gbps");
-
-            networkValueEmpty.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-
-            Label usersLabel = new Label("ACTIVE USERS:");
-            usersLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            Label usersValue = new Label("0");
-            usersValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-
-            statusGrid.add(serversLabel, 0, 0);
-            statusGrid.add(serversValue, 1, 0);
-            statusGrid.add(slotsLabel, 0, 1);
-            statusGrid.add(slotsValue, 1, 1);
-            statusGrid.add(networkLabel, 0, 2);
-            statusGrid.add(networkValueEmpty, 1, 2);
-            statusGrid.add(usersLabel, 0, 3);
-            statusGrid.add(usersValue, 1, 3);
-
-            ColumnConstraints column1 = new ColumnConstraints();
-            column1.setHgrow(Priority.NEVER);
-            ColumnConstraints column2 = new ColumnConstraints();
-            column2.setHgrow(Priority.ALWAYS);
-            statusGrid.getColumnConstraints().addAll(column1, column2);
-
-            statusPanel.getChildren().add(statusGrid);
-
-            Button inventoryButton = createPixelButton("SERVER INVENTORY", "#3498db");
-            inventoryButton.setMaxWidth(Double.MAX_VALUE);
-            inventoryButton.setOnAction(e -> parent.openVPSInventory());
-
-            int upgradeCost = calculateUpgradeCost();
-            Button upgradeButton = createPixelButton("UPGRADE RACK ($" + upgradeCost + ")", "#4CAF50");
-            upgradeButton.setMaxWidth(Double.MAX_VALUE);
-            upgradeButton.setOnAction(e -> {
-                Rack currentRack = parent.getRack();
-                int currentUnlockedSlots = currentRack.getUnlockedSlotUnits();
-                int maxRackSlots = currentRack.getMaxSlotUnits();
-
-                if (currentUnlockedSlots >= maxRackSlots) {
-                    parent.pushNotification("CANNOT UPGRADE", "This rack already has maximum slots unlocked (" + maxRackSlots + " slots)");
-                    return;
-                }
-
-                int currentUpgradeCost = calculateUpgradeCost();
-                if (parent.getCompany().getMoney() >= currentUpgradeCost) {
-                    parent.getCompany().setMoney(parent.getCompany().getMoney() - currentUpgradeCost);
-
-                    if (parent.getRack().upgrade()) {
-                        Timeline pulseAnimation = new Timeline();
-                        pulseAnimation.getKeyFrames().addAll(
-                            new KeyFrame(Duration.ZERO,
-                                new KeyValue(upgradeButton.scaleXProperty(), 1.0),
-                                new KeyValue(upgradeButton.scaleYProperty(), 1.0)
-                            ),
-                            new KeyFrame(Duration.millis(200),
-                                new KeyValue(upgradeButton.scaleXProperty(), 1.05),
-                                new KeyValue(upgradeButton.scaleYProperty(), 1.05)
-                            ),
-                            new KeyFrame(Duration.millis(400),
-                                new KeyValue(upgradeButton.scaleXProperty(), 1.0),
-                                new KeyValue(upgradeButton.scaleYProperty(), 1.0)
-                            )
-                        );
-
-                        pulseAnimation.setOnFinished(event -> {
-                            parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " +
-                                                  parent.getRack().getUnlockedSlotUnits() + " SLOTS");
-                            openRackInfo();
-                        });
-
-                        pulseAnimation.play();
-                    }
-                } else {
-                    parent.pushNotification("UPGRADE FAILED", "INSUFFICIENT FUNDS");
-                }
-            });
-
-            Button marketButton = createPixelButton("MARKET", "#6a00ff");
-            marketButton.setMaxWidth(Double.MAX_VALUE);
-            marketButton.setOnAction(e -> {
-                parent.openMarket();
-            });
-
-            infoPane.getChildren().addAll(infoTitle, emptyRackMessage, statusPanel, inventoryButton, upgradeButton, marketButton);
-
-            List<VPSOptimization> uninstalledServers = parent.getVpsInventory().getAllVPS();
-            if (!uninstalledServers.isEmpty()) {
-                VBox uninstalledSection = new VBox(10);
-                uninstalledSection.setPadding(new Insets(10, 0, 0, 0));
-                VBox.setVgrow(uninstalledSection, Priority.ALWAYS);
-
-                Label uninstalledLabel = new Label("AVAILABLE SERVERS");
-                uninstalledLabel.setMaxWidth(Double.MAX_VALUE);
-                uninstalledLabel.setAlignment(Pos.CENTER);
-                uninstalledLabel.setStyle("""
-                    -fx-font-family: 'Courier New';
-                    -fx-font-size: 16px;
-                    -fx-font-weight: bold;
-                    -fx-text-fill: #ff00ff;
-                    -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
-                    -fx-padding: 5px;
-                    -fx-background-color: #12071e;
-                    -fx-background-radius: 0px;
-                    -fx-border-color: #ff00ff;
-                    -fx-border-width: 1px;
-                    -fx-border-style: solid;
-                """);
-
-                ScrollPane uninstalledScrollPane = new ScrollPane();
-                uninstalledScrollPane.setStyle("""
-                    -fx-background-color: transparent;
-                    -fx-background: transparent; 
-                    -fx-background-insets: 0;
-                    -fx-padding: 0;
-                """);
-                uninstalledScrollPane.setFitToWidth(true);
-                uninstalledScrollPane.setPrefHeight(200);
-                uninstalledScrollPane.setMinHeight(200);
-                VBox.setVgrow(uninstalledScrollPane, Priority.ALWAYS);
-
-                VBox serverList = new VBox(8);
-                serverList.setPadding(new Insets(5));
-
-                for (VPSOptimization server : uninstalledServers) {
-                    String serverId = "";
-                    for (String id : parent.getVpsInventory().getAllVPSIds()) {
-                        if (parent.getVpsInventory().getVPS(id) == server) {
-                            serverId = id;
-                            break;
-                        }
-                    }
-
-                    final String finalServerId = serverId;
-
-                    HBox serverRow = new HBox(5);
-                    serverRow.setAlignment(Pos.CENTER_LEFT);
-
-                    VBox serverInfo = new VBox(2);
-                    serverInfo.setPrefWidth(150);
-                    serverInfo.setStyle("""
-                        -fx-background-color: #2d0052;
-                        -fx-padding: 5px;
-                        -fx-background-radius: 0px;
-                        -fx-border-color: #00ffff;
-                        -fx-border-width: 2px;
-                        -fx-border-style: solid;
-                    """);
-
-                    Label nameLabel = new Label("SERVER " + server.getVCPUs() + "vCPU");
-                    nameLabel.setStyle("""
-                        -fx-text-fill: #ff00ff; 
-                        -fx-font-weight: bold;
-                        -fx-font-family: 'Courier New';
-                    """);
-
-                    Label specsLabel = new Label(server.getRamInGB() + "GB RAM | " + server.getSize().getDisplayName());
-                    specsLabel.setStyle("""
-                        -fx-text-fill: #00ffff;
-                        -fx-font-family: 'Courier New';
-                    """);
-
-                    serverInfo.getChildren().addAll(nameLabel, specsLabel);
-
-                    Button installButton = createPixelButton("INSTALL", "#4CAF50");
-
-                    installButton.setOnMousePressed(e -> {
-                        installButton.setStyle(
-                            "-fx-background-color: #388E3C;" +
-                            "-fx-font-family: 'Courier New';" +
-                            "-fx-font-size: 14px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-padding: 6px 10px;" +
-                            "-fx-background-radius: 0px;" +
-                            "-fx-border-color: white;" +
-                            "-fx-border-width: 2px;" +
-                            "-fx-translate-y: 2px;"
-                        );
-                    });
-
-                    installButton.setOnMouseReleased(e -> {
-                        installButton.setStyle(
-                            "-fx-background-color: #4CAF50;" +
-                            "-fx-font-family: 'Courier New';" +
-                            "-fx-font-size: 14px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-padding: 8px 12px;" +
-                            "-fx-background-radius: 0px;" +
-                            "-fx-border-color: white;" +
-                            "-fx-border-width: 2px;" +
-                            "-fx-translate-y: 0px;"
-                        );
-                    });
-
-                    installButton.setOnAction(event -> {
-                        try {
-                            if (parent.installVPSFromInventory(finalServerId)) {
-                                parent.pushNotification("SUCCESS", "Server installed successfully");
-                                installButton.setDisable(true);
-                                Timeline successAnimation = new Timeline(
-                                    new KeyFrame(Duration.ZERO,
-                                        new KeyValue(installButton.textFillProperty(), Color.WHITE)),
-                                    new KeyFrame(Duration.millis(200),
-                                        new KeyValue(installButton.textFillProperty(), Color.GREEN))
-                                );
-                                successAnimation.setOnFinished(e -> openRackInfo());
-                                successAnimation.play();
-                            } else {
-                                parent.pushNotification("ERROR", "Not enough slots available or server is incompatible");
-                            }
-                        } catch (Exception e) {
-                            parent.pushNotification("ERROR", "An error occurred: " + e.getMessage());
-                            System.err.println("Error installing VPS: " + e.getMessage());
-                            e.printStackTrace();
-                        }
-                    });
-
-                    serverRow.getChildren().addAll(serverInfo, installButton);
-                    serverList.getChildren().add(serverRow);
-                }
-
-                uninstalledScrollPane.setContent(serverList);
-                uninstalledSection.getChildren().addAll(uninstalledLabel, uninstalledScrollPane);
-
-                infoPane.getChildren().add(uninstalledSection);
-            }
-
-            Region bottomSpacer = new Region();
-            VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
-            infoPane.getChildren().add(bottomSpacer);
-
-            mainLayout.getChildren().addAll(rackContainerWithSpacer, infoPane);
-            HBox.setHgrow(infoPane, Priority.ALWAYS);
-            mainLayout.setAlignment(Pos.CENTER);
-            contentBox.setCenter(mainLayout);
-        } else {
-            HBox mainLayout = new HBox(20);
-            mainLayout.setAlignment(Pos.CENTER_LEFT);
-
-            VBox rackCabinet = new VBox(0);
-            rackCabinet.setPadding(new Insets(0));
-            rackCabinet.setPrefWidth(500);
-            rackCabinet.setMinHeight(500);
-            rackCabinet.setMaxHeight(Double.MAX_VALUE);
-
-            BorderPane rackFrame = new BorderPane();
-            rackFrame.setPrefWidth(500);
-            rackFrame.setMaxHeight(Double.MAX_VALUE);
-            rackFrame.setStyle("""
-                -fx-background-color: #191919;
-                -fx-border-color: #00ffff;
-                -fx-border-width: 2;
-                -fx-border-style: solid;
-                -fx-effect: dropshadow(gaussian, #00ffff, 5, 0, 0, 0);
-                """);
-
-            VBox unitMarkings = new VBox(0);
-            unitMarkings.setPrefWidth(30);
-            unitMarkings.setStyle("""
-                -fx-background-color: #111111;
-                -fx-border-color: #333333;
-                -fx-border-width: 0 1 0 0;
-                """);
-
-            ScrollPane slotContainer = new ScrollPane();
-            slotContainer.setFitToWidth(true);
-            slotContainer.setFitToHeight(true);
-            slotContainer.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-            slotContainer.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-            slotContainer.setStyle("""
-                -fx-background-color: transparent;
-                -fx-background: transparent;
-                -fx-background-insets: 0;
-                -fx-padding: 0;
-                """);
-
-            GridPane rackSlots = new GridPane();
-            rackSlots.setVgap(2);
-            rackSlots.setHgap(0);
-            rackSlots.setPadding(new Insets(0));
-            rackSlots.setStyle("""
-                -fx-background-color: #141414;
-                """);
-
-            ColumnConstraints col1 = new ColumnConstraints();
-            col1.setPrefWidth(450);
-            col1.setHgrow(Priority.ALWAYS);
-
-            ColumnConstraints col2 = new ColumnConstraints();
-            col2.setPrefWidth(50);
-
-            rackSlots.getColumnConstraints().addAll(col1, col2);
-
-            int slotUnitHeight = 40;
-
-            for (int i = 0; i < parent.getRack().getMaxSlotUnits(); i++) {
-                RowConstraints row = new RowConstraints();
-                row.setPrefHeight(slotUnitHeight);
-                row.setMinHeight(slotUnitHeight);
-                rackSlots.getRowConstraints().add(row);
-
-                Label unitLabel = new Label(String.format("U%02d", i + 1));
-                unitLabel.setStyle("""
-                    -fx-font-family: 'Courier New';
-                    -fx-font-size: 10px;
-                    -fx-text-fill: #666666;
-                    """);
-                StackPane unitLabelBox = new StackPane(unitLabel);
-                unitLabelBox.setPrefHeight(slotUnitHeight);
-                unitLabelBox.setAlignment(Pos.CENTER);
-                rackSlots.add(unitLabelBox, 1, i);
-            }
-
-            createEnhancedRackSlots(rackSlots, slotUnitHeight);
-
-            slotContainer.setContent(rackSlots);
-
-            GridPane topVents = new GridPane();
-            topVents.setPrefHeight(15);
-            topVents.setHgap(4);
-            topVents.setVgap(2);
-            topVents.setAlignment(Pos.CENTER);
-            topVents.setStyle("-fx-background-color: #222222;");
-
-            for (int i = 0; i < 20; i++) {
-                Rectangle vent = new Rectangle(15, 3);
-                vent.setFill(Color.web("#111111"));
-                vent.setArcWidth(1);
-                vent.setArcHeight(1);
-                topVents.add(vent, i % 10, i / 10);
-            }
-
-            HBox powerSupply = new HBox(10);
-            powerSupply.setPrefHeight(20);
-            powerSupply.setStyle("-fx-background-color: #222222;");
-            powerSupply.setAlignment(Pos.CENTER_RIGHT);
-
-            Rectangle powerButton = new Rectangle(8, 8);
-            powerButton.setFill(Color.web("#00ff00"));
-
-            Timeline pulseTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                    new KeyValue(powerButton.opacityProperty(), 1.0)),
-                new KeyFrame(Duration.seconds(1.5),
-                    new KeyValue(powerButton.opacityProperty(), 0.5)),
-                new KeyFrame(Duration.seconds(3),
-                    new KeyValue(powerButton.opacityProperty(), 1.0))
-            );
-            pulseTimeline.setCycleCount(Timeline.INDEFINITE);
-            pulseTimeline.play();
-
-            Rectangle powerMeter1 = new Rectangle(4, 6);
-            powerMeter1.setFill(Color.web("#ff0000"));
-            Rectangle powerMeter2 = new Rectangle(4, 6);
-            powerMeter2.setFill(Color.web("#ffff00"));
-            Rectangle powerMeter3 = new Rectangle(4, 6);
-            powerMeter3.setFill(Color.web("#00ff00"));
-
-            powerSupply.getChildren().addAll(powerMeter1, powerMeter2, powerMeter3, powerButton);
-            powerSupply.setPadding(new Insets(0, 20, 0, 0));
-
-            rackFrame.setCenter(slotContainer);
-            rackCabinet.getChildren().addAll(topVents, rackFrame, powerSupply);
-
-            VBox rackContainerWithSpacer = new VBox();
-            rackContainerWithSpacer.setAlignment(Pos.BOTTOM_CENTER);
-            rackContainerWithSpacer.setPrefWidth(500);
-
-            Region spacer = new Region();
-            VBox.setVgrow(spacer, Priority.ALWAYS);
-
-            rackContainerWithSpacer.getChildren().addAll(spacer, rackCabinet);
-
-            VBox infoPane = new VBox(15);
-            infoPane.setPrefWidth(250);
-            infoPane.setMinHeight(550);
-            infoPane.setPrefHeight(600);
-            infoPane.setMaxHeight(Double.MAX_VALUE);
-            VBox.setVgrow(infoPane, Priority.ALWAYS);
-            infoPane.setStyle("""
-                -fx-background-color: #280042;
-                -fx-padding: 15px;
-                -fx-border-color: #8a2be2;
-                -fx-border-width: 2px;
-                -fx-border-style: solid;
-                -fx-background-radius: 0px;
-                -fx-effect: dropshadow(gaussian, #8a2be2, 5, 0, 0, 0);
-                """);
-
-            Label infoTitle = new Label("RACK INFO");
-            infoTitle.setMaxWidth(Double.MAX_VALUE);
-            infoTitle.setAlignment(Pos.CENTER);
-            infoTitle.setStyle("""
-                -fx-font-family: 'Courier New';
-                -fx-font-size: 18px;
-                -fx-font-weight: bold;
-                -fx-text-fill: #ff00ff;
-                -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
-                -fx-padding: 5px;
-                -fx-background-color: #12071e;
-                -fx-background-radius: 0px;
-                -fx-border-color: #ff00ff;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                """);
-
-            int usedSlots = parent.getRack().getOccupiedSlotUnits();
-
-            VBox statusPanel = new VBox(8);
-            statusPanel.setMaxWidth(Double.MAX_VALUE);
-            statusPanel.setStyle("""
-                -fx-background-color: #1a0033;
-                -fx-padding: 10px;
-                -fx-background-radius: 0px;
-                -fx-border-color: #00ffff;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                """);
-
-            GridPane statusGrid = new GridPane();
-            statusGrid.setMaxWidth(Double.MAX_VALUE);
-            statusGrid.setHgap(10);
-            statusGrid.setVgap(8);
-
-            Label serversLabel = new Label("SERVERS:");
-            serversLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            Label serversValue = new Label(Integer.toString(parent.getVpsList().size()));
-            serversValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-
-            Label slotsLabel = new Label("SLOTS:");
-            slotsLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            Label slotsValue = new Label(usedSlots + "/" + parent.getRack().getMaxSlotUnits() +
-                              " (" + parent.getRack().getAvailableSlotUnits() + " AVAILABLE)");
-            slotsValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-
-            Label networkLabel = new Label("NETWORK:");
-            networkLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-
-            int baseNetworkSpeed = 10;
-            int networkSpeedBonus = ResourceManager.getInstance().getSkillPointsSystem().getRackNetworkSpeedBonus();
-            int totalNetworkSpeed = baseNetworkSpeed + networkSpeedBonus;
-            networkValuePopulated = new Label(totalNetworkSpeed + " Gbps");
-
-            networkValuePopulated.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-
-            Label usersLabel = new Label("ACTIVE USERS:");
-            usersLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            Label usersValue = new Label("10");
-            usersValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-
-            statusGrid.add(serversLabel, 0, 0);
-            statusGrid.add(serversValue, 1, 0);
-            statusGrid.add(slotsLabel, 0, 1);
-            statusGrid.add(slotsValue, 1, 1);
-            statusGrid.add(networkLabel, 0, 2);
-            statusGrid.add(networkValuePopulated, 1, 2);
-            statusGrid.add(usersLabel, 0, 3);
-            statusGrid.add(usersValue, 1, 3);
-
-            ColumnConstraints column1 = new ColumnConstraints();
-            column1.setHgrow(Priority.NEVER);
-            ColumnConstraints column2 = new ColumnConstraints();
-            column2.setHgrow(Priority.ALWAYS);
-            statusGrid.getColumnConstraints().addAll(column1, column2);
-
-            statusPanel.getChildren().add(statusGrid);
-
-            Button inventoryButton = createPixelButton("SERVER INVENTORY", "#3498db");
-            inventoryButton.setMaxWidth(Double.MAX_VALUE);
-            inventoryButton.setOnAction(e -> parent.openVPSInventory());
-
-            int upgradeCost = calculateUpgradeCost();
-            Button upgradeButton = createPixelButton("UPGRADE RACK ($" + upgradeCost + ")", "#4CAF50");
-            upgradeButton.setMaxWidth(Double.MAX_VALUE);
-            upgradeButton.setOnAction(e -> {
-                Rack currentRack = parent.getRack();
-                int currentUnlockedSlots = currentRack.getUnlockedSlotUnits();
-                int maxRackSlots = currentRack.getMaxSlotUnits();
-
-                if (currentUnlockedSlots >= maxRackSlots) {
-                    parent.pushNotification("CANNOT UPGRADE", "This rack already has maximum slots unlocked (" + maxRackSlots + " slots)");
-                    return;
-                }
-
-                int currentUpgradeCost = calculateUpgradeCost();
-                if (parent.getCompany().getMoney() >= currentUpgradeCost) {
-                    parent.getCompany().setMoney(parent.getCompany().getMoney() - currentUpgradeCost);
-
-                    if (parent.getRack().upgrade()) {
-                        Timeline pulseAnimation = new Timeline();
-                        pulseAnimation.getKeyFrames().addAll(
-                            new KeyFrame(Duration.ZERO,
-                                new KeyValue(upgradeButton.scaleXProperty(), 1.0),
-                                new KeyValue(upgradeButton.scaleYProperty(), 1.0)
-                            ),
-                            new KeyFrame(Duration.millis(200),
-                                new KeyValue(upgradeButton.scaleXProperty(), 1.05),
-                                new KeyValue(upgradeButton.scaleYProperty(), 1.05)
-                            ),
-                            new KeyFrame(Duration.millis(400),
-                                new KeyValue(upgradeButton.scaleXProperty(), 1.0),
-                                new KeyValue(upgradeButton.scaleYProperty(), 1.0)
-                            )
-                        );
-
-                        pulseAnimation.setOnFinished(event -> {
-                            parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " +
-                                                  parent.getRack().getUnlockedSlotUnits() + " SLOTS");
-                            openRackInfo();
-                        });
-
-                        pulseAnimation.play();
-                    }
-                } else {
-                    parent.pushNotification("UPGRADE FAILED", "INSUFFICIENT FUNDS");
-                }
-            });
-
-            infoPane.getChildren().addAll(infoTitle, statusPanel, inventoryButton, upgradeButton);
-
-            Button marketButton = createPixelButton("MARKET", "#6a00ff");
-            marketButton.setMaxWidth(Double.MAX_VALUE);
-            marketButton.setOnAction(e -> {
-                parent.openMarket();
-            });
-            infoPane.getChildren().add(marketButton);
-
-            List<VPSOptimization> uninstalledServers = parent.getVpsInventory().getAllVPS();
-            if (!uninstalledServers.isEmpty()) {
-                VBox uninstalledSection = new VBox(10);
-                uninstalledSection.setPadding(new Insets(10, 0, 0, 0));
-                VBox.setVgrow(uninstalledSection, Priority.ALWAYS);
-
-                Label uninstalledLabel = new Label("AVAILABLE SERVERS");
-                uninstalledLabel.setMaxWidth(Double.MAX_VALUE);
-                uninstalledLabel.setAlignment(Pos.CENTER);
-                uninstalledLabel.setStyle("""
-                    -fx-font-family: 'Courier New';
-                    -fx-font-size: 16px;
-                    -fx-font-weight: bold;
-                    -fx-text-fill: #ff00ff;
-                    -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
-                    -fx-padding: 5px;
-                    -fx-background-color: #12071e;
-                    -fx-background-radius: 0px;
-                    -fx-border-color: #ff00ff;
-                    -fx-border-width: 1px;
-                    -fx-border-style: solid;
-                """);
-
-                ScrollPane uninstalledScrollPane = new ScrollPane();
-                uninstalledScrollPane.setStyle("""
-                    -fx-background-color: transparent;
-                    -fx-background: transparent;
-                    -fx-background-insets: 0;
-                    -fx-padding: 0;
-                """);
-                uninstalledScrollPane.setFitToWidth(true);
-                uninstalledScrollPane.setPrefHeight(250);
-                uninstalledScrollPane.setMinHeight(200);
-                VBox.setVgrow(uninstalledScrollPane, Priority.ALWAYS);
-
-                VBox serverList = new VBox(8);
-                serverList.setPadding(new Insets(5));
-
-                for (VPSOptimization server : uninstalledServers) {
-                    String serverId = "";
-                    for (String id : parent.getVpsInventory().getAllVPSIds()) {
-                        if (parent.getVpsInventory().getVPS(id) == server) {
-                            serverId = id;
-                            break;
-                        }
-                    }
-
-                    final String finalServerId = serverId;
-
-                    HBox serverRow = new HBox(5);
-                    serverRow.setAlignment(Pos.CENTER_LEFT);
-
-                    VBox serverInfo = new VBox(2);
-                    serverInfo.setPrefWidth(150);
-                    serverInfo.setStyle("""
-                        -fx-background-color: #2d0052;
-                        -fx-padding: 5px;
-                        -fx-background-radius: 0px;
-                        -fx-border-color: #00ffff;
-                        -fx-border-width: 2px;
-                        -fx-border-style: solid;
-                    """);
-
-                    Label nameLabel = new Label("SERVER " + server.getVCPUs() + "vCPU");
-                    nameLabel.setStyle("""
-                        -fx-text-fill: #ff00ff; 
-                        -fx-font-weight: bold;
-                        -fx-font-family: 'Courier New';
-                    """);
-
-                    Label specsLabel = new Label(server.getRamInGB() + "GB RAM | " + server.getSize().getDisplayName());
-                    specsLabel.setStyle("""
-                        -fx-text-fill: #00ffff;
-                        -fx-font-family: 'Courier New';
-                    """);
-
-                    serverInfo.getChildren().addAll(nameLabel, specsLabel);
-
-                    Button installButton = createPixelButton("INSTALL", "#4CAF50");
-
-                    installButton.setOnMousePressed(e -> {
-                        installButton.setStyle(
-                            "-fx-background-color: #388E3C;" +
-                            "-fx-font-family: 'Courier New';" +
-                            "-fx-font-size: 14px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-padding: 6px 10px;" +
-                            "-fx-background-radius: 0px;" +
-                            "-fx-border-color: white;" +
-                            "-fx-border-width: 2px;" +
-                            "-fx-translate-y: 2px;"
-                        );
-                    });
-
-                    installButton.setOnMouseReleased(e -> {
-                        installButton.setStyle(
-                            "-fx-background-color: #4CAF50;" +
-                            "-fx-font-family: 'Courier New';" +
-                            "-fx-font-size: 14px;" +
-                            "-fx-font-weight: bold;" +
-                            "-fx-text-fill: white;" +
-                            "-fx-padding: 8px 12px;" +
-                            "-fx-background-radius: 0px;" +
-                            "-fx-border-color: white;" +
-                            "-fx-border-width: 2px;" +
-                            "-fx-translate-y: 0px;"
-                        );
-                    });
-
-                    installButton.setOnAction(event -> {
-                        try {
-                            if (parent.installVPSFromInventory(finalServerId)) {
-                                parent.pushNotification("SUCCESS", "Server installed successfully");
-
-                                installButton.setDisable(true);
-                                Timeline successAnimation = new Timeline(
-                                    new KeyFrame(Duration.ZERO,
-                                        new KeyValue(installButton.textFillProperty(), Color.WHITE)),
-                                    new KeyFrame(Duration.millis(200),
-                                        new KeyValue(installButton.textFillProperty(), Color.GREEN))
-                                );
-                                successAnimation.setOnFinished(e -> openRackInfo());
-                                successAnimation.play();
-                            } else {
-                                parent.pushNotification("ERROR", "Not enough slots available or server is incompatible");
-                            }
-                        } catch (Exception e) {
-                            parent.pushNotification("ERROR", "An error occurred: " + e.getMessage());
-                            System.err.println("Error installing VPS: " + e.getMessage());
-                            e.printStackTrace();
-                        }
-                    });
-
-                    serverRow.getChildren().addAll(serverInfo, installButton);
-                    serverList.getChildren().add(serverRow);
-                }
-            }
-
-            Region bottomSpacer = new Region();
-            VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
-            infoPane.getChildren().add(bottomSpacer);
-
-            mainLayout.getChildren().addAll(rackContainerWithSpacer, infoPane);
-            HBox.setHgrow(infoPane, Priority.ALWAYS);
-            mainLayout.setAlignment(Pos.CENTER);
-            contentBox.setCenter(mainLayout);
+            infoPane.getChildren().add(emptyRackMessage);
         }
 
-        rackPane.setTop(topBar);
-        rackPane.setCenter(contentBox);
-        BorderPane.setMargin(contentBox, new Insets(10, 0, 10, 0));
+        Button inventoryButton = createPixelButton("SERVER INVENTORY", "#3498db");
+        inventoryButton.setMaxWidth(Double.MAX_VALUE);
+        inventoryButton.setOnAction(e -> parent.openVPSInventory());
 
-        parent.getGameArea().getChildren().clear();
-        parent.getGameArea().getChildren().add(rackPane);
+        Button marketButton = createPixelButton("MARKET", "#6a00ff");
+        marketButton.setMaxWidth(Double.MAX_VALUE);
+        marketButton.setOnAction(e -> parent.openMarket());
 
-        rackPane.getStylesheets().add(getClass().getResource("/css/rackinfo-pane.css").toExternalForm());
+        infoPane.getChildren().addAll(createStatusPanel(rackIsEmpty), inventoryButton, createUpgradeButton(), marketButton);
+
+        List<VPSOptimization> uninstalledServers = parent.getVpsInventory().getAllVPS();
+        if (!uninstalledServers.isEmpty()) {
+            infoPane.getChildren().add(createAvailableServersSection(uninstalledServers));
+        }
+
+        Region bottomSpacer = new Region();
+        VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
+        infoPane.getChildren().add(bottomSpacer);
+        return infoPane;
+    }
+
+    private VBox createStatusPanel(boolean rackIsEmpty) {
+        VBox statusPanel = new VBox(8);
+        statusPanel.setMaxWidth(Double.MAX_VALUE);
+        statusPanel.setStyle("""
+            -fx-background-color: #1a0033;
+            -fx-padding: 10px;
+            -fx-background-radius: 0px;
+            -fx-border-color: #00ffff;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
+            """);
+
+        GridPane statusGrid = new GridPane();
+        statusGrid.setMaxWidth(Double.MAX_VALUE);
+        statusGrid.setHgap(10);
+        statusGrid.setVgap(8);
+
+        int usedSlots = parent.getRack().getOccupiedSlotUnits();
+
+        networkValueLabel = createStatusValue(totalNetworkSpeed() + " Gbps");
+
+        statusGrid.add(createStatusLabel("SERVERS:"), 0, 0);
+        statusGrid.add(createStatusValue(Integer.toString(parent.getVpsList().size())), 1, 0);
+        statusGrid.add(createStatusLabel("SLOTS:"), 0, 1);
+        statusGrid.add(createStatusValue(usedSlots + "/" + parent.getRack().getMaxSlotUnits() +
+                " (" + parent.getRack().getAvailableSlotUnits() + " AVAILABLE)"), 1, 1);
+        statusGrid.add(createStatusLabel("NETWORK:"), 0, 2);
+        statusGrid.add(networkValueLabel, 1, 2);
+        statusGrid.add(createStatusLabel("ACTIVE USERS:"), 0, 3);
+        statusGrid.add(createStatusValue(rackIsEmpty ? "0" : "10"), 1, 3);
+
+        ColumnConstraints column1 = new ColumnConstraints();
+        column1.setHgrow(Priority.NEVER);
+        ColumnConstraints column2 = new ColumnConstraints();
+        column2.setHgrow(Priority.ALWAYS);
+        statusGrid.getColumnConstraints().addAll(column1, column2);
+
+        statusPanel.getChildren().add(statusGrid);
+        return statusPanel;
+    }
+
+    private Label createStatusLabel(String text) {
+        Label label = new Label(text);
+        label.setStyle(STATUS_TEXT_STYLE + " -fx-font-weight: bold;");
+        return label;
+    }
+
+    private Label createStatusValue(String text) {
+        Label label = new Label(text);
+        label.setStyle(STATUS_TEXT_STYLE);
+        return label;
+    }
+
+    private int totalNetworkSpeed() {
+        int baseNetworkSpeed = 10;
+        return baseNetworkSpeed + ResourceManager.getInstance().getSkillPointsSystem().getRackNetworkSpeedBonus();
+    }
+
+    private Button createUpgradeButton() {
+        Button upgradeButton = createPixelButton("UPGRADE RACK ($" + calculateUpgradeCost() + ")", "#4CAF50");
+        upgradeButton.setMaxWidth(Double.MAX_VALUE);
+        upgradeButton.setOnAction(e -> {
+            Rack currentRack = parent.getRack();
+            int currentUnlockedSlots = currentRack.getUnlockedSlotUnits();
+            int maxRackSlots = currentRack.getMaxSlotUnits();
+
+            if (currentUnlockedSlots >= maxRackSlots) {
+                parent.pushNotification("CANNOT UPGRADE", "This rack already has maximum slots unlocked (" + maxRackSlots + " slots)");
+                return;
+            }
+
+            int currentUpgradeCost = calculateUpgradeCost();
+            if (parent.getCompany().getMoney() >= currentUpgradeCost) {
+                parent.getCompany().setMoney(parent.getCompany().getMoney() - currentUpgradeCost);
+
+                if (parent.getRack().upgrade()) {
+                    Timeline pulseAnimation = new Timeline();
+                    pulseAnimation.getKeyFrames().addAll(
+                        new KeyFrame(Duration.ZERO,
+                            new KeyValue(upgradeButton.scaleXProperty(), 1.0),
+                            new KeyValue(upgradeButton.scaleYProperty(), 1.0)
+                        ),
+                        new KeyFrame(Duration.millis(200),
+                            new KeyValue(upgradeButton.scaleXProperty(), 1.05),
+                            new KeyValue(upgradeButton.scaleYProperty(), 1.05)
+                        ),
+                        new KeyFrame(Duration.millis(400),
+                            new KeyValue(upgradeButton.scaleXProperty(), 1.0),
+                            new KeyValue(upgradeButton.scaleYProperty(), 1.0)
+                        )
+                    );
+
+                    pulseAnimation.setOnFinished(event -> {
+                        parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " +
+                                              parent.getRack().getUnlockedSlotUnits() + " SLOTS");
+                        openRackInfo();
+                    });
+
+                    pulseAnimation.play();
+                }
+            } else {
+                parent.pushNotification("UPGRADE FAILED", "INSUFFICIENT FUNDS");
+            }
+        });
+        return upgradeButton;
+    }
+
+    private VBox createAvailableServersSection(List<VPSOptimization> uninstalledServers) {
+        VBox uninstalledSection = new VBox(10);
+        uninstalledSection.setPadding(new Insets(10, 0, 0, 0));
+        VBox.setVgrow(uninstalledSection, Priority.ALWAYS);
+
+        Label uninstalledLabel = new Label("AVAILABLE SERVERS");
+        uninstalledLabel.setMaxWidth(Double.MAX_VALUE);
+        uninstalledLabel.setAlignment(Pos.CENTER);
+        uninstalledLabel.setStyle("""
+            -fx-font-family: 'Courier New';
+            -fx-font-size: 16px;
+            -fx-font-weight: bold;
+            -fx-text-fill: #ff00ff;
+            -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
+            -fx-padding: 5px;
+            -fx-background-color: #12071e;
+            -fx-background-radius: 0px;
+            -fx-border-color: #ff00ff;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
+        """);
+
+        ScrollPane uninstalledScrollPane = new ScrollPane();
+        uninstalledScrollPane.setStyle("""
+            -fx-background-color: transparent;
+            -fx-background: transparent;
+            -fx-background-insets: 0;
+            -fx-padding: 0;
+        """);
+        uninstalledScrollPane.setFitToWidth(true);
+        uninstalledScrollPane.setPrefHeight(200);
+        uninstalledScrollPane.setMinHeight(200);
+        VBox.setVgrow(uninstalledScrollPane, Priority.ALWAYS);
+
+        VBox serverList = new VBox(8);
+        serverList.setPadding(new Insets(5));
+
+        for (VPSOptimization server : uninstalledServers) {
+            serverList.getChildren().add(createServerRow(server));
+        }
+
+        uninstalledScrollPane.setContent(serverList);
+        uninstalledSection.getChildren().addAll(uninstalledLabel, uninstalledScrollPane);
+        return uninstalledSection;
+    }
+
+    private HBox createServerRow(VPSOptimization server) {
+        String serverId = "";
+        for (String id : parent.getVpsInventory().getAllVPSIds()) {
+            if (parent.getVpsInventory().getVPS(id) == server) {
+                serverId = id;
+                break;
+            }
+        }
+
+        final String finalServerId = serverId;
+
+        HBox serverRow = new HBox(5);
+        serverRow.setAlignment(Pos.CENTER_LEFT);
+
+        VBox serverInfo = new VBox(2);
+        serverInfo.setPrefWidth(150);
+        serverInfo.setStyle("""
+            -fx-background-color: #2d0052;
+            -fx-padding: 5px;
+            -fx-background-radius: 0px;
+            -fx-border-color: #00ffff;
+            -fx-border-width: 2px;
+            -fx-border-style: solid;
+        """);
+
+        Label nameLabel = new Label("SERVER " + server.getVCPUs() + "vCPU");
+        nameLabel.setStyle("""
+            -fx-text-fill: #ff00ff;
+            -fx-font-weight: bold;
+            -fx-font-family: 'Courier New';
+        """);
+
+        Label specsLabel = new Label(server.getRamInGB() + "GB RAM | " + server.getSize().getDisplayName());
+        specsLabel.setStyle("""
+            -fx-text-fill: #00ffff;
+            -fx-font-family: 'Courier New';
+        """);
+
+        serverInfo.getChildren().addAll(nameLabel, specsLabel);
+
+        Button installButton = createPixelButton("INSTALL", "#4CAF50");
+
+        installButton.setOnMousePressed(e -> installButton.setStyle(
+            "-fx-background-color: #388E3C;" +
+            "-fx-font-family: 'Courier New';" +
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: bold;" +
+            "-fx-text-fill: white;" +
+            "-fx-padding: 6px 10px;" +
+            "-fx-background-radius: 0px;" +
+            "-fx-border-color: white;" +
+            "-fx-border-width: 2px;" +
+            "-fx-translate-y: 2px;"
+        ));
+
+        installButton.setOnMouseReleased(e -> installButton.setStyle(
+            "-fx-background-color: #4CAF50;" +
+            "-fx-font-family: 'Courier New';" +
+            "-fx-font-size: 14px;" +
+            "-fx-font-weight: bold;" +
+            "-fx-text-fill: white;" +
+            "-fx-padding: 8px 12px;" +
+            "-fx-background-radius: 0px;" +
+            "-fx-border-color: white;" +
+            "-fx-border-width: 2px;" +
+            "-fx-translate-y: 0px;"
+        ));
+
+        installButton.setOnAction(event -> {
+            try {
+                if (parent.installVPSFromInventory(finalServerId)) {
+                    parent.pushNotification("SUCCESS", "Server installed successfully");
+                    installButton.setDisable(true);
+                    Timeline successAnimation = new Timeline(
+                        new KeyFrame(Duration.ZERO,
+                            new KeyValue(installButton.textFillProperty(), Color.WHITE)),
+                        new KeyFrame(Duration.millis(200),
+                            new KeyValue(installButton.textFillProperty(), Color.GREEN))
+                    );
+                    successAnimation.setOnFinished(e -> openRackInfo());
+                    successAnimation.play();
+                } else {
+                    parent.pushNotification("ERROR", "Not enough slots available or server is incompatible");
+                }
+            } catch (Exception e) {
+                parent.pushNotification("ERROR", "An error occurred: " + e.getMessage());
+                System.err.println("Error installing VPS: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+
+        serverRow.getChildren().addAll(serverInfo, installButton);
+        return serverRow;
     }
 
     private Button createPixelButton(String text, String color) {
@@ -1564,16 +1138,8 @@ public class RackManagementUI implements RackUIUpdateListener {
     }
 
     private void updateNetworkLabels() {
-        int baseNetworkSpeed = 10;
-        int networkSpeedBonus = ResourceManager.getInstance().getSkillPointsSystem().getRackNetworkSpeedBonus();
-        int totalNetworkSpeed = baseNetworkSpeed + networkSpeedBonus;
-
-        if (networkValueEmpty != null) {
-            networkValueEmpty.setText(totalNetworkSpeed + " Gbps");
-        }
-
-        if (networkValuePopulated != null) {
-            networkValuePopulated.setText(totalNetworkSpeed + " Gbps");
+        if (networkValueLabel != null) {
+            networkValueLabel.setText(totalNetworkSpeed() + " Gbps");
         }
     }
 
