@@ -15,7 +15,6 @@ public class MoneyController {
         this.moneyModel = moneyModel;
         this.resourceManager = ResourceManager.getInstance();
 
-        
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> update()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
@@ -27,5 +26,3 @@ public class MoneyController {
         moneyModel.setRating(company.getRating());
     }
 }
-
-

@@ -20,11 +20,10 @@ public class DateView extends VBox {
         this.model = model;
 
         setAlignment(Pos.BOTTOM_CENTER);
-        setSpacing(15);  
+        setSpacing(15);
         setPickOnBounds(false);
         setFocused(false);
 
-        
         setStyle("-fx-border-color: #00FFFF; " +
                 "-fx-border-width: 1px; " +
                 "-fx-border-radius: 5px;");
@@ -38,7 +37,6 @@ public class DateView extends VBox {
         dateBox.setAlignment(Pos.BOTTOM_CENTER);
         dateBox.setSpacing(15);
 
-        
         Text dateLabel = new Text("Date: ");
         Text dateValue = new Text();
 
@@ -49,7 +47,6 @@ public class DateView extends VBox {
         dateLabel.setFont(font);
         dateValue.setFont(font);
 
-        
         DropShadow glow = new DropShadow();
         glow.setColor(Color.web("#FFD700"));
         glow.setRadius(10);
@@ -57,7 +54,6 @@ public class DateView extends VBox {
         dateLabel.setEffect(glow);
         dateValue.setEffect(glow);
 
-        
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         dateValue.textProperty().bind(new StringBinding() {
             {
@@ -70,18 +66,16 @@ public class DateView extends VBox {
             }
         });
 
-        
         Text timeLabel = new Text("Next day in: ");
         Text timeValue = new Text();
 
-        Color cyberBlue = Color.web("#00FFFF");  
+        Color cyberBlue = Color.web("#00FFFF");
         timeLabel.setFill(cyberBlue);
         timeValue.setFill(cyberBlue);
 
         timeLabel.setFont(font);
         timeValue.setFont(font);
 
-        
         DropShadow blueGlow = new DropShadow();
         blueGlow.setColor(cyberBlue);
         blueGlow.setRadius(10);
@@ -89,12 +83,9 @@ public class DateView extends VBox {
         timeLabel.setEffect(blueGlow);
         timeValue.setEffect(blueGlow);
 
-        
         timeValue.textProperty().bind(model.timeRemainingProperty());
 
-        
         dateBox.getChildren().addAll(dateLabel, dateValue, timeLabel, timeValue);
         this.getChildren().add(dateBox);
     }
 }
-

@@ -7,4 +7,3 @@ public interface Navigator {
     void showLoadGame();
     void showInGameSettings();
 }
-

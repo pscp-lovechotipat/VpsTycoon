@@ -15,32 +15,27 @@ public class GameTimeController {
     }
 
     public synchronized void startTime() {
-        
         if (timeThread != null) {
             System.out.println("สถานะ timeThread ก่อนเริ่ม: isAlive=" + timeThread.isAlive() + ", state=" + timeThread.getState());
         } else {
             System.out.println("สถานะ timeThread ก่อนเริ่ม: null (ยังไม่เคยสร้าง)");
         }
-        
+
         System.out.println("สถานะ timeManager: running=" + timeManager.isRunning());
-        
-        
+
         if (timeThread != null && timeThread.isAlive()) {
             System.out.println("timeThread กำลังทำงานอยู่แล้ว ไม่ต้องเริ่มใหม่");
-            
-            
+
             if (!timeManager.isRunning()) {
                 System.out.println("พบว่า timeManager.running=false แต่ thread ยังทำงานอยู่ กำลังแก้ไข...");
-                
+
                 stopTime();
                 timeThread = null;
-                
             } else {
-                return; 
+                return;
             }
         }
-        
-        
+
         timeThread = new Thread(timeManager::start);
         timeThread.setDaemon(true);
         timeThread.setName("GameTimeThread");
@@ -53,7 +48,6 @@ public class GameTimeController {
         timeManager.stop();
         if (timeThread != null) {
             try {
-                
                 timeThread.interrupt();
 
                 timeThread.join(1000);
@@ -73,32 +67,21 @@ public class GameTimeController {
         }
     }
 
-
-
-
     public GameTimeManager getGameTimeManager() {
         return timeManager;
     }
 
-    
-    
     public void resetTime(LocalDateTime startTime) {
-        
         stopTime();
-        
-        
+
         if (startTime == null) {
             startTime = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
         }
-        
-        
+
         timeManager.resetTime(startTime);
-        
-        
+
         startTime();
-        
+
         System.out.println("รีเซ็ตและเริ่มเวลาเกมใหม่เป็น: " + startTime);
     }
-    
 }
-

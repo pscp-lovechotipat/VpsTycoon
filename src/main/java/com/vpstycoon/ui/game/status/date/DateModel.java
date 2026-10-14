@@ -16,7 +16,7 @@ public class DateModel {
     private final GameplayContentPane parent;
     private final ObjectProperty<LocalDateTime> date = new SimpleObjectProperty<>();
     private final StringProperty timeRemaining = new SimpleStringProperty();
-    private int lastMonth = -1; 
+    private int lastMonth = -1;
     private AudioManager audioManager;
 
     public DateModel(LocalDateTime initialDate, GameplayContentPane parent) {
@@ -34,14 +34,13 @@ public class DateModel {
     public void setDate(LocalDateTime date) {
         int currentMonth = date.getMonthValue();
 
-        
         if  (currentMonth != lastMonth && lastMonth != -1)  {
             audioManager.playSoundEffect("month.mp3");
             System.out.println("Next Month");
             Platform.runLater(() ->
                     parent.pushCenterNotification("NEW MONTH!!", "Welcome to new month!", "/images/others/meme.gif")
             );
-            lastMonth = currentMonth; 
+            lastMonth = currentMonth;
         }
 
         this.date.set(date);
@@ -57,18 +56,15 @@ public class DateModel {
     }
 
     private void updateTimeRemaining() {
-        
         LocalDateTime currentDate = date.get();
         Duration durationSinceMidnight = Duration.between(currentDate.withHour(0).withMinute(0).withSecond(0).withNano(0), currentDate);
-        long secondsSinceMidnight = durationSinceMidnight.getSeconds(); 
-        long totalSecondsInGameDay = 86400; 
+        long secondsSinceMidnight = durationSinceMidnight.getSeconds();
+        long totalSecondsInGameDay = 86400;
         long secondsRemainingInGame = totalSecondsInGameDay - secondsSinceMidnight;
 
-        
-        double scaleFactor = 30.0 / totalSecondsInGameDay; 
+        double scaleFactor = 30.0 / totalSecondsInGameDay;
         long secondsRemainingReal = (long) (secondsRemainingInGame * scaleFactor);
 
         timeRemaining.set(secondsRemainingReal + "s");
     }
 }
-

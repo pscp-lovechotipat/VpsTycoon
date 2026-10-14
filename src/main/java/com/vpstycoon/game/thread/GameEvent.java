@@ -26,11 +26,9 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 public class GameEvent implements Runnable {
-
     private static final Logger LOGGER = Logger.getLogger(GameEvent.class.getName());
-    
+
     // Timing constants for tasks
 //     private static final int INITIAL_TASK_DELAY = 5 * 1000; // s seconds initial delay before tasks start
 //     private static final int MIN_TASK_INTERVAL = 5 * 1000; // Minimum s seconds between tasks
@@ -46,101 +44,78 @@ public class GameEvent implements Runnable {
     private final GameplayContentPane gameplayContentPane;
     private final ResourceManager resourceManager;
     private final Random random = new Random();
-    
 
     private volatile boolean isRunning;
     private int completedTaskCount = 0;
     private int failedTaskCount = 0;
     private long nextTaskTime = 0;
     private long lastDebugTime = 0;
-    
 
     private final AtomicBoolean taskActive = new AtomicBoolean(false);
-    
 
     private boolean debugMode = true;
-    
 
     private StackPane taskOverlay;
-    
 
     private StackPane debugOverlay;
     private Label debugLabel;
-    
 
     @SuppressWarnings("unchecked")
     private final Supplier<GameTask>[] taskFactories = new Supplier[] {
-
         () -> new WireTask(random.nextInt(3) + 3), // Makufff check leaw jaa
-
 
         () -> new DataDecryptionTask(random.nextInt(3) + 3), // Makufff check leaw jaa
 
-
         () -> new FirewallDefenseTask(), // Makufff check leaw jaa
-
 
         () -> new DataSortingTask(), // Makufff check leaw jaa
 
-
         () -> new PasswordCrackingTask(), // Makufff check leaw jaa
-
 
         () -> new NetworkRoutingTask(), // Makufff check leaw jaa
 
-
         () -> new ServerCoolingTask(), // Makufff check leaw jaa
-
 
         () -> new ResourceOptimizationTask(), // Makufff check leaw jaa
 
-
         () -> new CalibrationTask(), // Makufff check leaw jaa
 
-
         () -> new FileRecoveryTask(), // Makufff check leaw jaa
-
 
         () -> new HackingTask() // Makufff check leaw jaa
     };
 
-
     public GameEvent(GameplayContentPane gameplayContentPane, GameState gameState) {
         try {
             System.out.println("[GAMEEVENT] Initializing GameEvent system");
-            
+
             if (gameplayContentPane == null) {
                 throw new IllegalArgumentException("gameplayContentPane cannot be null");
             }
-            
+
             if (gameState == null) {
                 throw new IllegalArgumentException("gameState cannot be null");
             }
-            
+
             this.gameplayContentPane = gameplayContentPane;
             this.isRunning = false;
             this.resourceManager = ResourceManager.getInstance();
-            
+
             if (this.resourceManager == null) {
                 System.err.println("[GAMEEVENT] Warning: ResourceManager is null");
             }
-            
 
             this.debugLabel = new Label("Initializing task system...");
             this.debugLabel.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7); -fx-text-fill: white; -fx-padding: 5;");
-            
 
             this.debugOverlay = new StackPane(debugLabel);
             this.debugOverlay.setAlignment(Pos.TOP_RIGHT);
             this.debugOverlay.setPadding(new Insets(10));
             this.debugOverlay.setMouseTransparent(true);
-            
 
             initializeTaskOverlay();
-            
 
             this.debugMode = gameplayContentPane.isShowDebug();
-            
 
             if (debugMode) {
                 LOGGER.setLevel(Level.INFO);
@@ -148,7 +123,7 @@ public class GameEvent implements Runnable {
             } else {
                 LOGGER.setLevel(Level.WARNING);
             }
-            
+
             System.out.println("[GAMEEVENT] GameEvent system successfully initialized");
         } catch (Exception e) {
             System.err.println("[GAMEEVENT] Error initializing GameEvent: " + e.getMessage());
@@ -156,12 +131,11 @@ public class GameEvent implements Runnable {
             throw e;
         }
     }
-    
 
     private void initializeTaskOverlay() {
         try {
             System.out.println("[GAMEEVENT] Initializing task overlay");
-            
+
             taskOverlay = new StackPane();
             taskOverlay.setVisible(false);
             taskOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85);");
@@ -169,52 +143,43 @@ public class GameEvent implements Runnable {
             taskOverlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
             taskOverlay.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
             taskOverlay.setMinSize(Region.USE_COMPUTED_SIZE, Region.USE_COMPUTED_SIZE);
-            
 
             addGlitchEffect(taskOverlay);
-            
 
             Platform.runLater(() -> {
                 try {
-
                     if (gameplayContentPane == null) {
                         System.err.println("[GAMEEVENT] Error: gameplayContentPane is null");
                         return;
                     }
-                    
+
                     StackPane rootStack = gameplayContentPane.getRootStack();
                     if (rootStack == null) {
                         System.err.println("[GAMEEVENT] Error: rootStack is null");
                         return;
                     }
-                    
 
                     if (rootStack.getChildren().contains(taskOverlay)) {
                         rootStack.getChildren().remove(taskOverlay);
                     }
-                    
 
                     rootStack.getChildren().add(taskOverlay);
-                    
 
                     taskOverlay.prefWidthProperty().bind(rootStack.widthProperty());
                     taskOverlay.prefHeightProperty().bind(rootStack.heightProperty());
-                    
 
                     StackPane.setAlignment(taskOverlay, Pos.CENTER);
-                    
 
                     taskOverlay.setClip(new Rectangle(taskOverlay.getWidth(), taskOverlay.getHeight()));
-                    
 
                     taskOverlay.layoutBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
                         Rectangle clip = new Rectangle(
-                            newBounds.getWidth(), 
+                            newBounds.getWidth(),
                             newBounds.getHeight()
                         );
                         taskOverlay.setClip(clip);
                     });
-                    
+
                     System.out.println("[GAMEEVENT] Task overlay successfully initialized and added to UI");
                 } catch (Exception e) {
                     System.err.println("[GAMEEVENT] Error initializing task overlay: " + e.getMessage());
@@ -226,28 +191,24 @@ public class GameEvent implements Runnable {
             e.printStackTrace();
         }
     }
-    
 
     private void addGlitchEffect(Pane pane) {
         Timeline glitchEffect = new Timeline(
             new KeyFrame(Duration.seconds(2), event -> {
                 if (random.nextDouble() < 0.15 && taskActive.get()) {
-
                     double width = random.nextDouble() * pane.getWidth() * 0.3;
                     double height = random.nextDouble() * 15 + 3;
                     double x = random.nextDouble() * (pane.getWidth() - width);
                     double y = random.nextDouble() * (pane.getHeight() - height);
-                    
 
                     Color glitchColor = CyberpunkEffects.getRandomNeonColor();
-                    
+
                     Rectangle glitch = new Rectangle(x, y, width, height);
                     glitch.setFill(glitchColor.deriveColor(1, 1, 1, 0.3));
                     glitch.setMouseTransparent(true);
-                    
+
                     Platform.runLater(() -> {
                         pane.getChildren().add(glitch);
-                        
 
                         FadeTransition fade = new FadeTransition(Duration.millis(200), glitch);
                         fade.setFromValue(0.7);
@@ -261,7 +222,6 @@ public class GameEvent implements Runnable {
         glitchEffect.setCycleCount(Timeline.INDEFINITE);
         glitchEffect.play();
     }
-    
 
     private String formatTime(long timeMillis) {
         long seconds = (timeMillis / 1000) % 60;
@@ -272,35 +232,29 @@ public class GameEvent implements Runnable {
     @Override
     public void run() {
         isRunning = true;
-        
-        try {
 
+        try {
             nextTaskTime = System.currentTimeMillis() + INITIAL_TASK_DELAY;
             lastDebugTime = System.currentTimeMillis();
-            
 
             LOGGER.info("Task system started. First task in " + formatTime(INITIAL_TASK_DELAY));
             System.out.println("[GAMEEVENT] Task system started. First task in " + formatTime(INITIAL_TASK_DELAY));
-            
 
             updateDebugLabel();
 
             while (isRunning) {
                 long currentTime = System.currentTimeMillis();
-                
 
                 if (debugMode && (currentTime - lastDebugTime) >= DEBUG_INTERVAL) {
                     lastDebugTime = currentTime;
                     updateDebugLabel();
                 }
-                
 
                 if (currentTime >= nextTaskTime && !taskActive.get()) {
                     triggerRandomTask();
 
                     updateDebugLabel();
                 }
-                
 
                 Thread.sleep(500);
             }
@@ -310,56 +264,44 @@ public class GameEvent implements Runnable {
             Thread.currentThread().interrupt();
         }
     }
-    
 
     private void updateDebugLabel() {
         if (!debugMode) return;
-        
+
         long timeUntil = getTimeUntilNextTask();
         String timeFormatted = formatTime(timeUntil);
         String status = taskActive.get() ? "TASK ACTIVE" : "NEXT TASK: " + timeFormatted;
-        
-        Platform.runLater(() -> {
 
-            debugLabel.setText(String.format("%s | COMPLETED: %d | FAILED: %d", 
+        Platform.runLater(() -> {
+            debugLabel.setText(String.format("%s | COMPLETED: %d | FAILED: %d",
                                         status, completedTaskCount, failedTaskCount));
-            
 
             if (!debugOverlay.getChildren().contains(debugLabel)) {
                 debugOverlay.getChildren().setAll(debugLabel);
             }
-            
 
             debugOverlay.setVisible(debugMode);
         });
-        
 
-        System.out.println("[GAMEEVENT] " + status + " | " + 
-                          "Completed: " + completedTaskCount + " | " + 
+        System.out.println("[GAMEEVENT] " + status + " | " +
+                          "Completed: " + completedTaskCount + " | " +
                           "Failed: " + failedTaskCount);
     }
-    
-
-    
 
     private void showTaskNotification(String title, String message, String imagePath, Runnable startCallback, Runnable abortCallback) {
-
         if (resourceManager == null) {
             LOGGER.warning("Cannot show task notification: ResourceManager is null");
             System.out.println("[GAMEEVENT] Cannot show task notification: ResourceManager is null");
             return;
         }
-        
 
         CenterNotificationView notificationView = resourceManager.getCenterNotificationView();
-        
 
         if (notificationView == null) {
             LOGGER.warning("Cannot show task notification: CenterNotificationView is null");
             System.out.println("[GAMEEVENT] Cannot show task notification: CenterNotificationView is null");
             return;
         }
-        
 
         notificationView.createAndShowTaskNotification(
             title,
@@ -369,18 +311,15 @@ public class GameEvent implements Runnable {
             abortCallback != null ? abortCallback : () -> {}
         );
     }
-    
 
     private void handleTaskAbort() {
         try {
             LOGGER.info("Task aborted from notification.");
             System.out.println("[GAMEEVENT] Task aborted from notification.");
-            
 
             if (resourceManager != null && resourceManager.getAudioManager() != null) {
                 resourceManager.getAudioManager().playSoundEffect("failure.mp3");
             }
-            
 
             if (resourceManager != null) {
                 resourceManager.pushCenterNotificationAutoClose(
@@ -390,74 +329,62 @@ public class GameEvent implements Runnable {
                     3000
                 );
             }
-            
 
             scheduleNextTask();
-            
 
             updateDebugLabel();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error handling task abort", e);
             System.out.println("[GAMEEVENT] Error handling task abort: " + e.getMessage());
-            
 
             if (taskActive != null) {
                 taskActive.set(false);
             }
         }
     }
-    
 
     private void triggerRandomTask() {
-
         if (taskActive.get()) {
             LOGGER.info("Cannot trigger new task. A task is already active.");
             System.out.println("[GAMEEVENT] Cannot trigger new task. A task is already active.");
             return;
         }
-        
 
         if (taskFactories == null || taskFactories.length == 0) {
             LOGGER.warning("Cannot trigger task: No task factories available");
             System.out.println("[GAMEEVENT] Cannot trigger task: No task factories available");
             return;
         }
-        
 
         taskActive.set(true);
-        
 
         int taskIndex = random.nextInt(taskFactories.length);
         GameTask task = taskFactories[taskIndex].get();
-        
+
         if (task == null) {
             LOGGER.warning("Failed to create task: Task factory returned null");
             System.out.println("[GAMEEVENT] Failed to create task: Task factory returned null");
             taskActive.set(false);
             return;
         }
-        
-        LOGGER.info("Triggering task: " + task.getTaskName() + 
-                  ", difficulty: " + task.getDifficultyLevel() + 
-                  ", reward: $" + task.getRewardAmount() + 
+
+        LOGGER.info("Triggering task: " + task.getTaskName() +
+                  ", difficulty: " + task.getDifficultyLevel() +
+                  ", reward: $" + task.getRewardAmount() +
                   ", time limit: " + task.getTimeLimit() + "s");
-        
-        System.out.println("[GAMEEVENT] Triggering task: " + task.getTaskName() + 
-                          ", difficulty: " + task.getDifficultyLevel() + 
-                          ", reward: $" + task.getRewardAmount() + 
+
+        System.out.println("[GAMEEVENT] Triggering task: " + task.getTaskName() +
+                          ", difficulty: " + task.getDifficultyLevel() +
+                          ", reward: $" + task.getRewardAmount() +
                           ", time limit: " + task.getTimeLimit() + "s");
-        
 
         final GameTask finalTask = task;
-        
+
         Platform.runLater(() -> {
             try {
-
                 if (resourceManager != null && resourceManager.getAudioManager() != null) {
-
                     resourceManager.getAudioManager().playSoundEffect("task-alert.mp3");
                 }
-                
 
                 showTaskNotification(
                     "INCOMING TASK: " + finalTask.getTaskName(),
@@ -473,57 +400,44 @@ public class GameEvent implements Runnable {
             }
         });
     }
-    
 
     private void showTask(GameTask task) {
         try {
-
             LOGGER.info("Attempting to show task UI: " + task.getTaskName());
             System.out.println("[GAMEEVENT] Attempting to show task UI: " + task.getTaskName());
-            
 
             Platform.runLater(() -> {
                 taskOverlay.getChildren().clear();
-                
 
                 task.setTaskContainer(taskOverlay);
-                
 
                 taskOverlay.setOpacity(0);
                 taskOverlay.setVisible(true);
-                
 
                 if (gameplayContentPane.getRootStack().getChildren().contains(taskOverlay)) {
                     gameplayContentPane.getRootStack().getChildren().remove(taskOverlay);
                 }
                 gameplayContentPane.getRootStack().getChildren().add(taskOverlay);
-                
 
                 task.showTask(() -> {
-
                     FadeTransition fadeOut = new FadeTransition(Duration.millis(250), taskOverlay);
                     fadeOut.setFromValue(1);
                     fadeOut.setToValue(0);
                     fadeOut.setOnFinished(e -> {
-
                         taskOverlay.setVisible(false);
                         taskOverlay.getChildren().clear();
-                        
 
                         processTaskCompletion(task);
-                        
 
                         taskActive.set(false);
                     });
                     fadeOut.play();
                 });
-                
 
                 FadeTransition fadeIn = new FadeTransition(Duration.millis(250), taskOverlay);
                 fadeIn.setFromValue(0);
                 fadeIn.setToValue(1);
                 fadeIn.play();
-                
 
                 LOGGER.info("Task UI displayed successfully: " + task.getTaskName());
                 System.out.println("[GAMEEVENT] Task UI displayed successfully: " + task.getTaskName());
@@ -532,30 +446,23 @@ public class GameEvent implements Runnable {
             LOGGER.log(Level.SEVERE, "Error showing task UI", e);
             System.out.println("[GAMEEVENT] Error showing task UI: " + e.getMessage());
             e.printStackTrace();
-            
 
             taskActive.set(false);
         }
     }
-    
 
     private void processTaskCompletion(GameTask task) {
-
         if (task.isCompleted()) {
             LOGGER.info("Task completed: " + task.getTaskName());
             System.out.println("[GAMEEVENT] Task completed: " + task.getTaskName());
-            
 
             completedTaskCount++;
-            
 
             resourceManager.getAudioManager().playSoundEffect("reward.mp3");
-            
 
             GameState gameState = resourceManager.getCurrentState();
             Company company = gameState.getCompany();
             company.setMoney(company.getMoney() + task.getRewardAmount());
-            
 
             resourceManager.pushCenterNotificationAutoClose(
                 "Task Completed: " + task.getTaskName(),
@@ -563,16 +470,13 @@ public class GameEvent implements Runnable {
                 "/images/notification/success.png",
                 5000
             );
-            
 
             if (completedTaskCount % 5 == 0) {
-
                 long bonus = 10000L * (completedTaskCount / 5);
                 company.setMoney(company.getMoney() + bonus);
-                
+
                 LOGGER.info("Milestone bonus: $" + bonus + " for " + completedTaskCount + " completed tasks");
                 System.out.println("[GAMEEVENT] Milestone bonus: $" + bonus + " for " + completedTaskCount + " completed tasks");
-                
 
                 Thread bonusThread = new Thread(() -> {
                     try {
@@ -595,23 +499,19 @@ public class GameEvent implements Runnable {
         } else if (task.isFailed()) {
             LOGGER.info("Task failed: " + task.getTaskName());
             System.out.println("[GAMEEVENT] Task failed: " + task.getTaskName());
-            
 
             failedTaskCount++;
-            
 
             resourceManager.getAudioManager().playSoundEffect("failure.mp3");
-            
 
             if (task.getPenaltyRating() > 0) {
                 GameState gameState = resourceManager.getCurrentState();
                 Company company = gameState.getCompany();
                 company.reduceRating(task.getPenaltyRating());
-                
+
                 LOGGER.info("Applied penalty: -" + task.getPenaltyRating() + " rating");
                 System.out.println("[GAMEEVENT] Applied penalty: -" + task.getPenaltyRating() + " rating");
             }
-            
 
             resourceManager.pushCenterNotificationAutoClose(
                 "Task Failed: " + task.getTaskName(),
@@ -620,33 +520,26 @@ public class GameEvent implements Runnable {
                 5000
             );
         }
-        
 
         scheduleNextTask();
-        
 
         updateDebugLabel();
     }
-    
 
     private void scheduleNextTask() {
         try {
-
             int interval;
             if (MAX_TASK_INTERVAL > MIN_TASK_INTERVAL) {
                 interval = MIN_TASK_INTERVAL + random.nextInt(MAX_TASK_INTERVAL - MIN_TASK_INTERVAL);
             } else {
-
                 interval = MIN_TASK_INTERVAL;
             }
             nextTaskTime = System.currentTimeMillis() + interval;
-            
+
             LOGGER.info("Task completed/failed. Next task in " + formatTime(interval));
             System.out.println("[GAMEEVENT] Task completed/failed. Next task in " + formatTime(interval));
-            
 
             taskActive.set(false);
-            
 
             updateDebugLabel();
         } catch (Exception e) {
@@ -656,11 +549,6 @@ public class GameEvent implements Runnable {
             taskActive.set(false);
         }
     }
-    
-
-    
-
-
 
     public void stopEvent() {
         System.out.println("[GAMEEVENT] Stopping game event system");
@@ -683,23 +571,8 @@ public class GameEvent implements Runnable {
     public boolean isRunning() {
         return isRunning;
     }
-    
-
-    
-
-    
 
     public long getTimeUntilNextTask() {
         return Math.max(0, nextTaskTime - System.currentTimeMillis());
     }
-    
-
-    
-
-    
-
-    
-
-    
-
 }

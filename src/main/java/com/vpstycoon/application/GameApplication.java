@@ -39,7 +39,6 @@ import javafx.util.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 public class GameApplication extends Application implements Navigator, ResourceManager.ResourceLoadingListener {
     private Stage primaryStage;
     private GameConfig gameConfig;
@@ -56,13 +55,11 @@ public class GameApplication extends Application implements Navigator, ResourceM
     @Override
     public void start(Stage primaryStage) {
         System.out.println("Debug: Starting GameApplication");
-        
 
         this.primaryStage = primaryStage;
         this.gameConfig = createGameConfig();
         this.screenManager = new JavaFXScreenManager(gameConfig, primaryStage);
 
-        
         try {
             System.out.println("กำลังโหลดไอคอนแอพพลิเคชัน...");
             Image appIcon = new Image(getClass().getResourceAsStream("/images/logo/GameIcon.PNG"));
@@ -79,43 +76,32 @@ public class GameApplication extends Application implements Navigator, ResourceM
         }
 
         initializeLoadingScreen();
-        
 
         Thread initThread = new Thread(() -> {
             try {
-
                 ResourceManager resourceManager = ResourceManager.getInstance();
                 resourceManager.setResourceLoadingListener(GameApplication.this);
-                
 
                 initResourceLoadingListener();
-                
 
                 resourceManager.preloadAssets();
-                
-
 
                 boolean preloadComplete = resourceManager.waitForPreload(60000);
-                
+
                 if (!preloadComplete) {
                     System.err.println("Warning: Resource preloading timed out after 60 seconds");
-
                 }
-                
 
                 Platform.runLater(() -> {
                     if (statusLabel != null) {
                         statusLabel.setText("เริ่มเตรียมเกม กรุณารอสักครู่...");
                     }
                 });
-                
 
                 finishInitialization();
-                
             } catch (Exception e) {
                 System.err.println("Error during game initialization: " + e.getMessage());
                 e.printStackTrace();
-                
 
                 Platform.runLater(() -> {
                     hideLoadingScreen();
@@ -124,36 +110,28 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 });
             }
         });
-        
+
         initThread.setDaemon(true);
         initThread.start();
     }
 
-
     private void finishInitialization() {
         try {
-
             initializeGame();
-            
 
             Platform.runLater(() -> {
                 try {
-
                     ResourceManager.getInstance().getAudioManager().playMusic("Buckshot_Roulette_OST.mp3");
-                    
 
                     if (statusLabel != null) {
                         statusLabel.setText("โหลดเสร็จสมบูรณ์ กำลังเริ่มเข้าสู่เกม...");
                         statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #2ECC71;");
                     }
 
-
                     System.out.println("กำลังเตรียม CutsceneScreen...");
                     CutsceneScreen cutsceneScreen = new CutsceneScreen(this);
-                    
 
                     System.out.println("CutsceneScreen พร้อมแล้ว");
-                    
 
                     PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
                     pause.setOnFinished(e -> {
@@ -177,7 +155,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
                         }
                     });
                     pause.play();
-                    
                 } catch (Exception e) {
                     System.err.println("Error in JavaFX thread: " + e.getMessage());
                     e.printStackTrace();
@@ -188,7 +165,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
         } catch (Exception e) {
             System.err.println("Error during game initialization: " + e.getMessage());
             e.printStackTrace();
-            
 
             Platform.runLater(() -> {
                 hideLoadingScreen();
@@ -198,36 +174,26 @@ public class GameApplication extends Application implements Navigator, ResourceM
         }
     }
 
-
-
     private GameConfig createGameConfig() {
         return DefaultGameConfig.getInstance();
     }
 
     private void initializeGame() {
-
         gameConfig.load();
-        
-
-        
 
         Platform.runLater(() -> {
             try {
-
                 SceneController.initialize(primaryStage, gameConfig, screenManager);
-                
 
                 createScreens();
-                
 
                 primaryStage.setTitle("VPS Tycoon");
                 primaryStage.setResizable(false);
                 primaryStage.setOnCloseRequest(e -> shutdown());
-                
 
                 GameEventBus.getInstance().subscribe(
                     SettingsChangedEvent.class,
-                    event -> Platform.runLater(() -> 
+                    event -> Platform.runLater(() ->
                         SceneController.getInstance().updateResolution()
                     )
                 );
@@ -258,11 +224,9 @@ public class GameApplication extends Application implements Navigator, ResourceM
         settingsScreen.show();
     }
 
-
     @Override
     public void startNewGame() {
         System.out.println("=========== STARTING NEW GAME ===========");
-        
 
         showLoadingScreen("Starting New Game...");
 
@@ -273,63 +237,46 @@ public class GameApplication extends Application implements Navigator, ResourceM
 
         new Thread(() -> {
             try {
-
                 GameManager.resetInstance();
-                
 
                 ResourceManager.getInstance().resetRackAndInventory();
 
-
-                
-
-
                 ResourceManager.getInstance().deleteSaveFile();
                 System.out.println("ลบไฟล์เซฟเดิมเรียบร้อย");
-                
 
                 ResourceManager.getInstance().resetMessengerData();
-                
 
                 ResourceManager.getInstance().resetGameTime();
-                
 
                 GameState existingState = ResourceManager.getInstance().getCurrentState();
                 if (existingState != null) {
                     existingState.clearState();
                     System.out.println("ล้างค่า GameState ปัจจุบันเรียบร้อย");
                 }
-                
 
                 GameState newState = new GameState();
-                
 
                 Company newCompany = new Company();
                 newCompany.setMoney(25_000);
                 newCompany.setRating(1.0);
                 newState.setCompany(newCompany);
-                
 
                 newState.setLocalDateTime(LocalDateTime.of(2000, 1, 1, 0, 0, 0));
-                
 
                 ResourceManager.getInstance().setCurrentState(newState);
                 System.out.println("อัพเดท GameState ใน ResourceManager แล้ว");
-                
-                
+
                 System.out.println("สร้าง SkillPointsSystem ใหม่");
                 ResourceManager resourceManager = ResourceManager.getInstance();
                 resourceManager.resetSkillPointsSystem();
-                
-                
+
                 if (resourceManager.getSkillPointsSystem() != null) {
                     newState.setSkillLevels(resourceManager.getSkillPointsSystem().getSkillLevelsMap());
                     System.out.println("บันทึก SkillLevels ลงใน GameState เรียบร้อย");
                 }
-                
 
                 com.vpstycoon.ui.game.components.RoomObjectsLayer.preloadImages();
-                
-                
+
                 if (ResourceManager.getInstance().getRequestGenerator() != null) {
                     ResourceManager.getInstance().getRequestGenerator().stopGenerator();
                 }
@@ -340,18 +287,14 @@ public class GameApplication extends Application implements Navigator, ResourceM
 
                 final GameState finalState = newState;
                 Platform.runLater(() -> {
-
-
                     if (gameplayScreen != null) {
                         gameplayScreen.release();
                     }
-                    
+
                     gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, finalState);
                     gameplayScreen.show();
-                    
 
                     hideLoadingScreen();
-                    
 
                     System.out.println("เริ่มเกมใหม่เรียบร้อย");
                 });
@@ -365,9 +308,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
             }
         }).start();
     }
-    
-
-    
 
     private void showLoadingScreen(String message) {
         Platform.runLater(() -> {
@@ -377,41 +317,38 @@ public class GameApplication extends Application implements Navigator, ResourceM
                     loadingStage.initOwner(primaryStage);
                     loadingStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
                     loadingStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-                    
+
                     StackPane root = new StackPane();
                     root.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7); -fx-padding: 20;");
-                    
+
                     VBox content = new VBox(15);
                     content.setAlignment(Pos.CENTER);
-                    
+
                     Label loadingLabel = new Label(message);
                     loadingLabel.setStyle("-fx-text-fill: white; -fx-font-size: 18px;");
-                    
+
                     javafx.scene.control.ProgressIndicator progress = new javafx.scene.control.ProgressIndicator();
                     progress.setMaxSize(50, 50);
-                    
+
                     content.getChildren().addAll(loadingLabel, progress);
                     root.getChildren().add(content);
-                    
+
                     Scene scene = new Scene(root, 300, 150);
                     scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
                     loadingStage.setScene(scene);
-                    
 
                     loadingStage.setX(primaryStage.getX() + (primaryStage.getWidth() - 300) / 2);
                     loadingStage.setY(primaryStage.getY() + (primaryStage.getHeight() - 150) / 2);
                 }
-                
+
                 loadingStage.show();
             } catch (Exception e) {
                 System.err.println("Error showing loading screen: " + e.getMessage());
             }
         });
     }
-    
 
     private void hideLoadingScreen() {
-
         Platform.runLater(() -> {
             try {
                 if (loadingStage != null && loadingStage.isShowing()) {
@@ -427,7 +364,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
             }
         });
     }
-
 
     @Override
     public void showLoadGame() {
@@ -447,9 +383,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
 
     @Override
     public void showInGameSettings() {
-
-
-
     }
 
     private void showAlert(String title, String content) {
@@ -460,25 +393,19 @@ public class GameApplication extends Application implements Navigator, ResourceM
         alert.showAndWait();
     }
 
-
-
     private void shutdown() {
         try {
-
             System.out.println("กำลังบันทึกเกมก่อนปิดแอพพลิเคชัน...");
-            
 
             if (gameplayScreen != null) {
                 try {
-
                     Company company = ResourceManager.getInstance().getCompany();
                     if (company != null) {
-                        List<GameObject> gameObjects = 
+                        List<GameObject> gameObjects =
                             ResourceManager.getInstance().getCurrentState().getGameObjects();
-                        
+
                         GameState state = new GameState(company, gameObjects);
                         state.setLocalDateTime(ResourceManager.getInstance().getGameTimeController().getGameTimeManager().getGameDateTime());
-                        
 
                         ResourceManager.getInstance().saveGameState(state);
                         System.out.println("บันทึกเกมเรียบร้อยแล้ว");
@@ -488,7 +415,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
                     saveEx.printStackTrace();
                 }
             }
-            
 
             gameConfig.save();
             Platform.exit();
@@ -498,13 +424,9 @@ public class GameApplication extends Application implements Navigator, ResourceM
         }
     }
 
-
-
-    
     private void initializeLoadingScreen() {
         Platform.runLater(() -> {
             try {
-
                 StackPane root = new StackPane();
                 root.setStyle("-fx-background-color: #121212;");
 
@@ -542,30 +464,28 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 VBox content = new VBox(20);
                 content.setAlignment(Pos.CENTER);
                 content.setPadding(new Insets(50));
-                
+
                 Label titleLabel = new Label("VPS Tycoon");
                 titleLabel.setStyle("-fx-font-size: 28px; -fx-text-fill: white; -fx-font-weight: bold;");
-                
-                
+
                 javafx.scene.effect.DropShadow glow = new javafx.scene.effect.DropShadow();
-                glow.setColor(javafx.scene.paint.Color.web("#8A2BE2"));  
+                glow.setColor(javafx.scene.paint.Color.web("#8A2BE2"));
                 glow.setRadius(20);
                 glow.setSpread(0.2);
                 titleLabel.setEffect(glow);
 
                 Label loadingLabel = new Label("กำลังโหลดทรัพยากร...");
                 loadingLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: white;");
-                
 
                 loadingDetailsLabel = new Label("");
                 loadingDetailsLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #aaaaaa;");
-                
+
                 ScrollPane scrollPane = new ScrollPane();
                 scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
                 scrollPane.setFitToWidth(true);
                 scrollPane.setPrefHeight(100);
                 scrollPane.setMaxHeight(100);
-                
+
                 loadingDetailsPane = new VBox(5);
                 loadingDetailsPane.setStyle("-fx-background-color: transparent;");
                 scrollPane.setContent(loadingDetailsPane);
@@ -586,13 +506,13 @@ public class GameApplication extends Application implements Navigator, ResourceM
 
                 Scene scene = new Scene(root, 500, 300);
                 scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
-                
+
                 if (loadingStage == null) {
                     loadingStage = new Stage();
                     loadingStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
                     loadingStage.setResizable(false);
                 }
-                
+
                 loadingStage.setScene(scene);
                 loadingStage.show();
 
@@ -604,19 +524,16 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 fadeIn.setFromValue(0.0);
                 fadeIn.setToValue(1.0);
                 fadeIn.play();
-                
 
                 initResourceLoadingListener();
-
             } catch (Exception e) {
                 System.err.println("Error showing loading screen: " + e.getMessage());
                 e.printStackTrace();
             }
         });
     }
-    
-    private void initResourceLoadingListener() {
 
+    private void initResourceLoadingListener() {
         final String[] imagesToPreload = {
             "/images/rooms/room.gif",
             "/images/Moniter/MoniterF2.png",
@@ -635,30 +552,24 @@ public class GameApplication extends Application implements Navigator, ResourceM
             "server.mp3",
             "keroro_sound.mp3"
         };
-        
 
         RoomObjectsLayer.preloadImages();
-        
 
         Thread preloadThread = new Thread(() -> {
             try {
                 ResourceManager resourceManager = ResourceManager.getInstance();
                 int totalPreloaded = 0;
-                
 
                 for (String imagePath : imagesToPreload) {
                     try {
-
                         final String currentPath = imagePath;
                         Platform.runLater(() -> {
                             loadingDetailsLabel.setText("กำลังโหลด: " + currentPath);
-                            
 
                             Label fileLabel = new Label("- " + currentPath);
                             fileLabel.setStyle("-fx-text-fill: #AAAAAA;");
                             loadingDetailsPane.getChildren().add(0, fileLabel);
                         });
-                        
 
                         new Image(imagePath, true);
                         totalPreloaded++;
@@ -667,12 +578,10 @@ public class GameApplication extends Application implements Navigator, ResourceM
                         System.err.println("ไม่สามารถโหลดรูปภาพ: " + imagePath);
                     }
                 }
-                
 
                 AudioManager audioManager = resourceManager.getAudioManager();
                 for (String soundFile : soundFiles) {
                     try {
-
                         final String currentSound = soundFile;
                         Platform.runLater(() -> {
                             loadingDetailsLabel.setText("กำลังโหลดเสียง: " + currentSound);
@@ -680,7 +589,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
                             fileLabel.setStyle("-fx-text-fill: #AAAAAA;");
                             loadingDetailsPane.getChildren().add(0, fileLabel);
                         });
-                        
 
                         audioManager.preloadSoundEffect(soundFile);
                         totalPreloaded++;
@@ -689,26 +597,19 @@ public class GameApplication extends Application implements Navigator, ResourceM
                         System.err.println("ไม่สามารถโหลดไฟล์เสียง: " + soundFile);
                     }
                 }
-                
 
                 int totalResources = totalPreloaded;
                 Thread progressMonitor = new Thread(() -> {
                     try {
-
                         Thread.sleep(500);
-                        
 
                         while (true) {
-
                             Thread.sleep(100);
-                            
 
                             if (resourceManager.isPreloadComplete()) {
-
                                 Platform.runLater(() -> {
                                     updateProgressStatus("การโหลดเสร็จสมบูรณ์! กำลังเตรียมเริ่มเกม...");
                                 });
-                                
 
                                 Thread.sleep(1000);
                                 break;
@@ -718,22 +619,20 @@ public class GameApplication extends Application implements Navigator, ResourceM
                         System.err.println("Error in progress monitor: " + e.getMessage());
                     }
                 });
-                
+
                 progressMonitor.setDaemon(true);
                 progressMonitor.start();
-                
 
                 final int finalCount = totalResources;
                 Platform.runLater(() -> {
                     statusLabel.setText("โหลดทรัพยากรแล้ว " + finalCount + " รายการ");
                 });
-                
             } catch (Exception e) {
                 System.err.println("Error in preload thread: " + e.getMessage());
                 e.printStackTrace();
             }
         });
-        
+
         preloadThread.setDaemon(true);
         preloadThread.start();
     }
@@ -742,16 +641,13 @@ public class GameApplication extends Application implements Navigator, ResourceM
     public void onResourceLoading(String resourcePath) {
         if (resourcePath != null && !resourcePath.trim().isEmpty()) {
             Platform.runLater(() -> {
-
                 loadingDetailsLabel.setText("กำลังโหลด: " + getSimpleFileName(resourcePath));
-                
 
                 Label fileLabel = new Label("- " + resourcePath);
                 fileLabel.setStyle("-fx-text-fill: #AAAAAA;");
-                
+
                 if (loadingDetailsPane != null) {
                     loadingDetailsPane.getChildren().add(0, fileLabel);
-                    
 
                     if (loadingDetailsPane.getChildren().size() > 100) {
                         loadingDetailsPane.getChildren().remove(100, loadingDetailsPane.getChildren().size());
@@ -765,14 +661,13 @@ public class GameApplication extends Application implements Navigator, ResourceM
     public void onResourceLoadingComplete(int totalLoaded) {
         Platform.runLater(() -> {
             loadingDetailsLabel.setText("โหลดทรัพยากรเสร็จสมบูรณ์");
-            
+
             if (statusLabel != null) {
                 statusLabel.setText("โหลดทรัพยากรครบถ้วน " + totalLoaded + " รายการ");
                 statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #2ECC71;");
             }
         });
     }
-
 
     private String getSimpleFileName(String path) {
         if (path == null) return "";
@@ -783,9 +678,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
         return path;
     }
 
-
     private void updateProgressStatus(String message) {
-
         if (statusLabel != null) {
             final String statusMessage = message;
             Platform.runLater(() -> {
@@ -800,4 +693,3 @@ public class GameApplication extends Application implements Navigator, ResourceM
         launch(args);
     }
 }
-

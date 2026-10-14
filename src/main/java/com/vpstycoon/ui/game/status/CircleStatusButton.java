@@ -24,7 +24,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
-
 public class CircleStatusButton {
     private final VBox container;
     private VBox upgradeLayout;
@@ -37,7 +36,6 @@ public class CircleStatusButton {
     private final GameplayContentPane parent;
     private AudioManager audioManager;
 
-    
     private static final Color CYBER_PURPLE = Color.rgb(200, 50, 255);
     private static final Color CYBER_DARK = Color.rgb(20, 10, 30);
 
@@ -92,7 +90,7 @@ public class CircleStatusButton {
         buttonStack.setOnMouseEntered(e -> {
             buttonStack.setScaleX(1.05);
             buttonStack.setScaleY(1.05);
-            audioManager.playSoundEffect("hover.wav"); 
+            audioManager.playSoundEffect("hover.wav");
         });
 
         buttonStack.setOnMouseExited(e -> {
@@ -196,7 +194,6 @@ public class CircleStatusButton {
     }
 
     private void openUpgradePanel() {
-        
         this.skillLevel = skillPointsSystem.getSkillLevel(skillType);
         this.skillPoints = skillPointsSystem.getAvailablePoints();
 
@@ -208,7 +205,7 @@ public class CircleStatusButton {
         upgradeLayout = new VBox(15);
         upgradeLayout.setAlignment(Pos.CENTER);
         upgradeLayout.setPadding(new Insets(20));
-        upgradeLayout.setPrefSize(400, 250); 
+        upgradeLayout.setPrefSize(400, 250);
         upgradeLayout.setMaxSize(400, 250);
 
         upgradeLayout.setBackground(new Background(new BackgroundFill(
@@ -262,16 +259,15 @@ public class CircleStatusButton {
         pointsLabel.setBorder(new Border(new BorderStroke(
                 Color.LIGHTGRAY, BorderStrokeStyle.SOLID, new CornerRadii(0), new BorderWidths(1))));
 
-        
         Label descLabel = new Label(skillPointsSystem.getSkillLevelDescription(skillType, skillLevel + 1));
         descLabel.setTextFill(Color.WHITE);
         descLabel.setFont(Font.font("Monospace", FontWeight.NORMAL, 12));
         descLabel.setWrapText(true);
         descLabel.setMaxWidth(360);
-        descLabel.setAlignment(Pos.CENTER);  
-        HBox descContainer = new HBox(descLabel);  
-        descContainer.setAlignment(Pos.CENTER);   
-        VBox.setMargin(descContainer, new Insets(10, 0, 10, 0));  
+        descLabel.setAlignment(Pos.CENTER);
+        HBox descContainer = new HBox(descLabel);
+        descContainer.setAlignment(Pos.CENTER);
+        VBox.setMargin(descContainer, new Insets(10, 0, 10, 0));
 
         Label costLabel = new Label("UPGRADE COST: " +
                 skillPointsSystem.calculateUpgradeCost(skillLevel) + " points");
@@ -281,7 +277,6 @@ public class CircleStatusButton {
         Button upgradeButton = new Button("[ UPGRADE ]");
         styleButton(upgradeButton, skillColor, true);
 
-        
         upgradeButton.setDisable(skillLevel >= skillType.getMaxLevel());
 
         upgradeButton.setOnAction(e -> {
@@ -357,18 +352,18 @@ public class CircleStatusButton {
         switch (skillName.toLowerCase()) {
             case "deploy":
             case "server efficiency":
-                return Color.rgb(255, 50, 180); 
+                return Color.rgb(255, 50, 180);
             case "network":
             case "network speed":
-                return Color.rgb(50, 200, 255); 
+                return Color.rgb(50, 200, 255);
             case "security":
-                return Color.rgb(200, 50, 255); 
+                return Color.rgb(200, 50, 255);
             case "marketing":
-                return Color.rgb(0, 255, 170);  
+                return Color.rgb(0, 255, 170);
             case "rack slots":
-                return Color.rgb(255, 200, 50); 
+                return Color.rgb(255, 200, 50);
             case "management":
-                return Color.rgb(100, 255, 100); 
+                return Color.rgb(100, 255, 100);
             default:
                 return CYBER_PURPLE;
         }
@@ -384,10 +379,4 @@ public class CircleStatusButton {
     public VBox getContainer() {
         return container;
     }
-
-    
-
-
-
 }
-

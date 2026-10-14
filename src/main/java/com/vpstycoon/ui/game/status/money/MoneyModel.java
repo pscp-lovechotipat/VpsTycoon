@@ -14,7 +14,6 @@ public class MoneyModel {
         setRating(initialRating);
     }
 
-
     public void setMoney(long money) {
         this.money.set(money);
     }
@@ -22,7 +21,6 @@ public class MoneyModel {
     public LongProperty moneyProperty() {
         return money;
     }
-
 
     public void setRating(double rating) {
         this.rating.set(rating);
@@ -32,4 +30,3 @@ public class MoneyModel {
         return rating;
     }
 }
-

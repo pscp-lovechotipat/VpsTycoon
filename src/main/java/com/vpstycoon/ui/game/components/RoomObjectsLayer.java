@@ -9,7 +9,6 @@ import javafx.scene.layout.Pane;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class RoomObjectsLayer {
     private final Pane monitorLayer;
     private final Pane serverLayer;
@@ -24,17 +23,14 @@ public class RoomObjectsLayer {
     private AudioManager audioManager;
     private ResourceManager resourceManager = ResourceManager.getInstance();
     private boolean run = resourceManager.isMusicRunning();
-    
-    
+
     private static Map<String, Image> imageCache = new HashMap<>();
     private static boolean imagesPreloaded = false;
-    
-    
+
     static {
         preloadImages();
     }
-    
-    
+
     public static synchronized void preloadImages() {
         if (imagesPreloaded) {
             System.out.println("Room images already preloaded, skipping");
@@ -42,10 +38,9 @@ public class RoomObjectsLayer {
         }
 
         System.out.println("Preloading room object images");
-        
-        
+
         String[] imagePaths = {
-            "/images/Object/MusicboxOn.gif", 
+            "/images/Object/MusicboxOn.gif",
             "/images/Object/MusicboxOff.png",
             "/images/Object/Keroro.png",
             "/images/Moniter/MoniterF2.png",
@@ -54,10 +49,9 @@ public class RoomObjectsLayer {
             "/images/wallpaper/BackgroundWindow.gif",
             "/images/rooms/room.gif"
         };
-        
+
         boolean allSuccess = true;
-        
-        
+
         for (String path : imagePaths) {
             Image img = loadImage(path);
             if (img == null) {
@@ -67,7 +61,7 @@ public class RoomObjectsLayer {
                 System.out.println("โหลดรูปภาพสำเร็จ: " + path);
             }
         }
-        
+
         if (!allSuccess) {
             System.err.println("มีปัญหาในการโหลดรูปภาพบางรายการ กรุณาตรวจสอบว่าไฟล์มีอยู่จริง");
             System.err.println("หรือลองรันคำสั่ง 'mvn clean package' เพื่อสร้างไฟล์ resources ใหม่");
@@ -76,24 +70,20 @@ public class RoomObjectsLayer {
         imagesPreloaded = true;
         System.out.println("Room object images preloading complete" + (allSuccess ? " (all succeeded)" : " (some failed)"));
     }
-    
-    
+
     public static Image loadImage(String path) {
         if (!imageCache.containsKey(path)) {
             try {
-                
                 String resourcePath = path;
-                
-                
+
                 java.io.InputStream resourceStream = RoomObjectsLayer.class.getResourceAsStream(resourcePath);
-                
+
                 if (resourceStream == null) {
                     System.err.println("ไม่พบรูปภาพ: " + path);
                     imageCache.put(path, null);
                     return null;
                 }
-                
-                
+
                 Image image = new Image(resourceStream);
                 imageCache.put(path, image);
                 return image;
@@ -160,7 +150,6 @@ public class RoomObjectsLayer {
 
         musicBoxLayer.setOnMouseClicked((MouseEvent e) -> onMusicBoxClick.run());
         return musicBoxLayer;
-
     }
 
     private synchronized Pane createMusicStopLayer() {
@@ -200,9 +189,7 @@ public class RoomObjectsLayer {
 
         musicStopLayer.setOnMouseClicked((MouseEvent e) -> onMusicStopClick.run());
         return musicStopLayer;
-
     }
-
 
     private synchronized Pane createKeroroLayer() {
         Pane keroroLayer = new Pane();
@@ -236,7 +223,6 @@ public class RoomObjectsLayer {
 
         keroroLayer.setOnMouseClicked((MouseEvent e) -> onKeroroClick.run());
         return keroroLayer;
-
     }
     private synchronized Pane createMonitorLayer() {
         Pane monitorLayer = new Pane();
@@ -272,11 +258,9 @@ public class RoomObjectsLayer {
         return monitorLayer;
     }
 
-
     private Pane createServerLayer() {
         Pane serverLayer = new Pane();
 
-        
         Image img = loadImage("/images/servers/server2.gif");
         serverLayer.setPrefWidth(img.getWidth());
         serverLayer.setPrefHeight(img.getHeight());
@@ -285,7 +269,6 @@ public class RoomObjectsLayer {
         serverLayer.setTranslateX(340);
         serverLayer.setTranslateY(-210);
 
-        
         String normalStyle = """
             -fx-background-image: url('/images/servers/server2.gif');
             -fx-background-size: contain;
@@ -294,7 +277,6 @@ public class RoomObjectsLayer {
         """;
         serverLayer.setStyle(normalStyle);
 
-        
         String hoverStyle = """
             -fx-background-image: url('/images/servers/server2.gif');
             -fx-background-size: contain;
@@ -303,14 +285,12 @@ public class RoomObjectsLayer {
             -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
         """;
 
-        
         serverLayer.setOnMouseEntered(e -> {
-            
             if (!ResourceManager.getInstance().isEmergencyPerformanceMode()) {
                 audioManager.playSoundEffect("server.mp3");
             }
             serverLayer.setStyle(hoverStyle);
-        }); 
+        });
         serverLayer.setOnMouseExited(e -> {
             if (!ResourceManager.getInstance().isEmergencyPerformanceMode()) {
                 audioManager.stopSoundEffect("server.mp3");
@@ -326,7 +306,6 @@ public class RoomObjectsLayer {
 
         return serverLayer;
     }
-
 
     public Pane getMonitorLayer() {
         return monitorLayer;
@@ -352,5 +331,3 @@ public class RoomObjectsLayer {
         System.out.println("Music Run State: " + run);
     }
 }
-
-

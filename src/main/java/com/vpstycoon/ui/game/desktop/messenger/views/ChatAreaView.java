@@ -41,25 +41,20 @@ public class ChatAreaView extends VBox {
         getStyleClass().add("chat-area");
         VBox.setVgrow(this, Priority.ALWAYS);
 
-        
         HBox chatHeader = new HBox(10);
         chatHeader.setAlignment(Pos.CENTER_LEFT);
         chatHeader.setPadding(new Insets(0, 0, 10, 0));
         chatHeader.setStyle("-fx-border-color: transparent transparent #9e33ff transparent; -fx-border-width: 0 0 1 0;");
 
-        
         Rectangle customerAvatar = new Rectangle(40, 40);
         customerAvatar.setArcWidth(5);
         customerAvatar.setArcHeight(5);
         customerAvatar.setFill(Color.rgb(100, 50, 200));
         customerAvatar.setStroke(Color.web("#00c3ff"));
         customerAvatar.setStrokeWidth(1.5);
-        
-        
+
         Glow avatarGlow = new Glow(0.5);
         customerAvatar.setEffect(avatarGlow);
-        
-        
 
         VBox customerInfoBox = new VBox(3);
         customerNameLabel = new Label("SELECT CLIENT");
@@ -79,28 +74,25 @@ public class ChatAreaView extends VBox {
         chatHeader.getChildren().addAll(customerAvatar, customerInfoBox);
         HBox.setHgrow(customerInfoBox, Priority.ALWAYS);
 
-        
         HBox statusArea = new HBox(10);
         statusArea.setAlignment(Pos.CENTER_RIGHT);
-        
+
         Rectangle signalIcon = new Rectangle(16, 16);
         signalIcon.setArcWidth(2);
         signalIcon.setArcHeight(2);
         signalIcon.setFill(Color.web("#00ffff"));
-        
+
         Label statusInfoLabel = new Label("PING: 14ms | ENCRYPTION: ACTIVE");
         statusInfoLabel.setStyle("-fx-text-fill: #00ffff; -fx-font-size: 10px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
-        
+
         statusArea.getChildren().addAll(statusInfoLabel, signalIcon);
         chatHeader.getChildren().add(statusArea);
 
-        
         ScrollPane messagesScroll = new ScrollPane();
         messagesScroll.setFitToWidth(true);
         messagesScroll.getStyleClass().add("messages-scroll");
         VBox.setVgrow(messagesScroll, Priority.ALWAYS);
 
-        
         String digitalBorderStyle = "-fx-border-color: #9e33ff; -fx-border-width: 1; " +
                                     "-fx-border-radius: 5; -fx-effect: dropshadow(gaussian, #9e33ff, 5, 0.3, 0, 0);";
         messagesScroll.setStyle(messagesScroll.getStyle() + digitalBorderStyle);
@@ -110,7 +102,6 @@ public class ChatAreaView extends VBox {
         messagesBox.getStyleClass().add("messages-box");
         messagesScroll.setContent(messagesBox);
 
-        
         HBox inputArea = new HBox(10);
         inputArea.setAlignment(Pos.CENTER);
         inputArea.getStyleClass().add("input-area");
@@ -120,7 +111,6 @@ public class ChatAreaView extends VBox {
         messageInput.getStyleClass().add("message-input");
         HBox.setHgrow(messageInput, Priority.ALWAYS);
 
-        
         sendButton = new Button("SEND >");
         sendButton.getStyleClass().add("cyber-button");
 
@@ -134,12 +124,10 @@ public class ChatAreaView extends VBox {
 
         inputArea.getChildren().addAll(messageInput, sendButton, assignVMButton, archiveButton);
 
-        
         inputArea.setStyle(inputArea.getStyle() + digitalBorderStyle);
 
         getChildren().addAll(chatHeader, messagesScroll, inputArea);
 
-        
         messagesBox.heightProperty().addListener((obs, oldVal, newVal) -> messagesScroll.setVvalue(1.0));
     }
 
@@ -150,13 +138,11 @@ public class ChatAreaView extends VBox {
             int r = Math.abs(nameHash % 100) + 100;
             int g = Math.abs((nameHash / 100) % 100);
             int b = Math.abs((nameHash / 10000) % 100) + 100;
-            
-            
+
             HBox chatHeader = (HBox) getChildren().get(0);
             Rectangle customerAvatar = (Rectangle) chatHeader.getChildren().get(0);
             customerAvatar.setFill(Color.rgb(r, g, b));
 
-            
             customerTypeLabel.setText("[CLIENT:" + request.getName().toUpperCase() + "]");
 
             if (request.isActive()) {
@@ -171,27 +157,26 @@ public class ChatAreaView extends VBox {
             }
         } else {
             customerNameLabel.setText("SELECT CLIENT");
-            
-            
+
             HBox chatHeader = (HBox) getChildren().get(0);
             Rectangle customerAvatar = (Rectangle) chatHeader.getChildren().get(0);
             customerAvatar.setFill(Color.rgb(100, 50, 200));
-            
+
             customerTypeLabel.setText("[SYS] CONNECTION READY");
             headerStatusLabel.setText("");
         }
     }
 
     public void loadChatHistory(CustomerRequest request) {
-        messagesBox.getChildren().clear(); 
-        
+        messagesBox.getChildren().clear();
+
         if (request == null) {
             addSystemMessageFromHistory("กรุณาเลือกลูกค้าจากรายการเพื่อดูการสนทนา");
             return;
         }
 
         List<ChatMessage> history = chatHistoryManager.getChatHistory(request);
-        
+
         if (history == null || history.isEmpty()) {
             System.out.println("ไม่พบประวัติแชทสำหรับ: " + request.getName());
             addSystemMessageFromHistory("ยินดีต้อนรับ " + request.getName() + " เริ่มการสนทนาใหม่");
@@ -200,9 +185,9 @@ public class ChatAreaView extends VBox {
             addSystemMessageFromHistory("ระยะเวลา: " + request.getRentalPeriodType().getDisplayName() + " | มูลค่าสัญญา: $" + String.format("%.2f", request.getMonthlyPayment()));
             return;
         }
-        
+
         System.out.println("โหลดประวัติแชทสำหรับ: " + request.getName() + " จำนวน " + history.size() + " ข้อความ");
-        
+
         for (ChatMessage message : history) {
             try {
                 switch (message.getType()) {
@@ -215,9 +200,8 @@ public class ChatAreaView extends VBox {
                     case SYSTEM:
                         if (message.getContent() != null && message.getContent().startsWith("Starting VM provisioning...")) {
                             Map<String, Object> metadata = message.getMetadata();
-                            if (metadata != null && metadata.containsKey("isProvisioning") && 
+                            if (metadata != null && metadata.containsKey("isProvisioning") &&
                                 (boolean) metadata.get("isProvisioning")) {
-                                
                                 long startTime = (long) metadata.get("startTime");
                                 int provisioningDelay = (int) metadata.get("provisioningDelay");
                                 long elapsedTime = System.currentTimeMillis() - startTime;
@@ -260,7 +244,7 @@ public class ChatAreaView extends VBox {
                                             }
                                         });
                                     }
-                                }, 0, 1000); 
+                                }, 0, 1000);
                             } else {
                                 addSystemMessageFromHistory(message.getContent());
                             }
@@ -282,11 +266,10 @@ public class ChatAreaView extends VBox {
         messageContainer.setPadding(new Insets(5, 0, 5, 0));
         messageContainer.getStyleClass().add("message-container");
 
-        
         Rectangle avatar = new Rectangle(30, 30);
         avatar.setArcWidth(5);
         avatar.setArcHeight(5);
-        
+
         int nameHash = request.getName().hashCode();
         int r = Math.abs(nameHash % 100) + 100;
         int g = Math.abs((nameHash / 100) % 100);
@@ -302,7 +285,6 @@ public class ChatAreaView extends VBox {
         messageLabel.getStyleClass().add("customer-message");
         messageLabel.setMinHeight(Region.USE_PREF_SIZE);
 
-        
         Label timeLabel = new Label("[" + LocalTime.now().format(timeFormatter) + "]");
         timeLabel.setStyle("-fx-text-fill: rgba(0, 255, 255, 0.8); -fx-font-size: 10px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
         timeLabel.setPadding(new Insets(0, 0, 0, 5));
@@ -328,15 +310,13 @@ public class ChatAreaView extends VBox {
         messageLabel.getStyleClass().add("user-message");
         messageLabel.setMinHeight(Region.USE_PREF_SIZE);
 
-        
         Label timeLabel = new Label("[" + LocalTime.now().format(timeFormatter) + "]");
         timeLabel.setAlignment(Pos.CENTER_RIGHT);
         timeLabel.setStyle("-fx-text-fill: rgba(0, 255, 255, 0.8); -fx-font-size: 10px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
         timeLabel.setPadding(new Insets(0, 5, 0, 0));
 
         messageBox.getChildren().addAll(messageLabel, timeLabel);
-        
-        
+
         Rectangle avatar = new Rectangle(30, 30);
         avatar.setArcWidth(5);
         avatar.setArcHeight(5);
@@ -382,11 +362,9 @@ public class ChatAreaView extends VBox {
         messagesBox.getChildren().clear();
     }
 
-    
     public Button getSendButton() { return sendButton; }
     public Button getAssignVMButton() { return assignVMButton; }
     public Button getArchiveButton() { return archiveButton; }
     public TextField getMessageInput() { return messageInput; }
     public VBox getMessagesBox() { return messagesBox; }
 }
-

@@ -1,7 +1,5 @@
 package com.vpstycoon.screen;
 
-
-
 public enum ScreenResolution {
     RES_1280x720(1280, 720, "1280x720 (HD)"),
     RES_1366x768(1366, 768, "1366x768 (HD)"),
@@ -30,12 +28,8 @@ public enum ScreenResolution {
         return height;
     }
 
-    
-    
-
     @Override
     public String toString() {
         return displayName;
     }
-} 
-
+}

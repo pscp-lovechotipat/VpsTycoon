@@ -12,8 +12,7 @@ import java.util.Random;
 public class VPSOptimization extends GameObject implements Serializable {
     private final List<VM> vms;
     private VPSStatus status;
-    
-    
+
     private String vpsId;
 
     private int maxVMs;
@@ -22,9 +21,8 @@ public class VPSOptimization extends GameObject implements Serializable {
     private int ramInGB;
     private int diskInGB;
 
-
-    private VPSSize size = VPSSize.SIZE_1U; 
-    private boolean installed = false; 
+    private VPSSize size = VPSSize.SIZE_1U;
+    private boolean installed = false;
 
     public VPSOptimization() {
         this.vms = new ArrayList<>();
@@ -35,12 +33,8 @@ public class VPSOptimization extends GameObject implements Serializable {
         this.diskInGB = 20;
         this.size = VPSSize.SIZE_1U;
         this.installed = false;
-        this.vpsId = "Server-" + System.currentTimeMillis(); 
+        this.vpsId = "Server-" + System.currentTimeMillis();
     }
-    
-    
-    
-    
 
     public void addVM(VM vm) {
         if (vms.size() < maxVMs) {
@@ -60,37 +54,30 @@ public class VPSOptimization extends GameObject implements Serializable {
         return status.toString();
     }
 
-
-
     public int getMaxVMs() {
         return maxVMs;
     }
 
-
-
-
-
-
     public void setVCPUs(int vcpus) {
         this.vcpus = vcpus;
     }
-    
+
     public int getVCPUs() {
         return this.vcpus;
     }
-    
+
     public void setRamInGB(int ramInGB) {
         this.ramInGB = ramInGB;
     }
-    
+
     public int getRamInGB() {
         return this.ramInGB;
     }
-    
+
     public void setDiskInGB(int diskInGB) {
         this.diskInGB = diskInGB;
     }
-    
+
     public int getDiskInGB() {
         return this.diskInGB;
     }
@@ -98,43 +85,22 @@ public class VPSOptimization extends GameObject implements Serializable {
     public VPSSize getSize() {
         return size;
     }
-    
+
     public void setSize(VPSSize size) {
         this.size = size;
     }
-    
+
     public int getSlotsRequired() {
         return size.getSlotsRequired();
     }
-    
+
     public boolean isInstalled() {
         return installed;
     }
-    
+
     public void setInstalled(boolean installed) {
         this.installed = installed;
     }
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
 
     public static class VM implements Serializable {
         private String name;
@@ -158,7 +124,7 @@ public class VPSOptimization extends GameObject implements Serializable {
             this.customerId = null;
             this.customerName = null;
         }
-        
+
         private String generateRandomIp() {
             Random random = new Random();
             return "192.168." + (random.nextInt(253) + 1) + "." + (random.nextInt(253) + 1);
@@ -168,24 +134,23 @@ public class VPSOptimization extends GameObject implements Serializable {
             this.customerId = customerId;
             this.customerName = customerName;
         }
-        
+
         public void releaseFromCustomer() {
             this.customerId = null;
             this.customerName = null;
         }
-        
+
         public boolean isAssignedToCustomer() {
             return customerId != null && !customerId.isEmpty();
         }
-        
+
         public String getCustomerId() {
             return customerId;
         }
-        
+
         public String getCustomerName() {
             return customerName;
         }
-        
 
         public String getIp() {
             return ipAddress;
@@ -234,37 +199,30 @@ public class VPSOptimization extends GameObject implements Serializable {
         public void setStatus(String status) {
             this.status = status;
         }
-        
+
         public String getId() {
             return id;
         }
     }
 
-    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        
-        
-        
+
         return this == obj;
     }
-    
-    
+
     @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }
 
-    
     public String getVpsId() {
         return vpsId;
     }
-    
-    
+
     public void setVpsId(String vpsId) {
         this.vpsId = vpsId;
     }
 }
-

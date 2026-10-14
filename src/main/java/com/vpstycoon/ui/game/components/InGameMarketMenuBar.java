@@ -17,10 +17,8 @@ public class InGameMarketMenuBar extends StackPane {
         Button openMarketButton = UIUtils.createModernButton("Open Market");
         setPadding(new Insets(40));
         openMarketButton.setOnAction(e -> {
-            
             setVisible(false);
 
-            
             parent.getMenuBar().setVisible(false);
             parent.getMoneyUI().setVisible(false);
             parent.getDateView().setVisible(false);
@@ -28,11 +26,7 @@ public class InGameMarketMenuBar extends StackPane {
             openMarketWindow();
         });
 
-        
         StackPane.setAlignment(openMarketButton, Pos.BOTTOM_RIGHT);
-
-        
-        
     }
 
     private void openMarketWindow() {
@@ -49,4 +43,3 @@ public class InGameMarketMenuBar extends StackPane {
         parent.getGameArea().getChildren().add(marketWindow);
     }
 }
-

@@ -30,7 +30,6 @@ public class SkillPointsWindow extends VBox {
     private void setupUI() {
         setPrefSize(700, 600);
 
-        
         HBox titleBar = new HBox();
         titleBar.setAlignment(Pos.CENTER_RIGHT);
         titleBar.setPadding(new Insets(8, 15, 8, 15));
@@ -48,7 +47,6 @@ public class SkillPointsWindow extends VBox {
 
         titleBar.getChildren().addAll(titleLabel, closeButton);
 
-        
         HBox pointsBox = new HBox();
         pointsBox.setAlignment(Pos.CENTER);
         pointsBox.setPadding(new Insets(15));
@@ -63,25 +61,21 @@ public class SkillPointsWindow extends VBox {
 
         pointsBox.getChildren().addAll(pointsTitle, availablePointsLabel);
 
-        
         ScrollPane scrollPane = (ScrollPane) getChildren().get(2);
-        scrollPane.setFitToWidth(true);  
-        scrollPane.setStyle("-fx-background: #f5f6fa; -fx-border-color: transparent;"); 
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: #f5f6fa; -fx-border-color: transparent;");
 
         VBox scrollContent = (VBox) scrollPane.getContent();
-        scrollContent.setPadding(new Insets(0, 15, 15, 15)); 
+        scrollContent.setPadding(new Insets(0, 15, 15, 15));
 
-        
         VBox skillsContainer = (VBox) scrollContent.getChildren().get(0);
 
         skillsContainer.getChildren().clear();
 
-        
         for (SkillType skillType : SkillType.values()) {
             skillsContainer.getChildren().add(createSkillCard(skillType));
         }
 
-        
         VBox helpBox = new VBox(10);
         helpBox.setPadding(new Insets(15));
         helpBox.setStyle("-fx-background-color: #ecf0f1; -fx-border-radius: 5; -fx-background-radius: 5;");
@@ -97,26 +91,21 @@ public class SkillPointsWindow extends VBox {
 
         helpBox.getChildren().addAll(helpTitle, helpText);
 
-        
         scrollContent.getChildren().addAll(skillsContainer, helpBox);
         scrollPane.setContent(scrollContent);
 
-        
         getChildren().addAll(titleBar, pointsBox, scrollPane);
 
-        
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
     }
 
     private BorderPane createSkillCard(SkillType skillType) {
-        
         BorderPane card = new BorderPane();
         card.setPadding(new Insets(10));
         card.setStyle("-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-width: 1; " +
                 "-fx-border-radius: 5; -fx-background-radius: 5; " +
                 "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 5, 0, 0, 2);");
 
-        
         VBox infoBox = new VBox(5);
         Label nameLabel = new Label(skillType.getName());
         nameLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -155,8 +144,7 @@ public class SkillPointsWindow extends VBox {
                 bonusText = "Current bonus: +" + (currentLevel * 50) + "% security level";
                 if (currentLevel >= 2) {
                     bonusText += " (Firewall management unlocked)";
-                    
-                    
+
                     if (currentLevel == 2) {
                         bonusText += ", +3% VM payment bonus";
                     } else if (currentLevel == 3) {
@@ -209,10 +197,8 @@ public class SkillPointsWindow extends VBox {
         upgradeButton.setOnAction(e -> {
             if (skillPointsSystem.upgradeSkill(skillType)) {
                 updateUI();
-                
-                
+
                 if (skillType == SkillType.RACK_SLOTS) {
-                    
                     ResourceManager.getInstance().notifyRackUIUpdate();
                 }
             }
@@ -232,7 +218,6 @@ public class SkillPointsWindow extends VBox {
     public void updateUI() {
         availablePointsLabel.setText(String.valueOf(skillPointsSystem.getAvailablePoints()));
 
-        
         ScrollPane scrollPane = (ScrollPane) getChildren().get(2);
         VBox scrollContent = (VBox) scrollPane.getContent();
         VBox skillsContainer = (VBox) scrollContent.getChildren().get(0);
@@ -243,4 +228,3 @@ public class SkillPointsWindow extends VBox {
         }
     }
 }
-

@@ -37,38 +37,36 @@ public class DataDecryptionTask extends GameTask {
     private int currentPosition = 0;
     private Timeline scanningEffect;
 
-
     public DataDecryptionTask(int codeLength) {
         super(
-                "Data Decryption Protocol", "Decrypt the system by finding the correct numeric sequence", 5000 + (codeLength * 500), 5 + (codeLength * 2), Math.min(5, 1 + (codeLength / 2)), Math.min(120, 30 + (codeLength * 10)) 
+                "Data Decryption Protocol", "Decrypt the system by finding the correct numeric sequence", 5000 + (codeLength * 500), 5 + (codeLength * 2), Math.min(5, 1 + (codeLength / 2)), Math.min(120, 30 + (codeLength * 10))
         );
-        this.codeLength = Math.min(8, Math.max(3, codeLength)); 
+        this.codeLength = Math.min(8, Math.max(3, codeLength));
     }
 
     @Override
     protected void initializeTaskSpecifics() {
-        
         generateCode();
-        
+
         BorderPane decryptionPane = new BorderPane();
-        decryptionPane.setPadding(new Insets(20)); 
+        decryptionPane.setPadding(new Insets(20));
         decryptionPane.setMaxWidth(700);
-        decryptionPane.setMaxHeight(300); 
+        decryptionPane.setMaxHeight(300);
         decryptionPane.getStyleClass().add("cyberpunk-decryption-panel");
-        
+
         CyberpunkEffects.addHoloGridLines(decryptionPane, 15, 15);
-        
+
         Text titleText = CyberpunkEffects.createTaskTitle("DATA DECRYPTION PROTOCOL v2.77");
         Text descText = CyberpunkEffects.createTaskDescription(
-                "Find the hidden encryption code by testing number combinations.\n" + 
+                "Find the hidden encryption code by testing number combinations.\n" +
                 "Each attempt will give you feedback on your progress.");
 
         HBox codeDisplay = createCodeDisplay();
-        
+
         messageLabel = new Label("ENTER DECRYPTION SEQUENCE");
-        messageLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 14)); 
+        messageLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 14));
         messageLabel.setTextFill(Color.LIGHTCYAN);
-        
+
         DropShadow glow = new DropShadow();
         glow.setColor(Color.CYAN);
         glow.setRadius(10);
@@ -86,14 +84,14 @@ public class DataDecryptionTask extends GameTask {
         Button resetButton = CyberpunkEffects.createCyberpunkButton("RESET CODE", false);
         resetButton.setOnAction(e -> resetCode());
 
-        VBox topSection = new VBox(10); 
+        VBox topSection = new VBox(10);
         topSection.setAlignment(Pos.CENTER);
-        topSection.setPadding(new Insets(10)); 
+        topSection.setPadding(new Insets(10));
         topSection.getChildren().addAll(titleText, descText);
-        
-        VBox centerSection = new VBox(10); 
+
+        VBox centerSection = new VBox(10);
         centerSection.setAlignment(Pos.CENTER);
-        centerSection.setPadding(new Insets(10)); 
+        centerSection.setPadding(new Insets(10));
         centerSection.getChildren().addAll(codeDisplay, messageLabel);
 
         HBox inputSection = new HBox(10);
@@ -102,14 +100,14 @@ public class DataDecryptionTask extends GameTask {
         VBox resetButtonBox = new VBox();
         resetButtonBox.setAlignment(Pos.CENTER);
         resetButtonBox.getChildren().add(resetButton);
-        
+
         inputSection.getChildren().addAll(numberPad, resetButtonBox);
-        
-        HBox controlSection = new HBox(20); 
+
+        HBox controlSection = new HBox(20);
         controlSection.setAlignment(Pos.CENTER);
-        controlSection.setPadding(new Insets(10)); 
+        controlSection.setPadding(new Insets(10));
         controlSection.getChildren().addAll(inputSection, hintsPanel);
-        
+
         decryptionPane.setTop(topSection);
         decryptionPane.setCenter(centerSection);
         decryptionPane.setBottom(controlSection);
@@ -119,23 +117,20 @@ public class DataDecryptionTask extends GameTask {
         CyberpunkEffects.addAnimatedBackground(backgroundPane);
 
         gamePane.getChildren().add(backgroundPane);
-
     }
-    
-    
+
     private HBox createCodeDisplay() {
-        HBox codeDisplay = new HBox(10); 
+        HBox codeDisplay = new HBox(10);
         codeDisplay.setAlignment(Pos.CENTER);
-        codeDisplay.setPadding(new Insets(10)); 
+        codeDisplay.setPadding(new Insets(10));
         codeDisplay.setStyle("-fx-background-color: rgba(5, 15, 25, 0.6); -fx-border-color: #00ffff; -fx-border-width: 1;");
-        
+
         codeLabels = new ArrayList<>();
         playerCode = new int[codeLength];
 
         int digitSize = Math.min(50, 200 / codeLength);
-        
+
         for (int i = 0; i < codeLength; i++) {
-            
             StackPane digitSlot = new StackPane();
             digitSlot.setMinSize(digitSize, digitSize);
 
@@ -149,8 +144,8 @@ public class DataDecryptionTask extends GameTask {
             background.setEffect(innerGlow);
 
             Label digitLabel = new Label("_");
-            digitLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 
-                Math.min(24, 18 + (digitSize / 10)))); 
+            digitLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD,
+                Math.min(24, 18 + (digitSize / 10))));
             digitLabel.setTextFill(Color.web("#00FFFF"));
 
             Glow textGlow = new Glow(0.8);
@@ -163,29 +158,28 @@ public class DataDecryptionTask extends GameTask {
             pulseGlow.setAutoReverse(true);
             pulseGlow.setCycleCount(Timeline.INDEFINITE);
             pulseGlow.play();
-            
+
             digitSlot.getChildren().addAll(background, digitLabel);
             codeDisplay.getChildren().add(digitSlot);
             codeLabels.add(digitLabel);
 
             playerCode[i] = -1;
         }
-        
-        return codeDisplay;
 
+        return codeDisplay;
     }
-    
+
     private VBox createNumberPad() {
-        VBox numberPad = new VBox(5); 
+        VBox numberPad = new VBox(5);
         numberPad.setAlignment(Pos.CENTER);
-        numberPad.setPadding(new Insets(10)); 
+        numberPad.setPadding(new Insets(10));
         numberPad.setStyle("-fx-background-color: rgba(10, 20, 40, 0.6); -fx-border-color: #00ccff; -fx-border-width: 1px;");
 
         HBox[] rows = new HBox[4];
         digitButtons = new ArrayList<>();
-        
+
         for (int i = 0; i < 4; i++) {
-            rows[i] = new HBox(5); 
+            rows[i] = new HBox(5);
             rows[i].setAlignment(Pos.CENTER);
         }
 
@@ -203,18 +197,17 @@ public class DataDecryptionTask extends GameTask {
         confirmButton.setPrefSize(100, 50);
         confirmButton.setOnAction(e -> checkCode());
         rows[3].getChildren().add(confirmButton);
-        
-        numberPad.getChildren().addAll(rows);
-        
-        return numberPad;
 
+        numberPad.getChildren().addAll(rows);
+
+        return numberPad;
     }
-    
+
     private Button createDigitButton(int digit) {
         Button button = new Button(Integer.toString(digit));
         button.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 18));
         button.setPrefSize(50, 50);
-        
+
         Stop[] stops = new Stop[] {
             new Stop(0, Color.web("#000520")),
             new Stop(1, Color.web("#003050"))
@@ -230,7 +223,7 @@ public class DataDecryptionTask extends GameTask {
             "-fx-border-radius: 5px; " +
             "-fx-cursor: hand;"
         );
-        
+
         button.setOnMouseEntered(e -> button.setStyle(
             "-fx-background-color: " + gradient.toString().replace("0x", "#") + "; " +
             "-fx-text-fill: #ffffff; " +
@@ -240,7 +233,7 @@ public class DataDecryptionTask extends GameTask {
             "-fx-effect: dropshadow(gaussian, #00ffff, 10, 0.5, 0, 0);" +
             "-fx-cursor: hand;"
         ));
-        
+
         button.setOnMouseExited(e -> button.setStyle(
             "-fx-background-color: " + gradient.toString().replace("0x", "#") + "; " +
             "-fx-text-fill: #00ffff; " +
@@ -251,7 +244,7 @@ public class DataDecryptionTask extends GameTask {
         ));
 
         button.setOnAction(e -> enterDigit(digit));
-        
+
         return button;
     }
 
@@ -260,47 +253,46 @@ public class DataDecryptionTask extends GameTask {
         hintsPanel.setAlignment(Pos.CENTER);
         hintsPanel.setPadding(new Insets(10));
         hintsPanel.setStyle("-fx-background-color: rgba(0, 20, 40, 0.6); -fx-border-color: #ff00ff; -fx-border-width: 1px;");
-        
+
         Text hintsTitle = new Text("DECRYPTION HINTS");
         hintsTitle.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 16));
         hintsTitle.setFill(Color.web("#ff00ff"));
-        
+
         Text hint1 = new Text("GREEN = Correct digit & position");
         hint1.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 12));
         hint1.setFill(Color.LIGHTGREEN);
-        
+
         Text hint2 = new Text("YELLOW = Correct digit, wrong position");
         hint2.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 12));
         hint2.setFill(Color.YELLOW);
-        
+
         Text hint3 = new Text("RED = Incorrect digit");
         hint3.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 12));
         hint3.setFill(Color.SALMON);
-        
+
         hintsPanel.getChildren().addAll(hintsTitle, hint1, hint2, hint3);
-        
+
         return hintsPanel;
     }
-    
-    
+
     private void addScannerEffect(HBox codeDisplay) {
         Rectangle scanner = new Rectangle(0, 0, 5, 50);
         scanner.setFill(Color.web("#00FFFF", 0.7));
-        
+
         Glow glow = new Glow(0.8);
         scanner.setEffect(glow);
-        
+
         codeDisplay.getChildren().add(scanner);
 
         scanningEffect = new Timeline(
-            new KeyFrame(Duration.ZERO, 
+            new KeyFrame(Duration.ZERO,
                 new KeyValue(scanner.translateXProperty(), -10)
             ),
-            new KeyFrame(Duration.seconds(1.5), 
+            new KeyFrame(Duration.seconds(1.5),
                 new KeyValue(scanner.translateXProperty(), codeDisplay.getWidth() + 10)
             )
         );
-        
+
         scanningEffect.setCycleCount(Timeline.INDEFINITE);
         scanningEffect.setAutoReverse(false);
         scanningEffect.play();
@@ -311,7 +303,7 @@ public class DataDecryptionTask extends GameTask {
         for (int i = 0; i < codeLength; i++) {
             code[i] = random.nextInt(10);
         }
-        
+
         StringBuilder codeString = new StringBuilder();
         for (int digit : code) {
             codeString.append(digit);
@@ -325,7 +317,7 @@ public class DataDecryptionTask extends GameTask {
             codeLabels.get(currentPosition).setText(Integer.toString(digit));
             codeLabels.get(currentPosition).setTextFill(Color.WHITE);
             currentPosition++;
-            
+
             if (currentPosition == codeLength) {
                 messageLabel.setText("PRESS CONFIRM TO VERIFY CODE");
                 messageLabel.setTextFill(Color.YELLOW);
@@ -358,13 +350,11 @@ public class DataDecryptionTask extends GameTask {
                 break;
             }
         }
-        
+
         if (correct) {
-            
             messageLabel.setText("CODE VERIFIED - ACCESS GRANTED");
             messageLabel.setTextFill(Color.LIGHTGREEN);
-            
-            
+
             for (Label label : codeLabels) {
                 label.setTextFill(Color.LIGHTGREEN);
                 CyberpunkEffects.styleCompletionEffect(label);
@@ -376,15 +366,13 @@ public class DataDecryptionTask extends GameTask {
 
             completeTask();
         } else {
-            
             int exactMatches = 0;
             int valueMatches = 0;
 
             int[] codeDigitCounts = new int[10];
             int[] playerDigitCounts = new int[10];
-            
+
             for (int i = 0; i < codeLength; i++) {
-                
                 if (playerCode[i] == code[i]) {
                     exactMatches++;
                     codeLabels.get(i).setTextFill(Color.LIGHTGREEN);
@@ -406,10 +394,8 @@ public class DataDecryptionTask extends GameTask {
 
             for (int i = 0; i < codeLength; i++) {
                 if (playerCode[i] == code[i]) {
-                    
                     codeLabels.get(i).setTextFill(Color.LIGHTGREEN);
                 } else {
-                    
                     boolean digitExists = false;
                     for (int j = 0; j < codeLength; j++) {
                         if (playerCode[i] == code[j] && playerCode[j] != code[j]) {
@@ -417,12 +403,10 @@ public class DataDecryptionTask extends GameTask {
                             break;
                         }
                     }
-                    
+
                     if (digitExists) {
-                        
                         codeLabels.get(i).setTextFill(Color.YELLOW);
                     } else {
-                        
                         codeLabels.get(i).setTextFill(Color.RED);
                     }
                 }
@@ -431,7 +415,6 @@ public class DataDecryptionTask extends GameTask {
     }
 
     private void cleanupResources() {
-        
         if (scanningEffect != null) {
             scanningEffect.stop();
         }
@@ -449,4 +432,4 @@ public class DataDecryptionTask extends GameTask {
         super.cleanupTask();
         cleanupResources();
     }
-} 
+}

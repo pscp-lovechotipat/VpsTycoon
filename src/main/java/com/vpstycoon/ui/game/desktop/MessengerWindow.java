@@ -31,7 +31,6 @@ public class MessengerWindow extends VBox {
     private DashboardView dashboardView;
     private Timeline glowAnimation;
 
-    
     public MessengerWindow(ChatHistoryManager chatHistoryManager) {
         setPrefSize(900, 650);
         getStylesheets().add(getClass().getResource("/css/messenger-window.css").toExternalForm());
@@ -39,19 +38,16 @@ public class MessengerWindow extends VBox {
 
         HBox titleBar = createTitleBar();
         requestListView = new RequestListView();
-        chatAreaView = new ChatAreaView(chatHistoryManager); 
+        chatAreaView = new ChatAreaView(chatHistoryManager);
         dashboardView = new DashboardView();
 
-        
         VBox chatContainer = new VBox(dashboardView, chatAreaView);
         VBox.setVgrow(chatAreaView, Priority.ALWAYS);
 
-        
         HBox content = new HBox(requestListView, chatContainer);
         HBox.setHgrow(chatContainer, Priority.ALWAYS);
         content.setPadding(new Insets(0));
 
-        
         VBox.setVgrow(content, Priority.ALWAYS);
 
         getChildren().addAll(titleBar, content);
@@ -66,28 +62,24 @@ public class MessengerWindow extends VBox {
         HBox titleBox = new HBox(10);
         titleBox.setAlignment(Pos.CENTER_LEFT);
 
-        
         Rectangle iconBg = new Rectangle(24, 24);
         iconBg.setArcWidth(5);
         iconBg.setArcHeight(5);
-        
-        
+
         Stop[] stops = new Stop[] {
             new Stop(0, Color.web("#00c3ff")),
             new Stop(1, Color.web("#9e33ff"))
         };
         LinearGradient gradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE, stops);
         iconBg.setFill(gradient);
-        
-        
+
         DropShadow dropShadow = new DropShadow();
         dropShadow.setColor(Color.web("#00c3ff"));
         dropShadow.setRadius(10);
-        
+
         Glow glow = new Glow(0.8);
         iconBg.setEffect(glow);
-        
-        
+
         glowAnimation = new Timeline(
             new KeyFrame(Duration.ZERO, new KeyValue(glow.levelProperty(), 0.5)),
             new KeyFrame(Duration.seconds(1.5), new KeyValue(glow.levelProperty(), 0.8))
@@ -95,26 +87,22 @@ public class MessengerWindow extends VBox {
         glowAnimation.setAutoReverse(true);
         glowAnimation.setCycleCount(Timeline.INDEFINITE);
         glowAnimation.play();
-        
-        
+
         Text matrixText = new Text("M");
         matrixText.setFill(Color.WHITE);
         matrixText.setStyle("-fx-font-weight: bold;");
         HBox iconContainer = new HBox(iconBg);
         iconContainer.setAlignment(Pos.CENTER);
         iconContainer.getChildren().add(matrixText);
-        iconContainer.setTranslateX(-12); 
+        iconContainer.setTranslateX(-12);
 
-        
         Label titleLabel = new Label("VPS TYCOON MESSENGER");
         titleLabel.getStyleClass().add("title-text");
-        
-        
+
         Label versionLabel = new Label("v2.0");
         versionLabel.setStyle("-fx-text-fill: #00ffff; -fx-font-size: 10px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
-        versionLabel.setTranslateY(4); 
-        
-        
+        versionLabel.setTranslateY(4);
+
         VBox titleVersionBox = new VBox(0);
         titleVersionBox.setAlignment(Pos.CENTER_LEFT);
         titleVersionBox.getChildren().addAll(titleLabel, versionLabel);
@@ -122,19 +110,17 @@ public class MessengerWindow extends VBox {
         titleBox.getChildren().addAll(iconContainer, titleVersionBox);
         HBox.setHgrow(titleBox, Priority.ALWAYS);
 
-        
         Circle statusIndicator = new Circle(6);
         statusIndicator.setFill(Color.web("#00ff88"));
         statusIndicator.setEffect(new Glow(0.8));
-        
+
         Label statusLabel = new Label("ONLINE");
         statusLabel.setStyle("-fx-text-fill: #00ff88; -fx-font-size: 10px; -fx-font-family: 'Monospace', 'Courier New', monospace;");
-        
+
         HBox statusBox = new HBox(5);
         statusBox.setAlignment(Pos.CENTER);
         statusBox.getChildren().addAll(statusIndicator, statusLabel);
-        
-        
+
         Button closeButton = new Button("×");
         closeButton.getStyleClass().add("close-button");
 
@@ -150,4 +136,3 @@ public class MessengerWindow extends VBox {
         return (Button) titleBar.getChildren().get(2);
     }
 }
-

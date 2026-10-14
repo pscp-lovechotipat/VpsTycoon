@@ -24,7 +24,7 @@ public class SceneController {
         this.config = config;
         this.screenManager = screenManager;
         this.rootContainer = new StackPane();
-        
+
         initializeScene();
     }
 
@@ -39,17 +39,13 @@ public class SceneController {
     }
 
     private void initializeScene() {
-        
         rootContainer.setStyle("-fx-background-color: black;");
-        
-        
+
         mainScene = new Scene(rootContainer);
         mainScene.setFill(Color.BLACK);
-        
-        
+
         stage.setScene(mainScene);
-        
-        
+
         updateResolution();
     }
 
@@ -60,25 +56,20 @@ public class SceneController {
 
     public void updateResolution() {
         ScreenResolution resolution = config.getResolution();
-        
-        
+
         rootContainer.setPrefWidth(resolution.getWidth());
         rootContainer.setPrefHeight(resolution.getHeight());
         rootContainer.setMinWidth(resolution.getWidth());
         rootContainer.setMinHeight(resolution.getHeight());
         rootContainer.setMaxWidth(resolution.getWidth());
         rootContainer.setMaxHeight(resolution.getHeight());
-        
-        
+
         screenManager.applySettings(stage, mainScene);
-        
-        
+
         mainScene.setFill(Color.BLACK);
-        
-        
+
         rootContainer.requestLayout();
-        
-        
+
         if (!rootContainer.getChildren().isEmpty()) {
             for (Node child : rootContainer.getChildren()) {
                 if (child instanceof Region) {
@@ -94,5 +85,4 @@ public class SceneController {
             }
         }
     }
-} 
-
+}

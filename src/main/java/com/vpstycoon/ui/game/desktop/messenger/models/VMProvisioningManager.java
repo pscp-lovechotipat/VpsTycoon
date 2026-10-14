@@ -22,9 +22,7 @@ public class VMProvisioningManager {
     private final ChatAreaView chatAreaView;
     private final Map<CustomerRequest, ProgressBar> provisioningProgressBars;
     private final Random random = new Random();
-    
-    
-    
+
     private final SkillPointsSystem skillPointsSystem;
 
     public VMProvisioningManager(ChatHistoryManager chatHistoryManager, ChatAreaView chatAreaView,
@@ -32,10 +30,7 @@ public class VMProvisioningManager {
         this.chatHistoryManager = chatHistoryManager;
         this.chatAreaView = chatAreaView;
         this.provisioningProgressBars = provisioningProgressBars;
-        
-        
-        
-        
+
         this.skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
     }
 
@@ -43,13 +38,11 @@ public class VMProvisioningManager {
         chatAreaView.addSystemMessage("Starting VM provisioning...");
         sendInitialMessages(request);
 
-        
         int provisioningDelay = calculateProvisioningDelay();
         final int[] progress = {0};
         final int totalSteps = provisioningDelay * 10;
         final long startTime = System.currentTimeMillis();
 
-        
         HBox progressContainer = new HBox();
         progressContainer.setAlignment(Pos.CENTER);
         progressContainer.setPadding(new Insets(10, 0, 10, 0));
@@ -72,15 +65,12 @@ public class VMProvisioningManager {
         Platform.runLater(() -> chatAreaView.getMessagesBox().getChildren().add(progressContainer));
         provisioningProgressBars.put(request, progressBar);
 
-        
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("startTime", startTime);
         metadata.put("provisioningDelay", provisioningDelay);
         metadata.put("isProvisioning", true);
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "Starting VM provisioning...", metadata));
 
-        
-        
         Timer progressTimer = new Timer();
         progressTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -96,8 +86,7 @@ public class VMProvisioningManager {
                     if (progress[0] >= totalSteps) {
                         this.cancel();
                         provisioningProgressBars.remove(request);
-                        
-                        
+
                         sendVMDetails(request, vm);
                         timeRemainingLabel.setText("VM provisioning completed.");
                         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM, "VM provisioning completed.", new HashMap<>()));
@@ -108,14 +97,8 @@ public class VMProvisioningManager {
                     }
                 });
             }
-        }, 0, 100); 
+        }, 0, 100);
     }
-    
-    
-    
-    
-    
-    
 
     private void sendInitialMessages(CustomerRequest request) {
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.USER,
@@ -127,14 +110,10 @@ public class VMProvisioningManager {
     }
 
     private int calculateProvisioningDelay() {
-        
-        
-        
         int minDelay = 5;
         int maxDelay = 30;
         int provisioningDelay = minDelay + random.nextInt(maxDelay - minDelay + 1);
-        
-        
+
         double reduction = skillPointsSystem.getDeploymentTimeReduction();
         return Math.max(minDelay, (int)(provisioningDelay * (1.0 - reduction)));
     }
@@ -182,49 +161,40 @@ public class VMProvisioningManager {
         return new String(passwordArray);
     }
 
-    
-
-    
     public double calculateRatingChange(
-            CustomerRequest request, 
-            int providedVCPUs, 
-            int providedRamGB, 
+            CustomerRequest request,
+            int providedVCPUs,
+            int providedRamGB,
             int providedDiskGB) {
-        
         Company company = ResourceManager.getInstance().getCompany();
-        
-        
+
         int requiredVCPUs = request.getRequiredVCPUs();
         int requiredRamGB = request.getRequiredRamGB();
         int requiredDiskGB = request.getRequiredDiskGB();
-        
-        
+
         double ratingChange = company.calculateVMAssignmentRatingChange(
             requiredVCPUs, requiredRamGB, requiredDiskGB,
             providedVCPUs, providedRamGB, providedDiskGB
         );
-        
-        
+
         switch (request.getCustomerType()) {
             case INDIVIDUAL:
-                ratingChange *= 1.2; 
+                ratingChange *= 1.2;
                 break;
             case SMALL_BUSINESS:
                 ratingChange *= 1.1;
                 break;
             case MEDIUM_BUSINESS:
-                ratingChange *= 1.0; 
+                ratingChange *= 1.0;
                 break;
             case LARGE_BUSINESS:
                 ratingChange *= 0.9;
                 break;
             case ENTERPRISE:
-                ratingChange *= 0.8; 
+                ratingChange *= 0.8;
                 break;
         }
-        
-        
+
         return Math.max(-0.5, Math.min(0.5, ratingChange));
     }
 }
-

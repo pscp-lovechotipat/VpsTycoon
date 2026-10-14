@@ -15,5 +15,4 @@ public interface GameConfig {
     void setVsyncEnabled(boolean enabled);
     void save();
     void load();
-} 
-
+}

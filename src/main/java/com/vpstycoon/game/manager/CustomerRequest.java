@@ -20,8 +20,7 @@ public class CustomerRequest extends Customer implements Serializable {
     private boolean isExpired = false;
     private long creationTime;
     private long lastPaymentTime;
-    
-    
+
     private String assignedToVmId;
 
     public enum RentalPeriodType {
@@ -46,7 +45,6 @@ public class CustomerRequest extends Customer implements Serializable {
             return displayName;
         }
     }
-
 
     public CustomerRequest(CustomerType customerType, RequestType requestType, int duration) {
         super(RandomGenerateName.generateRandomName(), customerType);
@@ -156,7 +154,6 @@ public class CustomerRequest extends Customer implements Serializable {
         long timeSinceLastPaymentMs = currentGameTimeMs - lastPaymentTime;
         long paymentIntervalMs;
 
-        
         switch (rentalPeriodType) {
             case DAILY:
                 paymentIntervalMs = GameTimeManager.GAME_DAY_MS;
@@ -203,12 +200,10 @@ public class CustomerRequest extends Customer implements Serializable {
         return isExpired;
     }
 
-    
     public void setRentalPeriodType(RentalPeriodType rentalPeriodType) {
         this.rentalPeriodType = rentalPeriodType;
     }
 
-    
     public CustomerType getCustomerType() {
         return customerType;
     }
@@ -216,7 +211,6 @@ public class CustomerRequest extends Customer implements Serializable {
     public RequestType getRequestType() {
         return requestType;
     }
-
 
     public int getDuration() {
         return duration;
@@ -246,7 +240,6 @@ public class CustomerRequest extends Customer implements Serializable {
         return rentalPeriodType;
     }
 
-
     public double getMonthlyPayment() {
         return monthlyPayment;
     }
@@ -267,43 +260,40 @@ public class CustomerRequest extends Customer implements Serializable {
         return getName() + " - " + requestType.toString() + " (" + rentalPeriodType.getDisplayName() + ")";
     }
 
-
-    
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        
+
         CustomerRequest other = (CustomerRequest) obj;
-        
+
         if (this.getId() != 0 && other.getId() != 0) {
             return this.getId() == other.getId();
         }
-        
-        if (this.getName() != null && other.getName() != null 
+
+        if (this.getName() != null && other.getName() != null
             && !this.getName().isEmpty() && !other.getName().isEmpty()
             && this.getName().equals(other.getName())) {
             return true;
         }
-        
+
         return this.customerType == other.customerType &&
                this.requestType == other.requestType &&
                this.requiredVCPUs == other.requiredVCPUs &&
                this.requiredRamGB == other.requiredRamGB &&
                this.requiredDiskGB == other.requiredDiskGB;
     }
-    
-    
+
     @Override
     public int hashCode() {
         if (this.getId() != 0) {
             return Long.hashCode(this.getId());
         }
-        
+
         if (this.getName() != null && !this.getName().isEmpty()) {
             return this.getName().hashCode();
         }
-        
+
         int result = customerType != null ? customerType.hashCode() : 0;
         result = 31 * result + (requestType != null ? requestType.hashCode() : 0);
         result = 31 * result + requiredVCPUs;
@@ -312,27 +302,19 @@ public class CustomerRequest extends Customer implements Serializable {
         return result;
     }
 
-    
     public boolean isAssignedToVM() {
         return assignedToVmId != null && !assignedToVmId.isEmpty();
     }
-    
-    
-    
+
     public void assignToVM(String vmId) {
         this.assignedToVmId = vmId;
-        
-        
     }
-    
-    
+
     public void unassignFromVM() {
         this.assignedToVmId = null;
     }
-    
-    
+
     public String getAssignedVmId() {
         return assignedToVmId;
     }
 }
-

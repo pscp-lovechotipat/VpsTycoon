@@ -16,20 +16,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Rack extends StackPane implements Serializable {
-
     private transient List<VBox> racks;
     private transient Button prevButton;
     private transient Button nextButton;
     private transient VBox navigationButtons;
-    
-    
-    private final List<List<VPSOptimization>> rackVPS; 
-    private final List<Integer> unlockedSlotUnitsList; 
-    private final List<Integer> occupiedSlotUnitsList; 
+
+    private final List<List<VPSOptimization>> rackVPS;
+    private final List<Integer> unlockedSlotUnitsList;
+    private final List<Integer> occupiedSlotUnitsList;
     private int currentRackIndex;
     private int maxSlotUnits;
     private int occupiedSlotUnits;
-    
+
     private List<Integer> slotsPerRack;
 
     public Rack() {
@@ -38,21 +36,18 @@ public class Rack extends StackPane implements Serializable {
         unlockedSlotUnitsList = new ArrayList<>();
         occupiedSlotUnitsList = new ArrayList<>();
         slotsPerRack = new ArrayList<>();
-        
+
         currentRackIndex = -1;
         maxSlotUnits = 0;
         occupiedSlotUnits = 0;
     }
-    
-    
+
     private void initializeTransientFields() {
         racks = new ArrayList<>();
-        
-        
+
         prevButton = new Button("←");
         nextButton = new Button("→");
-        
-        
+
         String buttonStyle = """
             -fx-background-color: #1a1a1a;
             -fx-text-fill: #00ff00;
@@ -66,68 +61,56 @@ public class Rack extends StackPane implements Serializable {
             -fx-min-width: 40px;
             -fx-min-height: 40px;
             """;
-        
+
         prevButton.setStyle(buttonStyle);
         nextButton.setStyle(buttonStyle);
-        
-        
-        prevButton.setOnMouseEntered(e -> 
+
+        prevButton.setOnMouseEntered(e ->
             prevButton.setStyle(buttonStyle + "-fx-background-color: #00ff00; -fx-text-fill: #000000;")
         );
-        prevButton.setOnMouseExited(e -> 
+        prevButton.setOnMouseExited(e ->
             prevButton.setStyle(buttonStyle)
         );
-        
-        nextButton.setOnMouseEntered(e -> 
+
+        nextButton.setOnMouseEntered(e ->
             nextButton.setStyle(buttonStyle + "-fx-background-color: #00ff00; -fx-text-fill: #000000;")
         );
-        nextButton.setOnMouseExited(e -> 
+        nextButton.setOnMouseExited(e ->
             nextButton.setStyle(buttonStyle)
         );
 
-        
         navigationButtons = new VBox(10);
         navigationButtons.setAlignment(Pos.CENTER);
         navigationButtons.setPadding(new Insets(10));
         navigationButtons.getChildren().addAll(prevButton, nextButton);
-        
-        
+
         prevButton.setOnAction(e -> navigateToPreviousRack());
         nextButton.setOnAction(e -> navigateToNextRack());
-        
-        
+
         navigationButtons.setVisible(false);
-        
-        
+
         getChildren().add(navigationButtons);
     }
-    
-    
+
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
     }
 
-    
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        
-        
+
         initializeTransientFields();
-        
-        
+
         for (int i = 0; i < slotsPerRack.size(); i++) {
-            
             VBox newRack = createRackUI(slotsPerRack.get(i));
             racks.add(newRack);
         }
-        
-        
+
         if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
             showCurrentRack();
         }
     }
-    
-    
+
     private VBox createRackUI(int slots) {
         VBox newRack = new VBox(5);
         newRack.setStyle("""
@@ -139,39 +122,32 @@ public class Rack extends StackPane implements Serializable {
             -fx-border-style: solid;
             """);
         newRack.setAlignment(Pos.TOP_CENTER);
-        
-        
+
         for (int i = 0; i < slots; i++) {
             VBox slot = createSlot();
             newRack.getChildren().add(slot);
         }
-        
+
         return newRack;
     }
 
     public void addRack(int slots) {
-        
         VBox newRack = createRackUI(slots);
         racks.add(newRack);
-        
-        
+
         slotsPerRack.add(slots);
-        
-        
-        rackVPS.add(new ArrayList<>()); 
-        unlockedSlotUnitsList.add(1); 
-        occupiedSlotUnitsList.add(0); 
-        
-        
+
+        rackVPS.add(new ArrayList<>());
+        unlockedSlotUnitsList.add(1);
+        occupiedSlotUnitsList.add(0);
+
         maxSlotUnits = slots;
-        
-        
+
         if (currentRackIndex == -1) {
             currentRackIndex = 0;
             showCurrentRack();
         }
-        
-        
+
         navigationButtons.setVisible(racks.size() > 1);
     }
 
@@ -189,8 +165,6 @@ public class Rack extends StackPane implements Serializable {
         slot.setAlignment(Pos.CENTER);
         return slot;
     }
-
-
 
     public int getMaxRacks() {
         return racks.size();
@@ -212,46 +186,29 @@ public class Rack extends StackPane implements Serializable {
     }
 
     private void showCurrentRack() {
-        
         getChildren().clear();
-        
-        
+
         getChildren().add(navigationButtons);
-        
-        
+
         if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
             VBox currentRack = racks.get(currentRackIndex);
             getChildren().add(currentRack);
-            
-            
-            
-            
+
             occupiedSlotUnits = occupiedSlotUnitsList.get(currentRackIndex);
-            
-            
-            
-            
-            
-            
-            
-            
-            
+
             maxSlotUnits = currentRack.getChildren().size();
-            
-            
+
             updateVPSDisplay(currentRack);
         }
     }
 
     private void updateVPSDisplay(VBox rack) {
-        
         for (var slot : rack.getChildren()) {
             if (slot instanceof VBox) {
                 ((VBox) slot).getChildren().clear();
             }
         }
-        
-        
+
         int currentSlot = 0;
         List<VPSOptimization> currentRackVPS = rackVPS.get(currentRackIndex);
         int currentUnlockedSlots = unlockedSlotUnitsList.get(currentRackIndex);
@@ -335,7 +292,6 @@ public class Rack extends StackPane implements Serializable {
         return false;
     }
 
-    
     public boolean goToLatestRack() {
         if (!racks.isEmpty()) {
             currentRackIndex = racks.size() - 1;
@@ -345,41 +301,34 @@ public class Rack extends StackPane implements Serializable {
         return false;
     }
 
-
-    
     public boolean installVPS(VPSOptimization vps) {
         if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
             System.out.println("DEBUG: Cannot install VPS, no rack selected");
-            return false; 
+            return false;
         }
-        
-        
+
         int availableSlots = getAvailableSlotUnits();
         int requiredSlots = vps.getSlotsRequired();
-        
-        System.out.println("DEBUG: Rack " + (currentRackIndex+1) + " - Available slots: " + availableSlots + 
-                           ", Required slots: " + requiredSlots + 
-                           ", Unlocked slots: " + unlockedSlotUnitsList.get(currentRackIndex) + 
+
+        System.out.println("DEBUG: Rack " + (currentRackIndex+1) + " - Available slots: " + availableSlots +
+                           ", Required slots: " + requiredSlots +
+                           ", Unlocked slots: " + unlockedSlotUnitsList.get(currentRackIndex) +
                            ", Occupied slots: " + occupiedSlotUnitsList.get(currentRackIndex));
-        
+
         if (availableSlots < requiredSlots) {
             System.out.println("DEBUG: Not enough slots available in rack " + (currentRackIndex+1));
-            return false; 
+            return false;
         }
-        
-        
+
         rackVPS.get(currentRackIndex).add(vps);
-        
-        
+
         int currentOccupied = occupiedSlotUnitsList.get(currentRackIndex);
         occupiedSlotUnitsList.set(currentRackIndex, currentOccupied + vps.getSlotsRequired());
-        
-        
+
         occupiedSlotUnits = occupiedSlotUnitsList.get(currentRackIndex);
-        
+
         vps.setInstalled(true);
 
-        
         if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
             updateVPSDisplay(racks.get(currentRackIndex));
         }
@@ -388,17 +337,15 @@ public class Rack extends StackPane implements Serializable {
 
     public boolean uninstallVPS(VPSOptimization vps) {
         if (currentRackIndex < 0 || currentRackIndex >= rackVPS.size()) {
-            return false; 
+            return false;
         }
         List<VPSOptimization> currentRackVPS = rackVPS.get(currentRackIndex);
         if (currentRackVPS.remove(vps)) {
-            
             int currentOccupied = occupiedSlotUnitsList.get(currentRackIndex);
             occupiedSlotUnitsList.set(currentRackIndex, currentOccupied - vps.getSlotsRequired());
-            
-            
+
             occupiedSlotUnits = occupiedSlotUnitsList.get(currentRackIndex);
-            
+
             vps.setInstalled(false);
 
             if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
@@ -411,7 +358,7 @@ public class Rack extends StackPane implements Serializable {
 
     public List<VPSOptimization> getInstalledVPS() {
         if (currentRackIndex < 0 || currentRackIndex >= rackVPS.size()) {
-            return new ArrayList<>(); 
+            return new ArrayList<>();
         }
         return new ArrayList<>(rackVPS.get(currentRackIndex));
     }
@@ -422,7 +369,7 @@ public class Rack extends StackPane implements Serializable {
 
     public int getUnlockedSlotUnits() {
         if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
-            return 0; 
+            return 0;
         }
         return unlockedSlotUnitsList.get(currentRackIndex);
     }
@@ -433,7 +380,7 @@ public class Rack extends StackPane implements Serializable {
 
     public int getAvailableSlotUnits() {
         if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
-            return 0; 
+            return 0;
         }
         int unlockedSlots = unlockedSlotUnitsList.get(currentRackIndex);
         int occupiedSlots = occupiedSlotUnitsList.get(currentRackIndex);
@@ -442,42 +389,34 @@ public class Rack extends StackPane implements Serializable {
 
     public boolean upgrade() {
         if (currentRackIndex < 0 || currentRackIndex >= unlockedSlotUnitsList.size()) {
-            return false; 
+            return false;
         }
-        
+
         int currentUnlockedSlots = unlockedSlotUnitsList.get(currentRackIndex);
-        
-        
+
         if (currentUnlockedSlots < racks.get(currentRackIndex).getChildren().size()) {
-            
             unlockedSlotUnitsList.set(currentRackIndex, currentUnlockedSlots + 1);
-            
-            
-            
+
             showCurrentRack();
             return true;
         }
         return false;
     }
 
-    
     public List<VPSOptimization> getAllInstalledVPS() {
         List<VPSOptimization> allVPS = new ArrayList<>();
-        
-        
+
         for (List<VPSOptimization> rackVPSList : rackVPS) {
             allVPS.addAll(rackVPSList);
         }
-        
+
         return allVPS;
     }
-    
-    
+
     public List<Integer> getUnlockedSlotUnitsList() {
         return new ArrayList<>(unlockedSlotUnitsList);
     }
 
-    
     public void setUnlockedSlotUnitsList(List<Integer> unlockedList) {
         if (unlockedList != null) {
             this.unlockedSlotUnitsList.clear();
@@ -485,17 +424,4 @@ public class Rack extends StackPane implements Serializable {
             System.out.println("ตั้งค่า unlockedSlotUnitsList: " + this.unlockedSlotUnitsList);
         }
     }
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    
-    
 }
-

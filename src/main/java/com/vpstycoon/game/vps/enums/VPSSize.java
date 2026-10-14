@@ -1,6 +1,5 @@
 package com.vpstycoon.game.vps.enums;
 
-
 public enum VPSSize {
     SIZE_1U("1U", 1),
     SIZE_2U("2U", 2),
@@ -28,6 +27,4 @@ public enum VPSSize {
     public int getSlotsRequired() {
         return slotsRequired;
     }
-
 }
-

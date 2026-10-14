@@ -7,18 +7,14 @@ public class CenterNotificationController {
 
     public CenterNotificationController(CenterNotificationModel model, CenterNotificationView view) {
         this.view = view;
-        this.view.setModel(model); 
+        this.view.setModel(model);
     }
-
 
     public void push(String title, String content, String image) {
         Platform.runLater(() -> view.addNotificationPane(title, content, image));
     }
-    
-    
+
     public void pushAutoClose(String title, String content, String image, long autoCloseMillis) {
         Platform.runLater(() -> view.addNotificationPaneAutoClose(title, content, image, autoCloseMillis));
     }
-
 }
-

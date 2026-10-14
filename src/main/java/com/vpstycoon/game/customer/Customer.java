@@ -5,13 +5,13 @@ import com.vpstycoon.game.customer.enums.CustomerType;
 import java.io.Serializable;
 
 public class Customer implements Serializable {
-    private static int nextId = 1; 
-    private final int id;          
+    private static int nextId = 1;
+    private final int id;
     private String name;
-    protected CustomerType customerType; 
+    protected CustomerType customerType;
 
     public Customer(String name, CustomerType customerType) {
-        this.id = nextId++;        
+        this.id = nextId++;
         this.name = name;
         this.customerType = customerType;
     }
@@ -23,8 +23,4 @@ public class Customer implements Serializable {
     public String getName() {
         return name;
     }
-
-
-
 }
-

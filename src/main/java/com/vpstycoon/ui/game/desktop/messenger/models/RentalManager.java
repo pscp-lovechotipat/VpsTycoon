@@ -21,8 +21,8 @@ public class RentalManager {
     private final GameTimeManager gameTimeManager;
     private final Random random = new Random();
     private GameTimeManager.GameTimeListener timeListener;
-    private Map<VPSOptimization.VM, CustomerRequest> vmAssignments; 
-    private Runnable onUpdateDashboard; 
+    private Map<VPSOptimization.VM, CustomerRequest> vmAssignments;
+    private Runnable onUpdateDashboard;
 
     public RentalManager(ChatHistoryManager chatHistoryManager, ChatAreaView chatAreaView,
                          Company company, GameTimeManager gameTimeManager) {
@@ -49,7 +49,7 @@ public class RentalManager {
     public void setupRentalPeriod(CustomerRequest request, VPSOptimization.VM vm) {
         if (request == null || vm == null) return;
 
-        request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs()); 
+        request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
 
         String rentalMessage = "VM assigned for " + request.getRentalPeriodType().getDisplayName() + " rental period";
         Map<String, Object> metadata = new HashMap<>();
@@ -79,31 +79,22 @@ public class RentalManager {
                 chatAreaView.addSystemMessage("Customer has decided to renew their contract with " +
                         newPeriod.getDisplayName() + " period!");
 
-                request.setRentalPeriodType(newPeriod); 
-                VPSOptimization.VM vm = getAssignedVM(request); 
+                request.setRentalPeriodType(newPeriod);
+                VPSOptimization.VM vm = getAssignedVM(request);
                 if (vm != null) {
                     setupRentalPeriod(request, vm);
                 }
             } else {
-                
                 chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
                         "Customer has decided not to renew their contract.",
                         new HashMap<>()));
                 chatAreaView.addSystemMessage("Customer has decided not to renew their contract.");
-                
-                
-                
-                
+
                 if (!request.isExpired()) {
                     request.markAsExpired();
                     System.out.println("RentalManager: ทำการ mark request เป็น expired: " + request.getName());
                 }
-                
-                
-                
-                
-                
-                
+
                 if (onUpdateDashboard != null) {
                     onUpdateDashboard.run();
                 }
@@ -122,7 +113,6 @@ public class RentalManager {
         return Math.max(0.1, Math.min(0.95, baseProbability + ratingFactor));
     }
 
-    
     private VPSOptimization.VM getAssignedVM(CustomerRequest request) {
         if (vmAssignments != null) {
             for (Map.Entry<VPSOptimization.VM, CustomerRequest> entry : vmAssignments.entrySet()) {
@@ -134,19 +124,14 @@ public class RentalManager {
         return null;
     }
 
-    
-
-    
     public void setVMAssignment(Map<VPSOptimization.VM, CustomerRequest> vmAssignments) {
         this.vmAssignments = vmAssignments;
     }
 
-    
     public void setOnUpdateDashboard(Runnable onUpdateDashboard) {
         this.onUpdateDashboard = onUpdateDashboard;
     }
-    
-    
+
     public void detachFromTimeManager() {
         if (gameTimeManager != null && timeListener != null) {
             gameTimeManager.removeTimeListener(timeListener);
@@ -154,4 +139,3 @@ public class RentalManager {
         }
     }
 }
-

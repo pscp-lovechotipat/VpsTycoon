@@ -9,7 +9,6 @@ public class MouseNotificationController {
         this.view = view;
     }
 
-    
     public void addNotification(String content) {
         Point mousePoint = MouseInfo.getPointerInfo().getLocation();
         double mouseX = mousePoint.getX();
@@ -17,9 +16,6 @@ public class MouseNotificationController {
 
         content = "+ " + content;
 
-        view.addNotificationPane(content, mouseX, mouseY); 
+        view.addNotificationPane(content, mouseX, mouseY);
     }
-
 }
-
-

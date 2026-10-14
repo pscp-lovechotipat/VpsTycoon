@@ -1,9 +1,9 @@
 package com.vpstycoon.game.vps.enums;
 
 public enum VPSProduct {
-    BASIC_VPS("Basic Server (1U)", 1, 1, 20, 50, 5, VPSSize.SIZE_1U),          
-    STANDARD_VPS("Standard Server (1U)", 2, 4, 50, 100, 10, VPSSize.SIZE_1U),  
-    PREMIUM_VPS("Premium Server (2U)", 4, 8, 100, 200, 20, VPSSize.SIZE_2U),   
+    BASIC_VPS("Basic Server (1U)", 1, 1, 20, 50, 5, VPSSize.SIZE_1U),
+    STANDARD_VPS("Standard Server (1U)", 2, 4, 50, 100, 10, VPSSize.SIZE_1U),
+    PREMIUM_VPS("Premium Server (2U)", 4, 8, 100, 200, 20, VPSSize.SIZE_2U),
     ENTERPRISE_VPS("Enterprise Server (3U)", 8, 16, 200, 500, 50, VPSSize.SIZE_3U),
     BLADE_SERVER("Blade Server", 4, 8, 100, 250, 25, VPSSize.BLADE),
     TOWER_SERVER("Tower Server (4U)", 16, 32, 500, 1000, 100, VPSSize.TOWER),
@@ -16,10 +16,10 @@ public enum VPSProduct {
 
     private final String name;
     private final int cpu;
-    private final int ram; 
-    private final int storage; 
-    private final int price; 
-    private final int keepUp; 
+    private final int ram;
+    private final int storage;
+    private final int price;
+    private final int keepUp;
     private final VPSSize size;
 
     VPSProduct(String name, int cpu, int ram, int storage, int price, int keepUp, VPSSize size) {
@@ -64,12 +64,7 @@ public enum VPSProduct {
         return cpu + " CPU, " + ram + "GB RAM, " + storage + "GB SSD";
     }
 
-    
     public String getPriceDisplay() {
         return "$" + price;
     }
-
-    
-
 }
-

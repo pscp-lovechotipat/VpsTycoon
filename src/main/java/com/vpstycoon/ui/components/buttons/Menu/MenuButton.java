@@ -50,7 +50,6 @@ public class MenuButton extends Button {
                         -fx-border-width: 2;
                         -fx-padding: 0;
                         """);
-
             } catch (Exception e) {
                 this.setGraphic(null);
                 this.setWidth(200);
@@ -76,7 +75,6 @@ public class MenuButton extends Button {
                     """);
         }
 
-        
         this.setOnMouseEntered(e -> {
                 this.setEffect(neon());
                 audioManager.playSoundEffect("hover2.wav");
@@ -101,11 +99,4 @@ public class MenuButton extends Button {
         neonShadow.setInput(glow);
         return neonShadow;
     }
-
-
-
-
-
 }
-
-

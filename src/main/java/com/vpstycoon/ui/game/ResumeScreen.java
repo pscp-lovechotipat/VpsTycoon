@@ -27,13 +27,11 @@ public class ResumeScreen extends StackPane {
     private final Runnable onOpenSettings;
     private AudioManager audioManager;
 
-    
     public ResumeScreen(Navigator navigator, Runnable onResumeGame, Runnable onOpenSettings) {
         this.navigator = navigator;
         this.onResumeGame = onResumeGame;
         this.onOpenSettings = onOpenSettings;
         this.audioManager = ResourceManager.getInstance().getAudioManager();
-        
 
         setViewOrder(-1000);
 
@@ -43,18 +41,14 @@ public class ResumeScreen extends StackPane {
     }
 
     private void setupUI() {
-
         Rectangle background = new Rectangle();
         background.widthProperty().bind(widthProperty());
         background.heightProperty().bind(heightProperty());
-        
 
         background.setFill(Color.rgb(30, 15, 50, 0.9));
-        
 
         background.setStroke(Color.rgb(180, 50, 255, 0.2));
         background.setStrokeWidth(1);
-
 
         VBox menuBox = new VBox(20);
         menuBox.setAlignment(Pos.CENTER);
@@ -63,7 +57,6 @@ public class ResumeScreen extends StackPane {
         menuBox.setMaxHeight(450);
         menuBox.setMinWidth(350);
         menuBox.setMinHeight(450);
-        
 
         menuBox.setStyle(
             "-fx-background-color: rgba(30, 15, 50, 0.8);" +
@@ -74,19 +67,16 @@ public class ResumeScreen extends StackPane {
             "-fx-border-insets: 0, 3;" +
             "-fx-effect: dropshadow(gaussian, #ff00ff, 5, 0.2, 0, 0);"
         );
-        
 
         Text titleText = new Text("PAUSED");
         titleText.setFont(FontLoader.SUBTITLE_FONT);
 
         titleText.setFill(Color.WHITE);
-        
 
         DropShadow shadow = new DropShadow();
         shadow.setColor(Color.rgb(255, 0, 255, 0.7));
         shadow.setRadius(5);
         titleText.setEffect(shadow);
-        
 
         MenuButton resumeButton = new MenuButton(MenuButtonType.RESUME);
         resumeButton.setOnAction(e -> {
@@ -97,7 +87,6 @@ public class ResumeScreen extends StackPane {
             onResumeGame.run();
         });
         styleButton(resumeButton);
-
 
         MenuButton settingsButton = new MenuButton(MenuButtonType.SETTINGS);
         settingsButton.setOnAction(e -> {
@@ -115,26 +104,22 @@ public class ResumeScreen extends StackPane {
         });
         styleButton(settingsButton);
 
-
         MenuButton mainMenuButton = new MenuButton(MenuButtonType.MAIN_MENU);
         mainMenuButton.setOnAction(e ->{
             audioManager.playSoundEffect("click.wav");
-            
 
             try {
                 System.out.println("กำลังบันทึกเกมก่อนออกไปเมนูหลัก...");
                 ResourceManager.getInstance().pushNotification("บันทึกเกม", "กำลังบันทึกความก้าวหน้าของคุณ...");
 
                 stopAllGameThreads();
-                
 
                 Company company = ResourceManager.getInstance().getCompany();
-                List<GameObject> gameObjects = 
+                List<GameObject> gameObjects =
                     ResourceManager.getInstance().getCurrentState().getGameObjects();
-                
+
                 GameState state = new GameState(company, gameObjects);
                 state.setLocalDateTime(ResourceManager.getInstance().getGameTimeController().getGameTimeManager().getGameDateTime());
-                
 
                 ResourceManager.getInstance().saveGameState(state);
                 System.out.println("บันทึกเกมเรียบร้อยแล้ว");
@@ -142,12 +127,11 @@ public class ResumeScreen extends StackPane {
                 System.err.println("เกิดข้อผิดพลาดในการบันทึกเกม: " + ex.getMessage());
                 ex.printStackTrace();
             }
-            
+
             audioManager.resumeMusic();
             navigator.showMainMenu();
         });
         styleButton(mainMenuButton);
-
 
         MenuButton quitButton = new MenuButton(MenuButtonType.QUIT);
         quitButton.setOnAction(e -> {
@@ -158,12 +142,10 @@ public class ResumeScreen extends StackPane {
 
         menuBox.getChildren().addAll(titleText, resumeButton, settingsButton, mainMenuButton, quitButton);
 
-
         BorderPane centerPane = new BorderPane();
         centerPane.setCenter(menuBox);
 
         getChildren().addAll(background, centerPane);
-
 
         background.setOnMouseClicked(e -> {
             if (e.getTarget() == background) {
@@ -173,15 +155,12 @@ public class ResumeScreen extends StackPane {
             }
         });
     }
-    
 
     private void styleButton(MenuButton button) {
-
         DropShadow buttonGlow = new DropShadow();
         buttonGlow.setColor(Color.rgb(180, 50, 255, 0.7));
         buttonGlow.setRadius(5);
         button.setEffect(buttonGlow);
-        
 
         button.setPrefWidth(250);
     }
@@ -213,12 +192,12 @@ public class ResumeScreen extends StackPane {
         if (ResourceManager.getInstance().getGameEvent() != null &&
             ResourceManager.getInstance().getGameEvent().isRunning()) {
             System.out.println("หยุด GameEvent อย่างถาวรก่อนออกไปเมนูหลัก");
-            ResourceManager.getInstance().getGameEvent().stopEvent(); 
+            ResourceManager.getInstance().getGameEvent().stopEvent();
         }
 
         if (ResourceManager.getInstance().getRequestGenerator() != null) {
             System.out.println("หยุด RequestGenerator อย่างถาวรก่อนออกไปเมนูหลัก");
-            ResourceManager.getInstance().getRequestGenerator().stopGenerator(); 
+            ResourceManager.getInstance().getRequestGenerator().stopGenerator();
         }
     }
 
@@ -239,4 +218,3 @@ public class ResumeScreen extends StackPane {
         }
     }
 }
-

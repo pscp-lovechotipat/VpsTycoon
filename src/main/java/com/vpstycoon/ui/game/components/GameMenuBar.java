@@ -8,11 +8,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
-
 public class GameMenuBar extends HBox {
     private final GameplayContentPane parent;
 
-    
     private static final Color CYBER_PURPLE_BRIGHT = Color.rgb(200, 50, 255);
     private static final Color CYBER_PURPLE_DARK = Color.rgb(120, 20, 180);
     private static final Color CYBER_PINK = Color.rgb(255, 50, 180);
@@ -40,42 +38,36 @@ public class GameMenuBar extends HBox {
     }
 
     private void initializeStatusButtons() {
-        
         VBox rackSlotsStatus = createStatusButton(
                 "Rack Slots",
                 CYBER_YELLOW,
                 CYBER_YELLOW_DARK
         );
 
-        
         VBox networkStatus = createStatusButton(
                 "Network",
                 CYBER_BLUE,
                 CYBER_BLUE_DARK
         );
 
-        
         VBox deployStatus = createStatusButton(
                 "Deploy",
                 CYBER_PINK,
                 CYBER_PINK_DARK
         );
 
-        
         VBox marketingStatus = createStatusButton(
                 "Marketing",
                 CYBER_GREEN,
                 CYBER_GREEN_DARK
         );
 
-        
         VBox securityStatus = createStatusButton(
                 "Security",
                 CYBER_PURPLE_BRIGHT,
                 CYBER_PURPLE_DARK
         );
 
-        
         VBox managementStatus = createStatusButton(
                 "Management",
                 CYBER_LIGHT_GREEN,
@@ -90,5 +82,4 @@ public class GameMenuBar extends HBox {
         CircleStatusButton statusButton = new CircleStatusButton(labelText, topColor, bottomColor, parent);
         return statusButton.getContainer();
     }
-} 
-
+}

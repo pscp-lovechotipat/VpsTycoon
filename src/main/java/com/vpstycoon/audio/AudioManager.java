@@ -30,17 +30,17 @@ public class AudioManager {
         setMusicVolume(event.getNewConfig().getMusicVolume());
         setSoundVolume(event.getNewConfig().getSfxVolume());
     }
-    
+
     public void playSound(String sound) {
         playSound(sound, sfxVolume);
     }
-    
+
     public void playSound(String sound, double volume) {
         if (!muted) {
             playSoundEffect(sound, volume);
         }
     }
-    
+
     public void playMusic(String musicFile) {
         Platform.runLater(() -> {
             try {
@@ -74,9 +74,7 @@ public class AudioManager {
             }
         });
     }
-    
-    
-    
+
     public void pauseMusic() {
         Platform.runLater(() -> {
             if (musicPlayer != null && musicPlayer.getStatus() == MediaPlayer.Status.PLAYING) {
@@ -85,7 +83,7 @@ public class AudioManager {
             }
         });
     }
-    
+
     public void resumeMusic() {
         Platform.runLater(() -> {
             if (musicPlayer != null && isMusicPaused && !muted) {
@@ -94,11 +92,11 @@ public class AudioManager {
             }
         });
     }
-    
+
     public void playSoundEffect(String soundFile) {
         playSoundEffect(soundFile, sfxVolume);
     }
-    
+
     private void playSoundEffect(String soundFile, double volume) {
         Platform.runLater(() -> {
             try {
@@ -130,7 +128,7 @@ public class AudioManager {
             }
         });
     }
-    
+
     public void stopSoundEffect(String soundFile) {
         Platform.runLater(() -> {
             Iterator<MediaPlayer> iterator = activeSfxPlayers.iterator();
@@ -144,27 +142,22 @@ public class AudioManager {
             }
         });
     }
-    
+
     public void setMusicVolume(double volume) {
         this.musicVolume = volume;
         if (musicPlayer != null) {
             musicPlayer.setVolume(volume);
         }
     }
-    
+
     public void setSoundVolume(double volume) {
         this.sfxVolume = volume;
     }
-    
+
     public void setSfxVolume(double volume) {
         setSoundVolume(volume);
     }
-    
-    
-    
-    
-    
-    
+
     public void preloadSoundEffect(String name) {
         if (!soundCache.containsKey(name)) {
             try {
@@ -190,5 +183,3 @@ public class AudioManager {
         }
     }
 }
-
-

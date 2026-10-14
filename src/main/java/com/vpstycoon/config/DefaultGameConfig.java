@@ -10,9 +10,9 @@ public class DefaultGameConfig implements GameConfig {
     private double musicVolume = 0.3;
     private double sfxVolume = 0.5;
     private boolean vsyncEnabled = true;
-    
+
     private DefaultGameConfig() {}
-    
+
     public static DefaultGameConfig getInstance() {
         if (instance == null) {
             instance = new DefaultGameConfig();
@@ -97,7 +97,4 @@ public class DefaultGameConfig implements GameConfig {
             System.err.println("Failed to load config: " + e.getMessage());
         }
     }
-
-    
-} 
-
+}

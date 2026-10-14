@@ -27,7 +27,6 @@ public class CenterNotificationModel {
         private String content;
         private String image;
 
-
         public Notification(String title, String content, String image) {
             this.title = title;
             this.content = content;
@@ -49,4 +48,3 @@ public class CenterNotificationModel {
         }
     }
 }
-

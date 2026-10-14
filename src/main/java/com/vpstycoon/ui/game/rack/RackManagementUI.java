@@ -41,13 +41,9 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
     private final Label upgradeInfoLabel;
     private final BorderPane mainRackDisplay;
     private final StackPane rackViewport;
-    
 
     private Label networkValueEmpty;
     private Label networkValuePopulated;
-
-
-
 
     private List<Node> originalRootNodes;
 
@@ -66,19 +62,16 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             -fx-effect: dropshadow(gaussian, #7f00ff, 10, 0, 0, 0);
             """);
 
-
         rackViewport = new StackPane();
         rackViewport.setMinHeight(400);
         mainRackDisplay = new BorderPane();
         rackViewport.getChildren().add(mainRackDisplay);
-        
 
         HBox navigationBox = new HBox(15);
         navigationBox.setAlignment(Pos.CENTER);
-        
+
         prevRackButton = createCyberButton("← PREV RACK");
         nextRackButton = createCyberButton("NEXT RACK →");
-        
 
         Glow glowEffect = new Glow(0.8);
         prevRackButton.setOnMouseEntered(e -> {
@@ -89,7 +82,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             prevRackButton.setEffect(null);
             prevRackButton.setStyle(getCyberButtonStyle());
         });
-        
+
         nextRackButton.setOnMouseEntered(e -> {
             nextRackButton.setEffect(glowEffect);
             nextRackButton.setStyle(nextRackButton.getStyle() + "-fx-background-color: #6600cc; -fx-text-fill: #ffffff;");
@@ -102,7 +95,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
         navigationBox.getChildren().addAll(prevRackButton, nextRackButton);
         getChildren().add(navigationBox);
 
-
         rackInfoLabel = new Label();
         rackInfoLabel.setStyle("""
             -fx-text-fill: #00ffff; 
@@ -112,7 +104,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             -fx-effect: dropshadow(gaussian, #00ffff, 5, 0, 0, 0);
             """);
         getChildren().add(rackInfoLabel);
-
 
         vpsListLabel = new Label("INSTALLED VPS");
         vpsListLabel.setStyle("""
@@ -128,7 +119,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             -fx-border-radius: 4px;
             """);
         getChildren().add(vpsListLabel);
-
 
         vpsList = new VBox(10);
         vpsList.setStyle("""
@@ -152,7 +142,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             """);
         scrollPane.setFitToWidth(true);
         getChildren().add(scrollPane);
-
 
         int initialUpgradeCost = calculateUpgradeCost();
         upgradeButton = createCyberButton("UPGRADE RACK ($" + initialUpgradeCost + ")");
@@ -188,17 +177,14 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             """);
         getChildren().add(upgradeInfoLabel);
 
-
         prevRackButton.setOnAction(e -> {
             if (rack.prevRack()) {
-
                 updateUI();
             }
         });
 
         nextRackButton.setOnAction(e -> {
             if (rack.nextRack()) {
-
                 updateUI();
             }
         });
@@ -215,32 +201,31 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
             int currentUpgradeCost = calculateUpgradeCost();
             if (parent.getCompany().getMoney() >= currentUpgradeCost) {
-                
                 parent.getCompany().setMoney(parent.getCompany().getMoney() - currentUpgradeCost);
-                
+
                 if (parent.getRack().upgrade()) {
                     Timeline pulseAnimation = new Timeline();
                     pulseAnimation.getKeyFrames().addAll(
-                        new KeyFrame(Duration.ZERO, 
+                        new KeyFrame(Duration.ZERO,
                             new KeyValue(upgradeButton.scaleXProperty(), 1.0),
                             new KeyValue(upgradeButton.scaleYProperty(), 1.0)
                         ),
-                        new KeyFrame(Duration.millis(200), 
+                        new KeyFrame(Duration.millis(200),
                             new KeyValue(upgradeButton.scaleXProperty(), 1.05),
                             new KeyValue(upgradeButton.scaleYProperty(), 1.05)
                         ),
-                        new KeyFrame(Duration.millis(400), 
+                        new KeyFrame(Duration.millis(400),
                             new KeyValue(upgradeButton.scaleXProperty(), 1.0),
                             new KeyValue(upgradeButton.scaleYProperty(), 1.0)
                         )
                     );
-                    
+
                     pulseAnimation.setOnFinished(event -> {
-                        parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " + 
+                        parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " +
                                               parent.getRack().getUnlockedSlotUnits() + " SLOTS");
                         openRackInfo();
                     });
-                    
+
                     pulseAnimation.play();
                 }
             } else {
@@ -248,19 +233,17 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             }
         });
 
-
         updateUI();
-        
 
         ResourceManager.getInstance().addRackUIUpdateListener(this);
     }
-    
+
     private Button createCyberButton(String text) {
         Button button = new Button(text);
         button.setStyle(getCyberButtonStyle());
         return button;
     }
-    
+
     private String getCyberButtonStyle() {
         return """
             -fx-background-color: #3a015c;
@@ -275,8 +258,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             -fx-effect: dropshadow(gaussian, #7f00ff, 5, 0, 0, 0);
             """;
     }
-    
-    
 
     private void updateUI() {
         if (rack.getMaxRacks() == 0) {
@@ -290,14 +271,11 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             prevRackButton.setDisable(true);
             nextRackButton.setDisable(true);
         } else {
-
             rackInfoLabel.setText(String.format("RACK %d/%d", rack.getRackIndex() + 1, rack.getMaxRacks()));
-
 
             boolean dataLoaded = false;
             GameState currentState = ResourceManager.getInstance().getCurrentState();
             if (currentState != null && currentState.getGameObjects() != null) {
-
                 vpsList.getChildren().clear();
                 List<VPSOptimization> installedVPS = rack.getInstalledVPS();
 
@@ -306,7 +284,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                     vpsList.getChildren().add(emptyLabel);
                 } else {
                     for (VPSOptimization vps : installedVPS) {
-
                         boolean vpsFoundInState = false;
                         for (GameObject obj : currentState.getGameObjects()) {
                             if (obj instanceof VPSOptimization) {
@@ -317,7 +294,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                                 }
                             }
                         }
-                        
+
                         VBox vpsBox = new VBox(5);
                         vpsBox.setStyle("""
                         -fx-background-color: #2d0052;
@@ -347,13 +324,13 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             -fx-text-fill: #00ffff;
                             -fx-font-family: 'Courier New';
                             """);
-                            
+
                         Label statusLabel = new Label("STATUS: " + vps.getStatus());
                         statusLabel.setStyle("""
                             -fx-text-fill: #00ffff;
                             -fx-font-family: 'Courier New';
                             """);
-                            
+
                         Label vmsLabel = new Label("VMs: " + vps.getVms().size() + "/" + vps.getMaxVMs());
                         vmsLabel.setStyle("""
                             -fx-text-fill: #00ffff;
@@ -361,7 +338,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             """);
 
                         vpsBox.getChildren().addAll(nameLabel, specsLabel, sizeLabel, statusLabel, vmsLabel);
-                        
 
                         vpsBox.setOnMouseEntered(e -> {
                             DropShadow glow = new DropShadow();
@@ -371,7 +347,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             vpsBox.setEffect(glow);
                             vpsBox.setStyle(vpsBox.getStyle() + "-fx-border-color: #ff00ff;");
                         });
-                        
+
                         vpsBox.setOnMouseExited(e -> {
                             vpsBox.setEffect(null);
                             vpsBox.setStyle("""
@@ -384,13 +360,12 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                                 -fx-effect: dropshadow(gaussian, #00ffff, 3, 0, 0, 0);
                                 """);
                         });
-                        
+
                         vpsList.getChildren().add(vpsBox);
                     }
                 }
                 dataLoaded = true;
             }
-            
 
             if (!dataLoaded) {
                 vpsList.getChildren().clear();
@@ -432,7 +407,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             """);
 
                         vpsBox.getChildren().addAll(nameLabel, specsLabel, sizeLabel);
-                        
 
                         vpsBox.setOnMouseEntered(e -> {
                             DropShadow glow = new DropShadow();
@@ -442,7 +416,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             vpsBox.setEffect(glow);
                             vpsBox.setStyle(vpsBox.getStyle() + "-fx-border-color: #ff00ff;");
                         });
-                        
+
                         vpsBox.setOnMouseExited(e -> {
                             vpsBox.setEffect(null);
                             vpsBox.setStyle("""
@@ -455,7 +429,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                                 -fx-effect: dropshadow(gaussian, #00ffff, 3, 0, 0, 0);
                                 """);
                         });
-                        
+
                         vpsList.getChildren().add(vpsBox);
                     }
                 }
@@ -463,23 +437,21 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
             int availableSlots = rack.getMaxSlotUnits() - rack.getUnlockedSlotUnits();
             int upgradeCost = calculateUpgradeCost();
-            
 
             int discountPercent = 0;
             try {
-                SkillPointsSystem skillPointsSystem = 
+                SkillPointsSystem skillPointsSystem =
                     ResourceManager.getInstance().getSkillPointsSystem();
-                
+
                 if (skillPointsSystem != null) {
                     discountPercent = skillPointsSystem.getRackSlotUpgradeDiscount();
                 }
             } catch (Exception e) {
                 System.out.println("Error getting skill points system: " + e.getMessage());
             }
-            
 
             if (discountPercent > 0) {
-                upgradeCostLabel.setText(String.format("UPGRADE COST: $%d (-%d%% DISCOUNT)", 
+                upgradeCostLabel.setText(String.format("UPGRADE COST: $%d (-%d%% DISCOUNT)",
                     upgradeCost, discountPercent));
 
                 Glow discountGlow = new Glow(0.5);
@@ -490,7 +462,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 upgradeCostLabel.setEffect(null);
                 upgradeCostLabel.setStyle(upgradeCostLabel.getStyle() + "; -fx-text-fill: #00ffff;");
             }
-            
+
             upgradeInfoLabel.setText(String.format("SERVER: %d\nSLOTS: %d/%d (%d available)\nUPGRADE COST: $%d",
                     rack.getRackIndex() + 1,
                     rack.getUnlockedSlotUnits(),
@@ -500,17 +472,15 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
             boolean canAffordUpgrade = parent.getCompany().getMoney() >= upgradeCost;
             boolean hasAvailableSlots = rack.getUnlockedSlotUnits() < rack.getMaxSlotUnits();
-            
 
             upgradeButton.setText("UPGRADE RACK ($" + upgradeCost + ")");
-            
 
             upgradeButton.setDisable(!hasAvailableSlots || !canAffordUpgrade);
             prevRackButton.setDisable(rack.getRackIndex() <= 0);
             nextRackButton.setDisable(rack.getRackIndex() >= rack.getMaxRacks() - 1);
         }
     }
-    
+
     private Label createCyberLabel(String text) {
         Label label = new Label(text);
         label.setStyle("""
@@ -530,39 +500,30 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
     private int calculateUpgradeCost() {
         int currentUnlocked = rack.getUnlockedSlotUnits();
         int baseCost = currentUnlocked * 100;
-        
 
         int discountPercent = 0;
         try {
-
-            SkillPointsSystem skillPointsSystem = 
+            SkillPointsSystem skillPointsSystem =
                 ResourceManager.getInstance().getSkillPointsSystem();
-            
+
             if (skillPointsSystem != null) {
                 discountPercent = skillPointsSystem.getRackSlotUpgradeDiscount();
             }
         } catch (Exception e) {
             System.out.println("Error getting skill points system: " + e.getMessage());
         }
-        
 
         if (discountPercent > 0) {
             baseCost = (int)(baseCost * (1 - discountPercent / 100.0));
         }
-        
+
         return baseCost;
     }
 
-
-
     public synchronized void openRackInfo() {
-        
-
-        
         BorderPane rackPane = new BorderPane();
         rackPane.setPrefSize(800, 600);
         rackPane.getStyleClass().add("rack-pane");
-        
 
         rackPane.setStyle("""
             -fx-background-color: linear-gradient(to bottom, #12071e, #3a015c);
@@ -570,12 +531,10 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             -fx-effect: dropshadow(gaussian, #7f00ff, 15, 0, 0, 0);
             """);
 
-
         parent.getMenuBar().setVisible(false);
         parent.getInGameMarketMenuBar().setVisible(false);
         parent.getMoneyUI().setVisible(false);
         parent.getDateView().setVisible(false);
-
 
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
@@ -598,17 +557,13 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
         Button closeButton = createPixelButton("CLOSE", "#F44336");
         closeButton.setOnAction(e -> {
-
             dispose();
-            
 
             parent.returnToRoom();
         });
 
-
         Button prevRackButton = createPixelButton("◄ PREV", "#6a00ff");
         Button nextRackButton = createPixelButton("NEXT ►", "#6a00ff");
-
 
         Label rackIndexLabel = new Label("RACK_" + (parent.getRack().getRackIndex() + 1));
         rackIndexLabel.setStyle("""
@@ -625,10 +580,8 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
         """);
 
-
         prevRackButton.setOnAction(e -> {
             if (parent.getRack().prevRack()) {
-
                 rackIndexLabel.setText("RACK_" + (parent.getRack().getRackIndex() + 1));
                 openRackInfo();
             } else {
@@ -638,7 +591,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
         nextRackButton.setOnAction(e -> {
             if (parent.getRack().nextRack()) {
-
                 rackIndexLabel.setText("RACK_" + (parent.getRack().getRackIndex() + 1));
                 openRackInfo();
             } else {
@@ -652,7 +604,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
         topBar.getChildren().addAll(titleLabel, navigationBox, closeButton);
 
-
         BorderPane contentBox = new BorderPane();
         contentBox.setPadding(new Insets(10));
         contentBox.setStyle("""
@@ -664,7 +615,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             -fx-background-radius: 0px;
             -fx-effect: dropshadow(gaussian, #8a2be2, 10, 0, 0, 0);
             """);
-
 
         if (parent.getRack().getMaxSlotUnits() == 0) {
             VBox noRackMessage = new VBox(20);
@@ -695,17 +645,14 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             noRackMessage.getChildren().addAll(messageLabel, descriptionLabel, marketButton);
             contentBox.setCenter(noRackMessage);
         } else if (parent.getVpsList().isEmpty()) {
-
             HBox mainLayout = new HBox(20);
             mainLayout.setAlignment(Pos.CENTER_LEFT);
-            
 
             VBox rackCabinet = new VBox(0);
             rackCabinet.setPadding(new Insets(0));
             rackCabinet.setPrefWidth(500);
             rackCabinet.setMinHeight(500);
             rackCabinet.setMaxHeight(Double.MAX_VALUE);
-            
 
             BorderPane rackFrame = new BorderPane();
             rackFrame.setPrefWidth(500);
@@ -717,7 +664,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 -fx-border-style: solid;
                 -fx-effect: dropshadow(gaussian, #00ffff, 5, 0, 0, 0);
                 """);
-            
 
             VBox unitMarkings = new VBox(0);
             unitMarkings.setPrefWidth(30);
@@ -726,7 +672,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 -fx-border-color: #333333;
                 -fx-border-width: 0 1 0 0;
                 """);
-            
 
             ScrollPane slotContainer = new ScrollPane();
             slotContainer.setFitToWidth(true);
@@ -739,7 +684,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 -fx-background-insets: 0;
                 -fx-padding: 0;
                 """);
-            
 
             GridPane rackSlots = new GridPane();
             rackSlots.setVgap(2);
@@ -748,16 +692,15 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             rackSlots.setStyle("""
                 -fx-background-color: #141414;
                 """);
-            
+
             ColumnConstraints col1 = new ColumnConstraints();
             col1.setPrefWidth(450);
             col1.setHgrow(Priority.ALWAYS);
-            
+
             ColumnConstraints col2 = new ColumnConstraints();
             col2.setPrefWidth(50);
-            
-            rackSlots.getColumnConstraints().addAll(col1, col2);
 
+            rackSlots.getColumnConstraints().addAll(col1, col2);
 
             int slotUnitHeight = 40;
 
@@ -766,7 +709,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 row.setPrefHeight(slotUnitHeight);
                 row.setMinHeight(slotUnitHeight);
                 rackSlots.getRowConstraints().add(row);
-                
 
                 Label unitLabel = new Label(String.format("U%02d", i + 1));
                 unitLabel.setStyle("""
@@ -778,15 +720,13 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 unitLabelBox.setPrefHeight(slotUnitHeight);
                 unitLabelBox.setAlignment(Pos.CENTER);
                 rackSlots.add(unitLabelBox, 1, i);
-                
 
                 Pane slot = createEnhancedRackSlot(i, null, i < parent.getRack().getUnlockedSlotUnits(), slotUnitHeight);
                 rackSlots.add(slot, 0, i);
                 slotPanes.add(slot);
             }
-            
+
             slotContainer.setContent(rackSlots);
-            
 
             GridPane topVents = new GridPane();
             topVents.setPrefHeight(15);
@@ -794,7 +734,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             topVents.setVgap(2);
             topVents.setAlignment(Pos.CENTER);
             topVents.setStyle("-fx-background-color: #222222;");
-            
+
             for (int i = 0; i < 20; i++) {
                 Rectangle vent = new Rectangle(15, 3);
                 vent.setFill(Color.web("#111111"));
@@ -802,29 +742,25 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 vent.setArcHeight(1);
                 topVents.add(vent, i % 10, i / 10);
             }
-            
 
             HBox powerSupply = new HBox(10);
             powerSupply.setPrefHeight(20);
             powerSupply.setStyle("-fx-background-color: #222222;");
             powerSupply.setAlignment(Pos.CENTER_RIGHT);
-            
 
             Rectangle powerButton = new Rectangle(8, 8);
             powerButton.setFill(Color.web("#00ff00"));
-            
 
             Timeline pulseTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO, 
+                new KeyFrame(Duration.ZERO,
                     new KeyValue(powerButton.opacityProperty(), 1.0)),
-                new KeyFrame(Duration.seconds(1.5), 
+                new KeyFrame(Duration.seconds(1.5),
                     new KeyValue(powerButton.opacityProperty(), 0.5)),
-                new KeyFrame(Duration.seconds(3), 
+                new KeyFrame(Duration.seconds(3),
                     new KeyValue(powerButton.opacityProperty(), 1.0))
             );
             pulseTimeline.setCycleCount(Timeline.INDEFINITE);
             pulseTimeline.play();
-            
 
             Rectangle powerMeter1 = new Rectangle(4, 6);
             powerMeter1.setFill(Color.web("#ff0000"));
@@ -832,25 +768,21 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             powerMeter2.setFill(Color.web("#ffff00"));
             Rectangle powerMeter3 = new Rectangle(4, 6);
             powerMeter3.setFill(Color.web("#00ff00"));
-            
+
             powerSupply.getChildren().addAll(powerMeter1, powerMeter2, powerMeter3, powerButton);
             powerSupply.setPadding(new Insets(0, 20, 0, 0));
-            
 
             rackFrame.setCenter(slotContainer);
             rackCabinet.getChildren().addAll(topVents, rackFrame, powerSupply);
-            
 
             VBox rackContainerWithSpacer = new VBox();
             rackContainerWithSpacer.setAlignment(Pos.BOTTOM_CENTER);
             rackContainerWithSpacer.setPrefWidth(500);
-            
 
             Region spacer = new Region();
             VBox.setVgrow(spacer, Priority.ALWAYS);
-            
+
             rackContainerWithSpacer.getChildren().addAll(spacer, rackCabinet);
-            
 
             VBox infoPane = new VBox(15);
             infoPane.setPrefWidth(250);
@@ -884,7 +816,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 -fx-border-width: 1px;
                 -fx-border-style: solid;
             """);
-            
 
             Label emptyRackMessage = new Label("NO SERVERS INSTALLED");
             emptyRackMessage.setMaxWidth(Double.MAX_VALUE);
@@ -904,7 +835,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 -fx-alignment: center;
             """);
 
-
             VBox statusPanel = new VBox(8);
             statusPanel.setMaxWidth(Double.MAX_VALUE);
             statusPanel.setStyle("""
@@ -920,37 +850,34 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             statusGrid.setMaxWidth(Double.MAX_VALUE);
             statusGrid.setHgap(10);
             statusGrid.setVgap(8);
-            
+
             int usedSlots = parent.getRack().getOccupiedSlotUnits();
-            
 
             Label serversLabel = new Label("SERVERS:");
             serversLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
             Label serversValue = new Label("0");
             serversValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-            
+
             Label slotsLabel = new Label("SLOTS:");
             slotsLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            Label slotsValue = new Label(usedSlots + "/" + parent.getRack().getMaxSlotUnits() + 
+            Label slotsValue = new Label(usedSlots + "/" + parent.getRack().getMaxSlotUnits() +
                             " (" + parent.getRack().getAvailableSlotUnits() + " AVAILABLE)");
             slotsValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-            
+
             Label networkLabel = new Label("NETWORK:");
             networkLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            
 
             int baseNetworkSpeed = 10;
             int networkSpeedBonus = ResourceManager.getInstance().getSkillPointsSystem().getRackNetworkSpeedBonus();
             int totalNetworkSpeed = baseNetworkSpeed + networkSpeedBonus;
             networkValueEmpty = new Label(totalNetworkSpeed + " Gbps");
-            
+
             networkValueEmpty.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-            
+
             Label usersLabel = new Label("ACTIVE USERS:");
             usersLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
             Label usersValue = new Label("0");
             usersValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-            
 
             statusGrid.add(serversLabel, 0, 0);
             statusGrid.add(serversValue, 1, 0);
@@ -960,21 +887,19 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             statusGrid.add(networkValueEmpty, 1, 2);
             statusGrid.add(usersLabel, 0, 3);
             statusGrid.add(usersValue, 1, 3);
-            
 
             ColumnConstraints column1 = new ColumnConstraints();
             column1.setHgrow(Priority.NEVER);
             ColumnConstraints column2 = new ColumnConstraints();
             column2.setHgrow(Priority.ALWAYS);
             statusGrid.getColumnConstraints().addAll(column1, column2);
-            
+
             statusPanel.getChildren().add(statusGrid);
-            
 
             Button inventoryButton = createPixelButton("SERVER INVENTORY", "#3498db");
             inventoryButton.setMaxWidth(Double.MAX_VALUE);
             inventoryButton.setOnAction(e -> parent.openVPSInventory());
-            
+
             int upgradeCost = calculateUpgradeCost();
             Button upgradeButton = createPixelButton("UPGRADE RACK ($" + upgradeCost + ")", "#4CAF50");
             upgradeButton.setMaxWidth(Double.MAX_VALUE);
@@ -990,55 +915,52 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
                 int currentUpgradeCost = calculateUpgradeCost();
                 if (parent.getCompany().getMoney() >= currentUpgradeCost) {
-
                     parent.getCompany().setMoney(parent.getCompany().getMoney() - currentUpgradeCost);
-                    
+
                     if (parent.getRack().upgrade()) {
                         Timeline pulseAnimation = new Timeline();
                         pulseAnimation.getKeyFrames().addAll(
-                            new KeyFrame(Duration.ZERO, 
+                            new KeyFrame(Duration.ZERO,
                                 new KeyValue(upgradeButton.scaleXProperty(), 1.0),
                                 new KeyValue(upgradeButton.scaleYProperty(), 1.0)
                             ),
-                            new KeyFrame(Duration.millis(200), 
+                            new KeyFrame(Duration.millis(200),
                                 new KeyValue(upgradeButton.scaleXProperty(), 1.05),
                                 new KeyValue(upgradeButton.scaleYProperty(), 1.05)
                             ),
-                            new KeyFrame(Duration.millis(400), 
+                            new KeyFrame(Duration.millis(400),
                                 new KeyValue(upgradeButton.scaleXProperty(), 1.0),
                                 new KeyValue(upgradeButton.scaleYProperty(), 1.0)
                             )
                         );
-                        
+
                         pulseAnimation.setOnFinished(event -> {
-                            parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " + 
+                            parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " +
                                                   parent.getRack().getUnlockedSlotUnits() + " SLOTS");
                             openRackInfo();
                         });
-                        
+
                         pulseAnimation.play();
                     }
                 } else {
                     parent.pushNotification("UPGRADE FAILED", "INSUFFICIENT FUNDS");
                 }
             });
-            
+
             Button marketButton = createPixelButton("MARKET", "#6a00ff");
             marketButton.setMaxWidth(Double.MAX_VALUE);
             marketButton.setOnAction(e -> {
                 parent.openMarket();
             });
 
-
             infoPane.getChildren().addAll(infoTitle, emptyRackMessage, statusPanel, inventoryButton, upgradeButton, marketButton);
-            
 
             List<VPSOptimization> uninstalledServers = parent.getVpsInventory().getAllVPS();
             if (!uninstalledServers.isEmpty()) {
                 VBox uninstalledSection = new VBox(10);
                 uninstalledSection.setPadding(new Insets(10, 0, 0, 0));
                 VBox.setVgrow(uninstalledSection, Priority.ALWAYS);
-                
+
                 Label uninstalledLabel = new Label("AVAILABLE SERVERS");
                 uninstalledLabel.setMaxWidth(Double.MAX_VALUE);
                 uninstalledLabel.setAlignment(Pos.CENTER);
@@ -1055,7 +977,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                     -fx-border-width: 1px;
                     -fx-border-style: solid;
                 """);
-                
+
                 ScrollPane uninstalledScrollPane = new ScrollPane();
                 uninstalledScrollPane.setStyle("""
                     -fx-background-color: transparent;
@@ -1067,12 +989,11 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 uninstalledScrollPane.setPrefHeight(200);
                 uninstalledScrollPane.setMinHeight(200);
                 VBox.setVgrow(uninstalledScrollPane, Priority.ALWAYS);
-                
+
                 VBox serverList = new VBox(8);
                 serverList.setPadding(new Insets(5));
-                
-                for (VPSOptimization server : uninstalledServers) {
 
+                for (VPSOptimization server : uninstalledServers) {
                     String serverId = "";
                     for (String id : parent.getVpsInventory().getAllVPSIds()) {
                         if (parent.getVpsInventory().getVPS(id) == server) {
@@ -1080,12 +1001,11 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             break;
                         }
                     }
-                    
+
                     final String finalServerId = serverId;
-                    
+
                     HBox serverRow = new HBox(5);
                     serverRow.setAlignment(Pos.CENTER_LEFT);
-                    
 
                     VBox serverInfo = new VBox(2);
                     serverInfo.setPrefWidth(150);
@@ -1097,25 +1017,23 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                         -fx-border-width: 2px;
                         -fx-border-style: solid;
                     """);
-                    
+
                     Label nameLabel = new Label("SERVER " + server.getVCPUs() + "vCPU");
                     nameLabel.setStyle("""
                         -fx-text-fill: #ff00ff; 
                         -fx-font-weight: bold;
                         -fx-font-family: 'Courier New';
                     """);
-                    
+
                     Label specsLabel = new Label(server.getRamInGB() + "GB RAM | " + server.getSize().getDisplayName());
                     specsLabel.setStyle("""
                         -fx-text-fill: #00ffff;
                         -fx-font-family: 'Courier New';
                     """);
-                    
+
                     serverInfo.getChildren().addAll(nameLabel, specsLabel);
-                    
 
                     Button installButton = createPixelButton("INSTALL", "#4CAF50");
-                    
 
                     installButton.setOnMousePressed(e -> {
                         installButton.setStyle(
@@ -1131,7 +1049,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             "-fx-translate-y: 2px;"
                         );
                     });
-                    
+
                     installButton.setOnMouseReleased(e -> {
                         installButton.setStyle(
                             "-fx-background-color: #4CAF50;" +
@@ -1146,16 +1064,16 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             "-fx-translate-y: 0px;"
                         );
                     });
-                    
+
                     installButton.setOnAction(event -> {
                         try {
                             if (parent.installVPSFromInventory(finalServerId)) {
                                 parent.pushNotification("SUCCESS", "Server installed successfully");
                                 installButton.setDisable(true);
                                 Timeline successAnimation = new Timeline(
-                                    new KeyFrame(Duration.ZERO, 
+                                    new KeyFrame(Duration.ZERO,
                                         new KeyValue(installButton.textFillProperty(), Color.WHITE)),
-                                    new KeyFrame(Duration.millis(200), 
+                                    new KeyFrame(Duration.millis(200),
                                         new KeyValue(installButton.textFillProperty(), Color.GREEN))
                                 );
                                 successAnimation.setOnFinished(e -> openRackInfo());
@@ -1169,39 +1087,34 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             e.printStackTrace();
                         }
                     });
-                    
+
                     serverRow.getChildren().addAll(serverInfo, installButton);
                     serverList.getChildren().add(serverRow);
                 }
-                
+
                 uninstalledScrollPane.setContent(serverList);
                 uninstalledSection.getChildren().addAll(uninstalledLabel, uninstalledScrollPane);
-                
+
                 infoPane.getChildren().add(uninstalledSection);
             }
-
 
             Region bottomSpacer = new Region();
             VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
             infoPane.getChildren().add(bottomSpacer);
-
 
             mainLayout.getChildren().addAll(rackContainerWithSpacer, infoPane);
             HBox.setHgrow(infoPane, Priority.ALWAYS);
             mainLayout.setAlignment(Pos.CENTER);
             contentBox.setCenter(mainLayout);
         } else {
-
             HBox mainLayout = new HBox(20);
             mainLayout.setAlignment(Pos.CENTER_LEFT);
-            
 
             VBox rackCabinet = new VBox(0);
             rackCabinet.setPadding(new Insets(0));
             rackCabinet.setPrefWidth(500);
             rackCabinet.setMinHeight(500);
             rackCabinet.setMaxHeight(Double.MAX_VALUE);
-            
 
             BorderPane rackFrame = new BorderPane();
             rackFrame.setPrefWidth(500);
@@ -1213,7 +1126,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 -fx-border-style: solid;
                 -fx-effect: dropshadow(gaussian, #00ffff, 5, 0, 0, 0);
                 """);
-            
 
             VBox unitMarkings = new VBox(0);
             unitMarkings.setPrefWidth(30);
@@ -1222,7 +1134,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 -fx-border-color: #333333;
                 -fx-border-width: 0 1 0 0;
                 """);
-            
 
             ScrollPane slotContainer = new ScrollPane();
             slotContainer.setFitToWidth(true);
@@ -1235,7 +1146,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 -fx-background-insets: 0;
                 -fx-padding: 0;
                 """);
-            
 
             GridPane rackSlots = new GridPane();
             rackSlots.setVgap(2);
@@ -1244,16 +1154,15 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             rackSlots.setStyle("""
                 -fx-background-color: #141414;
                 """);
-            
+
             ColumnConstraints col1 = new ColumnConstraints();
             col1.setPrefWidth(450);
             col1.setHgrow(Priority.ALWAYS);
-            
+
             ColumnConstraints col2 = new ColumnConstraints();
             col2.setPrefWidth(50);
-            
-            rackSlots.getColumnConstraints().addAll(col1, col2);
 
+            rackSlots.getColumnConstraints().addAll(col1, col2);
 
             int slotUnitHeight = 40;
 
@@ -1262,7 +1171,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 row.setPrefHeight(slotUnitHeight);
                 row.setMinHeight(slotUnitHeight);
                 rackSlots.getRowConstraints().add(row);
-                
 
                 Label unitLabel = new Label(String.format("U%02d", i + 1));
                 unitLabel.setStyle("""
@@ -1276,11 +1184,9 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 rackSlots.add(unitLabelBox, 1, i);
             }
 
-
             createEnhancedRackSlots(rackSlots, slotUnitHeight);
-            
+
             slotContainer.setContent(rackSlots);
-            
 
             GridPane topVents = new GridPane();
             topVents.setPrefHeight(15);
@@ -1288,7 +1194,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             topVents.setVgap(2);
             topVents.setAlignment(Pos.CENTER);
             topVents.setStyle("-fx-background-color: #222222;");
-            
+
             for (int i = 0; i < 20; i++) {
                 Rectangle vent = new Rectangle(15, 3);
                 vent.setFill(Color.web("#111111"));
@@ -1296,29 +1202,25 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 vent.setArcHeight(1);
                 topVents.add(vent, i % 10, i / 10);
             }
-            
 
             HBox powerSupply = new HBox(10);
             powerSupply.setPrefHeight(20);
             powerSupply.setStyle("-fx-background-color: #222222;");
             powerSupply.setAlignment(Pos.CENTER_RIGHT);
-            
 
             Rectangle powerButton = new Rectangle(8, 8);
             powerButton.setFill(Color.web("#00ff00"));
-            
 
             Timeline pulseTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO, 
+                new KeyFrame(Duration.ZERO,
                     new KeyValue(powerButton.opacityProperty(), 1.0)),
-                new KeyFrame(Duration.seconds(1.5), 
+                new KeyFrame(Duration.seconds(1.5),
                     new KeyValue(powerButton.opacityProperty(), 0.5)),
-                new KeyFrame(Duration.seconds(3), 
+                new KeyFrame(Duration.seconds(3),
                     new KeyValue(powerButton.opacityProperty(), 1.0))
             );
             pulseTimeline.setCycleCount(Timeline.INDEFINITE);
             pulseTimeline.play();
-            
 
             Rectangle powerMeter1 = new Rectangle(4, 6);
             powerMeter1.setFill(Color.web("#ff0000"));
@@ -1326,25 +1228,21 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             powerMeter2.setFill(Color.web("#ffff00"));
             Rectangle powerMeter3 = new Rectangle(4, 6);
             powerMeter3.setFill(Color.web("#00ff00"));
-            
+
             powerSupply.getChildren().addAll(powerMeter1, powerMeter2, powerMeter3, powerButton);
             powerSupply.setPadding(new Insets(0, 20, 0, 0));
-            
 
             rackFrame.setCenter(slotContainer);
             rackCabinet.getChildren().addAll(topVents, rackFrame, powerSupply);
-            
 
             VBox rackContainerWithSpacer = new VBox();
             rackContainerWithSpacer.setAlignment(Pos.BOTTOM_CENTER);
             rackContainerWithSpacer.setPrefWidth(500);
-            
 
             Region spacer = new Region();
             VBox.setVgrow(spacer, Priority.ALWAYS);
-            
+
             rackContainerWithSpacer.getChildren().addAll(spacer, rackCabinet);
-            
 
             VBox infoPane = new VBox(15);
             infoPane.setPrefWidth(250);
@@ -1381,7 +1279,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
             int usedSlots = parent.getRack().getOccupiedSlotUnits();
 
-
             VBox statusPanel = new VBox(8);
             statusPanel.setMaxWidth(Double.MAX_VALUE);
             statusPanel.setStyle("""
@@ -1393,43 +1290,36 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 -fx-border-style: solid;
                 """);
 
-
             GridPane statusGrid = new GridPane();
             statusGrid.setMaxWidth(Double.MAX_VALUE);
             statusGrid.setHgap(10);
             statusGrid.setVgap(8);
-            
 
             Label serversLabel = new Label("SERVERS:");
             serversLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
             Label serversValue = new Label(Integer.toString(parent.getVpsList().size()));
             serversValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-            
 
             Label slotsLabel = new Label("SLOTS:");
             slotsLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            Label slotsValue = new Label(usedSlots + "/" + parent.getRack().getMaxSlotUnits() + 
+            Label slotsValue = new Label(usedSlots + "/" + parent.getRack().getMaxSlotUnits() +
                               " (" + parent.getRack().getAvailableSlotUnits() + " AVAILABLE)");
             slotsValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-            
 
             Label networkLabel = new Label("NETWORK:");
             networkLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
-            
 
             int baseNetworkSpeed = 10;
             int networkSpeedBonus = ResourceManager.getInstance().getSkillPointsSystem().getRackNetworkSpeedBonus();
             int totalNetworkSpeed = baseNetworkSpeed + networkSpeedBonus;
             networkValuePopulated = new Label(totalNetworkSpeed + " Gbps");
-            
+
             networkValuePopulated.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-            
 
             Label usersLabel = new Label("ACTIVE USERS:");
             usersLabel.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff; -fx-font-weight: bold;");
             Label usersValue = new Label("10");
             usersValue.setStyle("-fx-font-family: 'Courier New'; -fx-font-size: 14px; -fx-text-fill: #00ffff;");
-            
 
             statusGrid.add(serversLabel, 0, 0);
             statusGrid.add(serversValue, 1, 0);
@@ -1439,31 +1329,27 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             statusGrid.add(networkValuePopulated, 1, 2);
             statusGrid.add(usersLabel, 0, 3);
             statusGrid.add(usersValue, 1, 3);
-            
 
             ColumnConstraints column1 = new ColumnConstraints();
             column1.setHgrow(Priority.NEVER);
             ColumnConstraints column2 = new ColumnConstraints();
             column2.setHgrow(Priority.ALWAYS);
             statusGrid.getColumnConstraints().addAll(column1, column2);
-            
 
             statusPanel.getChildren().add(statusGrid);
 
             Button inventoryButton = createPixelButton("SERVER INVENTORY", "#3498db");
             inventoryButton.setMaxWidth(Double.MAX_VALUE);
             inventoryButton.setOnAction(e -> parent.openVPSInventory());
-            
+
             int upgradeCost = calculateUpgradeCost();
             Button upgradeButton = createPixelButton("UPGRADE RACK ($" + upgradeCost + ")", "#4CAF50");
             upgradeButton.setMaxWidth(Double.MAX_VALUE);
             upgradeButton.setOnAction(e -> {
-                
                 Rack currentRack = parent.getRack();
                 int currentUnlockedSlots = currentRack.getUnlockedSlotUnits();
                 int maxRackSlots = currentRack.getMaxSlotUnits();
 
-                
                 if (currentUnlockedSlots >= maxRackSlots) {
                     parent.pushNotification("CANNOT UPGRADE", "This rack already has maximum slots unlocked (" + maxRackSlots + " slots)");
                     return;
@@ -1471,32 +1357,31 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
                 int currentUpgradeCost = calculateUpgradeCost();
                 if (parent.getCompany().getMoney() >= currentUpgradeCost) {
-
                     parent.getCompany().setMoney(parent.getCompany().getMoney() - currentUpgradeCost);
-                    
+
                     if (parent.getRack().upgrade()) {
                         Timeline pulseAnimation = new Timeline();
                         pulseAnimation.getKeyFrames().addAll(
-                            new KeyFrame(Duration.ZERO, 
+                            new KeyFrame(Duration.ZERO,
                                 new KeyValue(upgradeButton.scaleXProperty(), 1.0),
                                 new KeyValue(upgradeButton.scaleYProperty(), 1.0)
                             ),
-                            new KeyFrame(Duration.millis(200), 
+                            new KeyFrame(Duration.millis(200),
                                 new KeyValue(upgradeButton.scaleXProperty(), 1.05),
                                 new KeyValue(upgradeButton.scaleYProperty(), 1.05)
                             ),
-                            new KeyFrame(Duration.millis(400), 
+                            new KeyFrame(Duration.millis(400),
                                 new KeyValue(upgradeButton.scaleXProperty(), 1.0),
                                 new KeyValue(upgradeButton.scaleYProperty(), 1.0)
                             )
                         );
-                        
+
                         pulseAnimation.setOnFinished(event -> {
-                            parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " + 
+                            parent.pushNotification("UPGRADE COMPLETE", "RACK CAPACITY INCREASED TO " +
                                                   parent.getRack().getUnlockedSlotUnits() + " SLOTS");
                             openRackInfo();
                         });
-                        
+
                         pulseAnimation.play();
                     }
                 } else {
@@ -1506,7 +1391,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
             infoPane.getChildren().addAll(infoTitle, statusPanel, inventoryButton, upgradeButton);
 
-
             Button marketButton = createPixelButton("MARKET", "#6a00ff");
             marketButton.setMaxWidth(Double.MAX_VALUE);
             marketButton.setOnAction(e -> {
@@ -1514,13 +1398,12 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             });
             infoPane.getChildren().add(marketButton);
 
-
             List<VPSOptimization> uninstalledServers = parent.getVpsInventory().getAllVPS();
             if (!uninstalledServers.isEmpty()) {
                 VBox uninstalledSection = new VBox(10);
                 uninstalledSection.setPadding(new Insets(10, 0, 0, 0));
                 VBox.setVgrow(uninstalledSection, Priority.ALWAYS);
-                
+
                 Label uninstalledLabel = new Label("AVAILABLE SERVERS");
                 uninstalledLabel.setMaxWidth(Double.MAX_VALUE);
                 uninstalledLabel.setAlignment(Pos.CENTER);
@@ -1537,7 +1420,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                     -fx-border-width: 1px;
                     -fx-border-style: solid;
                 """);
-                
+
                 ScrollPane uninstalledScrollPane = new ScrollPane();
                 uninstalledScrollPane.setStyle("""
                     -fx-background-color: transparent;
@@ -1549,12 +1432,11 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 uninstalledScrollPane.setPrefHeight(250);
                 uninstalledScrollPane.setMinHeight(200);
                 VBox.setVgrow(uninstalledScrollPane, Priority.ALWAYS);
-                
+
                 VBox serverList = new VBox(8);
                 serverList.setPadding(new Insets(5));
-                
-                for (VPSOptimization server : uninstalledServers) {
 
+                for (VPSOptimization server : uninstalledServers) {
                     String serverId = "";
                     for (String id : parent.getVpsInventory().getAllVPSIds()) {
                         if (parent.getVpsInventory().getVPS(id) == server) {
@@ -1562,12 +1444,11 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             break;
                         }
                     }
-                    
+
                     final String finalServerId = serverId;
-                    
+
                     HBox serverRow = new HBox(5);
                     serverRow.setAlignment(Pos.CENTER_LEFT);
-                    
 
                     VBox serverInfo = new VBox(2);
                     serverInfo.setPrefWidth(150);
@@ -1579,25 +1460,23 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                         -fx-border-width: 2px;
                         -fx-border-style: solid;
                     """);
-                    
+
                     Label nameLabel = new Label("SERVER " + server.getVCPUs() + "vCPU");
                     nameLabel.setStyle("""
                         -fx-text-fill: #ff00ff; 
                         -fx-font-weight: bold;
                         -fx-font-family: 'Courier New';
                     """);
-                    
+
                     Label specsLabel = new Label(server.getRamInGB() + "GB RAM | " + server.getSize().getDisplayName());
                     specsLabel.setStyle("""
                         -fx-text-fill: #00ffff;
                         -fx-font-family: 'Courier New';
                     """);
-                    
+
                     serverInfo.getChildren().addAll(nameLabel, specsLabel);
-                    
 
                     Button installButton = createPixelButton("INSTALL", "#4CAF50");
-                    
 
                     installButton.setOnMousePressed(e -> {
                         installButton.setStyle(
@@ -1613,7 +1492,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             "-fx-translate-y: 2px;"
                         );
                     });
-                    
+
                     installButton.setOnMouseReleased(e -> {
                         installButton.setStyle(
                             "-fx-background-color: #4CAF50;" +
@@ -1628,7 +1507,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             "-fx-translate-y: 0px;"
                         );
                     });
-                    
 
                     installButton.setOnAction(event -> {
                         try {
@@ -1637,9 +1515,9 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
                                 installButton.setDisable(true);
                                 Timeline successAnimation = new Timeline(
-                                    new KeyFrame(Duration.ZERO, 
+                                    new KeyFrame(Duration.ZERO,
                                         new KeyValue(installButton.textFillProperty(), Color.WHITE)),
-                                    new KeyFrame(Duration.millis(200), 
+                                    new KeyFrame(Duration.millis(200),
                                         new KeyValue(installButton.textFillProperty(), Color.GREEN))
                                 );
                                 successAnimation.setOnFinished(e -> openRackInfo());
@@ -1653,17 +1531,15 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                             e.printStackTrace();
                         }
                     });
-                    
+
                     serverRow.getChildren().addAll(serverInfo, installButton);
                     serverList.getChildren().add(serverRow);
                 }
             }
 
-
             Region bottomSpacer = new Region();
             VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
             infoPane.getChildren().add(bottomSpacer);
-
 
             mainLayout.getChildren().addAll(rackContainerWithSpacer, infoPane);
             HBox.setHgrow(infoPane, Priority.ALWAYS);
@@ -1678,11 +1554,9 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
         parent.getGameArea().getChildren().clear();
         parent.getGameArea().getChildren().add(rackPane);
 
-
         rackPane.getStylesheets().add(getClass().getResource("/css/rackinfo-pane.css").toExternalForm());
     }
 
-    
     private Button createPixelButton(String text, String color) {
         Button button = new Button(text);
         button.setStyle(
@@ -1698,7 +1572,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             "-fx-border-style: solid;" +
             "-fx-effect: dropshadow(gaussian, " + color + ", 5, 0, 0, 0);"
         );
-        
 
         button.setOnMouseEntered(e -> {
             button.setStyle(
@@ -1715,7 +1588,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 "-fx-effect: dropshadow(gaussian, " + color + ", 5, 0, 0, 0);"
              );
          });
-         
+
         button.setOnMouseExited(e -> {
             button.setStyle(
                 "-fx-background-color: " + color + ";" +
@@ -1731,15 +1604,13 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 "-fx-effect: dropshadow(gaussian, " + color + ", 5, 0, 0, 0);"
              );
          });
-         
+
         return button;
     }
-
 
     private void createEnhancedRackSlots(GridPane rackSlots, int slotHeight) {
         slotPanes.clear();
         int currentSlot = 0;
-
 
         for (VPSOptimization vps : parent.getVpsList()) {
             int slotsRequired = vps.getSlotsRequired();
@@ -1749,7 +1620,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             currentSlot += slotsRequired;
         }
 
-
         for (int i = currentSlot; i < parent.getRack().getMaxSlotUnits(); i++) {
             Pane slot = createEnhancedRackSlot(i, null, i < parent.getRack().getUnlockedSlotUnits(), slotHeight);
             rackSlots.add(slot, 0, i);
@@ -1757,83 +1627,74 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
         }
     }
 
-
     private Pane createEnhancedRackSlot(int index, VPSOptimization vps, boolean isSlotAvailable, int slotHeight) {
         Pane slot = new Pane();
         slot.setPrefSize(450, slotHeight);
-        
 
         Rectangle serverBg = new Rectangle(450, slotHeight);
         serverBg.setFill(Color.web("#0d0d0d"));
-        
 
         Rectangle leftRail = new Rectangle(10, slotHeight);
         leftRail.setFill(Color.web("#181818"));
         leftRail.setStroke(Color.web("#333333"));
         leftRail.setStrokeWidth(1);
-        
+
         Rectangle rightRail = new Rectangle(10, slotHeight);
         rightRail.setFill(Color.web("#181818"));
         rightRail.setStroke(Color.web("#333333"));
         rightRail.setStrokeWidth(1);
         rightRail.setLayoutX(440);
-        
 
         Rectangle leftTopScrew = new Rectangle(6, 6);
         leftTopScrew.setFill(Color.web("#666666"));
         leftTopScrew.setLayoutX(2);
         leftTopScrew.setLayoutY(6);
-        
+
         Rectangle leftBottomScrew = new Rectangle(6, 6);
         leftBottomScrew.setFill(Color.web("#666666"));
         leftBottomScrew.setLayoutX(2);
         leftBottomScrew.setLayoutY(slotHeight - 12);
-        
+
         Rectangle rightTopScrew = new Rectangle(6, 6);
         rightTopScrew.setFill(Color.web("#666666"));
         rightTopScrew.setLayoutX(442);
         rightTopScrew.setLayoutY(6);
-        
+
         Rectangle rightBottomScrew = new Rectangle(6, 6);
         rightBottomScrew.setFill(Color.web("#666666"));
         rightBottomScrew.setLayoutX(442);
         rightBottomScrew.setLayoutY(slotHeight - 12);
 
-
-        slot.getChildren().addAll(serverBg, leftRail, rightRail, 
+        slot.getChildren().addAll(serverBg, leftRail, rightRail,
                                 leftTopScrew, leftBottomScrew, rightTopScrew, rightBottomScrew);
-        
-        if (vps != null) {
 
+        if (vps != null) {
             Rectangle serverFace = new Rectangle(420, slotHeight - 10);
             serverFace.setLayoutX(15);
             serverFace.setLayoutY(5);
             serverFace.setFill(Color.web("#4b0082"));
             serverFace.setStroke(Color.web("#8a2be2"));
             serverFace.setStrokeWidth(2);
-            
 
             Rectangle leftHandle1 = new Rectangle(6, 8);
             leftHandle1.setFill(Color.web("#333333"));
             leftHandle1.setLayoutX(25);
             leftHandle1.setLayoutY(8);
-            
+
             Rectangle leftHandle2 = new Rectangle(6, 8);
             leftHandle2.setFill(Color.web("#333333"));
             leftHandle2.setLayoutX(25);
             leftHandle2.setLayoutY(slotHeight - 16);
-            
 
             Rectangle rightHandle1 = new Rectangle(6, 8);
             rightHandle1.setFill(Color.web("#333333"));
             rightHandle1.setLayoutX(420);
             rightHandle1.setLayoutY(8);
-            
+
             Rectangle rightHandle2 = new Rectangle(6, 8);
             rightHandle2.setFill(Color.web("#333333"));
             rightHandle2.setLayoutX(420);
             rightHandle2.setLayoutY(slotHeight - 16);
-            
 
             Rectangle ledPanel = new Rectangle(80, slotHeight - 20);
             ledPanel.setFill(Color.web("#2a0052"));
@@ -1841,7 +1702,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             ledPanel.setStrokeWidth(1);
             ledPanel.setLayoutX(30);
             ledPanel.setLayoutY(10);
-            
 
             int ledY = Math.min(20, slotHeight / 4);
             Rectangle powerLed = new Rectangle(6, 6);
@@ -1849,42 +1709,40 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             powerLed.setLayoutX(40);
             powerLed.setLayoutY(ledY);
             powerLed.setEffect(new Glow(0.5));
-            
+
             Rectangle statusLed = new Rectangle(6, 6);
             statusLed.setFill(Color.web("#00ffff"));
             statusLed.setLayoutX(60);
             statusLed.setLayoutY(ledY);
             statusLed.setEffect(new Glow(0.3));
-            
+
             Rectangle errorLed = new Rectangle(6, 6);
             errorLed.setFill(Color.web("#ff0000"));
             errorLed.setLayoutX(80);
             errorLed.setLayoutY(ledY);
             errorLed.setOpacity(0.3);
-            
+
             Rectangle networkLed = new Rectangle(6, 6);
             networkLed.setFill(Color.web("#ffcc00"));
             networkLed.setLayoutX(100);
             networkLed.setLayoutY(ledY);
-            
 
             Timeline blinkTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO, 
+                new KeyFrame(Duration.ZERO,
                     new KeyValue(networkLed.opacityProperty(), 1.0)),
-                new KeyFrame(Duration.seconds(0.1), 
+                new KeyFrame(Duration.seconds(0.1),
                     new KeyValue(networkLed.opacityProperty(), 0.3)),
-                new KeyFrame(Duration.seconds(0.3), 
+                new KeyFrame(Duration.seconds(0.3),
                     new KeyValue(networkLed.opacityProperty(), 1.0)),
-                new KeyFrame(Duration.seconds(0.5), 
+                new KeyFrame(Duration.seconds(0.5),
                     new KeyValue(networkLed.opacityProperty(), 1.0)),
-                new KeyFrame(Duration.seconds(0.6), 
+                new KeyFrame(Duration.seconds(0.6),
                     new KeyValue(networkLed.opacityProperty(), 0.3)),
-                new KeyFrame(Duration.seconds(0.8), 
+                new KeyFrame(Duration.seconds(0.8),
                     new KeyValue(networkLed.opacityProperty(), 1.0))
             );
             blinkTimeline.setCycleCount(Timeline.INDEFINITE);
             blinkTimeline.play();
-            
 
             Rectangle specsPanel = new Rectangle(120, slotHeight - 20);
             specsPanel.setFill(Color.web("#1f004d"));
@@ -1892,12 +1750,10 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             specsPanel.setStrokeWidth(1);
             specsPanel.setLayoutX(120);
             specsPanel.setLayoutY(10);
-            
 
             double fontSize = Math.min(16, slotHeight / 3);
             double smallFontSize = Math.min(12, slotHeight / 4);
             double textY = Math.max(5, (slotHeight - fontSize * 3) / 4);
-            
 
             Label serverTypeLabel = new Label(vps.getSize().getDisplayName());
             serverTypeLabel.setStyle("""
@@ -1909,10 +1765,8 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 """.formatted(fontSize));
             serverTypeLabel.setLayoutX(130);
             serverTypeLabel.setLayoutY(textY);
-            
 
             if (slotHeight >= 60) {
-
                 Label cpuLabel = new Label("CPU: " + vps.getVCPUs() + " vCPUs");
                 cpuLabel.setStyle("""
                     -fx-font-family: 'Courier New';
@@ -1921,7 +1775,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                     """.formatted(smallFontSize));
                 cpuLabel.setLayoutX(130);
                 cpuLabel.setLayoutY(textY + fontSize + 2);
-                
+
                 Label ramLabel = new Label("RAM: " + vps.getRamInGB() + " GB");
                 ramLabel.setStyle("""
                     -fx-font-family: 'Courier New';
@@ -1930,13 +1784,11 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                     """.formatted(smallFontSize));
                 ramLabel.setLayoutX(130);
                 ramLabel.setLayoutY(textY + fontSize + smallFontSize + 4);
-                
+
                 slot.getChildren().addAll(cpuLabel, ramLabel);
             } else {
-
                 serverTypeLabel.setLayoutY(slotHeight / 2.0 - fontSize / 2.0);
             }
-            
 
             Label addressLabel = new Label("ID: 0x" + Integer.toHexString(index).toUpperCase());
             addressLabel.setStyle("""
@@ -1947,7 +1799,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             addressLabel.setLayoutX(130);
 
             addressLabel.setLayoutY(slotHeight - 15);
-            
 
             Rectangle portSection = new Rectangle(140, slotHeight - 20);
             portSection.setFill(Color.web("#1f004d"));
@@ -1955,7 +1806,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             portSection.setStrokeWidth(1);
             portSection.setLayoutX(250);
             portSection.setLayoutY(10);
-            
 
             for (int i = 0; i < Math.min(2, slotHeight / 20); i++) {
                 Rectangle port = new Rectangle(20, 10);
@@ -1964,19 +1814,16 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 port.setStrokeWidth(1);
                 port.setLayoutX(360);
                 port.setLayoutY(15 + (i * 20));
-                
 
                 Rectangle portLight = new Rectangle(4, 4);
                 portLight.setFill(Color.web("#00ff00"));
                 portLight.setLayoutX(364);
                 portLight.setLayoutY(18 + (i * 20));
-                
+
                 slot.getChildren().addAll(port, portLight);
             }
-            
 
             if (slotHeight >= 60) {
-
                 for (int row = 0; row < Math.min(5, slotHeight / 10); row++) {
                     for (int col = 0; col < 6; col++) {
                         Rectangle vent = new Rectangle(4, 2);
@@ -1986,7 +1833,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                         slot.getChildren().add(vent);
                     }
                 }
-                
 
                 int maxGauges = Math.min(2, slotHeight / 30);
                 for (int i = 0; i < maxGauges; i++) {
@@ -1994,25 +1840,23 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                     gaugeBack.setFill(Color.web("#222222"));
                     gaugeBack.setLayoutX(280);
                     gaugeBack.setLayoutY(50 + (i * 12));
-                    
+
                     double usageWidth = 10 + (Math.random() * 40);
                     Rectangle gaugeLevel = new Rectangle(usageWidth, 6);
                     gaugeLevel.setFill(Color.web("#00ffff"));
                     gaugeLevel.setLayoutX(280);
                     gaugeLevel.setLayoutY(50 + (i * 12));
-                    
 
                     Timeline usageAnimation = new Timeline(
-                        new KeyFrame(Duration.ZERO, 
+                        new KeyFrame(Duration.ZERO,
                             new KeyValue(gaugeLevel.widthProperty(), usageWidth)),
-                        new KeyFrame(Duration.seconds(1 + Math.random()), 
+                        new KeyFrame(Duration.seconds(1 + Math.random()),
                             new KeyValue(gaugeLevel.widthProperty(), 10 + (Math.random() * 40))),
-                        new KeyFrame(Duration.seconds(2 + Math.random()), 
+                        new KeyFrame(Duration.seconds(2 + Math.random()),
                             new KeyValue(gaugeLevel.widthProperty(), 10 + (Math.random() * 40)))
                     );
                     usageAnimation.setCycleCount(Timeline.INDEFINITE);
                     usageAnimation.play();
-                    
 
                     if (slotHeight > 80) {
                         Label gaugeLabel = new Label("CPU" + (i+1));
@@ -2025,83 +1869,76 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                         gaugeLabel.setLayoutY(48 + (i * 12));
                         slot.getChildren().add(gaugeLabel);
                     }
-                    
+
                     slot.getChildren().addAll(gaugeBack, gaugeLevel);
                 }
             }
-            
 
             slot.getChildren().addAll(
-                serverFace, 
+                serverFace,
                 leftHandle1, leftHandle2, rightHandle1, rightHandle2,
                 ledPanel, powerLed, statusLed, errorLed, networkLed,
                 specsPanel, portSection,
                 serverTypeLabel, addressLabel
             );
-            
 
             slot.setOnMouseEntered(e -> {
                 serverFace.setFill(Color.web("#6a00ff"));
                 powerLed.setEffect(new Glow(0.8));
                 statusLed.setEffect(new Glow(0.8));
-                
+
                 DropShadow glow = new DropShadow();
                 glow.setColor(Color.web("#ff00ff"));
                 glow.setWidth(15);
                 glow.setHeight(15);
                 serverFace.setEffect(glow);
             });
-            
+
             slot.setOnMouseExited(e -> {
                 serverFace.setFill(Color.web("#4b0082"));
                 powerLed.setEffect(new Glow(0.5));
                 statusLed.setEffect(new Glow(0.3));
                 serverFace.setEffect(null);
             });
-            
-            slot.setOnMouseClicked(e -> parent.openVPSInfoPage(vps));
-            
-        } else if (isSlotAvailable) {
 
+            slot.setOnMouseClicked(e -> parent.openVPSInfoPage(vps));
+        } else if (isSlotAvailable) {
             Rectangle emptyFace = new Rectangle(420, slotHeight - 10);
             emptyFace.setLayoutX(15);
             emptyFace.setLayoutY(5);
             emptyFace.setFill(Color.web("#1a1a1a"));
             emptyFace.setStroke(Color.web("#333333"));
             emptyFace.setStrokeWidth(1);
-            
 
             Rectangle leftRailInner = new Rectangle(3, slotHeight - 20);
             leftRailInner.setFill(Color.web("#333333"));
             leftRailInner.setLayoutX(20);
             leftRailInner.setLayoutY(10);
-            
+
             Rectangle rightRailInner = new Rectangle(3, slotHeight - 20);
             rightRailInner.setFill(Color.web("#333333"));
             rightRailInner.setLayoutX(427);
             rightRailInner.setLayoutY(10);
-            
 
             Circle mountHole1 = new Circle(3);
             mountHole1.setFill(Color.web("#111111"));
             mountHole1.setCenterX(35);
             mountHole1.setCenterY(15);
-            
+
             Circle mountHole2 = new Circle(3);
             mountHole2.setFill(Color.web("#111111"));
             mountHole2.setCenterX(35);
             mountHole2.setCenterY(slotHeight - 15);
-            
+
             Circle mountHole3 = new Circle(3);
             mountHole3.setFill(Color.web("#111111"));
             mountHole3.setCenterX(415);
             mountHole3.setCenterY(15);
-            
+
             Circle mountHole4 = new Circle(3);
             mountHole4.setFill(Color.web("#111111"));
             mountHole4.setCenterX(415);
             mountHole4.setCenterY(slotHeight - 15);
-            
 
             Label emptyLabel = new Label("[ AVAILABLE ]");
             emptyLabel.setStyle("""
@@ -2112,7 +1949,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 """);
             emptyLabel.setLayoutX(150);
             emptyLabel.setLayoutY(slotHeight/2 - 10);
-            
 
             Label unitSizeLabel = new Label("1U");
             unitSizeLabel.setStyle("""
@@ -2122,14 +1958,12 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 """);
             unitSizeLabel.setLayoutX(30);
             unitSizeLabel.setLayoutY(slotHeight/2 - 5);
-            
 
             slot.getChildren().addAll(
                 emptyFace, leftRailInner, rightRailInner,
                 mountHole1, mountHole2, mountHole3, mountHole4,
                 emptyLabel, unitSizeLabel
             );
-            
 
             slot.setOnMouseEntered(e -> {
                 emptyFace.setStroke(Color.web("#8a2be2"));
@@ -2142,7 +1976,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                     -fx-effect: dropshadow(gaussian, #00ffff, 3, 0, 0, 0);
                     """);
             });
-            
+
             slot.setOnMouseExited(e -> {
                 emptyFace.setStroke(Color.web("#333333"));
                 emptyFace.setStrokeWidth(1);
@@ -2153,29 +1987,25 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                     -fx-text-fill: #666666;
                     """);
             });
-            
-            slot.setOnMouseClicked(e -> parent.openVPSInventory());
-            
-        } else {
 
+            slot.setOnMouseClicked(e -> parent.openVPSInventory());
+        } else {
             Rectangle lockedFace = new Rectangle(420, slotHeight - 10);
             lockedFace.setLayoutX(15);
             lockedFace.setLayoutY(5);
             lockedFace.setFill(Color.web("#111111"));
             lockedFace.setStroke(Color.web("#222222"));
             lockedFace.setStrokeWidth(1);
-            
 
             Rectangle lockBase = new Rectangle(16, 16);
             lockBase.setFill(Color.web("#ff00ff", 0.3));
             lockBase.setLayoutX(220 - 8);
             lockBase.setLayoutY(slotHeight/2);
-            
+
             Rectangle lockTop = new Rectangle(10, 10);
             lockTop.setFill(Color.web("#ff00ff", 0.3));
             lockTop.setLayoutX(220 - 5);
             lockTop.setLayoutY(slotHeight/2 - 10);
-            
 
             Label lockedLabel = new Label("LOCKED");
             lockedLabel.setStyle("""
@@ -2186,92 +2016,75 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 """);
             lockedLabel.setLayoutX(200);
             lockedLabel.setLayoutY(slotHeight/2 + 20);
-            
+
             slot.getChildren().addAll(lockedFace, lockBase, lockTop, lockedLabel);
             slot.setOnMouseClicked(e -> parent.pushNotification("Locked Slot", "Upgrade rack to unlock this slot."));
         }
-        
+
         return slot;
     }
 
-
-
     @Override
     public void onRackUIUpdate() {
-
         updateNetworkLabels();
     }
 
-
     private void updateNetworkLabels() {
-
         int baseNetworkSpeed = 10;
         int networkSpeedBonus = ResourceManager.getInstance().getSkillPointsSystem().getRackNetworkSpeedBonus();
         int totalNetworkSpeed = baseNetworkSpeed + networkSpeedBonus;
-        
 
         if (networkValueEmpty != null) {
             networkValueEmpty.setText(totalNetworkSpeed + " Gbps");
         }
-        
+
         if (networkValuePopulated != null) {
             networkValuePopulated.setText(totalNetworkSpeed + " Gbps");
         }
     }
 
-
     public void dispose() {
-
         System.out.println("ยกเลิกการลงทะเบียน RackUIUpdateListener");
-        
 
         ResourceManager.getInstance().removeRackUIUpdateListener(this);
-        
 
         if (originalRootNodes != null && !originalRootNodes.isEmpty()) {
-
             parent.getGameArea().getChildren().removeIf(node -> node instanceof BorderPane);
-            
 
             StackPane rootStack = parent.getRootStack();
-            
 
             Node gameArea = rootStack.getChildren().isEmpty() ? null : rootStack.getChildren().get(0);
-            
 
             rootStack.getChildren().clear();
             if (gameArea != null) {
                 rootStack.getChildren().add(gameArea);
             }
-            
 
             for (Node node : originalRootNodes) {
                 if (node != null && node != gameArea && !rootStack.getChildren().contains(node)) {
                     rootStack.getChildren().add(node);
                 }
             }
-            
+
             System.out.println("คืนค่า nodes ใน rootStack เรียบร้อย (" + rootStack.getChildren().size() + " nodes)");
         }
-        
 
         if (parent.getMenuBar() != null) {
             parent.getMenuBar().setVisible(true);
         }
-        
+
         if (parent.getInGameMarketMenuBar() != null) {
             parent.getInGameMarketMenuBar().setVisible(true);
         }
-        
+
         if (parent.getMoneyUI() != null) {
             parent.getMoneyUI().setVisible(true);
         }
-        
+
         if (parent.getDateView() != null) {
             parent.getDateView().setVisible(true);
         }
-        
+
         System.out.println("ล้างการลงทะเบียน RackManagementUI และคืนค่า UI เรียบร้อย");
     }
 }
-

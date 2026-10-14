@@ -29,12 +29,10 @@ public class DesktopScreen extends StackPane {
 
     private MessengerWindow chatWindow;
     private MessengerController chatController;
-    
-    
+
     private static Map<String, Image> imageCache = new HashMap<>();
     private static boolean imagesPreloaded = false;
-    
-    
+
     private static final String[] DESKTOP_IMAGES = {
         "/images/wallpaper/Desktop.gif",
         "/images/buttons/MessengerDesktop.png",
@@ -42,11 +40,11 @@ public class DesktopScreen extends StackPane {
         "/images/buttons/RoomDesktop.gif",
         "/images/buttons/ServerDesktop.gif"
     };
-    
+
     static {
         preloadImages();
     }
-    
+
     public static synchronized void preloadImages() {
         if (imagesPreloaded) {
             System.out.println("Desktop images already preloaded, skipping");
@@ -57,11 +55,11 @@ public class DesktopScreen extends StackPane {
         for (String imagePath : DESKTOP_IMAGES) {
             loadImage(imagePath);
         }
-        
+
         imagesPreloaded = true;
         System.out.println("Desktop images preloading complete");
     }
-    
+
     public static Image loadImage(String path) {
         if (!imageCache.containsKey(path)) {
             try {
@@ -90,67 +88,55 @@ public class DesktopScreen extends StackPane {
     private void setupUI() {
         ScreenResolution resolution = DefaultGameConfig.getInstance().getResolution();
 
-        
         setStyle("-fx-background-color: black;");
-        
-        
+
         javafx.scene.image.Image backgroundImage = loadImage("/images/wallpaper/Desktop.gif");
-        
-        
+
         Pane backgroundLayer = createBackgroundLayer(backgroundImage);
-        
-        
+
         double fixedScaleFactor = 0.3;
         Pane messengerButton = createMessengerButton(fixedScaleFactor);
         Pane marketButton = createMarketButton(fixedScaleFactor);
         Pane roomButton = createRoomButton(fixedScaleFactor);
         Pane serverButton = createServerButton(fixedScaleFactor);
-        
-        
+
         Group desktopGroup = new Group(backgroundLayer, messengerButton, marketButton, roomButton, serverButton);
-        
-        
+
         double centerX = (resolution.getWidth() - backgroundLayer.getPrefWidth()) / 2.0;
         double centerY = (resolution.getHeight() - backgroundLayer.getPrefHeight()) / 2.0;
         desktopGroup.setLayoutX(centerX);
         desktopGroup.setLayoutY(centerY);
-        
-        
+
         getChildren().add(desktopGroup);
-        
-        
+
         System.out.println("Screen resolution: " + resolution.getWidth() + "x" + resolution.getHeight());
     }
 
     private Pane createBackgroundLayer(Image backgroundImage) {
         Pane backgroundLayer = new Pane();
-        
-        
+
         double fixedScaleFactor = 0.3;
         double fixedWidth = backgroundImage != null ? backgroundImage.getWidth() * fixedScaleFactor : 1920 * fixedScaleFactor;
         double fixedHeight = backgroundImage != null ? backgroundImage.getHeight() * fixedScaleFactor : 1080 * fixedScaleFactor;
-        
-        
+
         backgroundLayer.setPrefWidth(fixedWidth);
         backgroundLayer.setPrefHeight(fixedHeight);
         backgroundLayer.setMinWidth(fixedWidth);
         backgroundLayer.setMinHeight(fixedHeight);
         backgroundLayer.setMaxWidth(fixedWidth);
         backgroundLayer.setMaxHeight(fixedHeight);
-        
-        
+
         String imageUrl = "/images/wallpaper/Desktop.gif";
-        
-        
+
         backgroundLayer.setStyle(String.format("""
             -fx-background-image: url("%s");
             -fx-background-size: %fpx %fpx;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
             """, imageUrl, fixedWidth, fixedHeight));
-        
+
         System.out.println("กำหนดขนาดภาพพื้นหลังคงที่: " + fixedWidth + "x" + fixedHeight);
-        
+
         return backgroundLayer;
     }
 
@@ -162,18 +148,17 @@ public class DesktopScreen extends StackPane {
         messengerButton.setScaleY(fixedScaleFactor);
         messengerButton.setTranslateX(-176);
         messengerButton.setTranslateY(127);
-        
-        
+
         String imageUrl = "/images/buttons/MessengerDesktop.png";
-        loadImage(imageUrl); 
-        
+        loadImage(imageUrl);
+
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
         """, imageUrl);
-        
+
         String hoverStyle = String.format("""
             -fx-background-image: url('%s');
             -fx-background-size: contain;
@@ -181,12 +166,12 @@ public class DesktopScreen extends StackPane {
             -fx-background-position: center;
             -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
         """, imageUrl);
-        
+
         messengerButton.setStyle(normalStyle);
         messengerButton.setOnMouseEntered(event -> messengerButton.setStyle(hoverStyle));
         messengerButton.setOnMouseExited(event -> messengerButton.setStyle(normalStyle));
         messengerButton.setOnMouseClicked(e -> this.openChatWindow());
-        
+
         return messengerButton;
     }
 
@@ -198,18 +183,17 @@ public class DesktopScreen extends StackPane {
         marketButton.setScaleY(fixedScaleFactor);
         marketButton.setTranslateX(-176);
         marketButton.setTranslateY(192);
-        
-        
+
         String imageUrl = "/images/buttons/MarketDesktop.png";
-        loadImage(imageUrl); 
-        
+        loadImage(imageUrl);
+
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
         """, imageUrl);
-        
+
         String hoverStyle = String.format("""
             -fx-background-image: url('%s');
             -fx-background-size: contain;
@@ -217,12 +201,12 @@ public class DesktopScreen extends StackPane {
             -fx-background-position: center;
             -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
         """, imageUrl);
-        
+
         marketButton.setStyle(normalStyle);
         marketButton.setOnMouseEntered(event -> marketButton.setStyle(hoverStyle));
         marketButton.setOnMouseExited(event -> marketButton.setStyle(normalStyle));
         marketButton.setOnMouseClicked(e -> this.openMarketWindow());
-        
+
         return marketButton;
     }
 
@@ -234,18 +218,17 @@ public class DesktopScreen extends StackPane {
         roomButton.setScaleY(fixedScaleFactor);
         roomButton.setTranslateX(-365);
         roomButton.setTranslateY(-290);
-        
-        
+
         String imageUrl = "/images/buttons/RoomDesktop.gif";
-        loadImage(imageUrl); 
-        
+        loadImage(imageUrl);
+
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
         """, imageUrl);
-        
+
         String hoverStyle = String.format("""
             -fx-background-image: url('%s');
             -fx-background-size: contain;
@@ -253,12 +236,12 @@ public class DesktopScreen extends StackPane {
             -fx-background-position: center;
             -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
         """, imageUrl);
-        
+
         roomButton.setStyle(normalStyle);
         roomButton.setOnMouseEntered(event -> roomButton.setStyle(hoverStyle));
         roomButton.setOnMouseExited(event -> roomButton.setStyle(normalStyle));
         roomButton.setOnMouseClicked(e -> this.onExit.run());
-        
+
         return roomButton;
     }
 
@@ -270,18 +253,17 @@ public class DesktopScreen extends StackPane {
         serverButton.setScaleY(fixedScaleFactor);
         serverButton.setTranslateX(644);
         serverButton.setTranslateY(-475);
-        
-        
+
         String imageUrl = "/images/buttons/ServerDesktop.gif";
-        loadImage(imageUrl); 
-        
+        loadImage(imageUrl);
+
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
             -fx-background-size: contain;
             -fx-background-repeat: no-repeat;
             -fx-background-position: center;
         """, imageUrl);
-        
+
         String hoverStyle = String.format("""
             -fx-background-image: url('%s');
             -fx-background-size: contain;
@@ -289,12 +271,12 @@ public class DesktopScreen extends StackPane {
             -fx-background-position: center;
             -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
         """, imageUrl);
-        
+
         serverButton.setStyle(normalStyle);
         serverButton.setOnMouseEntered(event -> serverButton.setStyle(hoverStyle));
         serverButton.setOnMouseExited(event -> serverButton.setStyle(normalStyle));
         serverButton.setOnMouseClicked(e -> this.parent.openRackInfo());
-        
+
         return serverButton;
     }
 
@@ -304,20 +286,20 @@ public class DesktopScreen extends StackPane {
             chatController = new MessengerController(requestManager, vpsManager, company, chatHistoryManager,
                     parent.getRootStack(), gameTimeManager, this::closeChatWindow);
             chatWindow = chatController.getMessengerWindow();
-            
+
             chatWindow.getDashboardView().updateDashboard(
                 company.getRating(),
                 requestManager.getRequests().size(),
-                company.getAvailableVMs(),  
+                company.getAvailableVMs(),
                 vpsManager.getVPSMap().size()
             );
-            
+
             chatWindow.getCloseButton().setOnAction(e -> {
                 chatController.close();
                 closeChatWindow();
             });
         }
-        
+
         if (!getChildren().contains(chatWindow)) {
             chatWindow.getDashboardView().updateDashboard(
                 company.getRating(),
@@ -325,10 +307,10 @@ public class DesktopScreen extends StackPane {
                 company.getAvailableVMs(),
                 vpsManager.getVPSMap().size()
             );
-            
+
             chatWindow.setPrefSize(900, 700);
             chatWindow.setMaxSize(1200, 800);
-            
+
             StackPane.setAlignment(chatWindow, Pos.CENTER);
             getChildren().add(chatWindow);
         }
@@ -337,20 +319,18 @@ public class DesktopScreen extends StackPane {
     private void closeChatWindow() {
         if (chatWindow != null && getChildren().contains(chatWindow)) {
             getChildren().remove(chatWindow);
-            chatWindow = null; 
-            chatController = null; 
+            chatWindow = null;
+            chatController = null;
         }
     }
 
     private void openMarketWindow() {
         MarketWindow marketWindow = new MarketWindow(() -> getChildren().removeIf(node -> node instanceof MarketWindow), parent);
-        
+
         marketWindow.setPrefSize(1200, 800);
         marketWindow.setMaxSize(1600, 900);
-        
+
         StackPane.setAlignment(marketWindow, Pos.CENTER);
         getChildren().add(marketWindow);
     }
-
 }
-

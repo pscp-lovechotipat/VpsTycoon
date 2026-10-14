@@ -20,17 +20,14 @@ public class KeyEventHandler {
     public KeyEventHandler(GameplayContentPane contentPane, DebugOverlayManager debugOverlayManager) {
         this.contentPane = contentPane;
         this.debugOverlayManager = debugOverlayManager;
-        
 
         this.resumeScreen = new ResumeScreen(
-            contentPane.getNavigator(), 
+            contentPane.getNavigator(),
             this::hideResumeScreen,
             this::showSettingsScreen
         );
-        
 
         GameConfig config = DefaultGameConfig.getInstance();
-        
 
         this.settingsScreen = new SettingsScreen(
             config, this::hideSettingsScreen
@@ -93,10 +90,8 @@ public class KeyEventHandler {
         pauseAllGameThreads("showResumeScreen");
 
         resumeScreen.setPrefSize(contentPane.getWidth(), contentPane.getHeight());
-        
 
         contentPane.getRootStack().getChildren().add(resumeScreen);
-        
 
         resumeScreen.toFront();
     }
@@ -108,7 +103,6 @@ public class KeyEventHandler {
         resumeScreenShowing = false;
     }
 
-
     public void showSettingsScreen() {
         pauseAllGameThreads("showSettingsScreen");
 
@@ -117,7 +111,7 @@ public class KeyEventHandler {
         contentPane.getRootStack().getChildren().add(settingsScreen);
 
         settingsScreen.toFront();
-        
+
         settingsScreenShowing = true;
 
         if (resumeScreenShowing) {
@@ -138,8 +132,4 @@ public class KeyEventHandler {
         contentPane.setShowDebug(newShowDebug);
         debugOverlayManager.toggleDebug();
     }
-
-    
-    
 }
-

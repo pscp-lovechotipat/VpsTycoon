@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ResourceManager implements Serializable {
-
     private static final ResourceManager instance = new ResourceManager();
 
     private static final String SOUNDS_PATH = "/sounds/";
@@ -46,7 +45,7 @@ public class ResourceManager implements Serializable {
 
     private Company company = new Company();
     private GameState currentState;
-    private Rack rack; 
+    private Rack rack;
 
     private RequestManager requestManager;
     private RequestGenerator requestGenerator;
@@ -58,19 +57,19 @@ public class ResourceManager implements Serializable {
     public interface RackUIUpdateListener {
         void onRackUIUpdate();
     }
-    
+
     private List<RackUIUpdateListener> rackUIUpdateListeners = new ArrayList<>();
-    
+
     public void addRackUIUpdateListener(RackUIUpdateListener listener) {
         if (listener != null && !rackUIUpdateListeners.contains(listener)) {
             rackUIUpdateListeners.add(listener);
         }
     }
-    
+
     public void removeRackUIUpdateListener(RackUIUpdateListener listener) {
         rackUIUpdateListeners.remove(listener);
     }
-    
+
     public void notifyRackUIUpdate() {
         for (RackUIUpdateListener listener : new ArrayList<>(rackUIUpdateListeners)) {
             listener.onRackUIUpdate();
@@ -93,30 +92,29 @@ public class ResourceManager implements Serializable {
 
     private boolean emergencyPerformanceMode = false;
     private long lastPerformanceCheck = 0;
-    private static final long PERFORMANCE_CHECK_INTERVAL = 1000; 
-    
+    private static final long PERFORMANCE_CHECK_INTERVAL = 1000;
+
     public boolean isEmergencyPerformanceMode() {
         long now = System.currentTimeMillis();
         if (now - lastPerformanceCheck > PERFORMANCE_CHECK_INTERVAL) {
             lastPerformanceCheck = now;
-            
+
             Runtime runtime = Runtime.getRuntime();
             long maxMemory = runtime.maxMemory();
             long allocatedMemory = runtime.totalMemory();
             long freeMemory = runtime.freeMemory();
-            
+
             double usedMemoryPct = (double)(allocatedMemory - freeMemory) / maxMemory * 100;
-            
+
             emergencyPerformanceMode = usedMemoryPct > 80;
-            
+
             if (emergencyPerformanceMode) {
                 System.out.println("Warning: High memory usage. Enabling emergency performance mode.");
             }
         }
-        
+
         return emergencyPerformanceMode;
     }
-    
 
     private boolean preloadComplete = false;
     private final Object preloadLock = new Object();
@@ -125,27 +123,27 @@ public class ResourceManager implements Serializable {
         void onResourceLoading(String resourcePath);
         void onResourceLoadingComplete(int totalLoaded);
     }
-    
+
     private ResourceLoadingListener resourceLoadingListener;
-    
+
     public void setResourceLoadingListener(ResourceLoadingListener listener) {
         this.resourceLoadingListener = listener;
     }
-    
+
     private void notifyResourceLoading(String resourcePath) {
         if (resourceLoadingListener != null) {
             final String path = resourcePath;
-            
+
             javafx.application.Platform.runLater(() -> {
                 resourceLoadingListener.onResourceLoading(path);
             });
         }
     }
-    
+
     private void notifyResourceLoadingComplete(int totalLoaded) {
         if (resourceLoadingListener != null) {
             final int total = totalLoaded;
-            
+
             javafx.application.Platform.runLater(() -> {
                 resourceLoadingListener.onResourceLoadingComplete(total);
             });
@@ -155,7 +153,7 @@ public class ResourceManager implements Serializable {
     private ResourceManager() {
         this.company = new Company();
         this.audioManager = new AudioManager();
-        this.rack = new Rack(); 
+        this.rack = new Rack();
 
         createBackupDirectory();
         if (currentState == null) {
@@ -172,7 +170,7 @@ public class ResourceManager implements Serializable {
         if (gameEvent == null || !gameEvent.isRunning()) {
             gameEvent = new GameEvent(gameplayContentPane, currentState);
             Thread eventThread = new Thread(gameEvent);
-            eventThread.setDaemon(true); 
+            eventThread.setDaemon(true);
             eventThread.start();
         }
     }
@@ -186,8 +184,7 @@ public class ResourceManager implements Serializable {
     private void initiaizeGameTimeController() {
         if (gameTimeController == null) {
             System.out.println("กำลังสร้าง GameTimeController ใหม่...");
-            
-            
+
             if (requestManager == null) {
                 try {
                     System.out.println("สร้าง RequestManager ก่อนเริ่มต้น GameTimeController");
@@ -197,13 +194,13 @@ public class ResourceManager implements Serializable {
                     e.printStackTrace();
                 }
             }
-            
+
             this.gameTimeController = new GameTimeController(this.company,
                     this.requestManager,
                     this.rack,
                     currentState.getLocalDateTime()
             );
-            
+
             System.out.println("เริ่มการทำงานของ GameTimeController หลังจากสร้างใหม่");
             gameTimeController.startTime();
         }
@@ -227,12 +224,11 @@ public class ResourceManager implements Serializable {
         }
     }
 
-
     public void saveGameState(GameState state) {
         initiaizeGameTimeController();
         state.setLocalDateTime(gameTimeController.getGameTimeManager().getGameDateTime());
         state.setGameTimeMs(gameTimeController.getGameTimeManager().getGameTimeMs());
-        
+
         if (this.company != null) {
             System.out.println("กำลังบันทึกข้อมูล Free VM count: " + this.company.getAvailableVMs());
             state.setFreeVmCount(this.company.getAvailableVMs());
@@ -242,14 +238,14 @@ public class ResourceManager implements Serializable {
             System.out.println("กำลังบันทึกข้อมูล Skill Points...");
             state.setSkillLevels(this.skillPointsSystem.getSkillLevelsMap());
         }
-        
+
         try {
             if (requestManager != null) {
                 if (requestManager.getRequests() != null) {
                     state.setPendingRequests(new ArrayList<>(requestManager.getRequests()));
                     System.out.println("บันทึกข้อมูล pendingRequests: " + requestManager.getRequests().size() + " รายการ");
                 }
-                
+
                 if (requestManager.getCompletedRequests() != null) {
                     state.setCompletedRequests(new ArrayList<>(requestManager.getCompletedRequests()));
                     System.out.println("บันทึกข้อมูล completedRequests: " + requestManager.getCompletedRequests().size() + " รายการ");
@@ -259,47 +255,47 @@ public class ResourceManager implements Serializable {
             System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูล Requests: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         try {
             ChatHistoryManager chatManager = getChatHistory();
             if (chatManager != null) {
                 System.out.println("กำลังบันทึกข้อมูล Chat History ลงใน GameState...");
-                
+
                 chatManager.saveChatHistory();
             }
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูล Chat History: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         System.out.println("กำลังบันทึกข้อมูล Rack...");
         if (rack != null) {
             try {
                 Map<String, Object> rackConfig = new HashMap<>();
                 rackConfig.put("maxRacks", rack.getMaxRacks());
                 rackConfig.put("currentRackIndex", rack.getCurrentRackIndex());
-                
+
                 List<Map<String, Object>> allRacksData = new ArrayList<>();
-                
+
                 int totalRacks = rack.getMaxRacks();
-                
+
                 List<Integer> slotCounts = new ArrayList<>();
                 for (int i = 0; i < totalRacks; i++) {
                     int currentIndex = rack.getCurrentRackIndex();
-                    
+
                     rack.setRackIndex(i);
-                    
+
                     Map<String, Object> rackData = new HashMap<>();
                     rackData.put("rackIndex", i);
                     rackData.put("maxSlotUnits", rack.getMaxSlotUnits());
                     rackData.put("unlockedSlotUnits", rack.getUnlockedSlotUnits());
                     rackData.put("occupiedSlotUnits", rack.getOccupiedSlotUnits());
                     rackData.put("availableSlotUnits", rack.getAvailableSlotUnits());
-                    
+
                     List<String> rackInstalledVpsIds = new ArrayList<>();
                     for (VPSOptimization vps : rack.getInstalledVPS()) {
                         rackInstalledVpsIds.add(vps.getVpsId());
-                        
+
                         boolean found = false;
                         for (GameObject obj : state.getGameObjects()) {
                             if (obj instanceof VPSOptimization && ((VPSOptimization) obj).getVpsId().equals(vps.getVpsId())) {
@@ -307,53 +303,53 @@ public class ResourceManager implements Serializable {
                                 break;
                             }
                         }
-                        
+
                         if (!found) {
                             state.addGameObject(vps);
                         }
                     }
                     rackData.put("installedVpsIds", rackInstalledVpsIds);
-                    
+
                     allRacksData.add(rackData);
-                    
+
                     slotCounts.add(rack.getMaxSlotUnits());
-                    
+
                     rack.setRackIndex(currentIndex);
                 }
-                
+
                 rackConfig.put("allRacksData", allRacksData);
                 rackConfig.put("slotCounts", slotCounts);
-                
+
                 rackConfig.put("unlockedSlotUnitsList", rack.getUnlockedSlotUnitsList());
-                
+
                 List<String> allInstalledVpsIds = new ArrayList<>();
                 for (VPSOptimization vps : rack.getAllInstalledVPS()) {
                     allInstalledVpsIds.add(vps.getVpsId());
                 }
                 rackConfig.put("installedVpsIds", allInstalledVpsIds);
-                
+
                 state.setRackConfiguration(rackConfig);
-                System.out.println("บันทึกข้อมูล Rack สำเร็จ: " + totalRacks + " racks, " + 
+                System.out.println("บันทึกข้อมูล Rack สำเร็จ: " + totalRacks + " racks, " +
                                   allInstalledVpsIds.size() + " VPS ที่ติดตั้ง");
             } catch (Exception e) {
                 System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูล Rack: " + e.getMessage());
                 e.printStackTrace();
             }
         }
-        
+
         System.out.println("กำลังบันทึกข้อมูล VPS Inventory...");
         try {
             VPSInventory vpsInventory = null;
-            
+
             if (gameplayContentPane != null) {
                 vpsInventory = gameplayContentPane.getVpsInventory();
-                System.out.println("พบ VPSInventory จาก GameplayContentPane: " + 
+                System.out.println("พบ VPSInventory จาก GameplayContentPane: " +
                     (vpsInventory != null ? vpsInventory.getSize() + " รายการ" : "ไม่พบ"));
             }
-            
+
             if (vpsInventory == null || vpsInventory.isEmpty()) {
                 vpsInventory = new VPSInventory();
-                
+
                 for (GameObject obj : state.getGameObjects()) {
                     if (obj instanceof VPSOptimization) {
                         VPSOptimization vps = (VPSOptimization) obj;
@@ -364,12 +360,12 @@ public class ResourceManager implements Serializable {
                     }
                 }
             }
-            
+
             for (VPSOptimization vps : vpsInventory.getAllVPS()) {
                 boolean found = false;
                 for (GameObject obj : state.getGameObjects()) {
-                    if (obj instanceof VPSOptimization && 
-                        ((VPSOptimization) obj).getVpsId() != null && 
+                    if (obj instanceof VPSOptimization &&
+                        ((VPSOptimization) obj).getVpsId() != null &&
                         ((VPSOptimization) obj).getVpsId().equals(vps.getVpsId())) {
                         found = true;
                         break;
@@ -380,11 +376,11 @@ public class ResourceManager implements Serializable {
                     System.out.println("เพิ่ม VPS จาก Inventory เข้า GameObjects: " + vps.getVpsId());
                 }
             }
-            
+
             Map<String, Object> inventoryData = new HashMap<>();
             List<String> vpsIds = vpsInventory.getAllVPSIds();
             inventoryData.put("vpsIds", vpsIds);
-            
+
             Map<String, Map<String, Object>> vpsDetails = new HashMap<>();
             for (String vpsId : vpsIds) {
                 VPSOptimization vps = vpsInventory.getVPS(vpsId);
@@ -397,9 +393,9 @@ public class ResourceManager implements Serializable {
                 vpsDetails.put(vpsId, details);
             }
             inventoryData.put("vpsDetails", vpsDetails);
-            
+
             state.setVpsInventoryData(inventoryData);
-            
+
             System.out.println("บันทึกข้อมูล VPS Inventory สำเร็จ: " + vpsIds.size() + " VPS ที่ยังไม่ได้ติดตั้ง");
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูล VPS Inventory: " + e.getMessage());
@@ -420,15 +416,15 @@ public class ResourceManager implements Serializable {
     public GameState loadGameState() {
         GameState state = null;
         File saveFile = new File(SAVE_FILE);
-        
+
         if (!saveFile.exists() || saveFile.length() == 0) {
             System.out.println("ไม่พบไฟล์เซฟเกม หรือไฟล์เซฟว่างเปล่า");
             return new GameState();
         }
-        
+
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(saveFile))) {
             state = (GameState) ois.readObject();
-            
+
             if (state.getFreeVmCount() > 0) {
                 System.out.println("โหลดข้อมูล Free VM Count: " + state.getFreeVmCount());
                 if (this.company != null) {
@@ -457,12 +453,12 @@ public class ResourceManager implements Serializable {
                     }
                 }
             }
-            
+
             loadRackDataFromGameState(state);
-            
+
             this.company = state.getCompany();
             this.currentState = state;
-            
+
             if (this.company != null) {
                 if (state.getSkillLevels() != null && !state.getSkillLevels().isEmpty()) {
                     System.out.println("โหลดข้อมูล Skill Levels จาก GameState...");
@@ -472,68 +468,67 @@ public class ResourceManager implements Serializable {
                     this.skillPointsSystem = new SkillPointsSystem(this.company);
                 }
             }
-            
+
             System.out.println("โหลดข้อมูลเกมสำเร็จ จาก: " + saveFile.getAbsolutePath());
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการโหลดข้อมูลเกม: " + e.getMessage());
             e.printStackTrace();
             return new GameState();
         }
-        
+
         return state;
     }
-    
+
     public boolean loadRackDataFromGameState(GameState state) {
         if (state == null) {
             System.out.println("ไม่สามารถโหลดข้อมูล Rack ได้: GameState เป็น null");
             return false;
         }
-        
+
         Map<String, Object> rackConfig = state.getRackConfiguration();
         if (rackConfig == null || rackConfig.isEmpty()) {
             System.out.println("ไม่พบข้อมูลการตั้งค่า Rack ใน GameState");
-            
+
             if (this.rack == null) {
                 this.rack = new Rack();
-                this.rack.addRack(10); 
+                this.rack.addRack(10);
                 System.out.println("สร้าง Rack เริ่มต้นเรียบร้อยแล้ว");
             }
             return false;
         }
-        
-        
+
         if (this.rack == null) {
             this.rack = new Rack();
         } else {
             this.rack = new Rack();
         }
-        
+
         try {
             int maxRacks = rackConfig.containsKey("maxRacks") ? (Integer) rackConfig.get("maxRacks") : 0;
             int currentRackIndex = rackConfig.containsKey("currentRackIndex") ? (Integer) rackConfig.get("currentRackIndex") : 0;
-            
+
             List<Map<String, Object>> allRacksData = null;
             if (rackConfig.containsKey("allRacksData")) {
                 allRacksData = (List<Map<String, Object>>) rackConfig.get("allRacksData");
                 System.out.println("พบข้อมูลรายละเอียดของ Rack: " + allRacksData.size() + " racks");
             }
-            
+
             List<Integer> slotCounts = null;
             if (rackConfig.containsKey("slotCounts")) {
                 slotCounts = (List<Integer>) rackConfig.get("slotCounts");
                 System.out.println("พบข้อมูลขนาด slot ของ Rack: " + slotCounts);
             }
-            
+
             for (int i = 0; i < maxRacks; i++) {
-                int slotCount = 10; 
+                int slotCount = 10;
                 if (slotCounts != null && i < slotCounts.size()) {
                     slotCount = slotCounts.get(i);
                 }
-                
+
                 this.rack.addRack(slotCount);
                 System.out.println("สร้าง Rack #" + (i+1) + " พร้อม " + slotCount + " slots");
             }
-            
+
             if (rackConfig.containsKey("unlockedSlotUnitsList")) {
                 List<Integer> unlockedList = (List<Integer>) rackConfig.get("unlockedSlotUnitsList");
                 if (unlockedList != null && !unlockedList.isEmpty()) {
@@ -541,18 +536,18 @@ public class ResourceManager implements Serializable {
                     System.out.println("ตั้งค่า unlockedSlotUnitsList: " + unlockedList);
                 }
             }
-            
+
             if (allRacksData != null && !allRacksData.isEmpty()) {
                 for (Map<String, Object> rackData : allRacksData) {
                     int rackIndex = (Integer) rackData.get("rackIndex");
                     List<String> rackInstalledVpsIds = (List<String>) rackData.get("installedVpsIds");
-                    
+
                     if (rackInstalledVpsIds != null && !rackInstalledVpsIds.isEmpty()) {
                         this.rack.setRackIndex(rackIndex);
-                        
+
                         for (String vpsId : rackInstalledVpsIds) {
                             boolean found = false;
-                            
+
                             for (GameObject obj : state.getGameObjects()) {
                                 if (obj instanceof VPSOptimization) {
                                     VPSOptimization vps = (VPSOptimization) obj;
@@ -567,7 +562,7 @@ public class ResourceManager implements Serializable {
                                     }
                                 }
                             }
-                            
+
                             if (!found) {
                                 System.out.println("ไม่พบ VPS " + vpsId + " ใน GameObjects");
                             }
@@ -576,13 +571,13 @@ public class ResourceManager implements Serializable {
                 }
             } else if (rackConfig.containsKey("installedVpsIds")) {
                 List<String> installedVpsIds = (List<String>) rackConfig.get("installedVpsIds");
-                
+
                 if (installedVpsIds != null && !installedVpsIds.isEmpty()) {
                     this.rack.setRackIndex(0);
-                    
+
                     for (String vpsId : installedVpsIds) {
                         boolean found = false;
-                        
+
                         for (GameObject obj : state.getGameObjects()) {
                             if (obj instanceof VPSOptimization) {
                                 VPSOptimization vps = (VPSOptimization) obj;
@@ -597,28 +592,28 @@ public class ResourceManager implements Serializable {
                                 }
                             }
                         }
-                        
+
                         if (!found) {
                             System.out.println("ไม่พบ VPS " + vpsId + " ใน GameObjects");
                         }
                     }
                 }
             }
-            
+
             if (currentRackIndex >= 0 && currentRackIndex < maxRacks) {
                 this.rack.setRackIndex(currentRackIndex);
                 System.out.println("ตั้งค่า currentRackIndex เป็น " + currentRackIndex);
             }
-            
-            System.out.println("โหลดข้อมูล Rack สำเร็จ: " + this.rack.getMaxRacks() + " racks, " + 
+
+            System.out.println("โหลดข้อมูล Rack สำเร็จ: " + this.rack.getMaxRacks() + " racks, " +
                               this.rack.getAllInstalledVPS().size() + " VPS ที่ติดตั้ง");
             return true;
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการโหลดข้อมูล Rack: " + e.getMessage());
             e.printStackTrace();
-            
+
             this.rack = new Rack();
-            this.rack.addRack(10); 
+            this.rack.addRack(10);
             System.out.println("เกิดข้อผิดพลาด สร้าง Rack เริ่มต้นแทน");
             return false;
         }
@@ -640,7 +635,6 @@ public class ResourceManager implements Serializable {
         mouseNotificationController.addNotification(content);
     }
 
-
     public void pushCenterNotification(String title, String content, String image) {
         initializeNotifications();
         centerNotificationController.push(title, content, image);
@@ -651,26 +645,20 @@ public class ResourceManager implements Serializable {
         centerNotificationController.pushAutoClose(title, content, image, autoCloseMillis);
     }
 
-
     public NotificationView getNotificationView() {
         initializeNotifications();
         return notificationView;
     }
-
-
 
     public CenterNotificationView getCenterNotificationView() {
         initializeNotifications();
         return centerNotificationView;
     }
 
-
-
     public MouseNotificationView getMouseNotificationView() {
         initializeNotifications();
         return mouseNotificationView;
     }
-
 
     public GameEvent getGameEvent() {
         return gameEvent;
@@ -679,7 +667,6 @@ public class ResourceManager implements Serializable {
     public Rack getRack() {
         return rack;
     }
-
 
     public RequestManager getRequestManager() {
         return requestManager;
@@ -706,7 +693,7 @@ public class ResourceManager implements Serializable {
     public RequestGenerator getRequestGenerator() {
         return requestGenerator;
     }
-    
+
     public void setRequestGenerator(RequestGenerator generator) {
         this.requestGenerator = generator;
         System.out.println("ตั้งค่า RequestGenerator ใหม่ใน ResourceManager");
@@ -739,7 +726,7 @@ public class ResourceManager implements Serializable {
                     System.err.println("ไม่สามารถสร้างโฟลเดอร์เกม: " + gameDir.getAbsolutePath());
                 }
             }
-            
+
             File backupDir = new File(BACKUP_DIR);
             if (!backupDir.exists()) {
                 boolean created = backupDir.mkdirs();
@@ -755,9 +742,6 @@ public class ResourceManager implements Serializable {
         }
     }
 
-
-
-
     public static String getSoundPath(String name) {
         return SOUNDS_PATH + name;
     }
@@ -770,9 +754,6 @@ public class ResourceManager implements Serializable {
         return ResourceManager.class.getResource(path);
     }
 
-
-
-
     public GameState getCurrentState() {
         if (currentState == null) {
             currentState = new GameState(this.company);
@@ -783,7 +764,7 @@ public class ResourceManager implements Serializable {
     public void setCurrentState(GameState state) {
         this.currentState = state;
         this.company = state.getCompany();
-        
+
         if (this.company != null) {
             if (state.getSkillLevels() != null && !state.getSkillLevels().isEmpty()) {
                 this.skillPointsSystem = new SkillPointsSystem(this.company, state.getSkillLevels());
@@ -809,7 +790,6 @@ public class ResourceManager implements Serializable {
         return ChatHistoryManager.getInstance();
     }
 
-
     public boolean isMusicRunning() {
         return musicRunning;
     }
@@ -821,7 +801,7 @@ public class ResourceManager implements Serializable {
     public void preloadAssets() {
         System.out.println("===== เริ่มโหลดทรัพยากรของเกม =====");
         preloadComplete = false;
-        
+
         final String[] imagesToPreload = {
             "/images/rooms/room.gif",
             "/images/Moniter/MoniterF2.png",
@@ -840,26 +820,26 @@ public class ResourceManager implements Serializable {
             "/images/home/background.png",
             "/images/others/Credits.gif"
         };
-        
+
         final String[] soundsToPreload = {
             "hover.wav",
             "click.wav",
             "click_app.wav",
             "server.mp3"
         };
-        
+
         Thread preloadThread = new Thread(() -> {
             try {
                 for (String imagePath : imagesToPreload) {
                     notifyResourceLoading(imagePath);
                     preloadImage(imagePath);
                 }
-                
+
                 for (String soundPath : soundsToPreload) {
                     notifyResourceLoading("เสียง: " + soundPath);
                     audioManager.preloadSoundEffect(soundPath);
                 }
-                
+
                 try {
                     Class.forName("com.vpstycoon.ui.game.desktop.DesktopScreen")
                          .getMethod("preloadImages")
@@ -867,7 +847,7 @@ public class ResourceManager implements Serializable {
                 } catch (Exception e) {
                     System.err.println("Error preloading DesktopScreen images: " + e.getMessage());
                 }
-                
+
                 int totalResources = imagesToPreload.length + soundsToPreload.length;
                 System.out.println("===== โหลดทรัพยากรของเกมเสร็จสมบูรณ์: " + totalResources + " รายการ =====");
                 notifyResourceLoadingComplete(totalResources);
@@ -881,14 +861,14 @@ public class ResourceManager implements Serializable {
                 }
             }
         });
-        
+
         preloadThread.setDaemon(true);
         preloadThread.start();
     }
-    
+
     public boolean waitForPreload(long timeoutMs) {
         if (preloadComplete) return true;
-        
+
         synchronized(preloadLock) {
             if (!preloadComplete) {
                 try {
@@ -898,14 +878,14 @@ public class ResourceManager implements Serializable {
                 }
             }
         }
-        
+
         return preloadComplete;
     }
-    
+
     public boolean isPreloadComplete() {
         return preloadComplete;
     }
-    
+
     private Image preloadImage(String path) {
         if (!imageCache.containsKey(path)) {
             try {
@@ -916,19 +896,18 @@ public class ResourceManager implements Serializable {
         }
         return imageCache.get(path);
     }
-    
 
     public void resetMessengerData() {
         try {
             System.out.println("กำลังรีเซ็ตข้อมูล Messenger และประวัติแชท...");
-            
+
             ChatHistoryManager chatManager = getChatHistory();
             if (chatManager != null) {
                 chatManager.resetAllChatData();
             }
-            
+
             ChatHistoryManager.resetInstance();
-            
+
             if (requestManager != null) {
                 requestManager.resetRequests();
             } else {
@@ -937,54 +916,54 @@ public class ResourceManager implements Serializable {
                     requestManager.resetRequests();
                 }
             }
-            
+
             System.out.println("รีเซ็ตข้อมูล Messenger และประวัติแชทเรียบร้อย");
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการรีเซ็ตข้อมูล Messenger: " + e.getMessage());
             e.printStackTrace();
         }
     }
-    
+
     public void resetGameTime() {
         try {
             System.out.println("กำลังรีเซ็ตเวลาเกม...");
-            
+
             if (gameTimeController != null) {
                 LocalDateTime startTime = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
                 gameTimeController.resetTime(startTime);
                 System.out.println("รีเซ็ตเวลาด้วย GameTimeController เรียบร้อย");
             } else {
                 System.out.println("ไม่พบ GameTimeController จำเป็นต้องสร้างใหม่");
-                
+
                 if (currentState != null) {
                     LocalDateTime startTime = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
                     currentState.setLocalDateTime(startTime);
                     currentState.setGameTimeMs(0);
                     System.out.println("รีเซ็ตเวลาใน GameState เป็น: " + startTime);
-                    
+
                     initiaizeGameTimeController();
                     System.out.println("สร้าง GameTimeController ใหม่");
                 } else {
                     System.out.println("ไม่พบ currentState จึงไม่สามารถรีเซ็ตเวลาได้");
                 }
             }
-            
+
             System.out.println("รีเซ็ตเวลาเกมเรียบร้อย");
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการรีเซ็ตเวลาเกม: " + e.getMessage());
             e.printStackTrace();
         }
     }
-    
+
     public void resetRackAndInventory() {
         try {
             System.out.println("กำลังรีเซ็ต Rack และ VPSInventory...");
-            
+
             this.rack = new Rack();
             System.out.println("รีเซ็ต Rack เรียบร้อย");
-            
+
             notifyRackUIUpdate();
-            
+
             if (skillPointsSystem != null) {
                 skillPointsSystem.resetSkills();
                 System.out.println("รีเซ็ตทักษะทั้งหมดเรียบร้อย");
@@ -996,19 +975,17 @@ public class ResourceManager implements Serializable {
                     System.out.println("สร้างและรีเซ็ตทักษะเรียบร้อย");
                 }
             }
-            
+
             resetGameTime();
-            
+
             resetMessengerData();
-            
+
             System.out.println("รีเซ็ตระบบคลังสินค้า VPS เรียบร้อย");
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการรีเซ็ต Rack และ VPSInventory: " + e.getMessage());
             e.printStackTrace();
         }
     }
-
-    
 
     public void resetSkillPointsSystem() {
         if (this.company != null) {
@@ -1019,4 +996,3 @@ public class ResourceManager implements Serializable {
         }
     }
 }
-

@@ -20,13 +20,10 @@ public class DateController implements GameTimeManager.GameTimeListener{
 
     @Override
     public void onTimeChanged(LocalDateTime newTime, long gameTimeMs) {
-        
         dateModel.setDate(newTime);
     }
 
     @Override
     public void onRentalPeriodCheck(CustomerRequest request, CustomerRequest.RentalPeriodType period) {
-        
     }
 }
-

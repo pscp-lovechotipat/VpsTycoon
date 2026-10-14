@@ -12,5 +12,4 @@ public class SettingsChangedEvent {
     public GameConfig getNewConfig() {
         return newConfig;
     }
-} 
-
+}

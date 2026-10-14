@@ -13,34 +13,27 @@ public class MouseNotificationView extends Pane {
         setMouseTransparent(true);
     }
 
-
     public void addNotificationPane(String content, double mouseX, double mouseY) {
-        
         Pane notificationPane = createNotificationPane(content);
-        notificationPane.setPrefWidth(200); 
+        notificationPane.setPrefWidth(200);
         double sceneX = mouseX - getScene().getWindow().getX();
         double sceneY = mouseY - getScene().getWindow().getY();
 
-        
         notificationPane.setLayoutX(sceneX - 50);
         notificationPane.setLayoutY(sceneY - 100);
 
-        
         getChildren().add(notificationPane);
 
-        
         TranslateTransition appear = new TranslateTransition(Duration.seconds(0.5), notificationPane);
-        appear.setFromY(50); 
-        appear.setToY(0);    
+        appear.setFromY(50);
+        appear.setToY(0);
         appear.setOnFinished(event -> {
-            
             PauseTransition pause = new PauseTransition(Duration.seconds(1));
             pause.setOnFinished(e -> {
-                
                 TranslateTransition disappear = new TranslateTransition(Duration.seconds(0.5), notificationPane);
-                disappear.setFromY(0);   
-                disappear.setToY(-50);   
-                disappear.setOnFinished(ev -> getChildren().remove(notificationPane)); 
+                disappear.setFromY(0);
+                disappear.setToY(-50);
+                disappear.setOnFinished(ev -> getChildren().remove(notificationPane));
                 disappear.play();
             });
             pause.play();
@@ -48,7 +41,6 @@ public class MouseNotificationView extends Pane {
         appear.play();
     }
 
-    
     private Pane createNotificationPane(String content) {
         VBox pane = new VBox();
 
@@ -59,9 +51,6 @@ public class MouseNotificationView extends Pane {
 
         pane.getChildren().add(label);
 
-
         return pane;
     }
 }
-
-

@@ -32,15 +32,13 @@ public class CenterNotificationView extends StackPane {
 
     public void setModel(CenterNotificationModel model) {
         this.model = model;
-        showNextNotification(); 
+        showNextNotification();
     }
-
 
     public void addNotificationPane(String title, String content, String image) {
         createAndShowNotification(title, content, image);
     }
 
-    
     public void addNotificationPaneAutoClose(String title, String content, String image, long autoCloseMillis) {
         model.addNotification(new CenterNotificationModel.Notification(title, content, image));
         if (currentOverlay == null) {
@@ -48,12 +46,8 @@ public class CenterNotificationView extends StackPane {
         }
     }
 
-    
-
-    
     public void createAndShowTaskNotification(String title, String content, String image, Runnable onStartTask, Runnable onAbortTask) {
         try {
-            
             if (currentOverlay != null) {
                 if (model != null) {
                     model.addNotification(new CenterNotificationModel.Notification(title, content, image));
@@ -63,22 +57,18 @@ public class CenterNotificationView extends StackPane {
                 }
                 return;
             }
-            
-            
+
             StackPane overlay = new StackPane();
             overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
             overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            
-            
+
             Image imageObj = null;
             if (image != null) {
                 try {
-                    
                     if (model != null) {
                         imageObj = new CenterNotificationModel.Notification(title, content, image).getImage();
-                    } 
-                    
-                    
+                    }
+
                     if (imageObj == null) {
                         imageObj = new Image(image);
                     }
@@ -87,28 +77,22 @@ public class CenterNotificationView extends StackPane {
                 }
             }
 
-            
             VBox notificationPane = createTaskNotificationPane(title, content, imageObj, onStartTask, onAbortTask);
 
-            
             overlay.getChildren().add(notificationPane);
             StackPane.setAlignment(notificationPane, Pos.CENTER);
 
-            
             notificationPane.setOnMouseClicked(e -> e.consume());
 
-            
             getChildren().add(overlay);
             currentOverlay = overlay;
 
-            
             playFadeInAnimation(notificationPane);
-            
-            
+
             if (audioManager != null) {
                 audioManager.playSoundEffect("notification.mp3");
             }
-            
+
             System.out.println("Task notification displayed: " + title);
         } catch (Exception e) {
             System.err.println("Error creating task notification: " + e.getMessage());
@@ -116,19 +100,16 @@ public class CenterNotificationView extends StackPane {
         }
     }
 
-    
     private VBox createTaskNotificationPane(String title, String content, Image image, Runnable onStartTask, Runnable onAbortTask) {
         return createNotificationPane(title, content, image, "START TASK", onStartTask, "Abort Task", onAbortTask, "#00ffff");
     }
 
     private VBox createNotificationPane(String title, String content, Image image) {
-        return createNotificationPane(title, content, image, null, null, "Close", 
+        return createNotificationPane(title, content, image, null, null, "Close",
             () -> {
-                
             }, "#6a00ff");
     }
 
-    
     private VBox createNotificationPane(String title, String content, Image image,
                                         String actionButtonText, Runnable onAction,
                                         String closeButtonText, Runnable onClose,
@@ -139,7 +120,6 @@ public class CenterNotificationView extends StackPane {
         pane.setMaxWidth(500);
         pane.setMaxHeight(actionButtonText != null ? 300 : 260);
 
-        
         pane.setStyle(String.format("""
             -fx-background-color: rgba(40, 10, 60, 0.9);
             -fx-border-color: %s;
@@ -152,7 +132,6 @@ public class CenterNotificationView extends StackPane {
             Integer.parseInt(accentColor.substring(3, 5), 16),
             Integer.parseInt(accentColor.substring(5, 7), 16)));
 
-        
         Button closeButton = new Button(closeButtonText);
         closeButton.setStyle("""
             -fx-background-color: rgba(255, 0, 0, 0.3);
@@ -167,13 +146,11 @@ public class CenterNotificationView extends StackPane {
         """);
         closeButton.setOnAction(e -> {
             try {
-                
                 StackPane parent = (StackPane) pane.getParent();
                 if (parent != null) {
                     fadeOutAndRemove(parent);
                 }
-                
-                
+
                 if (onClose != null) {
                     onClose.run();
                 }
@@ -185,7 +162,6 @@ public class CenterNotificationView extends StackPane {
         StackPane closePane = new StackPane(closeButton);
         StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
 
-        
         Label titleLabel = new Label(title);
         titleLabel.setFont(FontLoader.TITLE_FONT);
         titleLabel.setTextFill(Color.rgb(0, 255, 255));
@@ -195,7 +171,6 @@ public class CenterNotificationView extends StackPane {
         titleLabel.setWrapText(true);
         titleLabel.setMaxWidth(460);
 
-        
         Label contentLabel = new Label(content);
         contentLabel.setFont(FontLoader.LABEL_FONT);
         contentLabel.setTextFill(Color.WHITE);
@@ -204,18 +179,15 @@ public class CenterNotificationView extends StackPane {
         contentLabel.setAlignment(Pos.CENTER);
         contentLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 
-        
         pane.getChildren().addAll(closePane, titleLabel, contentLabel);
-        
-        
+
         if (image != null) {
             ImageView imageView = new ImageView(image);
             imageView.setFitWidth(300);
             imageView.setPreserveRatio(true);
             pane.getChildren().add(imageView);
         }
-        
-        
+
         if (actionButtonText != null) {
             Button actionButton = new Button(actionButtonText);
             actionButton.setStyle(String.format("""
@@ -227,10 +199,9 @@ public class CenterNotificationView extends StackPane {
                 -fx-cursor: hand;
                 -fx-background-radius: 5;
             """, accentColor));
-            
-            
+
             final String accentColorFinal = accentColor;
-            actionButton.setOnMouseEntered(e -> 
+            actionButton.setOnMouseEntered(e ->
                 actionButton.setStyle(String.format("""
                     -fx-background-color: #ffffff;
                     -fx-text-fill: #000000;
@@ -242,8 +213,8 @@ public class CenterNotificationView extends StackPane {
                     -fx-effect: dropshadow(gaussian, %s, 10, 0.5, 0, 0);
                 """, accentColorFinal))
             );
-            
-            actionButton.setOnMouseExited(e -> 
+
+            actionButton.setOnMouseExited(e ->
                 actionButton.setStyle(String.format("""
                     -fx-background-color: %s;
                     -fx-text-fill: #000000;
@@ -254,17 +225,14 @@ public class CenterNotificationView extends StackPane {
                     -fx-background-radius: 5;
                 """, accentColorFinal))
             );
-            
-            
+
             actionButton.setOnAction(e -> {
                 try {
-                    
                     StackPane parent = (StackPane) pane.getParent();
                     if (parent != null) {
                         fadeOutAndRemove(parent);
                     }
-                    
-                    
+
                     if (onAction != null) {
                         onAction.run();
                     }
@@ -273,11 +241,10 @@ public class CenterNotificationView extends StackPane {
                     ex.printStackTrace();
                 }
             });
-            
+
             pane.getChildren().add(actionButton);
         }
 
-        
         Glow glow = new Glow(0.4);
         pane.setEffect(glow);
 
@@ -293,41 +260,33 @@ public class CenterNotificationView extends StackPane {
 
     private void showNextNotification() {
         try {
-            
             if (currentOverlay != null || model == null) {
                 return;
             }
-            
+
             if (model.hasNotifications()) {
                 CenterNotificationModel.Notification next = model.getNextNotification();
                 if (next != null) {
-                    
                     StackPane overlay = new StackPane();
                     overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
                     overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
-    
-                    
+
                     VBox notificationPane = createNotificationPane(next.getTitle(), next.getContent(), next.getImage());
-    
-                    
+
                     overlay.getChildren().add(notificationPane);
                     StackPane.setAlignment(notificationPane, Pos.CENTER);
-    
-                    
+
                     overlay.setOnMouseClicked(e -> {
                         if (!notificationPane.getBoundsInParent().contains(e.getX(), e.getY())) {
                             fadeOutAndRemove(overlay);
                         }
                     });
-    
-                    
+
                     notificationPane.setOnMouseClicked(e -> e.consume());
-    
-                    
+
                     getChildren().add(overlay);
                     currentOverlay = overlay;
-    
-                    
+
                     playFadeInAnimation(notificationPane);
                 }
             }
@@ -337,45 +296,36 @@ public class CenterNotificationView extends StackPane {
         }
     }
 
-    
     private void showNextNotificationAutoClose(long autoCloseMillis) {
         if (model.hasNotifications() && currentOverlay == null) {
             CenterNotificationModel.Notification next = model.getNextNotification();
             if (next != null) {
-                
                 StackPane overlay = new StackPane();
                 overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
                 overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-                
                 VBox notificationPane = createNotificationPane(next.getTitle(), next.getContent(), next.getImage());
 
-                
                 overlay.getChildren().add(notificationPane);
                 StackPane.setAlignment(notificationPane, Pos.CENTER);
 
-                
                 overlay.setOnMouseClicked(e -> {
                     if (!notificationPane.getBoundsInParent().contains(e.getX(), e.getY())) {
                         fadeOutAndRemove(overlay);
                     }
                 });
 
-                
                 notificationPane.setOnMouseClicked(e -> e.consume());
 
-                
                 getChildren().add(overlay);
                 currentOverlay = overlay;
 
-                
                 playFadeInAnimation(notificationPane);
-                
-                
+
                 Thread autoCloseThread = new Thread(() -> {
                     try {
                         Thread.sleep(autoCloseMillis);
-                        if (overlay == currentOverlay) { 
+                        if (overlay == currentOverlay) {
                             Platform.runLater(() -> fadeOutAndRemove(overlay));
                         }
                     } catch (InterruptedException e) {
@@ -400,7 +350,7 @@ public class CenterNotificationView extends StackPane {
             System.err.println("Warning: Attempted to fade out a null overlay");
             return;
         }
-        
+
         try {
             FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.3), overlay);
             fadeOut.setFromValue(1.0);
@@ -410,13 +360,11 @@ public class CenterNotificationView extends StackPane {
                     if (getChildren().contains(overlay)) {
                         getChildren().remove(overlay);
                     }
-                    
-                    
+
                     if (currentOverlay == overlay) {
                         currentOverlay = null;
                     }
-                    
-                    
+
                     showNextNotification();
                 } catch (Exception ex) {
                     System.err.println("Error in fadeOut completion: " + ex.getMessage());
@@ -427,17 +375,16 @@ public class CenterNotificationView extends StackPane {
         } catch (Exception e) {
             System.err.println("Error starting fadeOut animation: " + e.getMessage());
             e.printStackTrace();
-            
-            
+
             try {
                 if (getChildren().contains(overlay)) {
                     getChildren().remove(overlay);
                 }
-                
+
                 if (currentOverlay == overlay) {
                     currentOverlay = null;
                 }
-                
+
                 showNextNotification();
             } catch (Exception ex) {
                 System.err.println("Error in fadeOut fallback removal: " + ex.getMessage());
@@ -446,4 +393,3 @@ public class CenterNotificationView extends StackPane {
         }
     }
 }
-

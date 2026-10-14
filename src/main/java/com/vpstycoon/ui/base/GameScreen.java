@@ -21,7 +21,6 @@ public abstract class GameScreen {
         SceneController.getInstance().setContent(content);
     }
 
-
     protected abstract Region createContent();
 
     protected void enforceResolution(Region root) {
@@ -33,5 +32,4 @@ public abstract class GameScreen {
         root.setMaxWidth(resolution.getWidth());
         root.setMaxHeight(resolution.getHeight());
     }
-} 
-
+}

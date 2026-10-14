@@ -9,4 +9,3 @@ public interface ScreenManager {
     void switchScreen(Node screen);
     void prepareScreen(Node screen);
 }
-

@@ -29,8 +29,7 @@ public class GameplayScreen extends GameScreen {
     private final VPSManager vpsManager;
     private final DebugOverlayManager debugOverlayManager;
     private GameTimeController gameTimeController;
-    private GameplayContentPane contentPane; 
-
+    private GameplayContentPane contentPane;
 
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator, GameState gameState) {
         super(config, screenManager);
@@ -58,7 +57,6 @@ public class GameplayScreen extends GameScreen {
         loadGame(gameState);
     }
 
-
     private void loadGame(GameState gameState) {
         if (gameState != null) {
             this.state = gameState;
@@ -72,21 +70,21 @@ public class GameplayScreen extends GameScreen {
                 System.out.println("GameState ไม่มี GameObjects, เริ่มเกมใหม่");
                 initializeGameObjects();
             }
-            if (gameState.getCompany() != null && gameState.getCompany().getMoney() == 10000 && 
-                gameState.getLocalDateTime() != null && 
+            if (gameState.getCompany() != null && gameState.getCompany().getMoney() == 10000 &&
+                gameState.getLocalDateTime() != null &&
                 gameState.getLocalDateTime().getYear() == 2000 &&
                 gameState.getLocalDateTime().getMonthValue() == 1 &&
                 gameState.getLocalDateTime().getDayOfMonth() == 1) {
                 System.out.println("เริ่มเกมใหม่ ไม่ต้องบันทึกทันที");
-            } 
+            }
             gameTimeController = ResourceManager.getInstance().getGameTimeController();
             if (gameTimeController != null) {
                 if (gameState.getLocalDateTime() != null) {
-                    System.out.println("กำลังตั้งค่าเวลาเกมจาก GameState: " + gameState.getLocalDateTime() + 
+                    System.out.println("กำลังตั้งค่าเวลาเกมจาก GameState: " + gameState.getLocalDateTime() +
                                       " (GameTimeMs: " + gameState.getGameTimeMs() + ")");
                     gameTimeController.resetTime(gameState.getLocalDateTime());
                 }
-                
+
                 gameTimeController.startTime();
                 System.out.println("เริ่มการเดินเวลาเกมหลังจากโหลด GameState");
             } else {
@@ -100,7 +98,6 @@ public class GameplayScreen extends GameScreen {
     }
 
     private synchronized void initializeGameObjects() {
-
         gameObjects.clear();
 
         state.setGameObjects(gameObjects);
@@ -119,7 +116,7 @@ public class GameplayScreen extends GameScreen {
             } else {
                 System.out.println("❌ ไม่พบ RequestGenerator ใน ResourceManager");
             }
-            
+
             RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
             if (requestManager == null) {
                 System.out.println("❌ ไม่พบ RequestManager - กำลังสร้างใหม่");
@@ -128,23 +125,23 @@ public class GameplayScreen extends GameScreen {
             } else {
                 System.out.println("✅ พบ RequestManager พร้อมใช้งาน");
             }
-            
+
             RequestGenerator requestGenerator = new RequestGenerator(requestManager);
             ResourceManager.getInstance().setRequestGenerator(requestGenerator);
             requestGenerator.start();
-            
+
             if (requestGenerator.isAlive()) {
                 System.out.println("✅ RequestGenerator ใหม่เริ่มทำงานแล้ว (Thread ID: " + requestGenerator.getId() + ")");
             } else {
                 System.out.println("❌ RequestGenerator ใหม่ไม่ได้ทำงาน");
             }
-            
+
             System.out.println("RequestGenerator ทำงานเรียบร้อยแล้ว");
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการสร้าง RequestGenerator: " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         gameTimeController = ResourceManager.getInstance().getGameTimeController();
         gameTimeController.startTime();
     }
@@ -154,15 +151,14 @@ public class GameplayScreen extends GameScreen {
         contentPane = new GameplayContentPane(
                 this.navigator, this.requestManager, this.vpsManager, this.debugOverlayManager, this.company, ResourceManager.getInstance().getRack()
         );
-        
-        
+
         return contentPane;
     }
 
     public void release() {
         try {
             System.out.println("Releasing GameplayScreen resources");
-            
+
             if (gameTimeController != null) {
                 try {
                     gameTimeController.stopTime();
@@ -170,8 +166,7 @@ public class GameplayScreen extends GameScreen {
                     System.err.println("Error stopping game time controller: " + e.getMessage());
                 }
             }
-            
-            
+
             try {
                 RequestGenerator generator = ResourceManager.getInstance().getRequestGenerator();
                 if (generator != null && generator.isAlive()) {
@@ -181,13 +176,13 @@ public class GameplayScreen extends GameScreen {
             } catch (Exception e) {
                 System.err.println("เกิดข้อผิดพลาดในการหยุด RequestGenerator: " + e.getMessage());
             }
-            
+
             if (gameObjects != null) {
                 gameObjects.clear();
             }
-            
+
             System.gc();
-            
+
             System.out.println("GameplayScreen resources released");
         } catch (Exception e) {
             System.err.println("Error releasing GameplayScreen resources: " + e.getMessage());
@@ -213,12 +208,12 @@ public class GameplayScreen extends GameScreen {
         validateRequestGenerator();
         System.out.println("GameplayScreen - show() พร้อมใช้งาน RequestGenerator เรียบร้อยแล้ว");
     }
-    
+
     private void validateRequestGenerator() {
         try {
             System.out.println("GameplayScreen - กำลังตรวจสอบ RequestGenerator เมื่อแสดงหน้าเกม");
             RequestGenerator generator = ResourceManager.getInstance().getRequestGenerator();
-            
+
             if (generator == null) {
                 System.out.println("GameplayScreen - ไม่พบ RequestGenerator - กำลังสร้างใหม่");
                 RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
@@ -227,7 +222,7 @@ public class GameplayScreen extends GameScreen {
                     requestManager = new RequestManager(ResourceManager.getInstance().getCompany());
                     ResourceManager.getInstance().setRequestManager(requestManager);
                 }
-                
+
                 generator = new RequestGenerator(requestManager);
                 ResourceManager.getInstance().setRequestGenerator(generator);
                 generator.start();
@@ -240,7 +235,7 @@ public class GameplayScreen extends GameScreen {
                     requestManager = new RequestManager(ResourceManager.getInstance().getCompany());
                     ResourceManager.getInstance().setRequestManager(requestManager);
                 }
-                
+
                 generator = new RequestGenerator(requestManager);
                 ResourceManager.getInstance().setRequestGenerator(generator);
                 generator.start();
@@ -258,4 +253,3 @@ public class GameplayScreen extends GameScreen {
         }
     }
 }
-

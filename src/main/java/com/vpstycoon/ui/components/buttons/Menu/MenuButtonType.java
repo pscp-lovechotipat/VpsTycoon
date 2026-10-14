@@ -13,14 +13,11 @@ public enum MenuButtonType {
 
     private final String value;
 
-    
     MenuButtonType(String value) {
         this.value = value;
     }
 
-    
     public String getValue() {
         return value;
     }
 }
-

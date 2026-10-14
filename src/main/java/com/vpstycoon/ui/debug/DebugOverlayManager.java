@@ -22,14 +22,12 @@ public class DebugOverlayManager extends GameState {
     private final AnimationTimer debugTimer;
 
     public DebugOverlayManager() {
-        
         debugOverlay = new VBox(5);
         debugOverlay.setAlignment(Pos.TOP_LEFT);
         debugOverlay.setPadding(new Insets(30));
         debugOverlay.setMouseTransparent(true);
         debugOverlay.setVisible(false);
 
-        
         fpsLabel = new Label("FPS: 0");
         mouseLabel = new Label("Mouse: 0, 0");
         moneyLabel = new Label("Money: 0");
@@ -48,12 +46,10 @@ public class DebugOverlayManager extends GameState {
 
         debugOverlay.getChildren().addAll(fpsLabel, mouseLabel, moneyLabel, zoomLabel);
 
-        
         this.showDebug = false;
         this.lastTime = System.nanoTime();
         this.frameCount = 0;
 
-        
         debugTimer = new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -62,14 +58,10 @@ public class DebugOverlayManager extends GameState {
         };
     }
 
-    
     public void startTimer() {
         debugTimer.start();
     }
 
-    
-
-    
     private void updateFPS(long now) {
         if (!showDebug) return;
         frameCount++;
@@ -80,26 +72,22 @@ public class DebugOverlayManager extends GameState {
         }
     }
 
-    
     public void updateGameInfo( StackPane gameArea) {
         if (!showDebug) return;
 
         moneyLabel.setText(String.format("Money: %d", super.getCompany().getMoney()));
 
-        
         if (!gameArea.getChildren().isEmpty() && gameArea.getChildren().getFirst() instanceof Group worldGroup) {
             zoomLabel.setText(String.format("Zoom: %.2fx", worldGroup.getScaleY()));
         }
     }
 
-    
     public void updateMousePosition(double x, double y) {
         if (showDebug) {
             mouseLabel.setText(String.format("Mouse: %.0f, %.0f", x, y));
         }
     }
 
-    
     public void toggleDebug() {
         showDebug = !showDebug;
         debugOverlay.setVisible(showDebug);
@@ -109,5 +97,3 @@ public class DebugOverlayManager extends GameState {
         return debugOverlay;
     }
 }
-
-

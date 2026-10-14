@@ -23,10 +23,9 @@ public class SkillPointsManager {
         int basePoints = request.getCustomerType() == CustomerType.ENTERPRISE ? 15 : 5;
         int points = ratingImpact > 0 ? basePoints + 5 : basePoints;
 
-        skillPointsSystem.addPoints(points); 
+        skillPointsSystem.addPoints(points);
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.SYSTEM,
                 "Earned " + points + " skill points! Total: " + skillPointsSystem.getAvailablePoints(), new HashMap<>()));
         chatAreaView.addSystemMessage("Earned " + points + " skill points! Total: " + skillPointsSystem.getAvailablePoints());
     }
 }
-
