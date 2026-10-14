@@ -1,0 +1,50 @@
+package com.vpstycoon.ui.game.notification;
+
+import com.vpstycoon.manager.ResourceManager;
+import javafx.scene.image.Image;
+
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.Queue;
+
+public class CenterNotificationModel {
+    private Queue<Notification> notificationQueue = new LinkedList<>();
+
+    public void addNotification(Notification notification) {
+        notificationQueue.offer(notification);
+    }
+
+    public Notification getNextNotification() {
+        return notificationQueue.poll();
+    }
+
+    public boolean hasNotifications() {
+        return !notificationQueue.isEmpty();
+    }
+
+    public static class Notification {
+        private String title;
+        private String content;
+        private String image;
+
+        public Notification(String title, String content, String image) {
+            this.title = title;
+            this.content = content;
+            this.image = image;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public Image getImage() {
+            String imagePath = image;
+            URL imageUrl = ResourceManager.getResource(imagePath);
+            return (imageUrl != null) ? new Image(String.valueOf(imageUrl)) : null;
+        }
+    }
+}

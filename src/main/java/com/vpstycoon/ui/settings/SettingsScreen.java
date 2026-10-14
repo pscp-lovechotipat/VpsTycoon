@@ -1,15 +1,15 @@
 package com.vpstycoon.ui.settings;
 
-import com.vpstycoon.application.FontLoader;
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
-import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.manager.ResourceManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
-import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
-import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
+import com.vpstycoon.ui.common.FontLoader;
+import com.vpstycoon.ui.common.MenuButton;
+import com.vpstycoon.ui.common.MenuButtonType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;

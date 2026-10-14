@@ -1,15 +1,16 @@
 package com.vpstycoon.ui.game.desktop;
 
 import com.vpstycoon.config.DefaultGameConfig;
-import com.vpstycoon.game.company.Company;
-import com.vpstycoon.game.manager.RequestManager;
-import com.vpstycoon.game.manager.VPSManager;
-import com.vpstycoon.game.resource.ResourceManager;
-import com.vpstycoon.game.thread.GameTimeManager;
+import com.vpstycoon.manager.RequestManager;
+import com.vpstycoon.manager.ResourceManager;
+import com.vpstycoon.manager.VPSManager;
+import com.vpstycoon.model.company.Company;
+import com.vpstycoon.persistence.ChatHistoryManager;
 import com.vpstycoon.screen.ScreenResolution;
+import com.vpstycoon.thread.GameTimeManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.ui.game.desktop.messenger.controllers.MessengerController;
-import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
+import com.vpstycoon.ui.game.messenger.MessengerController;
+import com.vpstycoon.ui.game.messenger.MessengerWindow;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.image.Image;

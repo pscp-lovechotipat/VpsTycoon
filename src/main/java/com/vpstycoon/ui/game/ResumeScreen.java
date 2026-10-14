@@ -1,14 +1,14 @@
 package com.vpstycoon.ui.game;
 
-import com.vpstycoon.application.FontLoader;
 import com.vpstycoon.audio.AudioManager;
-import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.company.Company;
-import com.vpstycoon.game.resource.ResourceManager;
-import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
-import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
-import com.vpstycoon.ui.navigation.Navigator;
+import com.vpstycoon.manager.ResourceManager;
+import com.vpstycoon.model.GameObject;
+import com.vpstycoon.model.GameState;
+import com.vpstycoon.model.company.Company;
+import com.vpstycoon.ui.common.FontLoader;
+import com.vpstycoon.ui.common.MenuButton;
+import com.vpstycoon.ui.common.MenuButtonType;
+import com.vpstycoon.ui.common.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.effect.DropShadow;

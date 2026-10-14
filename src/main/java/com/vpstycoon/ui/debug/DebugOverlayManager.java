@@ -1,6 +1,6 @@
 package com.vpstycoon.ui.debug;
 
-import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.manager.ResourceManager;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

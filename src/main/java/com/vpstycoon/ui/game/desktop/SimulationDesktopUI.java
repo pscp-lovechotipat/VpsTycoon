@@ -1,6 +1,6 @@
 package com.vpstycoon.ui.game.desktop;
 
-import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.manager.ResourceManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Pos;
 import javafx.scene.Node;

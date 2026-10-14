@@ -1,11 +1,11 @@
 package com.vpstycoon.ui.game.desktop;
 
-import com.vpstycoon.game.GameManager;
-import com.vpstycoon.game.company.SkillPointsSystem;
-import com.vpstycoon.game.resource.ResourceManager;
-import com.vpstycoon.game.vps.VPSOptimization;
-import com.vpstycoon.game.vps.enums.RackProduct;
-import com.vpstycoon.game.vps.enums.VPSProduct;
+import com.vpstycoon.manager.GameManager;
+import com.vpstycoon.manager.ResourceManager;
+import com.vpstycoon.model.company.SkillPointsSystem;
+import com.vpstycoon.model.market.RackProduct;
+import com.vpstycoon.model.market.VPSProduct;
+import com.vpstycoon.model.server.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

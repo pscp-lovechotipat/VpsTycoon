@@ -1,0 +1,85 @@
+package com.vpstycoon.ui.game.room;
+
+import com.vpstycoon.ui.game.GameplayContentPane;
+import com.vpstycoon.ui.game.hud.CircleStatusButton;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+
+public class GameMenuBar extends HBox {
+    private final GameplayContentPane parent;
+
+    private static final Color CYBER_PURPLE_BRIGHT = Color.rgb(200, 50, 255);
+    private static final Color CYBER_PURPLE_DARK = Color.rgb(120, 20, 180);
+    private static final Color CYBER_PINK = Color.rgb(255, 50, 180);
+    private static final Color CYBER_PINK_DARK = Color.rgb(180, 20, 120);
+    private static final Color CYBER_BLUE = Color.rgb(50, 200, 255);
+    private static final Color CYBER_BLUE_DARK = Color.rgb(20, 100, 180);
+    private static final Color CYBER_GREEN = Color.rgb(0, 255, 170);
+    private static final Color CYBER_GREEN_DARK = Color.rgb(0, 180, 120);
+    private static final Color CYBER_YELLOW = Color.rgb(255, 200, 50);
+    private static final Color CYBER_YELLOW_DARK = Color.rgb(180, 140, 20);
+    private static final Color CYBER_LIGHT_GREEN = Color.rgb(100, 255, 100);
+    private static final Color CYBER_LIGHT_GREEN_DARK = Color.rgb(60, 180, 60);
+
+    public GameMenuBar(GameplayContentPane parent) {
+        super(20);
+        this.parent = parent;
+        setPadding(new Insets(40));
+        setAlignment(Pos.TOP_CENTER);
+        setPrefHeight(50);
+        setMaxHeight(50);
+
+        setStyle("-fx-background-color: transparent;");
+
+        initializeStatusButtons();
+    }
+
+    private void initializeStatusButtons() {
+        VBox rackSlotsStatus = createStatusButton(
+                "Rack Slots",
+                CYBER_YELLOW,
+                CYBER_YELLOW_DARK
+        );
+
+        VBox networkStatus = createStatusButton(
+                "Network",
+                CYBER_BLUE,
+                CYBER_BLUE_DARK
+        );
+
+        VBox deployStatus = createStatusButton(
+                "Deploy",
+                CYBER_PINK,
+                CYBER_PINK_DARK
+        );
+
+        VBox marketingStatus = createStatusButton(
+                "Marketing",
+                CYBER_GREEN,
+                CYBER_GREEN_DARK
+        );
+
+        VBox securityStatus = createStatusButton(
+                "Security",
+                CYBER_PURPLE_BRIGHT,
+                CYBER_PURPLE_DARK
+        );
+
+        VBox managementStatus = createStatusButton(
+                "Management",
+                CYBER_LIGHT_GREEN,
+                CYBER_LIGHT_GREEN_DARK
+        );
+
+        getChildren().addAll(rackSlotsStatus, networkStatus, deployStatus,
+                marketingStatus, securityStatus, managementStatus);
+    }
+
+    private VBox createStatusButton(String labelText, Color topColor, Color bottomColor) {
+        CircleStatusButton statusButton = new CircleStatusButton(labelText, topColor, bottomColor, parent);
+        return statusButton.getContainer();
+    }
+}

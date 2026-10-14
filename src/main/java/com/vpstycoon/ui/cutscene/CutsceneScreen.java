@@ -1,7 +1,7 @@
 package com.vpstycoon.ui.cutscene;
 
-import com.vpstycoon.application.FontLoader;
-import com.vpstycoon.ui.navigation.Navigator;
+import com.vpstycoon.ui.common.FontLoader;
+import com.vpstycoon.ui.common.Navigator;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;

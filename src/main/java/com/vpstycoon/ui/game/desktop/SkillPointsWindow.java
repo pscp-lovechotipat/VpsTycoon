@@ -1,8 +1,8 @@
 package com.vpstycoon.ui.game.desktop;
 
-import com.vpstycoon.game.company.SkillPointsSystem;
-import com.vpstycoon.game.company.SkillPointsSystem.SkillType;
-import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.manager.ResourceManager;
+import com.vpstycoon.model.company.SkillPointsSystem.SkillType;
+import com.vpstycoon.model.company.SkillPointsSystem;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;

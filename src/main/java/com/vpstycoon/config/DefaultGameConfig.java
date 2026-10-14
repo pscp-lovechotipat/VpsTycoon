@@ -1,6 +1,6 @@
 package com.vpstycoon.config;
 
-import com.vpstycoon.game.resource.ResourceManager;
+import com.vpstycoon.manager.ResourceManager;
 import com.vpstycoon.screen.ScreenResolution;
 
 public class DefaultGameConfig implements GameConfig {

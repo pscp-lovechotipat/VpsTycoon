@@ -1,11 +1,12 @@
 package com.vpstycoon.ui.game.rack;
 
-import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.company.SkillPointsSystem;
-import com.vpstycoon.game.resource.ResourceManager;
-import com.vpstycoon.game.resource.ResourceManager.RackUIUpdateListener;
-import com.vpstycoon.game.vps.VPSOptimization;
+import com.vpstycoon.manager.ResourceManager.RackUIUpdateListener;
+import com.vpstycoon.manager.ResourceManager;
+import com.vpstycoon.model.GameObject;
+import com.vpstycoon.model.GameState;
+import com.vpstycoon.model.company.SkillPointsSystem;
+import com.vpstycoon.model.server.Rack;
+import com.vpstycoon.model.server.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;

@@ -5,20 +5,20 @@ import com.vpstycoon.config.DefaultGameConfig;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
-import com.vpstycoon.game.GameManager;
-import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.company.Company;
-import com.vpstycoon.game.resource.ResourceManager;
-import com.vpstycoon.game.thread.RequestGenerator;
+import com.vpstycoon.manager.GameManager;
+import com.vpstycoon.manager.ResourceManager;
+import com.vpstycoon.model.GameObject;
+import com.vpstycoon.model.GameState;
+import com.vpstycoon.model.company.Company;
 import com.vpstycoon.screen.JavaFXScreenManager;
 import com.vpstycoon.screen.ScreenManager;
-import com.vpstycoon.ui.SceneController;
+import com.vpstycoon.thread.RequestGenerator;
+import com.vpstycoon.ui.common.Navigator;
+import com.vpstycoon.ui.common.SceneController;
 import com.vpstycoon.ui.cutscene.CutsceneScreen;
 import com.vpstycoon.ui.game.GameplayScreen;
-import com.vpstycoon.ui.game.components.RoomObjectsLayer;
+import com.vpstycoon.ui.game.room.RoomObjectsLayer;
 import com.vpstycoon.ui.menu.MainMenuScreen;
-import com.vpstycoon.ui.navigation.Navigator;
 import com.vpstycoon.ui.settings.SettingsScreen;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
@@ -275,7 +275,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
                     System.out.println("บันทึก SkillLevels ลงใน GameState เรียบร้อย");
                 }
 
-                com.vpstycoon.ui.game.components.RoomObjectsLayer.preloadImages();
+                com.vpstycoon.ui.game.room.RoomObjectsLayer.preloadImages();
 
                 if (ResourceManager.getInstance().getRequestGenerator() != null) {
                     ResourceManager.getInstance().getRequestGenerator().stopGenerator();
