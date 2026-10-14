@@ -8,18 +8,12 @@ import java.util.List;
 public class Company implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    private String name;
     private double rating;
     private int marketingPoints;
     private int skillPointsAvailable;
     private int availableVMs;
 
     private long money;
-    private long totalRevenue;
-    private long totalExpenses;
-    private int customerSatisfaction;
-    private int completedRequests;
-    private int failedRequests;
     
     
     public interface RatingObserver {
@@ -35,16 +29,10 @@ public class Company implements Serializable {
     private final transient List<MoneyTransactionObserver> moneyObservers = new ArrayList<>();
 
     public Company() {
-        this.name = "New Company";
         this.rating = 1.0;
         this.marketingPoints = 0;
         this.skillPointsAvailable = 0;
         this.money = 100_000; 
-        this.totalRevenue = 0;
-        this.totalExpenses = 0;
-        this.customerSatisfaction = 50; 
-        this.completedRequests = 0;
-        this.failedRequests = 0;
         this.availableVMs = 0;
     }
 
@@ -108,9 +96,7 @@ public class Company implements Serializable {
             
             
             if (isIncome) {
-                this.totalRevenue += difference;
             } else {
-                this.totalExpenses += Math.abs(difference);
             }
             
             
@@ -139,7 +125,6 @@ public class Company implements Serializable {
     public void addMoney(double amount) {
         long amountLong = (long) amount;
         this.money += amountLong;
-        this.totalRevenue += amountLong;
         
         
         notifyMoneyObservers(amountLong, this.money, true);
@@ -156,7 +141,6 @@ public class Company implements Serializable {
         }
         
         this.money -= amountLong;
-        this.totalExpenses += amountLong;
         
         
         notifyMoneyObservers(-amountLong, this.money, false);

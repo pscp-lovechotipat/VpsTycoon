@@ -15,11 +15,9 @@ import javafx.scene.text.Text;
 import java.time.format.DateTimeFormatter;
 
 public class DateView extends VBox {
-    private final GameplayContentPane parent;
     private final DateModel model;
 
     public DateView(GameplayContentPane parent, DateModel model) {
-        this.parent = parent;
         this.model = model;
 
         setAlignment(Pos.BOTTOM_CENTER);

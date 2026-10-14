@@ -38,9 +38,6 @@ public class VPSInfoUI {
                 .mapToInt(vm -> Integer.parseInt(vm.getDisk().replaceAll("[^0-9]", ""))).sum();
 
         
-        int availableVCPUs = vps.getVCPUs() - usedVCPUs;
-        int availableRamGB = vps.getRamInGB() - usedRamGB;
-        int availableDiskGB = vps.getDiskInGB() - usedDiskGB;
 
         
         BorderPane vpsInfoPane = new BorderPane();

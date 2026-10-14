@@ -28,7 +28,6 @@ public class Rack extends StackPane implements Serializable {
     private final List<Integer> occupiedSlotUnitsList; 
     private int currentRackIndex;
     private int maxSlotUnits;
-    private int unlockedSlotUnits;
     private int occupiedSlotUnits;
     
     private List<Integer> slotsPerRack;
@@ -42,7 +41,6 @@ public class Rack extends StackPane implements Serializable {
         
         currentRackIndex = -1;
         maxSlotUnits = 0;
-        unlockedSlotUnits = 0;
         occupiedSlotUnits = 0;
     }
     
@@ -166,7 +164,6 @@ public class Rack extends StackPane implements Serializable {
         
         
         maxSlotUnits = slots;
-        unlockedSlotUnits = 1; 
         
         
         if (currentRackIndex == -1) {
@@ -227,7 +224,6 @@ public class Rack extends StackPane implements Serializable {
             getChildren().add(currentRack);
             
             
-            unlockedSlotUnits = unlockedSlotUnitsList.get(currentRackIndex);
             
             
             occupiedSlotUnits = occupiedSlotUnitsList.get(currentRackIndex);
@@ -457,7 +453,6 @@ public class Rack extends StackPane implements Serializable {
             unlockedSlotUnitsList.set(currentRackIndex, currentUnlockedSlots + 1);
             
             
-            unlockedSlotUnits = unlockedSlotUnitsList.get(currentRackIndex);
             
             showCurrentRack();
             return true;

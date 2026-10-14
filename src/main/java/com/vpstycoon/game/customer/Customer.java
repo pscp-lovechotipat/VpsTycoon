@@ -9,13 +9,11 @@ public class Customer implements Serializable {
     private final int id;          
     private String name;
     protected CustomerType customerType; 
-    protected double budget;
 
     public Customer(String name, CustomerType customerType, double budget) {
         this.id = nextId++;        
         this.name = name;
         this.customerType = customerType;
-        this.budget = budget;
     }
 
     public int getId() {

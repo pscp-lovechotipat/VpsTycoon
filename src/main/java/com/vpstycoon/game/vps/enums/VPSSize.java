@@ -15,12 +15,10 @@ public enum VPSSize {
 
     private final String displayName;
     private final int slotsRequired;
-    private final double performanceMultiplier;
 
     VPSSize(String displayName, int slotsRequired, double performanceMultiplier) {
         this.displayName = displayName;
         this.slotsRequired = slotsRequired;
-        this.performanceMultiplier = performanceMultiplier;
     }
 
     VPSSize(String displayName, int slotsRequired) {

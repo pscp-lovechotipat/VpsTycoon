@@ -22,7 +22,6 @@ import java.util.UUID;
 
 public class MarketWindow extends BorderPane {
     private final GameplayContentPane parent;
-    private final VPSManager vpsManager;
     private final Runnable onClose;
     private Label moneyDisplay;
     private VBox mainContent;
@@ -31,7 +30,6 @@ public class MarketWindow extends BorderPane {
 
     public MarketWindow(Runnable onClose, Runnable onClose2, VPSManager vpsManager, GameplayContentPane parent) {
         this.parent = parent;
-        this.vpsManager = vpsManager;
         
         
         final boolean dateViewWasVisible = parent.getDateView().isVisible();

@@ -546,10 +546,6 @@ public class VMCreationUI {
                     
                     
                     
-                    String vmDescription = "OS: " + osComboBox.getValue() + 
-                                          ", Disk: " + diskTypeComboBox.getValue() +
-                                          ", Network: " + networkComboBox.getValue() +
-                                          ", Bandwidth: " + bandwidthComboBox.getValue();
                     
                     
                     if (firewallUnlocked) {

@@ -9,11 +9,9 @@ import java.time.LocalDateTime;
 public class DateController implements GameTimeManager.GameTimeListener{
     private final ResourceManager resourceManager = ResourceManager.getInstance();
     private final DateModel dateModel;
-    private final DateView dateView;
 
     public DateController(DateModel dateModel, DateView dateView) {
         this.dateModel = dateModel;
-        this.dateView = dateView;
 
         resourceManager.getGameTimeManager().addTimeListener(this);
 

@@ -8,12 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 public class ChatSystem {
-    private int chatLevel;
     private List<CustomerType> unlockedCustomerTypes;
     private Map<CustomerType, Integer> customerTypePoints;
     
     public ChatSystem() {
-        this.chatLevel = 1;
         this.unlockedCustomerTypes = new ArrayList<>();
         this.customerTypePoints = new HashMap<>();
         initializeCustomerTypes();

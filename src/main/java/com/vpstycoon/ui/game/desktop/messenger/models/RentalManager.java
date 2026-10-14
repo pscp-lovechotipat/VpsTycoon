@@ -21,7 +21,6 @@ public class RentalManager {
     private final GameTimeManager gameTimeManager;
     private final Random random = new Random();
     private GameTimeManager.GameTimeListener timeListener;
-    private Runnable onArchiveRequest; 
     private Map<VPSOptimization.VM, CustomerRequest> vmAssignments; 
     private Runnable onUpdateDashboard; 
 
@@ -137,7 +136,6 @@ public class RentalManager {
 
     
     public void setOnArchiveRequest(Runnable onArchiveRequest) {
-        this.onArchiveRequest = onArchiveRequest;
     }
 
     

@@ -30,7 +30,6 @@ import java.util.List;
 public class RackManagementUI extends VBox implements RackUIUpdateListener {
     private final GameplayContentPane parent;
     private final List<Pane> slotPanes = new ArrayList<>();
-    private final int MAX_SLOTS = 10;
     private final Rack rack;
     private final Label rackInfoLabel;
     private final Label vpsListLabel;
@@ -48,7 +47,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
     private Label networkValuePopulated;
 
 
-    private boolean[] previousUIStates;
 
 
     private List<Node> originalRootNodes;
@@ -558,15 +556,8 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
 
     public synchronized void openRackInfo() {
-        final boolean menuBarWasVisible = parent.getMenuBar().isVisible();
-        final boolean marketMenuBarWasVisible = parent.getInGameMarketMenuBar().isVisible();
-        final boolean moneyUIWasVisible = parent.getMoneyUI().isVisible();
-        final boolean dateViewWasVisible = parent.getDateView().isVisible();
         
 
-        this.previousUIStates = new boolean[] {
-            menuBarWasVisible, marketMenuBarWasVisible, moneyUIWasVisible, dateViewWasVisible
-        };
         
         BorderPane rackPane = new BorderPane();
         rackPane.setPrefSize(800, 600);
@@ -931,7 +922,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             statusGrid.setVgap(8);
             
             int usedSlots = parent.getRack().getOccupiedSlotUnits();
-            int availableSlots = parent.getRack().getMaxSlotUnits() - usedSlots;
             
 
             Label serversLabel = new Label("SERVERS:");
@@ -1390,7 +1380,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
                 """);
 
             int usedSlots = parent.getRack().getOccupiedSlotUnits();
-            int availableSlots = parent.getRack().getMaxSlotUnits() - usedSlots;
 
 
             VBox statusPanel = new VBox(8);

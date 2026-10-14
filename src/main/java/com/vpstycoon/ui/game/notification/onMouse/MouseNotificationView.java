@@ -10,13 +10,11 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 public class MouseNotificationView extends Pane {
-    private AudioManager audioManager;
     public MouseNotificationView() {
         setMouseTransparent(true);
     }
 
     public void setAudioManager(AudioManager audioManager) {
-        this.audioManager = audioManager;
     }
 
     public void addNotificationPane(String content, double mouseX, double mouseY) {

@@ -385,7 +385,6 @@ public class CalibrationTask extends GameTask {
         );
         
         
-        StackPane correctComponent = components.get(sequence.get(currentStep));
         Timeline showCorrect = new Timeline(
             new KeyFrame(Duration.millis(800), e -> activateComponent(sequence.get(currentStep), true)),
             new KeyFrame(Duration.millis(1300), e -> activateComponent(sequence.get(currentStep), false))

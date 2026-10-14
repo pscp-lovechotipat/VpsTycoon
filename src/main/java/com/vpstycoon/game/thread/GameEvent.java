@@ -45,7 +45,6 @@ public class GameEvent implements Runnable {
 
     private final GameplayContentPane gameplayContentPane;
     private final ResourceManager resourceManager;
-    private final GameState gameState;
     private final Random random = new Random();
     
 
@@ -119,7 +118,6 @@ public class GameEvent implements Runnable {
             }
             
             this.gameplayContentPane = gameplayContentPane;
-            this.gameState = gameState;
             this.isRunning = false;
             this.resourceManager = ResourceManager.getInstance();
             

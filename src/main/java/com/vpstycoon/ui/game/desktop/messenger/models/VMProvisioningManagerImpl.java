@@ -9,7 +9,6 @@ import com.vpstycoon.game.vps.VPSOptimization;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 
 public class VMProvisioningManagerImpl implements Serializable {
@@ -25,10 +24,8 @@ public class VMProvisioningManagerImpl implements Serializable {
     private final Company company;
     
     
-    private final Random random = new Random();
 
     private final SkillPointsSystem skillPointsSystem;
-    private int deployLevel = 1;
 
     public VMProvisioningManagerImpl(Company company) {
         this.vmToRequestMap = new HashMap<>();

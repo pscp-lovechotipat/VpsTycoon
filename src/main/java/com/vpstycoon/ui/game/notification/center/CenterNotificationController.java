@@ -3,11 +3,9 @@ package com.vpstycoon.ui.game.notification.center;
 import javafx.application.Platform;
 
 public class CenterNotificationController {
-    private final CenterNotificationModel model;
     private CenterNotificationView view;
 
     public CenterNotificationController(CenterNotificationModel model, CenterNotificationView view) {
-        this.model = model;
         this.view = view;
         this.view.setModel(model); 
     }

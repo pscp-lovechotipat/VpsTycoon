@@ -31,7 +31,6 @@ public abstract class GameTask {
     
     private String taskName;
     private String taskDescription;
-    private String imagePath;
     private int rewardAmount;
     private int penaltyRating;
     private int difficultyLevel;
@@ -76,7 +75,6 @@ public abstract class GameTask {
                     int rewardAmount, int penaltyRating, int difficultyLevel, int timeLimit) {
         this.taskName = taskName;
         this.taskDescription = taskDescription;
-        this.imagePath = imagePath;
         this.rewardAmount = rewardAmount;
         this.penaltyRating = penaltyRating;
         this.difficultyLevel = difficultyLevel;
@@ -571,12 +569,9 @@ public abstract class GameTask {
                 log("Error playing reward sound: " + e.getMessage());
             }
             
-            String rewardMsg = "Well done cyberpunk! You've completed the task.\nReward: $" + adjustedReward;
             
             
             if (managementLevel > 1) {
-                int bonusPercent = (int)((managementEfficiency - 1.0) * 100);
-                rewardMsg += " (includes " + bonusPercent + "% Management bonus)";
             }
         });
     }

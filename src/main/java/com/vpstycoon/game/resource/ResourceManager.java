@@ -15,7 +15,6 @@ import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
-import com.vpstycoon.ui.game.notification.NotificationController;
 import com.vpstycoon.ui.game.notification.NotificationModel;
 import com.vpstycoon.ui.game.notification.NotificationView;
 import com.vpstycoon.ui.game.notification.center.CenterNotificationController;
@@ -40,21 +39,17 @@ public class ResourceManager implements Serializable {
 
     private static final ResourceManager instance = new ResourceManager();
 
-    private static final String IMAGES_PATH = "/images/";
     private static final String SOUNDS_PATH = "/sounds/";
     private static final String MUSIC_PATH = "/music/";
-    private static final String TEXT_PATH = "/text/";
     private static final String GAME_FOLDER = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "VpsTycoon";
     private static final String SAVE_FILE = GAME_FOLDER + File.separator + "savegame.dat";
     private static final String BACKUP_DIR = GAME_FOLDER + File.separator + "backups";
 
     private final Map<String, Image> imageCache = new ConcurrentHashMap<>();
-    private final Map<String, String> textCache = new ConcurrentHashMap<>();
 
     private Company company = new Company();
     private GameState currentState;
     private Rack rack; 
-    private GameManager gameManager; 
 
     private RequestManager requestManager;
     private RequestGenerator requestGenerator;
@@ -87,7 +82,6 @@ public class ResourceManager implements Serializable {
 
     private NotificationModel notificationModel;
     private NotificationView notificationView;
-    private NotificationController notificationController;
 
     private CenterNotificationModel centerNotificationModel;
     private CenterNotificationView centerNotificationView;
@@ -167,7 +161,6 @@ public class ResourceManager implements Serializable {
         this.company = new Company();
         this.audioManager = new AudioManager();
         this.rack = new Rack(); 
-        this.gameManager = GameManager.getInstance(); 
 
         createBackupDirectory();
         if (currentState == null) {
@@ -226,7 +219,6 @@ public class ResourceManager implements Serializable {
             this.notificationModel = new NotificationModel();
             this.notificationView = new NotificationView();
             this.notificationView.setAudioManager(this.audioManager);
-            this.notificationController = new NotificationController(notificationModel, notificationView);
         }
         if (centerNotificationModel == null) {
             this.centerNotificationModel = new CenterNotificationModel();
@@ -517,7 +509,6 @@ public class ResourceManager implements Serializable {
             return false;
         }
         
-        VPSInventory inventory = new VPSInventory();
         
         if (this.rack == null) {
             this.rack = new Rack();
@@ -1028,7 +1019,6 @@ public class ResourceManager implements Serializable {
 
     
     public void setGameManager(GameManager manager) {
-        this.gameManager = manager;
     }
 
     public void resetSkillPointsSystem() {

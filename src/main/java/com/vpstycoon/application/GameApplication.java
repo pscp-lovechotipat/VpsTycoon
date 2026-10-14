@@ -7,7 +7,6 @@ import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
 import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.resource.ResourceManager;
@@ -48,9 +47,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
     private MainMenuScreen mainMenuScreen;
     private SettingsScreen settingsScreen;
     private GameplayScreen gameplayScreen;
-    private GameSaveManager saveManager;
-    private GameManager gameManager;
-    private AudioManager audioManager;
     private Stage loadingStage;
     private Label loadingDetailsLabel;
     private javafx.scene.control.ProgressIndicator progressIndicator;
@@ -65,7 +61,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
         this.primaryStage = primaryStage;
         this.gameConfig = createGameConfig();
         this.screenManager = new JavaFXScreenManager(gameConfig, primaryStage);
-        this.gameManager = GameManager.getInstance();
 
         
         try {
@@ -214,7 +209,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
         gameConfig.load();
         
 
-        saveManager = new GameSaveManager();
         
 
         Platform.runLater(() -> {

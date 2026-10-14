@@ -158,7 +158,6 @@ public class GameTimeManager {
                 CustomerRequest.RentalPeriodType period = request.getRentalPeriodType();
                 if (period != null && rentalStartTime > 0) {
                     long durationMs = period.getDays() * GAME_DAY_MS;
-                    long timeSinceLastPaymentMs = currentGameTimeMs - rentalStartTime;
 
 
                     if (request.isPaymentDue(currentGameTimeMs)) {

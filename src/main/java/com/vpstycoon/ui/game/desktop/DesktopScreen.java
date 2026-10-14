@@ -21,9 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DesktopScreen extends StackPane {
-    private final double companyRating;
-    private final int marketingPoints;
-    private final ChatSystem chatSystem;
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
     private final Company company;
@@ -83,9 +80,6 @@ public class DesktopScreen extends StackPane {
     public DesktopScreen(double companyRating, int marketingPoints,
                          ChatSystem chatSystem, RequestManager requestManager,
                          VPSManager vpsManager, Company company, GameplayContentPane parent, GameTimeManager gameTimeManager, Runnable onExit) {
-        this.companyRating = companyRating;
-        this.marketingPoints = marketingPoints;
-        this.chatSystem = chatSystem;
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
         this.company = company;

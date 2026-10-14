@@ -50,7 +50,6 @@ public class MessengerController {
     private final SkillPointsManager skillPointsManager;
     
     
-    private boolean isLoadingRequests = true;
 
     public MessengerController(RequestManager requestManager, VPSManager vpsManager, Company company,
                                ChatHistoryManager chatHistoryManager, StackPane rootStack,
@@ -269,7 +268,6 @@ public class MessengerController {
             if (selected != null && !selected.isActive()) {
                 
                 boolean hasAnyVMs = false;
-                int totalServerCount = vpsManager.getVPSMap().size();
                 
                 for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                     if (!vps.getVms().isEmpty() && vps.getVms().stream()
@@ -1573,7 +1571,6 @@ public class MessengerController {
         
         
         
-        isLoadingRequests = false;
     }
 }
 

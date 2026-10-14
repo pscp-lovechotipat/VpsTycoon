@@ -8,13 +8,11 @@ import javafx.util.Duration;
 
 public class MoneyController {
     private final MoneyModel moneyModel;
-    private final MoneyUI moneyUI;
     private final ResourceManager resourceManager;
     private final Timeline timeline;
 
     public MoneyController(MoneyModel moneyModel, MoneyUI moneyUI) {
         this.moneyModel = moneyModel;
-        this.moneyUI = moneyUI;
         this.resourceManager = ResourceManager.getInstance();
 
         

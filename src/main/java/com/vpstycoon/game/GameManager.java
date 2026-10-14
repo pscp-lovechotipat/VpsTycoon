@@ -25,7 +25,6 @@ public class GameManager {
     private List<VPSOptimization> installedServers;
     
     
-    private boolean gameRunning = false;
 
     private GameManager() {
         installedServers = new ArrayList<>();

@@ -22,10 +22,8 @@ public class VMProvisioningManager {
     private final ChatAreaView chatAreaView;
     private final Map<CustomerRequest, ProgressBar> provisioningProgressBars;
     private final Random random = new Random();
-    private final long[] DEPLOY_TIMES = {10000, 5000, 2000, 1000};
     
     
-    private final VMProvisioningManagerImpl gameVMProvisioningManager;
     
     private final SkillPointsSystem skillPointsSystem;
 
@@ -36,8 +34,6 @@ public class VMProvisioningManager {
         this.provisioningProgressBars = provisioningProgressBars;
         
         
-        Company company = ResourceManager.getInstance().getCompany();
-        this.gameVMProvisioningManager = new VMProvisioningManagerImpl(company);
         
         
         this.skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
@@ -132,9 +128,7 @@ public class VMProvisioningManager {
 
     private int calculateProvisioningDelay() {
         
-        int deployLevel = skillPointsSystem.getSkillLevel(SkillPointsSystem.SkillType.DEPLOY);
         
-        long deploymentTime = DEPLOY_TIMES[Math.max(0, Math.min(deployLevel - 1, DEPLOY_TIMES.length - 1))];
         
         int minDelay = 5;
         int maxDelay = 30;

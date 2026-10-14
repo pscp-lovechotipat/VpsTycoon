@@ -256,13 +256,11 @@ public class FirewallDefenseTask extends GameTask {
     private class AttackNode {
         private final javafx.scene.shape.Shape shape;
         private final StackPane stackPane;
-        private final String type;
         private boolean neutralized = false;
         private Timeline pulseAnimation;
         
         public AttackNode(javafx.scene.shape.Shape shape, String type) {
             this.shape = shape;
-            this.type = type;
             
             
             Text label = new Text(type);

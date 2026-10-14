@@ -52,7 +52,6 @@ public class ServerCoolingTask extends GameTask {
     private Label powerLabel;
     private Label statusLabel;
     private BorderPane taskPane;
-    private boolean emergencyMode = false;
     private final AtomicBoolean running = new AtomicBoolean(true);
     private Thread temperatureThread;
     private Thread autoAssistThread;
@@ -333,7 +332,6 @@ public class ServerCoolingTask extends GameTask {
             return;
         }
 
-        emergencyMode = true;
         totalPower -= emergencyCost;
 
         double coolingBoost = MAX_COOLING_EFFECT * (1.0 + (managementEfficiency - 1.0) * 0.5);
@@ -356,7 +354,6 @@ public class ServerCoolingTask extends GameTask {
         
         Timeline resetTimeline = new Timeline(
             new KeyFrame(Duration.seconds(duration), e -> {
-                emergencyMode = false;
                 taskPane.setEffect(null);
                 statusLabel.setText("EMERGENCY COOLING DEACTIVATED");
                 

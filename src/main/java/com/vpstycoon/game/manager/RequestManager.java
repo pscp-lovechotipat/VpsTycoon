@@ -22,7 +22,6 @@ public class RequestManager implements Serializable {
     private final Random random = new Random();
     
     
-    private static final long GAME_MONTH_MS = 15 * 60 * 1000;
     
     public RequestManager(Company company) {
         this.pendingRequests = FXCollections.observableArrayList();

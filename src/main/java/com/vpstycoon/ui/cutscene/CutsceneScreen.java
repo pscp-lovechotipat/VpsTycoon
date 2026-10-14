@@ -18,8 +18,6 @@ import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 
 public class CutsceneScreen extends StackPane {
-    private final GameConfig gameConfig;
-    private final ScreenManager screenManager;
     private final Navigator navigator;
     private Label logoLabel;
     private Label subtitleLabel;
@@ -29,8 +27,6 @@ public class CutsceneScreen extends StackPane {
 
 
     public CutsceneScreen(GameConfig gameConfig, ScreenManager screenManager, Navigator navigator) {
-        this.gameConfig = gameConfig;
-        this.screenManager = screenManager;
         this.navigator = navigator;
         
         

@@ -4,7 +4,6 @@ import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
 
 public class RackObject extends GameObject {
-    private Runnable onClickAction;
 
 
 

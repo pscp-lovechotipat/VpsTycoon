@@ -9,7 +9,6 @@ import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
 import com.vpstycoon.ui.navigation.Navigator;
-import com.vpstycoon.ui.settings.SettingsScreen;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -19,7 +18,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 public class MainMenuScreen extends GameScreen {
-    private SettingsScreen settingsScreen;
     private final Navigator navigator;
     private final GameSaveManager saveManager;
     private AudioManager audioManager;

@@ -15,7 +15,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Glow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -24,19 +23,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 public class SettingsScreen extends StackPane {
-    private final Navigator navigator;
     private final GameConfig config;
     private final ScreenManager screenManager;
     private final Runnable onCloseSettings;
-    private Slider musicVolumeSlider;
-    private Slider sfxVolumeSlider;
     private ComboBox<ScreenResolution> resolutionComboBox;
     private CheckBox fullscreenCheckBox;
     private CheckBox vsyncCheckBox;
     private AudioManager audioManager;
 
     public SettingsScreen(GameConfig config, ScreenManager screenManager, Navigator navigator, Runnable onCloseSettings) {
-        this.navigator = navigator;
         this.config = config;
         this.screenManager = screenManager;
         this.onCloseSettings = onCloseSettings;
@@ -50,7 +45,6 @@ public class SettingsScreen extends StackPane {
     
     
     public SettingsScreen(GameConfig config, Navigator navigator, Runnable onCloseSettings) {
-        this.navigator = navigator;
         this.config = config;
         this.screenManager = null; 
         this.onCloseSettings = onCloseSettings;
@@ -131,7 +125,6 @@ public class SettingsScreen extends StackPane {
             """);
 
         
-        Glow glow = new Glow(0.8);
         DropShadow shadow = new DropShadow();
         shadow.setColor(Color.rgb(255, 0, 255, 0.7));
         shadow.setRadius(5);
@@ -179,13 +172,11 @@ public class SettingsScreen extends StackPane {
         controls.getChildren().addAll(
             createSectionLabel("Audio Settings"),
             createSliderControl("Music Volume", config.getMusicVolume(), slider -> {
-                musicVolumeSlider = slider;
                 slider.valueProperty().addListener((obs, old, newVal) ->
                     config.setMusicVolume(newVal.doubleValue())
                 );
             }),
             createSliderControl("SFX Volume", config.getSfxVolume(), slider -> {
-                sfxVolumeSlider = slider;
                 slider.valueProperty().addListener((obs, old, newVal) ->
                     config.setSfxVolume(newVal.doubleValue())
                 );

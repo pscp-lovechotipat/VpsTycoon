@@ -29,7 +29,6 @@ public class ChatAreaView extends VBox {
     private Button sendButton;
     private Button assignVMButton;
     private Button archiveButton;
-    private Rectangle customerAvatar;
     private Label customerNameLabel;
     private Label customerTypeLabel;
     private Label headerStatusLabel;
@@ -61,7 +60,6 @@ public class ChatAreaView extends VBox {
         customerAvatar.setEffect(avatarGlow);
         
         
-        this.customerAvatar = null; 
 
         VBox customerInfoBox = new VBox(3);
         customerNameLabel = new Label("SELECT CLIENT");

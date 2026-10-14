@@ -28,7 +28,6 @@ import javafx.util.Duration;
 public class CircleStatusButton {
     private final VBox container;
     private VBox upgradeLayout;
-    private Runnable onClickAction;
     private SkillPointsSystem skillPointsSystem;
     private int skillLevel;
     private int skillPoints;
@@ -41,7 +40,6 @@ public class CircleStatusButton {
     
     private static final Color CYBER_PURPLE = Color.rgb(200, 50, 255);
     private static final Color CYBER_DARK = Color.rgb(20, 10, 30);
-    private static final Color CYBER_GLOW = Color.rgb(255, 0, 255, 0.7);
 
     private SkillPointsSystem.SkillType resolveSkillType(String name) {
         switch (name.toLowerCase()) {

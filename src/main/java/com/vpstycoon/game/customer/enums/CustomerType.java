@@ -9,12 +9,8 @@ public enum CustomerType {
     ENTERPRISE(1000, "ENTERPRISE"),
     BUSINESS(2000, "ENTERPRISE");
     
-    private final int requiredPoints;
-    private final String displayName;
     
     CustomerType(int requiredPoints, String displayName) {
-        this.requiredPoints = requiredPoints;
-        this.displayName = displayName;
     }
     
 

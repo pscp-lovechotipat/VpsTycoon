@@ -37,7 +37,6 @@ public class ResourceOptimizationTask extends GameTask {
     private int optimizedCount = 0;
     private Label systemStatusLabel;
     private Button optimizeButton;
-    private boolean taskActive = true;
 
     public ResourceOptimizationTask() {
         super(
@@ -174,7 +173,6 @@ public class ResourceOptimizationTask extends GameTask {
         optimizeButton.setDisable(true);
         optimizeButton.setOnAction(e -> {
             if (optimizedCount == NUM_RESOURCES) {
-                taskActive = false;
                 CyberpunkEffects.styleCompletionEffect(slidersContainer);
                 completeTask();
             }

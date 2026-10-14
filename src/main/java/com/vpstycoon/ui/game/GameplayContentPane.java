@@ -6,7 +6,6 @@ import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
-import com.vpstycoon.game.company.SkillPointsSystem;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.resource.ResourceManager;
@@ -63,7 +62,6 @@ public class GameplayContentPane extends BorderPane {
     private final GameMenuBar menuBar;
 
     private final InGameMarketMenuBar inGameMarketMenuBar;
-    private final List<GameObject> gameObjects;
 
     private final Navigator navigator;
     private final ChatSystem chatSystem;
@@ -72,7 +70,6 @@ public class GameplayContentPane extends BorderPane {
     private final VPSManager vpsManager;
     private final Rack rack;
 
-    private final GameFlowManager gameFlowManager;
 
     private final DebugOverlayManager debugOverlayManager;
     private final Company company;
@@ -84,14 +81,12 @@ public class GameplayContentPane extends BorderPane {
     private boolean showDebug = false;
 
     private final RackManagementUI rackManagementUI;
-    private final VPSCreationUI vpsCreationUI;
     private final VPSInfoUI vpsInfoUI;
     private final VMCreationUI vmCreationUI;
     private final VMInfoUI vmInfoUI;
     private final VMEditUI vmEditUI;
     private final SimulationDesktopUI simulationDesktopUI;
 
-    private SkillPointsSystem skillPointsSystem;
 
     private final VPSInventoryUI vpsInventoryUI;
 
@@ -110,12 +105,10 @@ public class GameplayContentPane extends BorderPane {
             List<GameObject> gameObjects, Navigator navigator, ChatSystem chatSystem,
             RequestManager requestManager, VPSManager vpsManager, GameFlowManager gameFlowManager,
             DebugOverlayManager debugOverlayManager, Company company, Rack rack) {
-        this.gameObjects = gameObjects;
         this.navigator = navigator;
         this.chatSystem = chatSystem;
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
-        this.gameFlowManager = gameFlowManager;
         this.debugOverlayManager = debugOverlayManager;
         this.company = company;
         this.rack = rack;
@@ -147,7 +140,6 @@ public class GameplayContentPane extends BorderPane {
         this.gameTimeController = ResourceManager.getInstance().getGameTimeController();
 
         this.rackManagementUI = new RackManagementUI(this);
-        this.vpsCreationUI = new VPSCreationUI(this);
         this.vpsInfoUI = new VPSInfoUI(this);
         this.vmCreationUI = new VMCreationUI(this);
         this.vmInfoUI = new VMInfoUI(this);

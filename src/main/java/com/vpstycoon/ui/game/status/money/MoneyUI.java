@@ -13,8 +13,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 public class MoneyUI extends VBox {
-    private final GameplayContentPane parent;
-    private final MoneyModel model;
 
     private Text moneyText;
     private Text moneyValue;
@@ -22,8 +20,6 @@ public class MoneyUI extends VBox {
     private Text ratingValue;
 
     public MoneyUI(GameplayContentPane parent, MoneyModel model) {
-        this.parent = parent;
-        this.model = model;
 
         
         moneyText = new Text("Money: ");

@@ -9,13 +9,11 @@ import java.util.Map;
 public class ChatMessage implements Serializable {
     private MessageType type;
     private String content;
-    private long timestamp;
     private Map<String, Object> metadata;
 
     public ChatMessage(MessageType type, String content, Map<String, Object> metadata) {
         this.type = type;
         this.content = content;
-        this.timestamp = System.currentTimeMillis();
         this.metadata = metadata != null ? metadata : new HashMap<>();
     }
 

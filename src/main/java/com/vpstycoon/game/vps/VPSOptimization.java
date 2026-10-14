@@ -17,20 +17,12 @@ public class VPSOptimization extends GameObject implements Serializable {
     private String vpsId;
 
     private int maxVMs;
-    private double cpuUsage;
-    private double ramUsage;
-    private double diskUsage;
-    private double networkUsage;
 
     private int vcpus;
     private int ramInGB;
     private int diskInGB;
 
-    private boolean backupSystemEnabled = false;
-    private boolean monitoringSystemEnabled = false;
-    private boolean autoScalingEnabled = false;
 
-    private int optimizationLevel = 1; 
     private VPSSize size = VPSSize.SIZE_1U; 
     private boolean installed = false; 
 
@@ -38,10 +30,6 @@ public class VPSOptimization extends GameObject implements Serializable {
         this.vms = new ArrayList<>();
         this.status = VPSStatus.RUNNING;
         this.maxVMs = 5;
-        this.cpuUsage = 0.0;
-        this.ramUsage = 0.0;
-        this.diskUsage = 0.0;
-        this.networkUsage = 0.0;
         this.vcpus = 1;
         this.ramInGB = 2;
         this.diskInGB = 20;
@@ -150,11 +138,6 @@ public class VPSOptimization extends GameObject implements Serializable {
     
 
     private void updateResourceUsage() {
-        Random random = new Random();
-        this.cpuUsage = random.nextDouble() * 100;
-        this.ramUsage = random.nextDouble() * 100;
-        this.diskUsage = random.nextDouble() * 100;
-        this.networkUsage = random.nextDouble() * 100;
     }
 
     public static class VM implements Serializable {
@@ -165,11 +148,8 @@ public class VPSOptimization extends GameObject implements Serializable {
         private int diskInGB;
         private String status;
         private String ipAddress;
-        private long startTime;
-        private boolean assignedToCustomer;
         private String customerId;
         private String customerName;
-        private long assignedTime;
 
         public VM(String name, int vCPUs, int ramInGB, int diskInGB) {
             this.name = name;
@@ -179,11 +159,8 @@ public class VPSOptimization extends GameObject implements Serializable {
             this.diskInGB = diskInGB;
             this.status = "Stopped";
             this.ipAddress = generateRandomIp();
-            this.startTime = 0;
-            this.assignedToCustomer = false;
             this.customerId = null;
             this.customerName = null;
-            this.assignedTime = 0;
         }
         
         private String generateRandomIp() {
@@ -194,13 +171,11 @@ public class VPSOptimization extends GameObject implements Serializable {
         public void assignToCustomer(String customerId, String customerName, long assignedTime) {
             this.customerId = customerId;
             this.customerName = customerName;
-            this.assignedTime = assignedTime;
         }
         
         public void releaseFromCustomer() {
             this.customerId = null;
             this.customerName = null;
-            this.assignedTime = 0;
         }
         
         public boolean isAssignedToCustomer() {

@@ -12,7 +12,6 @@ import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.effect.Glow;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -83,7 +82,6 @@ public class ResumeScreen extends StackPane {
         titleText.setFill(Color.WHITE);
         
 
-        Glow glow = new Glow(0.8);
         DropShadow shadow = new DropShadow();
         shadow.setColor(Color.rgb(255, 0, 255, 0.7));
         shadow.setRadius(5);

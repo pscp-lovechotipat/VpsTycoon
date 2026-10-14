@@ -252,7 +252,6 @@ public class CyberpunkEffects {
     public static void pulseText(Text text) {
         
         DropShadow baseEffect = (DropShadow) text.getEffect();
-        Color baseColor = (Color) baseEffect.getColor();
         
         Timeline pulse = new Timeline(
             new KeyFrame(Duration.ZERO, 

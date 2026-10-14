@@ -59,7 +59,6 @@ public class DateModel {
     private void updateTimeRemaining() {
         
         LocalDateTime currentDate = date.get();
-        LocalDateTime nextDay = currentDate.plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
         Duration durationSinceMidnight = Duration.between(currentDate.withHour(0).withMinute(0).withSecond(0).withNano(0), currentDate);
         long secondsSinceMidnight = durationSinceMidnight.getSeconds(); 
         long totalSecondsInGameDay = 86400; 

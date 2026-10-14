@@ -66,48 +66,10 @@ public class SimulationDesktopUI {
         final boolean marketMenuBarVisible = parent.getInGameMarketMenuBar().isVisible();
         
         
-        final int rootStackChildCount = parent.getRootStack().getChildren().size();
         
         
         final List<Node> originalContent = new ArrayList<>(parent.getGameArea().getChildren());
 
-        Runnable onExit = () -> {
-            javafx.application.Platform.runLater(() -> {
-                try {
-
-                    parent.getGameArea().getChildren().clear();
-
-
-                    for (Node node : originalContent) {
-                        if (!parent.getGameArea().getChildren().contains(node)) {
-                            parent.getGameArea().getChildren().add(node);
-                        }
-                    }
-
-
-                    parent.getMenuBar().setVisible(menuBarVisible);
-                    parent.getMoneyUI().setVisible(moneyUIVisible);
-                    parent.getDateView().setVisible(dateViewVisible);
-                    parent.getInGameMarketMenuBar().setVisible(marketMenuBarVisible);
-
-
-                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
-                            javafx.util.Duration.millis(300), parent.getGameArea());
-                    fadeIn.setFromValue(0.8);
-                    fadeIn.setToValue(1.0);
-                    fadeIn.play();
-
-
-                    System.out.println("กลับสู่หน้าหลักเรียบร้อย UI ถูกคืนค่าสู่สถานะเดิม");
-
-                } catch (Exception ex) {
-
-                    System.err.println("เกิดข้อผิดพลาดในการคืนค่า UI: " + ex.getMessage());
-                    ex.printStackTrace();
-                    parent.returnToRoom();
-                }
-            });
-        };
 
         DesktopScreen desktop = new DesktopScreen(
                 parent.getCompany().getRating(),

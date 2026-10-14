@@ -28,7 +28,6 @@ public class GameState implements Serializable {
     private final Map<String, Integer> resources;
     private final Map<String, Boolean> upgrades;
 
-    private long lastSaveTime;
     private List<GameObject> gameObjects;
     
     
@@ -56,7 +55,6 @@ public class GameState implements Serializable {
 
         this.resources = new HashMap<>();
         this.upgrades = new HashMap<>();
-        this.lastSaveTime = System.currentTimeMillis();
         this.gameObjects = new ArrayList<>();
         
         
@@ -79,7 +77,6 @@ public class GameState implements Serializable {
         this.resources = new HashMap<>();
         this.upgrades = new HashMap<>();
         this.gameObjects = new ArrayList<>(gameObjects != null ? gameObjects : new ArrayList<>());
-        this.lastSaveTime = System.currentTimeMillis();
         
         
         this.rackConfiguration = new HashMap<>();
@@ -100,7 +97,6 @@ public class GameState implements Serializable {
         this.resources = new HashMap<>();
         this.upgrades = new HashMap<>();
         this.gameObjects = new ArrayList<>();
-        this.lastSaveTime = System.currentTimeMillis();
         
         
         this.rackConfiguration = new HashMap<>();

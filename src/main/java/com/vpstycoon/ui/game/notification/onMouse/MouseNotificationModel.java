@@ -12,10 +12,8 @@ public class MouseNotificationModel {
 
 
     public static class Notification {
-        private final String content;
 
         public Notification(String content) {
-            this.content = content;
         }
 
     }
