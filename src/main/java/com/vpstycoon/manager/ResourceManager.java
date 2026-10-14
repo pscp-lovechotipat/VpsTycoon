@@ -16,11 +16,9 @@ import com.vpstycoon.thread.GameTimeManager;
 import com.vpstycoon.thread.RequestGenerator;
 import com.vpstycoon.ui.common.ImageCache;
 import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.ui.game.notification.CenterNotificationController;
-import com.vpstycoon.ui.game.notification.CenterNotificationModel;
 import com.vpstycoon.ui.game.notification.CenterNotificationView;
-import com.vpstycoon.ui.game.notification.MouseNotificationController;
 import com.vpstycoon.ui.game.notification.MouseNotificationView;
+import com.vpstycoon.ui.game.notification.NotificationManager;
 import com.vpstycoon.ui.game.notification.NotificationView;
 
 import java.io.*;
@@ -71,14 +69,7 @@ public class ResourceManager {
         }
     }
 
-    private NotificationView notificationView;
-
-    private CenterNotificationModel centerNotificationModel;
-    private CenterNotificationView centerNotificationView;
-    private CenterNotificationController centerNotificationController;
-
-    private MouseNotificationView mouseNotificationView;
-    private MouseNotificationController mouseNotificationController;
+    private NotificationManager notificationManager;
 
     private GameEvent gameEvent;
     private GameplayContentPane gameplayContentPane;
@@ -200,22 +191,11 @@ public class ResourceManager {
         }
     }
 
-    private void initializeNotifications() {
-        if (notificationView == null) {
-            this.notificationView = new NotificationView();
-            this.notificationView.setAudioManager(this.audioManager);
+    private synchronized NotificationManager notifications() {
+        if (notificationManager == null) {
+            notificationManager = new NotificationManager(audioManager);
         }
-        if (centerNotificationModel == null) {
-            this.centerNotificationModel = new CenterNotificationModel();
-            this.centerNotificationView = new CenterNotificationView();
-            this.centerNotificationView.setAudioManager(this.audioManager);
-            this.centerNotificationController = new CenterNotificationController(centerNotificationModel, centerNotificationView);
-        }
-
-        if (mouseNotificationView == null) {
-            this.mouseNotificationView = new MouseNotificationView();
-            this.mouseNotificationController = new MouseNotificationController(mouseNotificationView);
-        }
+        return notificationManager;
     }
 
     public void saveGameState(GameState state) {
@@ -609,44 +589,31 @@ public class ResourceManager {
     }
 
     public void pushNotification(String title, String content) {
-        initializeNotifications();
-        javafx.application.Platform.runLater(() -> {
-            try {
-                notificationView.addNotificationPane(title, content);
-            } catch (Exception e) {
-                System.err.println("Error showing notification: " + e.getMessage());
-            }
-        });
+        notifications().push(title, content);
     }
 
     public void pushMouseNotification(String content) {
-        initializeNotifications();
-        mouseNotificationController.addNotification(content);
+        notifications().pushMouse(content);
     }
 
     public void pushCenterNotification(String title, String content, String image) {
-        initializeNotifications();
-        centerNotificationController.push(title, content, image);
+        notifications().pushCenter(title, content, image);
     }
 
     public void pushCenterNotificationAutoClose(String title, String content, String image, long autoCloseMillis) {
-        initializeNotifications();
-        centerNotificationController.pushAutoClose(title, content, image, autoCloseMillis);
+        notifications().pushCenterAutoClose(title, content, image, autoCloseMillis);
     }
 
     public NotificationView getNotificationView() {
-        initializeNotifications();
-        return notificationView;
+        return notifications().getNotificationView();
     }
 
     public CenterNotificationView getCenterNotificationView() {
-        initializeNotifications();
-        return centerNotificationView;
+        return notifications().getCenterNotificationView();
     }
 
     public MouseNotificationView getMouseNotificationView() {
-        initializeNotifications();
-        return mouseNotificationView;
+        return notifications().getMouseNotificationView();
     }
 
     public GameEvent getGameEvent() {
