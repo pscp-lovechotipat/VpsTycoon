@@ -45,13 +45,11 @@ public class VPSOptimization extends GameObject implements Serializable {
     public void addVM(VM vm) {
         if (vms.size() < maxVMs) {
             vms.add(vm);
-            updateResourceUsage();
         }
     }
 
     public void removeVM(VM vm) {
         vms.remove(vm);
-        updateResourceUsage();
     }
 
     public List<VM> getVms() {
@@ -137,8 +135,6 @@ public class VPSOptimization extends GameObject implements Serializable {
     
     
 
-    private void updateResourceUsage() {
-    }
 
     public static class VM implements Serializable {
         private String name;
@@ -168,7 +164,7 @@ public class VPSOptimization extends GameObject implements Serializable {
             return "192.168." + (random.nextInt(253) + 1) + "." + (random.nextInt(253) + 1);
         }
 
-        public void assignToCustomer(String customerId, String customerName, long assignedTime) {
+        public void assignToCustomer(String customerId, String customerName) {
             this.customerId = customerId;
             this.customerName = customerName;
         }

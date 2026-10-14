@@ -3,42 +3,30 @@ package com.vpstycoon.ui.game;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
 import com.vpstycoon.event.SettingsChangedEvent;
-import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
-import com.vpstycoon.game.object.RackObject;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.game.thread.RequestGenerator;
-import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.base.GameScreen;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
-import com.vpstycoon.ui.game.flow.GameFlowManager;
-import com.vpstycoon.ui.game.rack.Rack;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.application.Platform;
 import javafx.scene.layout.Region;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Timer;
 
 public class GameplayScreen extends GameScreen {
     private GameState state;
     private final Navigator navigator;
-    private final GameSaveManager saveManager;
     private ArrayList<GameObject> gameObjects;
     private final Company company;
-    private final ChatSystem chatSystem;
     private final RequestManager requestManager;
     private final VPSManager vpsManager;
-    private final GameFlowManager gameFlowManager;
     private final DebugOverlayManager debugOverlayManager;
     private GameTimeController gameTimeController;
     private GameplayContentPane contentPane; 
@@ -47,7 +35,6 @@ public class GameplayScreen extends GameScreen {
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator, GameState gameState) {
         super(config, screenManager);
         this.navigator = navigator;
-        this.saveManager = new GameSaveManager();
         this.state = gameState;
         if (gameState.getGameObjects() != null) {
             this.gameObjects = new ArrayList<>(gameState.getGameObjects());
@@ -64,10 +51,8 @@ public class GameplayScreen extends GameScreen {
             this.company = ResourceManager.getInstance().getCompany();
             System.out.println("ใช้ค่า Company จาก ResourceManager: Money = $" + this.company.getMoney());
         }
-        this.chatSystem = new ChatSystem();
         this.requestManager = ResourceManager.getInstance().getRequestManager();
         this.vpsManager = new VPSManager();
-        this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
         this.debugOverlayManager = new DebugOverlayManager();
         subscribeToSettingsChanges();
         loadGame(gameState);
@@ -115,29 +100,8 @@ public class GameplayScreen extends GameScreen {
     }
 
     private synchronized void initializeGameObjects() {
-        int screenWidth = config.getResolution().getWidth();
-        int screenHeight = config.getResolution().getHeight();
-        int centerX = screenWidth / 2;
-        int topMargin = screenHeight / 12;
-        int spacing = screenWidth / 10;
 
         gameObjects.clear();
-
-        RackObject deploy = new RackObject("deploy", "Deploy", 0, 0);
-        deploy.setGridPosition(centerX - spacing * 2, topMargin);
-        gameObjects.add(deploy);
-
-        RackObject network = new RackObject("network", "Network", 0, 0);
-        network.setGridPosition(centerX - spacing, topMargin);
-        gameObjects.add(network);
-
-        RackObject security = new RackObject("security", "Security", 0, 0);
-        security.setGridPosition(centerX, topMargin);
-        gameObjects.add(security);
-
-        RackObject marketing = new RackObject("marketing", "Marketing", 0, 0);
-        marketing.setGridPosition(centerX + spacing, topMargin);
-        gameObjects.add(marketing);
 
         state.setGameObjects(gameObjects);
 
@@ -188,57 +152,9 @@ public class GameplayScreen extends GameScreen {
     @Override
     protected Region createContent() {
         contentPane = new GameplayContentPane(
-                this.gameObjects,
-                this.navigator,
-                this.chatSystem,
-                this.requestManager,
-                this.vpsManager,
-                this.gameFlowManager,
-                this.debugOverlayManager,
-                this.company,
-                ResourceManager.getInstance().getRack()
+                this.navigator, this.requestManager, this.vpsManager, this.debugOverlayManager, this.company, ResourceManager.getInstance().getRack()
         );
         
-        Platform.runLater(() -> {
-            try {
-                new Timer().schedule(
-                    new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            Platform.runLater(() -> {
-                                if (gameFlowManager != null) {
-                                    Rack rack = ResourceManager.getInstance().getRack();
-                                    if (rack != null) {
-                                        System.out.println("ข้อมูล rack:");
-                                        System.out.println("- rack index ปัจจุบัน: " + rack.getCurrentRackIndex());
-                                        System.out.println("- จำนวน slot ที่ปลดล็อค: " + rack.getUnlockedSlotUnits());
-                                        
-                                        List<VPSOptimization> allVPS = rack.getAllInstalledVPS();
-                                        System.out.println("- จำนวน VPS ทั้งหมดที่ติดตั้งในทุก rack: " + allVPS.size());
-                                        
-                                        GameManager gameManager = GameManager.getInstance();
-                                        System.out.println("- จำนวน VPS ที่ติดตั้งใน GameManager: " + gameManager.getInstalledServers().size());
-                                        System.out.println("- จำนวน VPS ใน Inventory: " + gameManager.getVpsInventory().getSize());
-                                        
-                                        System.out.println("ยกเลิกการบันทึกเกมอัตโนมัติหลังโหลด เพื่อป้องกันข้อมูลไม่สมบูรณ์");
-                                        System.out.println("กรุณาบันทึกเกมด้วยตนเองหลังจากเริ่มเล่นเกม");
-                                        
-                                        if (contentPane != null) {
-                                            
-                                        }
-                                    } else {
-                                        System.out.println("ไม่พบข้อมูล Rack ในระบบ - ยกเลิกการบันทึกอัตโนมัติ");
-                                    }
-                                }
-                            });
-                        }
-                    }, 
-                    500 
-                );
-            } catch (Exception e) {
-                System.err.println("เกิดข้อผิดพลาดในการตั้งเวลาบันทึกเกม: " + e.getMessage());
-            }
-        });
         
         return contentPane;
     }

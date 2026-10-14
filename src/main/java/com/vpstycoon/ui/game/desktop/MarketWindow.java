@@ -2,7 +2,6 @@ package com.vpstycoon.ui.game.desktop;
 
 import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.company.SkillPointsSystem;
-import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.RackProduct;
@@ -28,7 +27,7 @@ public class MarketWindow extends BorderPane {
     private ScrollPane contentArea;
     private String currentFilter = "ALL"; 
 
-    public MarketWindow(Runnable onClose, Runnable onClose2, VPSManager vpsManager, GameplayContentPane parent) {
+    public MarketWindow(Runnable onClose2, GameplayContentPane parent) {
         this.parent = parent;
         
         

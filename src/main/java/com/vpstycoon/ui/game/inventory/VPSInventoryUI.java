@@ -48,7 +48,7 @@ public class VPSInventoryUI {
         titleLabel.setStyle("-fx-text-fill: #e0b0ff; -fx-font-size: 28px; -fx-font-weight: bold; " +
                            "-fx-effect: dropshadow(gaussian, #9370db, 2, 0.3, 0, 0);");
         
-        Button backButton = UIUtils.createModernButton("Back", "#F44336");
+        Button backButton = UIUtils.createModernButton("Back");
         backButton.setOnAction(e -> {
             parent.openRackInfo();
         });
@@ -242,10 +242,10 @@ public class VPSInventoryUI {
         
         HBox actionsBox = new HBox(10);
         
-        Button installButton = UIUtils.createModernButton("Install", "#27ae60");
+        Button installButton = UIUtils.createModernButton("Install");
         installButton.setOnAction(e -> installVPS(vpsId, vps));
         
-        Button detailsButton = UIUtils.createModernButton("Details", "#3498db");
+        Button detailsButton = UIUtils.createModernButton("Details");
         detailsButton.setOnAction(e -> showVPSDetails(vpsId, vps));
         
         
@@ -328,7 +328,7 @@ public class VPSInventoryUI {
         detailsBox.getChildren().addAll(vcpuLabel, ramLabel, diskLabel, sizeLabel, slotsLabel, statusLabel);
         
         
-        Button closeButton = UIUtils.createModernButton("Close", "#e74c3c");
+        Button closeButton = UIUtils.createModernButton("Close");
         closeButton.setOnAction(e -> openInventory());
         
         

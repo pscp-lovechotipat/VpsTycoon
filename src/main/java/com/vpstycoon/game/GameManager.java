@@ -55,7 +55,6 @@ public class GameManager {
             instance = new GameManager();
             
             
-            ResourceManager.getInstance().setGameManager(instance);
             
             System.out.println("GameManager was reset successfully");
         } catch (Exception e) {
@@ -65,7 +64,6 @@ public class GameManager {
             instance = new GameManager();
             
             
-            ResourceManager.getInstance().setGameManager(instance);
         }
     }
     
@@ -312,9 +310,6 @@ public class GameManager {
         return vpsInventory;
     }
     
-    public List<VPSOptimization> getInstalledServers() {
-        return new ArrayList<>(installedServers);
-    }
     
 }
 

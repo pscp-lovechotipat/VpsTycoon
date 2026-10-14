@@ -48,9 +48,8 @@ public class CustomerRequest extends Customer implements Serializable {
     }
 
 
-    public CustomerRequest(CustomerType customerType, RequestType requestType,
-                           double budget, int duration) {
-        super(RandomGenerateName.generateRandomName(), customerType, budget);
+    public CustomerRequest(CustomerType customerType, RequestType requestType, int duration) {
+        super(RandomGenerateName.generateRandomName(), customerType);
         this.requestType = requestType;
         this.duration = duration;
 
@@ -77,7 +76,6 @@ public class CustomerRequest extends Customer implements Serializable {
                 this.requiredDiskGB = (random.nextInt(6) + 10) * 10;
                 break;
             case ENTERPRISE:
-            case BUSINESS:
                 this.requiredVCPUs = random.nextInt(8) + 8;
                 this.requiredRamGB = (random.nextInt(8) + 8) * 2;
                 this.requiredDiskGB = (random.nextInt(10) + 15) * 10;
@@ -113,7 +111,6 @@ public class CustomerRequest extends Customer implements Serializable {
                 basePrice *= 0.85;
                 break;
             case ENTERPRISE:
-            case BUSINESS:
                 basePrice *= 0.8;
                 break;
         }

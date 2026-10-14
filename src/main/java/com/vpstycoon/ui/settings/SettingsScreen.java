@@ -10,7 +10,6 @@ import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.screen.ScreenResolution;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButton;
 import com.vpstycoon.ui.components.buttons.Menu.MenuButtonType;
-import com.vpstycoon.ui.navigation.Navigator;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -31,7 +30,7 @@ public class SettingsScreen extends StackPane {
     private CheckBox vsyncCheckBox;
     private AudioManager audioManager;
 
-    public SettingsScreen(GameConfig config, ScreenManager screenManager, Navigator navigator, Runnable onCloseSettings) {
+    public SettingsScreen(GameConfig config, ScreenManager screenManager, Runnable onCloseSettings) {
         this.config = config;
         this.screenManager = screenManager;
         this.onCloseSettings = onCloseSettings;
@@ -44,7 +43,7 @@ public class SettingsScreen extends StackPane {
     }
     
     
-    public SettingsScreen(GameConfig config, Navigator navigator, Runnable onCloseSettings) {
+    public SettingsScreen(GameConfig config, Runnable onCloseSettings) {
         this.config = config;
         this.screenManager = null; 
         this.onCloseSettings = onCloseSettings;

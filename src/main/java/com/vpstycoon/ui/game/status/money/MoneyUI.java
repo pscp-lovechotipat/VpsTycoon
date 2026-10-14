@@ -1,7 +1,6 @@
 package com.vpstycoon.ui.game.status.money;
 
 import com.vpstycoon.application.FontLoader;
-import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.effect.DropShadow;
@@ -19,7 +18,7 @@ public class MoneyUI extends VBox {
     private Text ratingText;
     private Text ratingValue;
 
-    public MoneyUI(GameplayContentPane parent, MoneyModel model) {
+    public MoneyUI(MoneyModel model) {
 
         
         moneyText = new Text("Money: ");

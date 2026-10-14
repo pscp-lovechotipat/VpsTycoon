@@ -33,13 +33,7 @@ public class WireTask extends GameTask {
     
     public WireTask(int wireCount) {
         super(
-                "Neural Network Calibration",
-                "Connect matching colored neural pathways to calibrate the system",
-                "/images/task/wire_task.png",
-                5000, 
-                0,  
-                wireCount <= 3 ? 1 : (wireCount <= 5 ? 2 : 3), 
-                45    
+                "Neural Network Calibration", "Connect matching colored neural pathways to calibrate the system", 5000, 0, wireCount <= 3 ? 1 : (wireCount <= 5 ? 2 : 3), 45    
         );
         this.wireCount = Math.min(wireCount, WIRE_COLORS.length);
     }
@@ -75,7 +69,7 @@ public class WireTask extends GameTask {
         lines[wireIndex].setEndY(point.getY());
     }
     
-    private void finishConnection(javafx.scene.input.MouseEvent e, int wireIndex, Circle[] rightConnectors, Line[] lines, String[] rightColors) {
+    private void finishConnection(javafx.scene.input.MouseEvent e, int wireIndex, Circle[] rightConnectors, Line[] lines) {
         
         javafx.geometry.Point2D point = lines[wireIndex].getParent().sceneToLocal(e.getSceneX(), e.getSceneY());
         double mouseX = point.getX();
@@ -265,7 +259,7 @@ public class WireTask extends GameTask {
             
             circle.setOnMousePressed(e -> startConnection(wireIndex, leftConnectors, connectionLines));
             circle.setOnMouseDragged(e -> updateConnection(e, wireIndex, connectionLines));
-            circle.setOnMouseReleased(e -> finishConnection(e, wireIndex, rightConnectors, connectionLines, rightColors));
+            circle.setOnMouseReleased(e -> finishConnection(e, wireIndex, rightConnectors, connectionLines));
             
             leftSide.getChildren().add(circle);
         }

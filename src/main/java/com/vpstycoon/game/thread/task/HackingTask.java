@@ -36,13 +36,7 @@ public class HackingTask extends GameTask {
     
     public HackingTask() {
         super(
-                "Neural Grid Hack",
-                "Navigate the security grid to find the access path",
-                "/images/task/hacking_task.png",
-                8000, 
-                15,   
-                4,    
-                90    
+                "Neural Grid Hack", "Navigate the security grid to find the access path", 8000, 15, 4, 90    
         );
     }
 

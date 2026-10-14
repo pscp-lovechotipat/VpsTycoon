@@ -10,7 +10,7 @@ public class Customer implements Serializable {
     private String name;
     protected CustomerType customerType; 
 
-    public Customer(String name, CustomerType customerType, double budget) {
+    public Customer(String name, CustomerType customerType) {
         this.id = nextId++;        
         this.name = name;
         this.customerType = customerType;

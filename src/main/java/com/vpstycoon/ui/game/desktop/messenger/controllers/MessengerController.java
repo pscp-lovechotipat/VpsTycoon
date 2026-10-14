@@ -100,7 +100,6 @@ public class MessengerController {
         updateRequestList();
         
         
-        this.rentalManager.setOnArchiveRequest(() -> archiveRequest(requestListView.getSelectedRequest()));
         this.rentalManager.setVMAssignment(vmAssignments);
         this.rentalManager.setOnUpdateDashboard(this::updateDashboard);
         
@@ -202,9 +201,7 @@ public class MessengerController {
                         
                         if (!assignedVM.isAssignedToCustomer()) {
                             assignedVM.assignToCustomer(
-                                String.valueOf(newVal.getId()),
-                                newVal.getName(),
-                                ResourceManager.getInstance().getGameTimeManager().getGameTimeMs()
+                                String.valueOf(newVal.getId()), newVal.getName()
                             );
                             System.out.println("บันทึกข้อมูลลูกค้า " + newVal.getName() + " ลงใน VM " + assignedVM.getName());
                         }
@@ -332,9 +329,7 @@ public class MessengerController {
                             
                             if (existingVM != null && !existingVM.isAssignedToCustomer()) {
                                 existingVM.assignToCustomer(
-                                    String.valueOf(selected.getId()),
-                                    selected.getName(),
-                                    ResourceManager.getInstance().getGameTimeManager().getGameTimeMs()
+                                    String.valueOf(selected.getId()), selected.getName()
                                 );
                                 System.out.println("บันทึกข้อมูลลูกค้า " + selected.getName() + " ลงใน VM " + existingVM.getName());
                             }
@@ -904,9 +899,7 @@ public class MessengerController {
         
         
         vm.assignToCustomer(
-            String.valueOf(request.getId()), 
-            request.getName(), 
-            gameTimeManager.getGameTimeMs()
+            String.valueOf(request.getId()), request.getName()
         );
         System.out.println("บันทึกข้อมูลลูกค้า " + request.getName() + " (ID: " + request.getId() + ") ลงใน VM: " + vm.getName());
         
@@ -1205,11 +1198,9 @@ public class MessengerController {
             
             SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
             int deployLevel = skillPointsSystem.getSkillLevel(SkillPointsSystem.SkillType.DEPLOY);
-            vmProvisioningManager.setDeployLevel(deployLevel);
             System.out.println("Loaded deploy skill level: " + deployLevel);
         } catch (Exception e) {
             System.err.println("Error loading skill levels: " + e.getMessage());
-            vmProvisioningManager.setDeployLevel(1);
         }
     }
 
@@ -1403,9 +1394,7 @@ public class MessengerController {
                         
                         vmAssignments.put(availableVM, request);
                         availableVM.assignToCustomer(
-                            String.valueOf(request.getId()), 
-                            request.getName(), 
-                            request.getLastPaymentTime()
+                            String.valueOf(request.getId()), request.getName()
                         );
                         assignedCount++;
                         System.out.println("กำหนด VM " + availableVM.getName() + " ให้กับลูกค้า " + request.getName());

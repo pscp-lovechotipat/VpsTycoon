@@ -10,7 +10,7 @@ public class DateController implements GameTimeManager.GameTimeListener{
     private final ResourceManager resourceManager = ResourceManager.getInstance();
     private final DateModel dateModel;
 
-    public DateController(DateModel dateModel, DateView dateView) {
+    public DateController(DateModel dateModel) {
         this.dateModel = dateModel;
 
         resourceManager.getGameTimeManager().addTimeListener(this);

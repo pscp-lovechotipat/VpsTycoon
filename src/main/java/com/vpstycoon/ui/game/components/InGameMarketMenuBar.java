@@ -1,6 +1,5 @@
 package com.vpstycoon.ui.game.components;
 
-import com.vpstycoon.game.manager.VPSManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.desktop.MarketWindow;
 import com.vpstycoon.ui.game.utils.UIUtils;
@@ -11,13 +10,11 @@ import javafx.scene.layout.StackPane;
 
 public class InGameMarketMenuBar extends StackPane {
     private final GameplayContentPane parent;
-    private final VPSManager vpsManager;
 
-    public InGameMarketMenuBar(GameplayContentPane parent, VPSManager vpsManager) {
+    public InGameMarketMenuBar(GameplayContentPane parent) {
         this.parent = parent;
-        this.vpsManager = vpsManager;
 
-        Button openMarketButton = UIUtils.createModernButton("Open Market", "#FF9800");
+        Button openMarketButton = UIUtils.createModernButton("Open Market");
         setPadding(new Insets(40));
         openMarketButton.setOnAction(e -> {
             
@@ -46,16 +43,7 @@ public class InGameMarketMenuBar extends StackPane {
                     setVisible(true);
                     parent.getMoneyUI().setVisible(true);
                     parent.getDateView().setVisible(true);
-                },
-                () -> {
-                    parent.getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
-                    parent.getMenuBar().setVisible(true);
-                    setVisible(true);
-                    parent.getMoneyUI().setVisible(true);
-                    parent.getDateView().setVisible(true);
-                },
-                vpsManager,
-                parent
+                }, parent
         );
         StackPane.setAlignment(marketWindow, Pos.CENTER);
         parent.getGameArea().getChildren().add(marketWindow);

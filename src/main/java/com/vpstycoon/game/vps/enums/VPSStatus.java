@@ -2,11 +2,7 @@ package com.vpstycoon.game.vps.enums;
 
 
 public enum VPSStatus {
-    RUNNING("Running"),
-    STOPPED("Stopped"),
-    SUSPENDED("Suspended"),
-    MAINTENANCE("Maintenance"),
-    ERROR("Error");
+    RUNNING("Running");
     
     private final String displayName;
     

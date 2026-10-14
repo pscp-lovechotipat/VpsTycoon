@@ -33,9 +33,7 @@ public class KeyEventHandler {
         
 
         this.settingsScreen = new SettingsScreen(
-            config,
-            contentPane.getNavigator(),
-            this::hideSettingsScreen
+            config, this::hideSettingsScreen
         );
     }
 

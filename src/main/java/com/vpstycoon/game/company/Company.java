@@ -9,7 +9,6 @@ public class Company implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private double rating;
-    private int marketingPoints;
     private int skillPointsAvailable;
     private int availableVMs;
 
@@ -30,7 +29,6 @@ public class Company implements Serializable {
 
     public Company() {
         this.rating = 1.0;
-        this.marketingPoints = 0;
         this.skillPointsAvailable = 0;
         this.money = 100_000; 
         this.availableVMs = 0;
@@ -75,9 +73,6 @@ public class Company implements Serializable {
         }
     }
 
-    public int getMarketingPoints() {
-        return marketingPoints;
-    }
 
 
     public long getMoney() {

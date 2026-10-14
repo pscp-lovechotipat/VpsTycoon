@@ -40,13 +40,7 @@ public class PasswordCrackingTask extends GameTask {
 
     public PasswordCrackingTask() {
         super(
-                "Password Override",
-                "Bypass security by cracking the digital lock",
-                "/images/task/password_task.png",
-                7000, 
-                25,  
-                3,    
-                60    
+                "Password Override", "Bypass security by cracking the digital lock", 7000, 25, 3, 60    
         );
     }
 

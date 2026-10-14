@@ -45,13 +45,7 @@ public class NetworkRoutingTask extends GameTask {
 
     public NetworkRoutingTask() {
         super(
-                "Network Optimization",
-                "Establish optimal network routes between critical servers",
-                "/images/task/network_task.png",
-                6000, 
-                20,  
-                3,   
-                45   
+                "Network Optimization", "Establish optimal network routes between critical servers", 6000, 20, 3, 45   
         );
     }
 

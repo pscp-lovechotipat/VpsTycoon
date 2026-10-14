@@ -70,17 +70,13 @@ public class RequestManager implements Serializable {
         RequestType selectedRequestType = RequestType.values()[random.nextInt(RequestType.values().length)];
         
         
-        double budget = getRandomBudget(selectedType);
         
         
         int requestDuration = 30 + random.nextInt(336);
         
         
         CustomerRequest newRequest = new CustomerRequest(
-                selectedType,
-                selectedRequestType,
-                budget,
-                requestDuration
+                selectedType, selectedRequestType, requestDuration
         );
         
         return newRequest;
@@ -121,23 +117,6 @@ public class RequestManager implements Serializable {
     }
     
     
-    private double getRandomBudget(CustomerType customerType) {
-        switch (customerType) {
-            case INDIVIDUAL:
-                return 100 + random.nextDouble() * 400;
-            case SMALL_BUSINESS:
-                return 500 + random.nextDouble() * 1500;
-            case MEDIUM_BUSINESS:
-                return 2000 + random.nextDouble() * 3000;
-            case LARGE_BUSINESS:
-                return 5000 + random.nextDouble() * 5000;
-            case ENTERPRISE:
-            case BUSINESS:
-                return 10000 + random.nextDouble() * 10000;
-            default:
-                return 1000;
-        }
-    }
     
     
     public void processPayments(long currentTime) {

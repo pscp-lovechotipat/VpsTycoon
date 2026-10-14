@@ -183,9 +183,6 @@ public class VMProvisioningManager {
     }
 
     
-    public void setDeployLevel(int deployLevel) {
-        
-    }
 
     
     public double calculateRatingChange(
@@ -222,7 +219,6 @@ public class VMProvisioningManager {
                 ratingChange *= 0.9;
                 break;
             case ENTERPRISE:
-            case BUSINESS:
                 ratingChange *= 0.8; 
                 break;
         }

@@ -1,8 +1,6 @@
 package com.vpstycoon.ui.cutscene;
 
 import com.vpstycoon.application.FontLoader;
-import com.vpstycoon.config.GameConfig;
-import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
@@ -26,7 +24,7 @@ public class CutsceneScreen extends StackPane {
     private SequentialTransition sequentialTransition;
 
 
-    public CutsceneScreen(GameConfig gameConfig, ScreenManager screenManager, Navigator navigator) {
+    public CutsceneScreen(Navigator navigator) {
         this.navigator = navigator;
         
         

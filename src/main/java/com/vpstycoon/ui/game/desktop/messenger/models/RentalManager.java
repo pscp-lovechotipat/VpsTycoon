@@ -135,8 +135,6 @@ public class RentalManager {
     }
 
     
-    public void setOnArchiveRequest(Runnable onArchiveRequest) {
-    }
 
     
     public void setVMAssignment(Map<VPSOptimization.VM, CustomerRequest> vmAssignments) {

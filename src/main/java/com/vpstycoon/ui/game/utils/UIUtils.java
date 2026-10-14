@@ -6,7 +6,7 @@ import javafx.scene.control.Button;
 public class UIUtils {
 
 
-    public static Button createModernButton(String text, String color) {
+    public static Button createModernButton(String text) {
         Button button = new Button(text);
 
         button.setFont(FontLoader.loadFont(32));

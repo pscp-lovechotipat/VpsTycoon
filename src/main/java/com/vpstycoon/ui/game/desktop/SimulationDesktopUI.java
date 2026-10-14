@@ -72,15 +72,7 @@ public class SimulationDesktopUI {
 
 
         DesktopScreen desktop = new DesktopScreen(
-                parent.getCompany().getRating(),
-                parent.getCompany().getMarketingPoints(),
-                parent.getChatSystem(),
-                parent.getRequestManager(),
-                parent.getVpsManager(),
-                parent.getCompany(),
-                parent,
-                ResourceManager.getInstance().getGameTimeManager(),
-                () -> {
+                parent.getRequestManager(), parent.getVpsManager(), parent.getCompany(), parent, ResourceManager.getInstance().getGameTimeManager(), () -> {
             javafx.application.Platform.runLater(() -> {
                 try {
 

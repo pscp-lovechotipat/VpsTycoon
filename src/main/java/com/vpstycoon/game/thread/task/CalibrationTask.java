@@ -40,13 +40,7 @@ public class CalibrationTask extends GameTask {
 
     public CalibrationTask() {
         super(
-                "System Calibration",
-                "Fine-tune system parameters for optimal performance",
-                "/images/task/calibration_task.png",
-                5500, 
-                15,   
-                2,    
-                40    
+                "System Calibration", "Fine-tune system parameters for optimal performance", 5500, 15, 2, 40    
         );
         
         

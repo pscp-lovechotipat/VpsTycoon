@@ -1,7 +1,6 @@
 package com.vpstycoon.ui.game.status.date;
 
 import com.vpstycoon.application.FontLoader;
-import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.beans.binding.StringBinding;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 public class DateView extends VBox {
     private final DateModel model;
 
-    public DateView(GameplayContentPane parent, DateModel model) {
+    public DateView(DateModel model) {
         this.model = model;
 
         setAlignment(Pos.BOTTOM_CENTER);

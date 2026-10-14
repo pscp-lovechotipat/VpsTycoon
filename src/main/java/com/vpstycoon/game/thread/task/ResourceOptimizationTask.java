@@ -40,13 +40,7 @@ public class ResourceOptimizationTask extends GameTask {
 
     public ResourceOptimizationTask() {
         super(
-                "Resource Allocation",
-                "Optimize system resources for maximum efficiency",
-                "/images/task/resource_task.png",
-                7000, 
-                25,  
-                4,    
-                60    
+                "Resource Allocation", "Optimize system resources for maximum efficiency", 7000, 25, 4, 60    
         );
         
         

@@ -11,7 +11,7 @@ public class MoneyController {
     private final ResourceManager resourceManager;
     private final Timeline timeline;
 
-    public MoneyController(MoneyModel moneyModel, MoneyUI moneyUI) {
+    public MoneyController(MoneyModel moneyModel) {
         this.moneyModel = moneyModel;
         this.resourceManager = ResourceManager.getInstance();
 

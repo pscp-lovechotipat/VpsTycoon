@@ -3,11 +3,9 @@ package com.vpstycoon.ui.game.notification.onMouse;
 import java.awt.*;
 
 public class MouseNotificationController {
-    private final MouseNotificationModel model;
-    private MouseNotificationView view;
+    private final MouseNotificationView view;
 
-    public MouseNotificationController(MouseNotificationModel model, MouseNotificationView view) {
-        this.model = model;
+    public MouseNotificationController(MouseNotificationView view) {
         this.view = view;
     }
 
@@ -19,8 +17,6 @@ public class MouseNotificationController {
 
         content = "+ " + content;
 
-        MouseNotificationModel.Notification notification = new MouseNotificationModel.Notification(content);
-        model.addNotification(notification); 
         view.addNotificationPane(content, mouseX, mouseY); 
     }
 

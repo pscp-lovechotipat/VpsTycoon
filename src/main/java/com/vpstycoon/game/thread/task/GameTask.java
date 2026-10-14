@@ -71,8 +71,7 @@ public abstract class GameTask {
     private AudioClip taskTickSound;
 
     
-    public GameTask(String taskName, String taskDescription, String imagePath, 
-                    int rewardAmount, int penaltyRating, int difficultyLevel, int timeLimit) {
+    public GameTask(String taskName, String taskDescription, int rewardAmount, int penaltyRating, int difficultyLevel, int timeLimit) {
         this.taskName = taskName;
         this.taskDescription = taskDescription;
         this.rewardAmount = rewardAmount;

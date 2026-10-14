@@ -61,13 +61,7 @@ public class ServerCoolingTask extends GameTask {
 
     public ServerCoolingTask() {
         super(
-                "Server Cooling",
-                "Manage cooling systems to prevent server overheating",
-                "/images/task/cooling_task.png",
-                6500, 
-                30,   
-                3,    
-                60    
+                "Server Cooling", "Manage cooling systems to prevent server overheating", 6500, 30, 3, 60    
         );
         
         SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();

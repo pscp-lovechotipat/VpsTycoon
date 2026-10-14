@@ -72,7 +72,7 @@ public class VPSInfoUI {
                 -fx-effect: dropshadow(gaussian, #9370db, 2, 0.3, 0, 0);
                 """);
 
-        Button backButton = UIUtils.createModernButton("Back", "#F44336");
+        Button backButton = UIUtils.createModernButton("Back");
         backButton.setOnAction(e -> parent.openRackInfo());
         topBar.getChildren().addAll(backButton, titleLabel);
 
@@ -181,10 +181,10 @@ public class VPSInfoUI {
                 -fx-border-width: 1px;
                 """);
         
-        Button uninstallButton = UIUtils.createModernButton("Uninstall Server", "#F44336");
+        Button uninstallButton = UIUtils.createModernButton("Uninstall Server");
         uninstallButton.setOnAction(e -> uninstallVPS(vps));
         
-        Button createVMButton = UIUtils.createModernButton("Create VM", "#4CAF50");
+        Button createVMButton = UIUtils.createModernButton("Create VM");
         createVMButton.setOnAction(e -> parent.openCreateVMPage(vps));
         
         buttonBox.getChildren().addAll(uninstallButton, createVMButton);

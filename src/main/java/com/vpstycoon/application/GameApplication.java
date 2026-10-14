@@ -149,7 +149,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
 
 
                     System.out.println("กำลังเตรียม CutsceneScreen...");
-                    CutsceneScreen cutsceneScreen = new CutsceneScreen(gameConfig, screenManager, this);
+                    CutsceneScreen cutsceneScreen = new CutsceneScreen(this);
                     
 
                     System.out.println("CutsceneScreen พร้อมแล้ว");
@@ -240,7 +240,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
 
     private void createScreens() {
         mainMenuScreen = new MainMenuScreen(gameConfig, screenManager, this);
-        settingsScreen = new SettingsScreen(gameConfig, screenManager, this, this::showMainMenu);
+        settingsScreen = new SettingsScreen(gameConfig, screenManager, this::showMainMenu);
     }
 
     @Override

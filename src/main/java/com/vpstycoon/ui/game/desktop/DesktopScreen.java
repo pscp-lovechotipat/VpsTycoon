@@ -1,7 +1,6 @@
 package com.vpstycoon.ui.game.desktop;
 
 import com.vpstycoon.config.DefaultGameConfig;
-import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
@@ -77,9 +76,7 @@ public class DesktopScreen extends StackPane {
         return imageCache.get(path);
     }
 
-    public DesktopScreen(double companyRating, int marketingPoints,
-                         ChatSystem chatSystem, RequestManager requestManager,
-                         VPSManager vpsManager, Company company, GameplayContentPane parent, GameTimeManager gameTimeManager, Runnable onExit) {
+    public DesktopScreen(RequestManager requestManager, VPSManager vpsManager, Company company, GameplayContentPane parent, GameTimeManager gameTimeManager, Runnable onExit) {
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
         this.company = company;
@@ -346,8 +343,7 @@ public class DesktopScreen extends StackPane {
     }
 
     private void openMarketWindow() {
-        MarketWindow marketWindow = new MarketWindow(() -> getChildren().removeIf(node -> node instanceof MarketWindow),
-                () -> getChildren().removeIf(node -> node instanceof MarketWindow), vpsManager, parent);
+        MarketWindow marketWindow = new MarketWindow(() -> getChildren().removeIf(node -> node instanceof MarketWindow), parent);
         
         marketWindow.setPrefSize(1200, 800);
         marketWindow.setMaxSize(1600, 900);

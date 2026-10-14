@@ -21,13 +21,7 @@ public class DataSortingTask extends GameTask {
 
     public DataSortingTask() {
         super(
-                "Data Sorting",
-                "Sort the data packets in the correct order",
-                "/images/task/data_sorting_task.png",
-                6000, 
-                20,  
-                2,    
-                50    
+                "Data Sorting", "Sort the data packets in the correct order", 6000, 20, 2, 50    
         );
     }
 

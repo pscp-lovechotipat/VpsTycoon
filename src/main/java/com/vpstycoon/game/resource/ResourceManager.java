@@ -1,7 +1,6 @@
 package com.vpstycoon.game.resource;
 
 import com.vpstycoon.audio.AudioManager;
-import com.vpstycoon.game.GameManager;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
@@ -15,13 +14,11 @@ import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
-import com.vpstycoon.ui.game.notification.NotificationModel;
 import com.vpstycoon.ui.game.notification.NotificationView;
 import com.vpstycoon.ui.game.notification.center.CenterNotificationController;
 import com.vpstycoon.ui.game.notification.center.CenterNotificationModel;
 import com.vpstycoon.ui.game.notification.center.CenterNotificationView;
 import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationController;
-import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationModel;
 import com.vpstycoon.ui.game.notification.onMouse.MouseNotificationView;
 import com.vpstycoon.ui.game.rack.Rack;
 import javafx.scene.image.Image;
@@ -80,14 +77,12 @@ public class ResourceManager implements Serializable {
         }
     }
 
-    private NotificationModel notificationModel;
     private NotificationView notificationView;
 
     private CenterNotificationModel centerNotificationModel;
     private CenterNotificationView centerNotificationView;
     private CenterNotificationController centerNotificationController;
 
-    private MouseNotificationModel mouseNotificationModel;
     private MouseNotificationView mouseNotificationView;
     private MouseNotificationController mouseNotificationController;
 
@@ -215,8 +210,7 @@ public class ResourceManager implements Serializable {
     }
 
     private void initializeNotifications() {
-        if (notificationModel == null) {
-            this.notificationModel = new NotificationModel();
+        if (notificationView == null) {
             this.notificationView = new NotificationView();
             this.notificationView.setAudioManager(this.audioManager);
         }
@@ -227,11 +221,9 @@ public class ResourceManager implements Serializable {
             this.centerNotificationController = new CenterNotificationController(centerNotificationModel, centerNotificationView);
         }
 
-        if (mouseNotificationModel == null) {
-            this.mouseNotificationModel = new MouseNotificationModel();
+        if (mouseNotificationView == null) {
             this.mouseNotificationView = new MouseNotificationView();
-            this.mouseNotificationView.setAudioManager(this.audioManager);
-            this.mouseNotificationController = new MouseNotificationController(mouseNotificationModel, mouseNotificationView);
+            this.mouseNotificationController = new MouseNotificationController(mouseNotificationView);
         }
     }
 
@@ -634,7 +626,6 @@ public class ResourceManager implements Serializable {
 
     public void pushNotification(String title, String content) {
         initializeNotifications();
-        notificationModel.addNotification(new NotificationModel.Notification(title, content));
         javafx.application.Platform.runLater(() -> {
             try {
                 notificationView.addNotificationPane(title, content);
@@ -1018,8 +1009,6 @@ public class ResourceManager implements Serializable {
     }
 
     
-    public void setGameManager(GameManager manager) {
-    }
 
     public void resetSkillPointsSystem() {
         if (this.company != null) {

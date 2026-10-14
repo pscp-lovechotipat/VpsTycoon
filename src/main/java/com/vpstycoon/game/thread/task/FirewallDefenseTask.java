@@ -29,13 +29,7 @@ public class FirewallDefenseTask extends GameTask {
 
     public FirewallDefenseTask() {
         super(
-                "Firewall Defense",
-                "Defend your network from incoming cyber attacks",
-                "/images/task/firewall_task.png",
-                7500, 
-                25,  
-                3,    
-                60    
+                "Firewall Defense", "Defend your network from incoming cyber attacks", 7500, 25, 3, 60    
         );
     }
 

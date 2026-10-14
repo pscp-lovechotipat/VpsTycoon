@@ -3,8 +3,6 @@ package com.vpstycoon.ui.game;
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.DefaultGameConfig;
 import com.vpstycoon.game.GameManager;
-import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.chat.ChatSystem;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.manager.VPSManager;
@@ -20,7 +18,6 @@ import com.vpstycoon.ui.game.components.RoomObjectsLayer;
 import com.vpstycoon.ui.game.desktop.MarketWindow;
 import com.vpstycoon.ui.game.desktop.SimulationDesktopUI;
 import com.vpstycoon.ui.game.desktop.SkillPointsWindow;
-import com.vpstycoon.ui.game.flow.GameFlowManager;
 import com.vpstycoon.ui.game.handlers.KeyEventHandler;
 import com.vpstycoon.ui.game.handlers.ZoomPanHandler;
 import com.vpstycoon.ui.game.inventory.VPSInventoryUI;
@@ -64,7 +61,6 @@ public class GameplayContentPane extends BorderPane {
     private final InGameMarketMenuBar inGameMarketMenuBar;
 
     private final Navigator navigator;
-    private final ChatSystem chatSystem;
 
     private RequestManager requestManager;
     private final VPSManager vpsManager;
@@ -102,11 +98,8 @@ public class GameplayContentPane extends BorderPane {
 
     
     public GameplayContentPane(
-            List<GameObject> gameObjects, Navigator navigator, ChatSystem chatSystem,
-            RequestManager requestManager, VPSManager vpsManager, GameFlowManager gameFlowManager,
-            DebugOverlayManager debugOverlayManager, Company company, Rack rack) {
+            Navigator navigator, RequestManager requestManager, VPSManager vpsManager, DebugOverlayManager debugOverlayManager, Company company, Rack rack) {
         this.navigator = navigator;
-        this.chatSystem = chatSystem;
         this.requestManager = requestManager;
         this.vpsManager = vpsManager;
         this.debugOverlayManager = debugOverlayManager;
@@ -149,8 +142,8 @@ public class GameplayContentPane extends BorderPane {
 
         this.moneyModel = new MoneyModel(ResourceManager.getInstance().getCompany().getMoney(),
                 ResourceManager.getInstance().getCompany().getRating());
-        this.moneyUI = new MoneyUI(this, moneyModel);
-        this.moneyController = new MoneyController(moneyModel, moneyUI);
+        this.moneyUI = new MoneyUI(moneyModel);
+        this.moneyController = new MoneyController(moneyModel);
 
         
         LocalDateTime initialDate = null;
@@ -167,12 +160,12 @@ public class GameplayContentPane extends BorderPane {
         }
         
         this.dateModel = new DateModel(initialDate, this);
-        this.dateView = new DateView(this, dateModel);
-        this.dateController = new DateController(dateModel, dateView);
+        this.dateView = new DateView(dateModel);
+        this.dateController = new DateController(dateModel);
 
         this.menuBar = new GameMenuBar(this);
 
-        this.inGameMarketMenuBar = new InGameMarketMenuBar(this, vpsManager);
+        this.inGameMarketMenuBar = new InGameMarketMenuBar(this);
 
         
         syncWithGameManager();
@@ -492,18 +485,7 @@ public class GameplayContentPane extends BorderPane {
                 inGameMarketMenuBar.setVisible(marketMenuBarWasVisible);
                 moneyUI.setVisible(moneyUIWasVisible);
                 dateView.setVisible(dateViewWasVisible);
-            },
-            () -> {
-                getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
-                
-                
-                menuBar.setVisible(menuBarWasVisible);
-                inGameMarketMenuBar.setVisible(marketMenuBarWasVisible);
-                moneyUI.setVisible(moneyUIWasVisible);
-                dateView.setVisible(dateViewWasVisible);
-            },
-            vpsManager,
-            this
+            }, this
         );
         
         
@@ -926,9 +908,6 @@ public class GameplayContentPane extends BorderPane {
     }
 
 
-    public ChatSystem getChatSystem() {
-        return chatSystem;
-    }
 
     public RequestManager getRequestManager() {
         return requestManager;

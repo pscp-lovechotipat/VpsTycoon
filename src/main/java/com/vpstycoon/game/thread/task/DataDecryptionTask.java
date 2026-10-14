@@ -40,13 +40,7 @@ public class DataDecryptionTask extends GameTask {
 
     public DataDecryptionTask(int codeLength) {
         super(
-                "Data Decryption Protocol",
-                "Decrypt the system by finding the correct numeric sequence",
-                "/images/task/decryption_task.png",
-                5000 + (codeLength * 500), 
-                5 + (codeLength * 2),  
-                Math.min(5, 1 + (codeLength / 2)), 
-                Math.min(120, 30 + (codeLength * 10)) 
+                "Data Decryption Protocol", "Decrypt the system by finding the correct numeric sequence", 5000 + (codeLength * 500), 5 + (codeLength * 2), Math.min(5, 1 + (codeLength / 2)), Math.min(120, 30 + (codeLength * 10)) 
         );
         this.codeLength = Math.min(8, Math.max(3, codeLength)); 
     }

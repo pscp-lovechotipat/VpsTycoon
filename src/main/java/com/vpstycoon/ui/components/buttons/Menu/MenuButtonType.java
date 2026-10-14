@@ -1,7 +1,6 @@
 package com.vpstycoon.ui.components.buttons.Menu;
 
 public enum MenuButtonType {
-    PLAY("play"),
     SETTINGS("settings"),
     DELETEGAME("delete"),
     QUIT("quit"),

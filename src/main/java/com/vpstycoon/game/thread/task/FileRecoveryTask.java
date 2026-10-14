@@ -36,13 +36,7 @@ public class FileRecoveryTask extends GameTask {
 
     public FileRecoveryTask() {
         super(
-                "File Recovery",
-                "Repair and recover corrupted data files",
-                "/images/task/recovery_task.png",
-                7000, 
-                25,   
-                3,    
-                50    
+                "File Recovery", "Repair and recover corrupted data files", 7000, 25, 3, 50    
         );
         
         
