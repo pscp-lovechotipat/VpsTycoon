@@ -52,10 +52,6 @@ public class VPSOptimization extends GameObject implements Serializable {
         return status.toString();
     }
 
-    public int getMaxVMs() {
-        return maxVMs;
-    }
-
     public void setVCPUs(int vcpus) {
         this.vcpus = vcpus;
     }
