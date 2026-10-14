@@ -1,7 +1,6 @@
 package com.vpstycoon.screen;
 
 import com.vpstycoon.config.GameConfig;
-import com.vpstycoon.view.base.GameScreen;
 import javafx.animation.FadeTransition;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -142,14 +141,6 @@ public class JavaFXScreenManager implements ScreenManager {
         }
     }
     
-    @Override
-    public void switchScreen(GameScreen screen) {
-
-        switchScreen(screen.getRoot());
-        
-
-        screen.onShow();
-    }
     
     @Override
     public void updateScreenResolution() {
@@ -210,13 +201,5 @@ public class JavaFXScreenManager implements ScreenManager {
         applySettings(stage, scene);
     }
 
-    @Override
-    public void prepareScreen(GameScreen screen) {
-        
-        prepareScreen(screen.getRoot());
-
-        
-        screen.onShow();
-    }
 }
 
