@@ -26,16 +26,6 @@
             <artifactId>javafx-media</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.kordamp.ikonli</groupId>
-            <artifactId>ikonli-javafx</artifactId>
-            <version>12.3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kordamp.ikonli</groupId>
-            <artifactId>ikonli-fontawesome5-pack</artifactId>
-            <version>12.3.1</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -59,7 +49,7 @@
                         <option>--module-path</option>
                         <option>${env.JAVAFX_HOME}/lib</option>
                         <option>--add-modules</option>
-                        <option>javafx.controls,javafx.fxml,javafx.media</option>
+                        <option>javafx.controls,javafx.media</option>
                     </options>
                 </configuration>
             </plugin>
