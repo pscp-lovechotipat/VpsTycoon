@@ -293,10 +293,10 @@ public class CircleStatusButton {
                 costLabel.setTextFill(skillLevel < skillType.getMaxLevel() ? Color.CYAN : Color.RED);
                 upgradeButton.setDisable(skillLevel >= skillType.getMaxLevel());
                 parent.pushNotification("Skill Upgrade", "Upgraded " + skillName + " to Lv" + skillLevel);
-                audioManager.playSoundEffect("upgrade.wav");
+                audioManager.playSoundEffect("upgrade.mp3");
             } else {
                 parent.pushNotification("Upgrade Failed", "Not enough points to upgrade " + skillName);
-                audioManager.playSoundEffect("error.wav");
+                audioManager.playSoundEffect("error.mp3");
             }
         });
 
