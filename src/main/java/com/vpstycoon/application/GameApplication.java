@@ -133,13 +133,16 @@ public class GameApplication extends Application implements Navigator, ResourceM
                         if (loadingStage != null && loadingStage.isShowing()) {
                             System.out.println("กำลังซ่อนหน้า Loading หลังจากแสดง CutsceneScreen...");
 
-                            javafx.scene.layout.StackPane root = (javafx.scene.layout.StackPane) loadingStage.getScene().getRoot();
+                            Stage startupLoadingStage = loadingStage;
+                            javafx.scene.layout.StackPane root = (javafx.scene.layout.StackPane) startupLoadingStage.getScene().getRoot();
                             javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(Duration.millis(1000), root);
                             fadeOut.setFromValue(1.0);
                             fadeOut.setToValue(0.0);
                             fadeOut.setOnFinished(event -> {
-                                loadingStage.close();
-                                loadingStage = null;
+                                startupLoadingStage.close();
+                                if (loadingStage == startupLoadingStage) {
+                                    loadingStage = null;
+                                }
                                 System.out.println("ปิดหน้าจอโหลดเรียบร้อย");
                                 System.out.println("โหลดทรัพยากรเสร็จสมบูรณ์");
                             });

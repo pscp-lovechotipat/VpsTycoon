@@ -702,25 +702,11 @@ public class ResourceManager {
         System.out.println("===== เริ่มโหลดทรัพยากรของเกม =====");
         preloadComplete = false;
 
-        final String[] imagesToPreload = {
+        final String[] gameplayImages = {
             "/images/rooms/room.gif",
-            "/images/Moniter/MoniterF2.png",
-            "/images/servers/server2.gif",
-            "/images/Object/Keroro.png",
-            "/images/Object/MusicboxOn.gif",
-            "/images/Object/MusicboxOff.png",
-            "/images/Object/Table.png",
-            "/images/wallpaper/Desktop.gif",
-            "/images/wallpaper/BackgroundWindow.gif",
             "/images/wallpaper/BackgroundWindow2.gif",
-            "/images/buttons/MessengerDesktop.png",
-            "/images/buttons/MarketDesktop.png",
-            "/images/buttons/RoomDesktop.gif",
-            "/images/buttons/ServerDesktop.gif",
-            "/images/home/logo.gif",
-            "/images/home/itstudent.gif",
-            "/images/home/background.png",
-            "/images/others/Credits.gif"
+            "/images/servers/server2.gif",
+            "/images/wallpaper/Desktop.gif"
         };
 
         final String[] soundsToPreload = {
@@ -731,19 +717,19 @@ public class ResourceManager {
             "keroro_sound.mp3"
         };
 
+        Thread imageWarmupThread = new Thread(() ->
+            java.util.Arrays.stream(gameplayImages).parallel().forEach(ImageCache::get));
+        imageWarmupThread.setDaemon(true);
+        imageWarmupThread.start();
+
         Thread preloadThread = new Thread(() -> {
             try {
-                for (String imagePath : imagesToPreload) {
-                    notifyResourceLoading(imagePath);
-                    ImageCache.get(imagePath);
-                }
-
                 for (String soundPath : soundsToPreload) {
                     notifyResourceLoading("เสียง: " + soundPath);
                     audioManager.preloadSoundEffect(soundPath);
                 }
 
-                int totalResources = imagesToPreload.length + soundsToPreload.length;
+                int totalResources = soundsToPreload.length;
                 System.out.println("===== โหลดทรัพยากรของเกมเสร็จสมบูรณ์: " + totalResources + " รายการ =====");
                 notifyResourceLoadingComplete(totalResources);
             } catch (Exception e) {

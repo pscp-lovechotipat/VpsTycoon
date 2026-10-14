@@ -61,16 +61,14 @@ public class SkillPointsWindow extends VBox {
 
         pointsBox.getChildren().addAll(pointsTitle, availablePointsLabel);
 
-        ScrollPane scrollPane = (ScrollPane) getChildren().get(2);
+        ScrollPane scrollPane = new ScrollPane();
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background: #f5f6fa; -fx-border-color: transparent;");
 
-        VBox scrollContent = (VBox) scrollPane.getContent();
+        VBox scrollContent = new VBox(15);
         scrollContent.setPadding(new Insets(0, 15, 15, 15));
 
-        VBox skillsContainer = (VBox) scrollContent.getChildren().get(0);
-
-        skillsContainer.getChildren().clear();
+        VBox skillsContainer = new VBox(10);
 
         for (SkillType skillType : SkillType.values()) {
             skillsContainer.getChildren().add(createSkillCard(skillType));

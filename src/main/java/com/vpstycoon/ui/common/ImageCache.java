@@ -13,17 +13,15 @@ public final class ImageCache {
     }
 
     public static Image get(String path) {
-        Image cached = CACHE.get(path);
-        if (cached != null) {
-            return cached;
-        }
+        return CACHE.computeIfAbsent(path, ImageCache::load);
+    }
+
+    private static Image load(String path) {
         URL url = ImageCache.class.getResource(path);
         if (url == null) {
             System.err.println("ไม่พบรูปภาพ: " + path);
             return null;
         }
-        Image image = new Image(url.toExternalForm());
-        CACHE.put(path, image);
-        return image;
+        return new Image(url.toExternalForm());
     }
 }
