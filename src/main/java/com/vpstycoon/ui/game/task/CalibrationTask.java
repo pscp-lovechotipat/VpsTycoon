@@ -22,10 +22,8 @@ import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class CalibrationTask extends GameTask {
-    private static final Random random = new Random();
     private static final int GRID_SIZE = 4;
     private static final int SEQUENCE_LENGTH = 5;
 
@@ -35,7 +33,7 @@ public class CalibrationTask extends GameTask {
     private int currentStep = 0;
     private boolean showingSequence = true;
     private Label statusLabel;
-    private BorderPane taskPane;
+    private BorderPane boardPane;
 
     public CalibrationTask() {
         super(
@@ -54,22 +52,22 @@ public class CalibrationTask extends GameTask {
 
     @Override
     protected void initializeTaskSpecifics() {
-        taskPane = new BorderPane();
-        CyberpunkEffects.styleTaskPane(taskPane);
-        taskPane.setPrefSize(500, 400);
-        taskPane.setPadding(new Insets(20));
+        boardPane = new BorderPane();
+        CyberpunkEffects.styleTaskPane(boardPane);
+        boardPane.setPrefSize(500, 400);
+        boardPane.setPadding(new Insets(20));
 
-        CyberpunkEffects.addAnimatedBackground(taskPane);
+        CyberpunkEffects.addAnimatedBackground(boardPane);
 
         VBox headerBox = new VBox(10);
         headerBox.setAlignment(Pos.CENTER);
 
         Text descText = CyberpunkEffects.createTaskDescription("Calibrate components by repeating the sequence");
         headerBox.getChildren().addAll(descText);
-        taskPane.setTop(headerBox);
+        boardPane.setTop(headerBox);
 
         GridPane circuitBoard = createCircuitBoard();
-        taskPane.setCenter(circuitBoard);
+        boardPane.setCenter(circuitBoard);
 
         statusLabel = new Label("MEMORIZE SEQUENCE");
         statusLabel.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 16));
@@ -92,10 +90,10 @@ public class CalibrationTask extends GameTask {
         VBox bottomPanel = new VBox(15);
         bottomPanel.setAlignment(Pos.CENTER);
         bottomPanel.getChildren().addAll(statusLabel, resetButton);
-        taskPane.setBottom(bottomPanel);
+        boardPane.setBottom(bottomPanel);
         BorderPane.setMargin(bottomPanel, new Insets(20, 0, 10, 0));
 
-        gamePane.getChildren().add(taskPane);
+        gamePane.getChildren().add(boardPane);
 
         PauseTransition startDelay = new PauseTransition(Duration.seconds(1));
         startDelay.setOnFinished(e -> showSequence());
@@ -342,7 +340,7 @@ public class CalibrationTask extends GameTask {
         statusLabel.setText("CALIBRATION COMPLETE");
         statusLabel.setTextFill(Color.web("#00FF00"));
 
-        CyberpunkEffects.styleCompletionEffect(taskPane);
+        CyberpunkEffects.styleCompletionEffect(boardPane);
 
         Timeline successAnim = new Timeline();
 

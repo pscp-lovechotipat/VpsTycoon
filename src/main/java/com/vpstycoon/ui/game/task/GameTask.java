@@ -14,7 +14,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
-import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
@@ -23,45 +22,34 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class GameTask {
-    protected final ResourceManager resourceManager = ResourceManager.getInstance();
-    protected final Random random = new Random();
-
-    private String taskName;
-    private String taskDescription;
-    private int rewardAmount;
-    private int penaltyRating;
-    private int difficultyLevel;
-    private int timeLimit;
-    protected boolean completed = false;
-    protected boolean failed = false;
-    protected Runnable onCompleteCallback;
-
-    protected double managementEfficiency = 1.0;
-    protected int managementLevel = 1;
-
-    protected StackPane taskContainer;
-
-    protected ProgressBar timerBar;
-    protected Label timerLabel;
-
-    protected Pane taskPane;
-    protected BorderPane contentPane;
-    protected StackPane gamePane;
-    protected VBox controlPane;
-
+    private static final Object taskLock = new Object();
     private static boolean isTaskActive = false;
 
-    private static final Object taskLock = new Object();
+    protected final Random random = new Random();
+    private final ResourceManager resourceManager = ResourceManager.getInstance();
+
+    private final String taskName;
+    private final String taskDescription;
+    private final int rewardAmount;
+    private final int penaltyRating;
+    private final int difficultyLevel;
+    private int timeLimit;
+    private volatile boolean completed = false;
+    private volatile boolean failed = false;
+    private Runnable onCompleteCallback;
+
+    private double managementEfficiency = 1.0;
+    private int managementLevel = 1;
+
+    private StackPane taskContainer;
+    private ProgressBar timerBar;
+    private Label timerLabel;
+    private Pane taskPane;
+    protected StackPane gamePane;
 
     private Thread timerThread;
-
-    private AudioClip taskStartSound;
-    private AudioClip taskCompleteSound;
-    private AudioClip taskFailSound;
-    private AudioClip taskTickSound;
 
     public GameTask(String taskName, String taskDescription, int rewardAmount, int penaltyRating, int difficultyLevel, int timeLimit) {
         this.taskName = taskName;
@@ -71,60 +59,13 @@ public abstract class GameTask {
         this.difficultyLevel = difficultyLevel;
         this.timeLimit = timeLimit;
 
-        loadSoundEffects();
-
-        SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
+        SkillPointsSystem skillPointsSystem = resourceManager.getSkillPointsSystem();
         if (skillPointsSystem != null) {
             managementEfficiency = skillPointsSystem.getManagementEfficiency();
             managementLevel = skillPointsSystem.getSkillLevel(SkillPointsSystem.SkillType.MANAGEMENT);
 
             if (managementLevel > 1) {
-                timeLimit = (int)(timeLimit * (1.0 + (managementEfficiency - 1.0) * 0.5));
-            }
-        }
-    }
-
-    private void loadSoundEffects() {
-        String[][] soundPaths = {
-            {"/sounds/task_start.mp3", "/audio/task_start.mp3", "/sfx/task_start.mp3"},
-            {"/sounds/task_complete.mp3", "/audio/task_complete.mp3", "/sfx/task_complete.mp3"},
-            {"/sounds/task_fail.mp3", "/audio/task_fail.mp3", "/sfx/task_fail.mp3"},
-            {"/sounds/task_tick.mp3", "/audio/task_tick.mp3", "/sfx/task_tick.mp3"}
-        };
-
-        try {
-            taskStartSound = loadSoundWithFallback(soundPaths[0]);
-
-            taskCompleteSound = loadSoundWithFallback(soundPaths[1]);
-
-            taskFailSound = loadSoundWithFallback(soundPaths[2]);
-
-            taskTickSound = loadSoundWithFallback(soundPaths[3]);
-        } catch (Exception e) {
-            log("Could not load sound effects: " + e.getMessage());
-        }
-    }
-
-    private AudioClip loadSoundWithFallback(String[] paths) {
-        for (String path : paths) {
-            try {
-                java.net.URL resource = getClass().getResource(path);
-                if (resource != null) {
-                    return new AudioClip(resource.toExternalForm());
-                }
-            } catch (Exception _) {
-            }
-        }
-
-        return null;
-    }
-
-    private void safePlaySound(AudioClip clip, double volume) {
-        if (clip != null) {
-            try {
-                clip.play(volume);
-            } catch (Exception e) {
-                log("Error playing sound: " + e.getMessage());
+                this.timeLimit = (int) (timeLimit * (1.0 + (managementEfficiency - 1.0) * 0.5));
             }
         }
     }
@@ -135,7 +76,7 @@ public abstract class GameTask {
 
     public void showTask(Runnable onComplete) {
         try {
-            synchronized(taskLock) {
+            synchronized (taskLock) {
                 if (isTaskActive) {
                     log("Cannot show task. Another task is currently active.");
                     return;
@@ -151,8 +92,6 @@ public abstract class GameTask {
 
             log("Starting task: " + getTaskName());
             this.onCompleteCallback = onComplete;
-
-            safePlaySound(taskStartSound, 0.8);
 
             Platform.runLater(() -> {
                 try {
@@ -206,7 +145,7 @@ public abstract class GameTask {
             System.err.println("[GAMETASK] Error showing task: " + e.getMessage());
             e.printStackTrace();
 
-            synchronized(taskLock) {
+            synchronized (taskLock) {
                 isTaskActive = false;
             }
 
@@ -219,7 +158,7 @@ public abstract class GameTask {
         }
     }
 
-    protected void initializeUI() {
+    private void initializeUI() {
         StackPane mainContainer = new StackPane();
         mainContainer.setAlignment(Pos.CENTER);
 
@@ -227,7 +166,7 @@ public abstract class GameTask {
         mainContainer.setMaxSize(800, 700);
         mainContainer.setMinSize(800, 700);
 
-        contentPane = new BorderPane();
+        BorderPane contentPane = new BorderPane();
         contentPane.setPrefSize(800, 580);
         contentPane.setMaxSize(800, 580);
 
@@ -276,8 +215,6 @@ public abstract class GameTask {
         };
         LinearGradient gradient = new LinearGradient(0, 0, 1, 0, true, CycleMethod.NO_CYCLE, stops);
 
-        Rectangle timerFill = new Rectangle(0, 0, 700, 15);
-        timerFill.setFill(gradient);
         timerBar.setStyle(
             "-fx-accent: " + toRGBCode(gradient.getStops().get(0).getColor()) + ";" +
             "-fx-background-color: #1a1a2a;" +
@@ -289,19 +226,7 @@ public abstract class GameTask {
         timerLabel = CyberpunkEffects.createGlowingLabel(timeLimit + "s", "#00FFFF");
 
         Button closeButton = CyberpunkEffects.createCyberpunkButton("ABORT TASK", false);
-        closeButton.setOnAction(e -> {
-            failed = true;
-
-            CyberpunkEffects.styleFailureEffect(gamePane);
-
-            applyPenalty();
-
-            cleanupTask();
-
-            if (onCompleteCallback != null) {
-                onCompleteCallback.run();
-            }
-        });
+        closeButton.setOnAction(e -> failTask());
 
         Label rewardLabel = new Label("REWARD: " + rewardAmount);
 
@@ -323,10 +248,6 @@ public abstract class GameTask {
         gamePane.setMaxHeight(480);
 
         CyberpunkEffects.addScanningEffect(gamePane);
-
-        controlPane = new VBox(10);
-        controlPane.setAlignment(Pos.CENTER);
-        controlPane.setPadding(new Insets(10));
 
         contentPane.setTop(headerBox);
         contentPane.setCenter(gamePane);
@@ -352,7 +273,7 @@ public abstract class GameTask {
         footerContent.getChildren().addAll(timerBox, actionBox);
         footerPane.getChildren().add(footerContent);
 
-        headerBox.setPadding(new Insets(15,0,0,0));
+        headerBox.setPadding(new Insets(15, 0, 0, 0));
 
         BorderPane.setAlignment(headerBox, Pos.TOP_CENTER);
         BorderPane.setAlignment(gamePane, Pos.CENTER);
@@ -391,7 +312,6 @@ public abstract class GameTask {
     private void startTimer() {
         timerThread = new Thread(() -> {
             int remainingTime = timeLimit;
-            AtomicBoolean playedWarningSound = new AtomicBoolean(false);
 
             while (remainingTime > 0 && !completed && !failed) {
                 final int currentTime = remainingTime;
@@ -406,9 +326,6 @@ public abstract class GameTask {
                         if (progress < 0.25) {
                             timerBar.setStyle("-fx-accent: #ff0000; -fx-background-color: #1a1a2a;");
                             timerLabel.setTextFill(Color.RED);
-                            if (!playedWarningSound.get()) {
-                                safePlaySound(taskTickSound, 0.5);
-                            }
                         } else if (progress < 0.5) {
                             timerBar.setStyle("-fx-accent: #ffff00; -fx-background-color: #1a1a2a;");
                             timerLabel.setTextFill(Color.YELLOW);
@@ -421,11 +338,6 @@ public abstract class GameTask {
 
                 try {
                     Thread.sleep(1000);
-
-                    if (remainingTime <= 5) {
-                        playedWarningSound.set(true);
-                        safePlaySound(taskTickSound, 0.3);
-                    }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     log("Timer interrupted");
@@ -435,37 +347,28 @@ public abstract class GameTask {
             }
 
             if (!completed && !failed) {
-                failed = true;
                 log("Time expired, task failed");
-                Platform.runLater(() -> {
-                    applyPenalty();
-                    cleanupTask();
-                    if (onCompleteCallback != null) {
-                        onCompleteCallback.run();
-                    }
-                });
+                Platform.runLater(this::failTask);
             }
         });
         timerThread.setDaemon(true);
         timerThread.start();
     }
 
-    protected void applyReward() {
+    private void applyReward() {
         GameState gameState = resourceManager.getCurrentState();
         Company company = gameState.getCompany();
 
-        long adjustedReward = (long)(rewardAmount * managementEfficiency);
+        long adjustedReward = (long) (rewardAmount * managementEfficiency);
 
         company.setMoney(company.getMoney() + adjustedReward);
 
         if (managementLevel > 1 && random.nextDouble() < 0.25 * (managementLevel - 1)) {
-            SkillPointsSystem skillSystem = ResourceManager.getInstance().getSkillPointsSystem();
+            SkillPointsSystem skillSystem = resourceManager.getSkillPointsSystem();
             if (skillSystem != null) {
                 skillSystem.addPoints(1);
             }
         }
-
-        safePlaySound(taskCompleteSound, 0.8);
 
         Platform.runLater(() -> {
             try {
@@ -474,12 +377,22 @@ public abstract class GameTask {
                 log("Error playing reward sound: " + e.getMessage());
             }
 
+            String rewardMsg = "Well done! You've successfully completed the task.\nReward: $" + adjustedReward;
             if (managementLevel > 1) {
+                int bonusPercent = (int) ((managementEfficiency - 1.0) * 100);
+                rewardMsg += " (includes " + bonusPercent + "% Management bonus)";
             }
+
+            resourceManager.pushCenterNotificationAutoClose(
+                "Task Completed: " + taskName,
+                rewardMsg,
+                "/images/notification/success.png",
+                5000
+            );
         });
     }
 
-    protected void applyPenalty() {
+    private void applyPenalty() {
         GameState gameState = resourceManager.getCurrentState();
         Company company = gameState.getCompany();
 
@@ -491,8 +404,6 @@ public abstract class GameTask {
         double newRating = Math.max(1.0, company.getRating() - adjustedPenalty);
         company.setRating(newRating);
 
-        safePlaySound(taskFailSound, 0.8);
-
         Platform.runLater(() -> {
             try {
                 resourceManager.getAudioManager().playSoundEffect("failure.mp3");
@@ -503,7 +414,7 @@ public abstract class GameTask {
             String penaltyMsg = "You failed to complete the task in time.\nRating dropped to: " + String.format("%.1f", newRating);
 
             if (managementLevel > 1) {
-                int protectionPercent = (int)(penaltyReduction * 100);
+                int protectionPercent = (int) (penaltyReduction * 100);
                 penaltyMsg += " (" + protectionPercent + "% penalty reduction from Management skill)";
             }
 
@@ -565,10 +476,6 @@ public abstract class GameTask {
         return rewardAmount;
     }
 
-    public double getPenaltyRating() {
-        return penaltyRating;
-    }
-
     public int getDifficultyLevel() {
         return difficultyLevel;
     }
@@ -585,11 +492,19 @@ public abstract class GameTask {
         return failed;
     }
 
+    protected double getManagementEfficiency() {
+        return managementEfficiency;
+    }
+
+    protected int getManagementLevel() {
+        return managementLevel;
+    }
+
     protected void log(String message) {
         System.out.println("[" + getTaskName() + "] " + message);
     }
 
-    protected void debugEvent(String eventName, int secondsFromNow) {
+    private void debugEvent(String eventName, int secondsFromNow) {
         System.out.println("[DEBUG][" + getTaskName() + "] " + eventName + " จะเกิดขึ้นในอีก " + secondsFromNow + " วินาที");
     }
 
@@ -598,15 +513,13 @@ public abstract class GameTask {
             timerThread.interrupt();
         }
 
-        synchronized(taskLock) {
+        synchronized (taskLock) {
             isTaskActive = false;
         }
 
         timerBar = null;
         timerLabel = null;
         gamePane = null;
-        controlPane = null;
-        contentPane = null;
         taskPane = null;
     }
 }

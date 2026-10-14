@@ -213,15 +213,4 @@ public class Company implements Serializable {
             e.printStackTrace();
         }
     }
-
-    public void reduceRating(double amount) {
-        if (amount > 0) {
-            double oldRating = this.rating;
-            this.rating = Math.max(0, this.rating - amount);
-
-            if (oldRating != this.rating) {
-                notifyRatingObservers();
-            }
-        }
-    }
 }

@@ -26,7 +26,6 @@ import java.util.logging.Logger;
 
 public class NetworkRoutingTask extends GameTask {
     private static final Logger LOGGER = Logger.getLogger(NetworkRoutingTask.class.getName());
-    private static final Random random = new Random();
 
     private static final int NUM_NODES = 7;
 
@@ -40,7 +39,7 @@ public class NetworkRoutingTask extends GameTask {
     private NetworkNode sourceNode;
     private NetworkNode destinationNode;
     private boolean pathCompleted = false;
-    private BorderPane taskPane;
+    private BorderPane boardPane;
 
     public NetworkRoutingTask() {
         super(
@@ -51,10 +50,10 @@ public class NetworkRoutingTask extends GameTask {
     @Override
     protected void initializeTaskSpecifics() {
         try {
-            taskPane = new BorderPane();
-            taskPane.setStyle("-fx-background-color: linear-gradient(to bottom, #0A0A2A, #1A1A4A); -fx-border-color: #00FFFF; -fx-border-width: 2px; -fx-background-radius: 5px; -fx-border-radius: 5px;");
-            taskPane.setPrefSize(650, 500);
-            taskPane.setPadding(new Insets(20));
+            boardPane = new BorderPane();
+            boardPane.setStyle("-fx-background-color: linear-gradient(to bottom, #0A0A2A, #1A1A4A); -fx-border-color: #00FFFF; -fx-border-width: 2px; -fx-background-radius: 5px; -fx-border-radius: 5px;");
+            boardPane.setPrefSize(650, 500);
+            boardPane.setPadding(new Insets(20));
 
             VBox headerBox = new VBox(10);
             headerBox.setAlignment(Pos.CENTER);
@@ -74,7 +73,7 @@ public class NetworkRoutingTask extends GameTask {
             descText.setFill(Color.web("#CCECFF"));
 
             headerBox.getChildren().addAll(titleText, descText);
-            taskPane.setTop(headerBox);
+            boardPane.setTop(headerBox);
 
             networkPane = new Pane();
             networkPane.setPrefSize(600, 180);
@@ -108,11 +107,11 @@ public class NetworkRoutingTask extends GameTask {
 
             controlBox.getChildren().addAll(statusLabel, buttonBox);
 
-            taskPane.setCenter(networkPane);
-            taskPane.setBottom(controlBox);
+            boardPane.setCenter(networkPane);
+            boardPane.setBottom(controlBox);
             BorderPane.setMargin(controlBox, new Insets(20, 0, 20, 0));
 
-            gamePane.getChildren().add(taskPane);
+            gamePane.getChildren().add(boardPane);
 
             highlightRequiredPath();
 
@@ -488,23 +487,23 @@ public class NetworkRoutingTask extends GameTask {
             glow.setWidth(20);
             glow.setHeight(20);
             glow.setRadius(10);
-            taskPane.setEffect(glow);
+            boardPane.setEffect(glow);
 
             Timeline flash = new Timeline(
                 new KeyFrame(Duration.ZERO,
-                    new KeyValue(taskPane.opacityProperty(), 1.0)
+                    new KeyValue(boardPane.opacityProperty(), 1.0)
                 ),
                 new KeyFrame(Duration.millis(100),
-                    new KeyValue(taskPane.opacityProperty(), 0.7)
+                    new KeyValue(boardPane.opacityProperty(), 0.7)
                 ),
                 new KeyFrame(Duration.millis(200),
-                    new KeyValue(taskPane.opacityProperty(), 1.0)
+                    new KeyValue(boardPane.opacityProperty(), 1.0)
                 ),
                 new KeyFrame(Duration.millis(300),
-                    new KeyValue(taskPane.opacityProperty(), 0.7)
+                    new KeyValue(boardPane.opacityProperty(), 0.7)
                 ),
                 new KeyFrame(Duration.millis(400),
-                    new KeyValue(taskPane.opacityProperty(), 1.0)
+                    new KeyValue(boardPane.opacityProperty(), 1.0)
                 )
             );
 

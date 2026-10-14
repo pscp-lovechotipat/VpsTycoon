@@ -1,7 +1,5 @@
 package com.vpstycoon.ui.game.task;
 
-import com.vpstycoon.manager.ResourceManager;
-import com.vpstycoon.model.company.SkillPointsSystem;
 import com.vpstycoon.ui.common.CyberpunkEffects;
 import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
@@ -27,12 +25,9 @@ import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ServerCoolingTask extends GameTask {
-    private static final Random random = new Random();
-
     private static final int NUM_SERVERS = 4;
     private static final double MAX_TEMPERATURE = 100.0;
     private static final double CRITICAL_TEMP = 90.0;
@@ -51,27 +46,18 @@ public class ServerCoolingTask extends GameTask {
     private ProgressBar powerBar;
     private Label powerLabel;
     private Label statusLabel;
-    private BorderPane taskPane;
+    private BorderPane boardPane;
     private final AtomicBoolean running = new AtomicBoolean(true);
     private Thread temperatureThread;
     private Thread autoAssistThread;
-
-    private double managementEfficiency = 1.0;
-    private int managementLevel = 1;
 
     public ServerCoolingTask() {
         super(
                 "Server Cooling", "Manage cooling systems to prevent server overheating", 6500, 30, 3, 60
         );
 
-        SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
-        if (skillPointsSystem != null) {
-            managementEfficiency = skillPointsSystem.getManagementEfficiency();
-            managementLevel = skillPointsSystem.getSkillLevel(SkillPointsSystem.SkillType.MANAGEMENT);
-        }
-
         for (int i = 0; i < NUM_SERVERS; i++) {
-            double temperatureReduction = (managementEfficiency - 1.0) * 15.0;
+            double temperatureReduction = (getManagementEfficiency() - 1.0) * 15.0;
             double baseTemp = 60.0 + random.nextDouble() * 25.0;
             double adjustedTemp = Math.max(50.0, baseTemp - temperatureReduction);
             serverTemperatures.add(adjustedTemp);
@@ -81,21 +67,21 @@ public class ServerCoolingTask extends GameTask {
 
     @Override
     protected void initializeTaskSpecifics() {
-        taskPane = new BorderPane();
-        CyberpunkEffects.styleTaskPane(taskPane);
-        taskPane.setPrefSize(600, 450);
-        taskPane.setPadding(new Insets(20));
+        boardPane = new BorderPane();
+        CyberpunkEffects.styleTaskPane(boardPane);
+        boardPane.setPrefSize(600, 450);
+        boardPane.setPadding(new Insets(20));
 
-        CyberpunkEffects.addAnimatedBackground(taskPane);
+        CyberpunkEffects.addAnimatedBackground(boardPane);
 
         VBox headerBox = new VBox(10);
         headerBox.setAlignment(Pos.CENTER);
         Text titleText = CyberpunkEffects.createTaskTitle("SERVER COOLING MANAGEMENT");
         Text descText = CyberpunkEffects.createTaskDescription("Balance cooling resources to stabilize server temperatures");
 
-        if (managementLevel > 1) {
-            Text managementText = new Text("Management Skill Level " + managementLevel +
-                                         " (+" + (int)((managementEfficiency - 1.0) * 100) + "% Efficiency)");
+        if (getManagementLevel() > 1) {
+            Text managementText = new Text("Management Skill Level " + getManagementLevel() +
+                                         " (+" + (int)((getManagementEfficiency() - 1.0) * 100) + "% Efficiency)");
             managementText.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 14));
             managementText.setFill(Color.web("#39FF14"));
             headerBox.getChildren().addAll(titleText, descText, managementText);
@@ -151,15 +137,15 @@ public class ServerCoolingTask extends GameTask {
         buttonBox.getChildren().addAll(emergencyButton, balanceButton);
         centerContent.getChildren().add(buttonBox);
 
-        taskPane.setCenter(centerContent);
+        boardPane.setCenter(centerContent);
 
-        CyberpunkEffects.addScanningEffect(taskPane);
+        CyberpunkEffects.addScanningEffect(boardPane);
 
-        gamePane.getChildren().add(taskPane);
+        gamePane.getChildren().add(boardPane);
 
         startTemperatureSimulation();
 
-        if (managementLevel >= 3) {
+        if (getManagementLevel() >= 3) {
             startAutoAssist();
         }
     }
@@ -239,7 +225,6 @@ public class ServerCoolingTask extends GameTask {
                     }
 
                     if (checkAllServersSafe()) {
-                        completed = true;
                         Platform.runLater(this::completeTask);
                         break;
                     }
@@ -258,7 +243,7 @@ public class ServerCoolingTask extends GameTask {
 
     private void updateTemperatures() {
         Platform.runLater(() -> {
-            double baseHeatIncrease = 0.3 / managementEfficiency;
+            double baseHeatIncrease = 0.3 / getManagementEfficiency();
 
             for (int i = 0; i < NUM_SERVERS; i++) {
                 double heatChange = baseHeatIncrease - coolingRates.get(i) * 0.15;
@@ -292,7 +277,7 @@ public class ServerCoolingTask extends GameTask {
     }
 
     private void activateEmergencyCooling() {
-        double emergencyCost = 30.0 / managementEfficiency;
+        double emergencyCost = 30.0 / getManagementEfficiency();
 
         if (totalPower < emergencyCost) {
             statusLabel.setText("INSUFFICIENT POWER FOR EMERGENCY COOLING");
@@ -312,7 +297,7 @@ public class ServerCoolingTask extends GameTask {
 
         totalPower -= emergencyCost;
 
-        double coolingBoost = MAX_COOLING_EFFECT * (1.0 + (managementEfficiency - 1.0) * 0.5);
+        double coolingBoost = MAX_COOLING_EFFECT * (1.0 + (getManagementEfficiency() - 1.0) * 0.5);
 
         for (int i = 0; i < NUM_SERVERS; i++) {
             coolingRates.set(i, coolingBoost);
@@ -326,13 +311,13 @@ public class ServerCoolingTask extends GameTask {
         blueGlow.setColor(Color.web("#00FFFF"));
         blueGlow.setRadius(20);
         blueGlow.setSpread(0.5);
-        taskPane.setEffect(blueGlow);
+        boardPane.setEffect(blueGlow);
 
-        int duration = 5 + (int)((managementEfficiency - 1.0) * 5.0);
+        int duration = 5 + (int)((getManagementEfficiency() - 1.0) * 5.0);
 
         Timeline resetTimeline = new Timeline(
             new KeyFrame(Duration.seconds(duration), e -> {
-                taskPane.setEffect(null);
+                boardPane.setEffect(null);
                 statusLabel.setText("EMERGENCY COOLING DEACTIVATED");
 
                 for (Slider slider : coolingSliders) {
@@ -350,7 +335,7 @@ public class ServerCoolingTask extends GameTask {
             totalNeeded += needed;
         }
 
-        double autoBalanceBonus = 1.0 + (managementEfficiency - 1.0) * 0.5;
+        double autoBalanceBonus = 1.0 + (getManagementEfficiency() - 1.0) * 0.5;
         double scaleFactor = Math.min(1.0, 4.0 * autoBalanceBonus / totalNeeded);
 
         for (int i = 0; i < NUM_SERVERS; i++) {
@@ -366,7 +351,7 @@ public class ServerCoolingTask extends GameTask {
 
         double powerUsage = coolingRates.stream().mapToDouble(Double::doubleValue).sum() * 25 - NUM_SERVERS * 25;
 
-        powerUsage = powerUsage / (1.0 + (managementEfficiency - 1.0) * 0.3);
+        powerUsage = powerUsage / (1.0 + (getManagementEfficiency() - 1.0) * 0.3);
 
         totalPower = 100.0 - powerUsage;
         updatePowerDisplay();
@@ -383,7 +368,7 @@ public class ServerCoolingTask extends GameTask {
                     statusLabel.setText("SERVER " + failedServer + " CRITICAL FAILURE!");
                     statusLabel.setTextFill(Color.web("#FF0000"));
 
-                    CyberpunkEffects.styleFailureEffect(taskPane);
+                    CyberpunkEffects.styleFailureEffect(boardPane);
 
                     failTask();
                 });
@@ -466,7 +451,7 @@ public class ServerCoolingTask extends GameTask {
         autoAssistThread = new Thread(() -> {
             while (running.get()) {
                 try {
-                    double assistChance = managementLevel == 3 ? 0.15 : 0.30;
+                    double assistChance = getManagementLevel() == 3 ? 0.15 : 0.30;
 
                     if (random.nextDouble() < assistChance) {
                         int hottestServerIndex = findHottestServerIndex();
@@ -478,7 +463,7 @@ public class ServerCoolingTask extends GameTask {
 
                                 animateSliderValue(coolingSliders.get(hottestServerIndex), 2.0);
 
-                                String assistMessage = managementLevel == 3 ?
+                                String assistMessage = getManagementLevel() == 3 ?
                                     "Management Assistant stabilizing Server " + (hottestServerIndex + 1) :
                                     "Advanced Management AI optimizing Server " + (hottestServerIndex + 1);
 

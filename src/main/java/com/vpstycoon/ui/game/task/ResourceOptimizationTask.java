@@ -22,11 +22,9 @@ import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class ResourceOptimizationTask extends GameTask {
     private static final int NUM_RESOURCES = 4;
-    private static final Random random = new Random();
 
     private final List<Double> targetValues = new ArrayList<>();
 
@@ -46,19 +44,19 @@ public class ResourceOptimizationTask extends GameTask {
 
     @Override
     protected void initializeTaskSpecifics() {
-        BorderPane taskPane = new BorderPane();
-        CyberpunkEffects.styleTaskPane(taskPane);
-        taskPane.setPrefSize(600, 400);
-        taskPane.setPadding(new Insets(20));
+        BorderPane boardPane = new BorderPane();
+        CyberpunkEffects.styleTaskPane(boardPane);
+        boardPane.setPrefSize(600, 400);
+        boardPane.setPadding(new Insets(20));
 
-        CyberpunkEffects.addAnimatedBackground(taskPane);
+        CyberpunkEffects.addAnimatedBackground(boardPane);
 
         VBox headerBox = new VBox(10);
         headerBox.setAlignment(Pos.CENTER);
         Text titleText = CyberpunkEffects.createTaskTitle("RESOURCE OPTIMIZATION SYSTEMS");
         Text descText = CyberpunkEffects.createTaskDescription("Adjust resource allocation sliders to match optimal levels");
         headerBox.getChildren().addAll(titleText, descText);
-        taskPane.setTop(headerBox);
+        boardPane.setTop(headerBox);
 
         VBox slidersContainer = new VBox(15);
         slidersContainer.setPadding(new Insets(20, 0, 20, 0));
@@ -148,15 +146,15 @@ public class ResourceOptimizationTask extends GameTask {
         bottomBox.setAlignment(Pos.CENTER);
         bottomBox.getChildren().addAll(systemStatusLabel, optimizeButton);
 
-        CyberpunkEffects.addScanningEffect(taskPane);
+        CyberpunkEffects.addScanningEffect(boardPane);
 
-        taskPane.setCenter(slidersContainer);
-        taskPane.setBottom(bottomBox);
+        boardPane.setCenter(slidersContainer);
+        boardPane.setBottom(bottomBox);
         BorderPane.setMargin(bottomBox, new Insets(0, 0, 20, 0));
 
-        addInstructionsWithGlitch(taskPane);
+        addInstructionsWithGlitch(boardPane);
 
-        gamePane.getChildren().add(taskPane);
+        gamePane.getChildren().add(boardPane);
     }
 
     private void addInstructionsWithGlitch(Pane pane) {

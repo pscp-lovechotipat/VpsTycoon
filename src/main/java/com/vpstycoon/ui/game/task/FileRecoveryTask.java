@@ -19,7 +19,6 @@ import javafx.util.Duration;
 import java.util.*;
 
 public class FileRecoveryTask extends GameTask {
-    private static final Random random = new Random();
     private static final int GRID_SIZE = 3;
     private static final int NUM_FRAGMENTS = GRID_SIZE * GRID_SIZE;
 
@@ -31,7 +30,7 @@ public class FileRecoveryTask extends GameTask {
     private StackPane selectedFragment = null;
     private Label statusLabel;
     private int recoveredCount = 0;
-    private BorderPane taskPane;
+    private BorderPane boardPane;
 
     public FileRecoveryTask() {
         super(
@@ -65,12 +64,12 @@ public class FileRecoveryTask extends GameTask {
 
     @Override
     protected void initializeTaskSpecifics() {
-        taskPane = new BorderPane();
-        CyberpunkEffects.styleTaskPane(taskPane);
-        taskPane.setPrefSize(600, 500);
-        taskPane.setPadding(new Insets(20));
+        boardPane = new BorderPane();
+        CyberpunkEffects.styleTaskPane(boardPane);
+        boardPane.setPrefSize(600, 500);
+        boardPane.setPadding(new Insets(20));
 
-        CyberpunkEffects.addAnimatedBackground(taskPane);
+        CyberpunkEffects.addAnimatedBackground(boardPane);
 
         VBox headerBox = new VBox(10);
         headerBox.setAlignment(Pos.CENTER);
@@ -78,7 +77,7 @@ public class FileRecoveryTask extends GameTask {
 
         Text descText = CyberpunkEffects.createTaskDescription("Repair corrupted file fragments to recover data");
         headerBox.getChildren().addAll(descText);
-        taskPane.setTop(headerBox);
+        boardPane.setTop(headerBox);
 
         VBox centerContent = new VBox(20);
         centerContent.setAlignment(Pos.CENTER);
@@ -107,11 +106,11 @@ public class FileRecoveryTask extends GameTask {
         buttonArea.getChildren().addAll(resetButton, verifyButton);
         centerContent.getChildren().add(buttonArea);
 
-        taskPane.setCenter(centerContent);
+        boardPane.setCenter(centerContent);
 
-        CyberpunkEffects.addScanningEffect(taskPane);
+        CyberpunkEffects.addScanningEffect(boardPane);
 
-        gamePane.getChildren().add(taskPane);
+        gamePane.getChildren().add(boardPane);
 
         PauseTransition initialDelay = new PauseTransition(Duration.seconds(1.5));
         initialDelay.setOnFinished(e -> {
@@ -371,7 +370,7 @@ public class FileRecoveryTask extends GameTask {
     private void showCompletionSequence() {
         statusLabel.setText("FILE SUCCESSFULLY RECOVERED");
 
-        CyberpunkEffects.styleCompletionEffect(taskPane);
+        CyberpunkEffects.styleCompletionEffect(boardPane);
 
         ParallelTransition successAnimation = new ParallelTransition();
 
