@@ -24,8 +24,6 @@ public class GameState implements Serializable {
 
     private Company company;
 
-    private final Map<String, Integer> resources;
-    private final Map<String, Boolean> upgrades;
 
     private List<GameObject> gameObjects;
 
@@ -46,8 +44,6 @@ public class GameState implements Serializable {
     public GameState() {
         this.company = ResourceManager.getInstance().getCompany();
 
-        this.resources = new HashMap<>();
-        this.upgrades = new HashMap<>();
         this.gameObjects = new ArrayList<>();
 
         this.rackConfiguration = new HashMap<>();
@@ -65,8 +61,6 @@ public class GameState implements Serializable {
 
     public GameState(Company company, List<GameObject> gameObjects) {
         this.company = company;
-        this.resources = new HashMap<>();
-        this.upgrades = new HashMap<>();
         this.gameObjects = new ArrayList<>(gameObjects != null ? gameObjects : new ArrayList<>());
 
         this.rackConfiguration = new HashMap<>();
@@ -83,8 +77,6 @@ public class GameState implements Serializable {
 
     public GameState(Company company) {
         this.company = company;
-        this.resources = new HashMap<>();
-        this.upgrades = new HashMap<>();
         this.gameObjects = new ArrayList<>();
 
         this.rackConfiguration = new HashMap<>();
@@ -218,8 +210,6 @@ public class GameState implements Serializable {
     }
 
     public void clearState() {
-        resources.clear();
-        upgrades.clear();
 
         if (gameObjects != null) {
             gameObjects.clear();

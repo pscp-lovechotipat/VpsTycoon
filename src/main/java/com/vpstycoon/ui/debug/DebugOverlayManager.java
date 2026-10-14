@@ -1,6 +1,6 @@
 package com.vpstycoon.ui.debug;
 
-import com.vpstycoon.game.GameState;
+import com.vpstycoon.game.resource.ResourceManager;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,7 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-public class DebugOverlayManager extends GameState {
+public class DebugOverlayManager {
     private final VBox debugOverlay;
     private final Label fpsLabel;
     private final Label mouseLabel;
@@ -72,10 +72,10 @@ public class DebugOverlayManager extends GameState {
         }
     }
 
-    public void updateGameInfo( StackPane gameArea) {
+    public void updateGameInfo(StackPane gameArea) {
         if (!showDebug) return;
 
-        moneyLabel.setText(String.format("Money: %d", super.getCompany().getMoney()));
+        moneyLabel.setText(String.format("Money: %d", ResourceManager.getInstance().getCompany().getMoney()));
 
         if (!gameArea.getChildren().isEmpty() && gameArea.getChildren().getFirst() instanceof Group worldGroup) {
             zoomLabel.setText(String.format("Zoom: %.2fx", worldGroup.getScaleY()));

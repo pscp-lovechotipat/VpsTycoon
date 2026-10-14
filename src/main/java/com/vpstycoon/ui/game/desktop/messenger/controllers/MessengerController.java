@@ -21,7 +21,6 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.StackPane;
 
 import java.util.*;
@@ -43,7 +42,6 @@ public class MessengerController {
     private final GameTimeManager gameTimeManager;
     private Runnable onClose;
     private final Map<VPSOptimization.VM, CustomerRequest> vmAssignments = new HashMap<>();
-    private final Map<CustomerRequest, ProgressBar> provisioningProgressBars = new HashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final VMProvisioningManager vmProvisioningManager;
     private final RentalManager rentalManager;
@@ -69,7 +67,7 @@ public class MessengerController {
         this.chatAreaView = messengerWindow.getChatAreaView();
         this.dashboardView = messengerWindow.getDashboardView();
 
-        this.vmProvisioningManager = new VMProvisioningManager(chatHistoryManager, chatAreaView, provisioningProgressBars);
+        this.vmProvisioningManager = new VMProvisioningManager(chatHistoryManager, chatAreaView);
         this.rentalManager = new RentalManager(chatHistoryManager, chatAreaView, company, gameTimeManager);
         this.skillPointsManager = new SkillPointsManager(chatHistoryManager, chatAreaView, ResourceManager.getInstance().getSkillPointsSystem());
 
@@ -1057,7 +1055,6 @@ public class MessengerController {
         }
 
         vmAssignments.clear();
-        provisioningProgressBars.clear();
 
         System.out.println("MessengerController cleanup completed");
     }

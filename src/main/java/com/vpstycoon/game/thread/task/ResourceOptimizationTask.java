@@ -28,9 +28,6 @@ public class ResourceOptimizationTask extends GameTask {
     private static final Random random = new Random();
 
     private final List<Double> targetValues = new ArrayList<>();
-    private final List<Slider> sliders = new ArrayList<>();
-    private final List<Rectangle> indicators = new ArrayList<>();
-    private final List<Label> statusLabels = new ArrayList<>();
 
     private int optimizedCount = 0;
     private Label systemStatusLabel;
@@ -131,9 +128,6 @@ public class ResourceOptimizationTask extends GameTask {
             resourceBox.getChildren().addAll(nameLabel, slider, indicatorPane, statusLabel);
             slidersContainer.getChildren().add(resourceBox);
 
-            sliders.add(slider);
-            indicators.add(levelIndicator);
-            statusLabels.add(statusLabel);
         }
 
         systemStatusLabel = new Label("SYSTEM EFFICIENCY: 0%");

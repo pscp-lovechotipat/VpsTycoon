@@ -20,16 +20,13 @@ import java.util.*;
 public class VMProvisioningManager {
     private final ChatHistoryManager chatHistoryManager;
     private final ChatAreaView chatAreaView;
-    private final Map<CustomerRequest, ProgressBar> provisioningProgressBars;
     private final Random random = new Random();
 
     private final SkillPointsSystem skillPointsSystem;
 
-    public VMProvisioningManager(ChatHistoryManager chatHistoryManager, ChatAreaView chatAreaView,
-                                 Map<CustomerRequest, ProgressBar> provisioningProgressBars) {
+    public VMProvisioningManager(ChatHistoryManager chatHistoryManager, ChatAreaView chatAreaView) {
         this.chatHistoryManager = chatHistoryManager;
         this.chatAreaView = chatAreaView;
-        this.provisioningProgressBars = provisioningProgressBars;
 
         this.skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
     }
@@ -63,7 +60,6 @@ public class VMProvisioningManager {
         progressContainer.getChildren().add(progressBox);
 
         Platform.runLater(() -> chatAreaView.getMessagesBox().getChildren().add(progressContainer));
-        provisioningProgressBars.put(request, progressBar);
 
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("startTime", startTime);
@@ -85,7 +81,6 @@ public class VMProvisioningManager {
 
                     if (progress[0] >= totalSteps) {
                         this.cancel();
-                        provisioningProgressBars.remove(request);
 
                         sendVMDetails(request, vm);
                         timeRemainingLabel.setText("VM provisioning completed.");

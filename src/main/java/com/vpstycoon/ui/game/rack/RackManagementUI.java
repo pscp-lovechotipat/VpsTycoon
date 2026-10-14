@@ -24,12 +24,10 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RackManagementUI extends VBox implements RackUIUpdateListener {
     private final GameplayContentPane parent;
-    private final List<Pane> slotPanes = new ArrayList<>();
     private final Rack rack;
     private final Label rackInfoLabel;
     private final Label vpsListLabel;
@@ -271,7 +269,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             prevRackButton.setDisable(true);
             nextRackButton.setDisable(true);
         } else {
-            rackInfoLabel.setText(String.format("RACK %d/%d", rack.getRackIndex() + 1, rack.getMaxRacks()));
+            rackInfoLabel.setText(String.format("RACK %d/%d", rack.getCurrentRackIndex() + 1, rack.getMaxRacks()));
 
             boolean dataLoaded = false;
             GameState currentState = ResourceManager.getInstance().getCurrentState();
@@ -464,7 +462,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             }
 
             upgradeInfoLabel.setText(String.format("SERVER: %d\nSLOTS: %d/%d (%d available)\nUPGRADE COST: $%d",
-                    rack.getRackIndex() + 1,
+                    rack.getCurrentRackIndex() + 1,
                     rack.getUnlockedSlotUnits(),
                     rack.getMaxSlotUnits(),
                     availableSlots,
@@ -476,8 +474,8 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             upgradeButton.setText("UPGRADE RACK ($" + upgradeCost + ")");
 
             upgradeButton.setDisable(!hasAvailableSlots || !canAffordUpgrade);
-            prevRackButton.setDisable(rack.getRackIndex() <= 0);
-            nextRackButton.setDisable(rack.getRackIndex() >= rack.getMaxRacks() - 1);
+            prevRackButton.setDisable(rack.getCurrentRackIndex() <= 0);
+            nextRackButton.setDisable(rack.getCurrentRackIndex() >= rack.getMaxRacks() - 1);
         }
     }
 
@@ -565,7 +563,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
         Button prevRackButton = createPixelButton("◄ PREV", "#6a00ff");
         Button nextRackButton = createPixelButton("NEXT ►", "#6a00ff");
 
-        Label rackIndexLabel = new Label("RACK_" + (parent.getRack().getRackIndex() + 1));
+        Label rackIndexLabel = new Label("RACK_" + (parent.getRack().getCurrentRackIndex() + 1));
         rackIndexLabel.setStyle("""
             -fx-font-family: 'Courier New';
             -fx-font-size: 18px;
@@ -582,7 +580,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
         prevRackButton.setOnAction(e -> {
             if (parent.getRack().prevRack()) {
-                rackIndexLabel.setText("RACK_" + (parent.getRack().getRackIndex() + 1));
+                rackIndexLabel.setText("RACK_" + (parent.getRack().getCurrentRackIndex() + 1));
                 openRackInfo();
             } else {
                 parent.pushNotification("Navigation", "You are at the first rack.");
@@ -591,7 +589,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
         nextRackButton.setOnAction(e -> {
             if (parent.getRack().nextRack()) {
-                rackIndexLabel.setText("RACK_" + (parent.getRack().getRackIndex() + 1));
+                rackIndexLabel.setText("RACK_" + (parent.getRack().getCurrentRackIndex() + 1));
                 openRackInfo();
             } else {
                 parent.pushNotification("Navigation", "You are at the last rack.");
@@ -723,7 +721,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
 
                 Pane slot = createEnhancedRackSlot(i, null, i < parent.getRack().getUnlockedSlotUnits(), slotUnitHeight);
                 rackSlots.add(slot, 0, i);
-                slotPanes.add(slot);
             }
 
             slotContainer.setContent(rackSlots);
@@ -1609,21 +1606,18 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
     }
 
     private void createEnhancedRackSlots(GridPane rackSlots, int slotHeight) {
-        slotPanes.clear();
         int currentSlot = 0;
 
         for (VPSOptimization vps : parent.getVpsList()) {
             int slotsRequired = vps.getSlotsRequired();
             Pane slot = createEnhancedRackSlot(currentSlot, vps, true, slotHeight * slotsRequired);
             rackSlots.add(slot, 0, currentSlot, 1, slotsRequired);
-            slotPanes.add(slot);
             currentSlot += slotsRequired;
         }
 
         for (int i = currentSlot; i < parent.getRack().getMaxSlotUnits(); i++) {
             Pane slot = createEnhancedRackSlot(i, null, i < parent.getRack().getUnlockedSlotUnits(), slotHeight);
             rackSlots.add(slot, 0, i);
-            slotPanes.add(slot);
         }
     }
 

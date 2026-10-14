@@ -31,7 +31,6 @@ public class DataDecryptionTask extends GameTask {
     private final int codeLength;
     private int[] code;
     private int[] playerCode;
-    private List<Button> digitButtons;
     private List<Label> codeLabels;
     private Label messageLabel;
     private int currentPosition = 0;
@@ -176,7 +175,6 @@ public class DataDecryptionTask extends GameTask {
         numberPad.setStyle("-fx-background-color: rgba(10, 20, 40, 0.6); -fx-border-color: #00ccff; -fx-border-width: 1px;");
 
         HBox[] rows = new HBox[4];
-        digitButtons = new ArrayList<>();
 
         for (int i = 0; i < 4; i++) {
             rows[i] = new HBox(5);
@@ -185,12 +183,10 @@ public class DataDecryptionTask extends GameTask {
 
         for (int i = 1; i <= 9; i++) {
             Button digitButton = createDigitButton(i);
-            digitButtons.add(digitButton);
             rows[(i-1) / 3].getChildren().add(digitButton);
         }
 
         Button zeroButton = createDigitButton(0);
-        digitButtons.add(zeroButton);
         rows[3].getChildren().add(zeroButton);
 
         Button confirmButton = CyberpunkEffects.createCyberpunkButton("CONFIRM", true);
@@ -421,7 +417,6 @@ public class DataDecryptionTask extends GameTask {
 
         code = null;
         playerCode = null;
-        digitButtons.clear();
         codeLabels.clear();
         messageLabel = null;
         currentPosition = 0;

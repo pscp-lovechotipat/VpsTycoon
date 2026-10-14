@@ -50,12 +50,10 @@ public class DataSortingTask extends GameTask {
 
         log("Created data packets with shuffled priorities: " + priorities);
 
-        List<DataPacket> dataPackets = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
             int priority = priorities.get(i);
             DataPacket packet = new DataPacket(priority);
-            dataPackets.add(packet);
 
             dataGrid.add(packet.getNode(), i % 5, i / 5);
         }
