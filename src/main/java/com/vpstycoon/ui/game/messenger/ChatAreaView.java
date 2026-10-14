@@ -134,14 +134,9 @@ public class ChatAreaView extends VBox {
     public void updateChatHeader(CustomerRequest request) {
         if (request != null) {
             customerNameLabel.setText(request.getTitle().toUpperCase());
-            int nameHash = request.getName().hashCode();
-            int r = Math.abs(nameHash % 100) + 100;
-            int g = Math.abs((nameHash / 100) % 100);
-            int b = Math.abs((nameHash / 10000) % 100) + 100;
-
             HBox chatHeader = (HBox) getChildren().get(0);
             Rectangle customerAvatar = (Rectangle) chatHeader.getChildren().get(0);
-            customerAvatar.setFill(Color.rgb(r, g, b));
+            customerAvatar.setFill(CustomerAvatar.colorFor(request.getName()));
 
             customerTypeLabel.setText("[CLIENT:" + request.getName().toUpperCase() + "]");
 
@@ -266,18 +261,7 @@ public class ChatAreaView extends VBox {
         messageContainer.setPadding(new Insets(5, 0, 5, 0));
         messageContainer.getStyleClass().add("message-container");
 
-        Rectangle avatar = new Rectangle(30, 30);
-        avatar.setArcWidth(5);
-        avatar.setArcHeight(5);
-
-        int nameHash = request.getName().hashCode();
-        int r = Math.abs(nameHash % 100) + 100;
-        int g = Math.abs((nameHash / 100) % 100);
-        int b = Math.abs((nameHash / 10000) % 100) + 100;
-        Color customerColor = Color.rgb(r, g, b);
-        avatar.setFill(customerColor);
-        avatar.setStroke(Color.web("#9e33ff"));
-        avatar.setStrokeWidth(1);
+        Rectangle avatar = CustomerAvatar.create(request.getName());
 
         VBox messageBox = new VBox(3);
         Label messageLabel = new Label(message);

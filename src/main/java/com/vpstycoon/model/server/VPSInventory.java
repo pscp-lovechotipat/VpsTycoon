@@ -44,4 +44,24 @@ public class VPSInventory {
     public boolean isEmpty() {
         return inventory.isEmpty();
     }
+
+    public Map<String, Object> toSaveData() {
+        Map<String, Object> inventoryData = new HashMap<>();
+        List<String> vpsIds = getAllVPSIds();
+        inventoryData.put("vpsIds", vpsIds);
+
+        Map<String, Map<String, Object>> vpsDetails = new HashMap<>();
+        for (String vpsId : vpsIds) {
+            VPSOptimization vps = getVPS(vpsId);
+            Map<String, Object> details = new HashMap<>();
+            details.put("vCPUs", vps.getVCPUs());
+            details.put("ramInGB", vps.getRamInGB());
+            details.put("diskInGB", vps.getDiskInGB());
+            details.put("size", vps.getSize().toString());
+            details.put("name", vps.getName());
+            vpsDetails.put(vpsId, details);
+        }
+        inventoryData.put("vpsDetails", vpsDetails);
+        return inventoryData;
+    }
 }

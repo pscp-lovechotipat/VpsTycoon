@@ -351,26 +351,9 @@ public class ResourceManager {
                 }
             }
 
-            Map<String, Object> inventoryData = new HashMap<>();
-            List<String> vpsIds = vpsInventory.getAllVPSIds();
-            inventoryData.put("vpsIds", vpsIds);
+            state.setVpsInventoryData(vpsInventory.toSaveData());
 
-            Map<String, Map<String, Object>> vpsDetails = new HashMap<>();
-            for (String vpsId : vpsIds) {
-                VPSOptimization vps = vpsInventory.getVPS(vpsId);
-                Map<String, Object> details = new HashMap<>();
-                details.put("vCPUs", vps.getVCPUs());
-                details.put("ramInGB", vps.getRamInGB());
-                details.put("diskInGB", vps.getDiskInGB());
-                details.put("size", vps.getSize().toString());
-                details.put("name", vps.getName());
-                vpsDetails.put(vpsId, details);
-            }
-            inventoryData.put("vpsDetails", vpsDetails);
-
-            state.setVpsInventoryData(inventoryData);
-
-            System.out.println("บันทึกข้อมูล VPS Inventory สำเร็จ: " + vpsIds.size() + " VPS ที่ยังไม่ได้ติดตั้ง");
+            System.out.println("บันทึกข้อมูล VPS Inventory สำเร็จ: " + vpsInventory.getSize() + " VPS ที่ยังไม่ได้ติดตั้ง");
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการบันทึกข้อมูล VPS Inventory: " + e.getMessage());
             e.printStackTrace();

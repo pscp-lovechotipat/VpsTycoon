@@ -75,18 +75,7 @@ public class RequestListView extends VBox {
                     cellContent.setPadding(new Insets(8));
                     cellContent.setMinHeight(95);
 
-                    Rectangle avatar = new Rectangle(30, 30);
-                    avatar.setArcWidth(5);
-                    avatar.setArcHeight(5);
-
-                    int nameHash = request.getName().hashCode();
-                    int r = Math.abs(nameHash % 100) + 100;
-                    int g = Math.abs((nameHash / 100) % 100);
-                    int b = Math.abs((nameHash / 10000) % 100) + 100;
-                    Color customerColor = Color.rgb(r, g, b);
-                    avatar.setFill(customerColor);
-                    avatar.setStroke(Color.web("#9e33ff"));
-                    avatar.setStrokeWidth(1);
+                    Rectangle avatar = CustomerAvatar.create(request.getName());
 
                     DropShadow dropShadow = new DropShadow();
                     dropShadow.setColor(Color.web("#9e33ff", 0.5));

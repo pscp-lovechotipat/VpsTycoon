@@ -267,27 +267,7 @@ public class CenterNotificationView extends StackPane {
             if (model.hasNotifications()) {
                 CenterNotificationModel.Notification next = model.getNextNotification();
                 if (next != null) {
-                    StackPane overlay = new StackPane();
-                    overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
-                    overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
-
-                    VBox notificationPane = createNotificationPane(next.getTitle(), next.getContent(), next.getImage());
-
-                    overlay.getChildren().add(notificationPane);
-                    StackPane.setAlignment(notificationPane, Pos.CENTER);
-
-                    overlay.setOnMouseClicked(e -> {
-                        if (!notificationPane.getBoundsInParent().contains(e.getX(), e.getY())) {
-                            fadeOutAndRemove(overlay);
-                        }
-                    });
-
-                    notificationPane.setOnMouseClicked(e -> e.consume());
-
-                    getChildren().add(overlay);
-                    currentOverlay = overlay;
-
-                    playFadeInAnimation(notificationPane);
+                    showOverlay(next);
                 }
             }
         } catch (Exception e) {
@@ -300,27 +280,7 @@ public class CenterNotificationView extends StackPane {
         if (model.hasNotifications() && currentOverlay == null) {
             CenterNotificationModel.Notification next = model.getNextNotification();
             if (next != null) {
-                StackPane overlay = new StackPane();
-                overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
-                overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
-
-                VBox notificationPane = createNotificationPane(next.getTitle(), next.getContent(), next.getImage());
-
-                overlay.getChildren().add(notificationPane);
-                StackPane.setAlignment(notificationPane, Pos.CENTER);
-
-                overlay.setOnMouseClicked(e -> {
-                    if (!notificationPane.getBoundsInParent().contains(e.getX(), e.getY())) {
-                        fadeOutAndRemove(overlay);
-                    }
-                });
-
-                notificationPane.setOnMouseClicked(e -> e.consume());
-
-                getChildren().add(overlay);
-                currentOverlay = overlay;
-
-                playFadeInAnimation(notificationPane);
+                StackPane overlay = showOverlay(next);
 
                 Thread autoCloseThread = new Thread(() -> {
                     try {
@@ -391,5 +351,30 @@ public class CenterNotificationView extends StackPane {
                 ex.printStackTrace();
             }
         }
+    }
+
+    private StackPane showOverlay(CenterNotificationModel.Notification next) {
+        StackPane overlay = new StackPane();
+        overlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+        overlay.setPrefSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        VBox notificationPane = createNotificationPane(next.getTitle(), next.getContent(), next.getImage());
+
+        overlay.getChildren().add(notificationPane);
+        StackPane.setAlignment(notificationPane, Pos.CENTER);
+
+        overlay.setOnMouseClicked(e -> {
+            if (!notificationPane.getBoundsInParent().contains(e.getX(), e.getY())) {
+                fadeOutAndRemove(overlay);
+            }
+        });
+
+        notificationPane.setOnMouseClicked(e -> e.consume());
+
+        getChildren().add(overlay);
+        currentOverlay = overlay;
+
+        playFadeInAnimation(notificationPane);
+        return overlay;
     }
 }

@@ -137,9 +137,7 @@ public class MessengerController {
                 if (!newVal.isActive() && !newVal.isExpired() && !customerAlreadyHasVM) {
                     for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                         hasAvailableVMs = vps.getVms().stream()
-                                .anyMatch(vm -> "Running".equals(vm.getStatus()) &&
-                                        !vmAssignments.containsKey(vm) &&
-                                        !vm.isAssignedToCustomer());
+                                .anyMatch(this::isFreeVM);
                         if (hasAvailableVMs) break;
                     }
                 }
@@ -235,9 +233,7 @@ public class MessengerController {
 
                 for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                     if (!vps.getVms().isEmpty() && vps.getVms().stream()
-                            .anyMatch(vm -> "Running".equals(vm.getStatus()) &&
-                                    !vmAssignments.containsKey(vm) &&
-                                    !vm.isAssignedToCustomer())) {
+                            .anyMatch(this::isFreeVM)) {
                         hasAnyVMs = true;
                         break;
                     }
@@ -256,9 +252,7 @@ public class MessengerController {
                 List<VPSOptimization.VM> allAvailableVMs = new ArrayList<>();
                 for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                     allAvailableVMs.addAll(vps.getVms().stream()
-                            .filter(vm -> "Running".equals(vm.getStatus()) &&
-                                    !vmAssignments.containsKey(vm) &&
-                                    !vm.isAssignedToCustomer())
+                            .filter(this::isFreeVM)
                             .collect(Collectors.toList()));
                 }
 
@@ -415,9 +409,7 @@ public class MessengerController {
 
                 for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                     vpsMgrVMCount += (int) vps.getVms().stream()
-                            .filter(vm -> "Running".equals(vm.getStatus()) &&
-                                    !vmAssignments.containsKey(vm) &&
-                                    !vm.isAssignedToCustomer())
+                            .filter(this::isFreeVM)
                             .count();
                 }
 
@@ -437,9 +429,7 @@ public class MessengerController {
 
                     for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                         availableVMs += (int) vps.getVms().stream()
-                                .filter(vm -> "Running".equals(vm.getStatus()) &&
-                                        !vmAssignments.containsKey(vm) &&
-                                        !vm.isAssignedToCustomer())
+                                .filter(this::isFreeVM)
                                 .count();
                     }
 
@@ -455,14 +445,7 @@ public class MessengerController {
             if (availableVMs == 0) {
                 checkAndUpdateFromRack();
 
-                int rackVMCount = 0;
-                for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
-                    rackVMCount += (int) vps.getVms().stream()
-                            .filter(vm -> "Running".equals(vm.getStatus()) &&
-                                    !vmAssignments.containsKey(vm) &&
-                                    !vm.isAssignedToCustomer())
-                            .count();
-                }
+                int rackVMCount = countFreeVMs();
 
                 if (rackVMCount > 0) {
                     availableVMs = rackVMCount;
@@ -558,9 +541,7 @@ public class MessengerController {
                     }
 
                     int availableVMsInServer = (int) vps.getVms().stream()
-                            .filter(vm -> "Running".equals(vm.getStatus()) &&
-                                    !vmAssignments.containsKey(vm) &&
-                                    !vm.isAssignedToCustomer())
+                            .filter(this::isFreeVM)
                             .count();
 
                     int remainingCapacity = maxVMsPerServer - existingVMs;
@@ -676,9 +657,7 @@ public class MessengerController {
             }
 
             countFromVMs += (int) vps.getVms().stream()
-                    .filter(vm -> "Running".equals(vm.getStatus()) &&
-                            !vmAssignments.containsKey(vm) &&
-                            !vm.isAssignedToCustomer())
+                    .filter(this::isFreeVM)
                     .count();
         }
 
@@ -720,9 +699,7 @@ public class MessengerController {
             countFromVMs = 0;
             for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
                 countFromVMs += (int) vps.getVms().stream()
-                        .filter(vm -> "Running".equals(vm.getStatus()) &&
-                                !vmAssignments.containsKey(vm) &&
-                                !vm.isAssignedToCustomer())
+                        .filter(this::isFreeVM)
                         .count();
             }
         }
@@ -867,44 +844,12 @@ public class MessengerController {
                     System.out.println("ไม่พบ VM ตรงกับ ID: " + selected.getAssignedVmId() + " - จะล้างค่าใน request");
                     selected.unassignFromVM();
 
-                    int countFromVMs = 0;
-                    for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
-                        countFromVMs += (int) vps.getVms().stream()
-                                .filter(vm -> "Running".equals(vm.getStatus()) &&
-                                        !vmAssignments.containsKey(vm) &&
-                                        !vm.isAssignedToCustomer())
-                                .count();
-                    }
-
-                    int storedAvailableVMs = company.getAvailableVMs();
-
-                    if (countFromVMs != storedAvailableVMs) {
-                        company.setAvailableVMs(countFromVMs);
-                        ResourceManager.getInstance().getCurrentState().setFreeVmCount(countFromVMs);
-                        System.out.println("แก้ไขความไม่สอดคล้อง: จำนวน VM จริงที่ว่าง = " + countFromVMs +
-                                          " แต่ค่า availableVMs = " + storedAvailableVMs);
-                    }
+                    reconcileAvailableVMCount();
                 }
             } else if (selected.isExpired()) {
                 System.out.println("คำขอหมดอายุและไม่มี VM ที่เกี่ยวข้อง: " + selected.getName());
 
-                int countFromVMs = 0;
-                for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
-                    countFromVMs += (int) vps.getVms().stream()
-                            .filter(vm -> "Running".equals(vm.getStatus()) &&
-                                    !vmAssignments.containsKey(vm) &&
-                                    !vm.isAssignedToCustomer())
-                            .count();
-                }
-
-                int storedAvailableVMs = company.getAvailableVMs();
-
-                if (countFromVMs != storedAvailableVMs) {
-                    company.setAvailableVMs(countFromVMs);
-                    ResourceManager.getInstance().getCurrentState().setFreeVmCount(countFromVMs);
-                    System.out.println("แก้ไขความไม่สอดคล้อง: จำนวน VM จริงที่ว่าง = " + countFromVMs +
-                                      " แต่ค่า availableVMs = " + storedAvailableVMs);
-                }
+                reconcileAvailableVMCount();
             }
 
             requestManager.getRequests().remove(selected);
@@ -1148,9 +1093,7 @@ public class MessengerController {
                 int availableVMs = 0;
                 for (VPSOptimization vps : loadedVPSList) {
                     availableVMs += (int) vps.getVms().stream()
-                            .filter(vm -> "Running".equals(vm.getStatus()) &&
-                                    !vmAssignments.containsKey(vm) &&
-                                    !vm.isAssignedToCustomer())
+                            .filter(this::isFreeVM)
                             .count();
                 }
 
@@ -1182,9 +1125,7 @@ public class MessengerController {
 
                     for (VPSOptimization vps : loadedVPSList) {
                         for (VPSOptimization.VM vm : vps.getVms()) {
-                            if ("Running".equals(vm.getStatus()) &&
-                                    !vm.isAssignedToCustomer() &&
-                                    !vmAssignments.containsKey(vm)) {
+                            if (isFreeVM(vm)) {
                                 availableVM = vm;
                                 break;
                             }
@@ -1212,9 +1153,7 @@ public class MessengerController {
                 int remainingFreeVMs = 0;
                 for (VPSOptimization vps : loadedVPSList) {
                     remainingFreeVMs += (int) vps.getVms().stream()
-                            .filter(vm -> "Running".equals(vm.getStatus()) &&
-                                    !vmAssignments.containsKey(vm) &&
-                                    !vm.isAssignedToCustomer())
+                            .filter(this::isFreeVM)
                             .count();
                 }
 
@@ -1337,6 +1276,34 @@ public class MessengerController {
                               requestManager.getCompletedRequests().size() + " รายการ");
         } else {
             System.out.println("ไม่พบคำขอที่เสร็จสิ้นแล้วใน GameState");
+        }
+    }
+
+    private boolean isFreeVM(VPSOptimization.VM vm) {
+        return "Running".equals(vm.getStatus()) &&
+                !vmAssignments.containsKey(vm) &&
+                !vm.isAssignedToCustomer();
+    }
+
+    private int countFreeVMs() {
+        int count = 0;
+        for (VPSOptimization vps : vpsManager.getVPSMap().values()) {
+            count += (int) vps.getVms().stream()
+                    .filter(this::isFreeVM)
+                    .count();
+        }
+        return count;
+    }
+
+    private void reconcileAvailableVMCount() {
+        int countFromVMs = countFreeVMs();
+        int storedAvailableVMs = company.getAvailableVMs();
+
+        if (countFromVMs != storedAvailableVMs) {
+            company.setAvailableVMs(countFromVMs);
+            ResourceManager.getInstance().getCurrentState().setFreeVmCount(countFromVMs);
+            System.out.println("แก้ไขความไม่สอดคล้อง: จำนวน VM จริงที่ว่าง = " + countFromVMs +
+                              " แต่ค่า availableVMs = " + storedAvailableVMs);
         }
     }
 }

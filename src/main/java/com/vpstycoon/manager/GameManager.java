@@ -123,24 +123,7 @@ public class GameManager {
                 }
             }
 
-            Map<String, Object> inventoryData = new HashMap<>();
-            List<String> vpsIds = vpsInventory.getAllVPSIds();
-            inventoryData.put("vpsIds", vpsIds);
-
-            Map<String, Map<String, Object>> vpsDetails = new HashMap<>();
-            for (String vpsId : vpsIds) {
-                VPSOptimization vps = vpsInventory.getVPS(vpsId);
-                Map<String, Object> details = new HashMap<>();
-                details.put("vCPUs", vps.getVCPUs());
-                details.put("ramInGB", vps.getRamInGB());
-                details.put("diskInGB", vps.getDiskInGB());
-                details.put("size", vps.getSize().toString());
-                details.put("name", vps.getName());
-                vpsDetails.put(vpsId, details);
-            }
-            inventoryData.put("vpsDetails", vpsDetails);
-
-            currentState.setVpsInventoryData(inventoryData);
+            currentState.setVpsInventoryData(vpsInventory.toSaveData());
         }
 
         Rack rack = ResourceManager.getInstance().getRack();
