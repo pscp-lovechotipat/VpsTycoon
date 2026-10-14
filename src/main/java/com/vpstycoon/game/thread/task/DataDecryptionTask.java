@@ -37,18 +37,6 @@ public class DataDecryptionTask extends GameTask {
     private int currentPosition = 0;
     private Timeline scanningEffect;
 
-    public DataDecryptionTask() {
-        super(
-                "Data Decryption Protocol",
-                "Decrypt the system by finding the correct numeric sequence",
-                "/images/task/decryption_task.png",
-                6000, 
-                10,  
-                2,    
-                60    
-        );
-        this.codeLength = 4; 
-    }
 
     public DataDecryptionTask(int codeLength) {
         super(

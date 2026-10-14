@@ -28,18 +28,6 @@ public class ResumeScreen extends StackPane {
     private final Runnable onOpenSettings;
     private AudioManager audioManager;
 
-    public ResumeScreen(Navigator navigator, Runnable onResumeGame) {
-        this.navigator = navigator;
-        this.onResumeGame = onResumeGame;
-        this.onOpenSettings = null;
-        this.audioManager = ResourceManager.getInstance().getAudioManager();
-
-        setViewOrder(-1000);
-
-        pauseAllGameThreads();
-
-        setupUI();
-    }
     
     public ResumeScreen(Navigator navigator, Runnable onResumeGame, Runnable onOpenSettings) {
         this.navigator = navigator;

@@ -27,9 +27,6 @@ public class ChatMessage implements Serializable {
         return content;
     }
 
-    public long getTimestamp() {
-        return timestamp;
-    }
 
     public Map<String, Object> getMetadata() {
         return metadata;

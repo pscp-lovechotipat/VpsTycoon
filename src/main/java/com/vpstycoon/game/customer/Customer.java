@@ -26,16 +26,7 @@ public class Customer implements Serializable {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
-    public CustomerType getCustomerType() {
-        return customerType;
-    }
 
-    public double getBudget() {
-        return budget;
-    }
 }
 

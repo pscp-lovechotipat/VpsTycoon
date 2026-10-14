@@ -73,12 +73,6 @@ public class GameState implements Serializable {
         this.localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
     }
     
-    public GameState(ArrayList<GameObject> gameObjects) {
-        this();  
-        if (gameObjects != null) {
-            this.gameObjects = new ArrayList<>(gameObjects);
-        }
-    }
 
     public GameState(Company company, List<GameObject> gameObjects) {
         this.company = company;
@@ -141,9 +135,6 @@ public class GameState implements Serializable {
     }
     
     
-    public Map<String, Object> getVpsInventoryData() {
-        return vpsInventoryData;
-    }
     
     public void setVpsInventoryData(Map<String, Object> vpsInventoryData) {
         this.vpsInventoryData = vpsInventoryData;
@@ -211,27 +202,10 @@ public class GameState implements Serializable {
     }
 
 
-    public void removeGameObject(GameObject obj) {
-        if (gameObjects != null) {
-            gameObjects.remove(obj);
-        }
-    }
     
-    public Map<String, Integer> getResources() {
-        return resources;
-    }
     
-    public Map<String, Boolean> getUpgrades() {
-        return upgrades;
-    }
     
-    public long getLastSaveTime() {
-        return lastSaveTime;
-    }
     
-    public void setLastSaveTime(long lastSaveTime) {
-        this.lastSaveTime = lastSaveTime;
-    }
 
     public Company getCompany() {
         return company;
@@ -249,9 +223,6 @@ public class GameState implements Serializable {
         this.localDateTime.set(localDateTime);
     }
 
-    public ObjectProperty<LocalDateTime> localDateTimeProperty() {
-        return localDateTime;
-    }
 
     
     @Serial

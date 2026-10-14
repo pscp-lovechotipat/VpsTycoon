@@ -47,20 +47,6 @@ public class CustomerRequest extends Customer implements Serializable {
         }
     }
 
-    public CustomerRequest(CustomerType customerType, RequestType requestType,
-                           double budget, int duration, int requiredVCPUs,
-                           int requiredRamGB, int requiredDiskGB, RentalPeriodType rentalPeriodType) {
-        super(RandomGenerateName.generateRandomName(), customerType, budget);
-        this.requestType = requestType;
-        this.duration = duration;
-        this.requiredVCPUs = requiredVCPUs;
-        this.requiredRamGB = requiredRamGB;
-        this.requiredDiskGB = requiredDiskGB;
-        this.rentalPeriodType = rentalPeriodType;
-        this.monthlyPayment = calculateMonthlyPayment();
-        this.creationTime = System.currentTimeMillis();
-        this.lastPaymentTime = 0;
-    }
 
     public CustomerRequest(CustomerType customerType, RequestType requestType,
                            double budget, int duration) {
@@ -234,9 +220,6 @@ public class CustomerRequest extends Customer implements Serializable {
         return requestType;
     }
 
-    public double getBudget() {
-        return budget;
-    }
 
     public int getDuration() {
         return duration;
@@ -266,9 +249,6 @@ public class CustomerRequest extends Customer implements Serializable {
         return rentalPeriodType;
     }
 
-    public int getRentalPeriod() {
-        return rentalPeriodType.getDays();
-    }
 
     public double getMonthlyPayment() {
         return monthlyPayment;
@@ -290,9 +270,6 @@ public class CustomerRequest extends Customer implements Serializable {
         return getName() + " - " + requestType.toString() + " (" + rentalPeriodType.getDisplayName() + ")";
     }
 
-    public long getRentalStartTimeMs() {
-        return lastPaymentTime;
-    }
 
     
     @Override

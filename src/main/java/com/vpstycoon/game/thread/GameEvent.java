@@ -13,15 +13,11 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.effect.Glow;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
 import javafx.util.Duration;
 
 import java.util.Random;
@@ -346,26 +342,6 @@ public class GameEvent implements Runnable {
     }
     
 
-    private void showEnhancedNotification(String title, String message, String imagePath, Runnable clickCallback) {
-
-        Text titleText = new Text(title);
-        titleText.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_PRIMARY, FontWeight.BOLD, 20));
-        titleText.setFill(Color.web("#00FFFF"));
-        titleText.setEffect(new Glow(0.8));
-        
-        Text messageText = new Text(message);
-        messageText.setFont(Font.font(CyberpunkEffects.CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 14));
-        messageText.setFill(Color.LIGHTCYAN);
-        
-
-        CenterNotificationView notificationView = resourceManager.getCenterNotificationView();
-        notificationView.createAndShowTaskNotification(
-            title,
-            message,
-            imagePath,
-            clickCallback
-        );
-    }
     
 
     private void showTaskNotification(String title, String message, String imagePath, Runnable startCallback, Runnable abortCallback) {
@@ -684,36 +660,8 @@ public class GameEvent implements Runnable {
     }
     
 
-    public void debugTriggerTask() {
-        if (!taskActive.get()) {
-            LOGGER.info("Manually triggering random task (debug)");
-            System.out.println("[GAMEEVENT] Manually triggering random task (debug)");
-            triggerRandomTask();
-        } else {
-            LOGGER.info("Cannot trigger new task. A task is already active (debug)");
-            System.out.println("[GAMEEVENT] Cannot trigger new task. A task is already active (debug)");
-        }
-    }
     
 
-    public void debugTriggerSpecificTask(int taskIndex) {
-        if (taskActive.get()) {
-            LOGGER.info("Cannot trigger new task. A task is already active (debug)");
-            System.out.println("[GAMEEVENT] Cannot trigger new task. A task is already active (debug)");
-            return;
-        }
-        
-        if (taskIndex >= 0 && taskIndex < taskFactories.length) {
-            taskActive.set(true);
-            GameTask task = taskFactories[taskIndex].get();
-            LOGGER.info("Manually triggering specific task: " + task.getTaskName() + " (debug)");
-            System.out.println("[GAMEEVENT] Manually triggering specific task: " + task.getTaskName() + " (debug)");
-            Platform.runLater(() -> showTask(task));
-        } else {
-            LOGGER.warning("Invalid task index: " + taskIndex);
-            System.out.println("[GAMEEVENT] Invalid task index: " + taskIndex);
-        }
-    }
 
 
     public void stopEvent() {
@@ -739,41 +687,8 @@ public class GameEvent implements Runnable {
     }
     
 
-    public boolean isTaskActive() {
-        return taskActive.get();
-    }
     
 
-    public void setDebugMode(boolean enabled) {
-        this.debugMode = enabled;
-        LOGGER.setLevel(enabled ? Level.INFO : Level.WARNING);
-        LOGGER.info("Debug mode " + (enabled ? "enabled" : "disabled"));
-        System.out.println("[GAMEEVENT] Debug mode " + (enabled ? "enabled" : "disabled"));
-        
-
-        Platform.runLater(() -> {
-
-            if (debugOverlay != null) {
-                debugOverlay.setVisible(enabled);
-                
-
-                if (enabled) {
-
-                    if (!debugOverlay.getChildren().contains(debugLabel)) {
-                        debugOverlay.getChildren().add(debugLabel);
-                    }
-                    
-
-                    updateDebugLabel();
-                }
-                
-
-                if (!gameplayContentPane.getRootStack().getChildren().contains(debugOverlay) && enabled) {
-                    gameplayContentPane.getRootStack().getChildren().add(debugOverlay);
-                }
-            }
-        });
-    }
     
 
     public long getTimeUntilNextTask() {
@@ -781,31 +696,12 @@ public class GameEvent implements Runnable {
     }
     
 
-    public String getFormattedTimeUntilNextTask() {
-        return formatTime(getTimeUntilNextTask());
-    }
     
 
-    public int getCompletedTaskCount() {
-        return completedTaskCount;
-    }
     
 
-    public int getFailedTaskCount() {
-        return failedTaskCount;
-    }
     
 
-    public StackPane getTaskOverlay() {
-        return taskOverlay;
-    }
     
 
-    public void resetStats() {
-        completedTaskCount = 0;
-        failedTaskCount = 0;
-        LOGGER.info("Task statistics reset");
-        System.out.println("[GAMEEVENT] Task statistics reset");
-        updateDebugLabel();
-    }
 }

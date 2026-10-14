@@ -278,55 +278,7 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
             """;
     }
     
-    private void animateRackTransition(boolean isNext) {
-
-        BorderPane newRackDisplay = new BorderPane();
-        newRackDisplay.setTranslateX(isNext ? 800 : -800);
-        rackViewport.getChildren().add(newRackDisplay);
-        
-
-        Timeline exitTimeline = new Timeline();
-        KeyValue exitKv = new KeyValue(mainRackDisplay.translateXProperty(), isNext ? -800 : 800);
-        KeyFrame exitKf = new KeyFrame(Duration.millis(300), exitKv);
-        exitTimeline.getKeyFrames().add(exitKf);
-        
-
-        Timeline entryTimeline = new Timeline();
-        KeyValue entryKv = new KeyValue(newRackDisplay.translateXProperty(), 0);
-        KeyFrame entryKf = new KeyFrame(Duration.millis(300), entryKv);
-        entryTimeline.getKeyFrames().add(entryKf);
-        
-        exitTimeline.setOnFinished(e -> {
-            entryTimeline.play();
-            rackViewport.getChildren().remove(mainRackDisplay);
-            updateUI();
-        });
-        
-        exitTimeline.play();
-    }
     
-    private void animateRackUpgrade() {
-
-        Glow upgradeGlow = new Glow();
-        vpsList.setEffect(upgradeGlow);
-        
-        Timeline glowTimeline = new Timeline();
-        KeyValue startGlow = new KeyValue(upgradeGlow.levelProperty(), 0.0);
-        KeyValue peakGlow = new KeyValue(upgradeGlow.levelProperty(), 0.8);
-        KeyValue endGlow = new KeyValue(upgradeGlow.levelProperty(), 0.0);
-        
-        KeyFrame kf1 = new KeyFrame(Duration.ZERO, startGlow);
-        KeyFrame kf2 = new KeyFrame(Duration.millis(300), peakGlow);
-        KeyFrame kf3 = new KeyFrame(Duration.millis(600), endGlow);
-        
-        glowTimeline.getKeyFrames().addAll(kf1, kf2, kf3);
-        glowTimeline.setOnFinished(e -> {
-            vpsList.setEffect(null);
-            updateUI();
-        });
-        
-        glowTimeline.play();
-    }
 
     private void updateUI() {
         if (rack.getMaxRacks() == 0) {
@@ -604,36 +556,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
     }
 
 
-    public void syncWithGameState() {
-        GameState currentState = ResourceManager.getInstance().getCurrentState();
-        if (currentState != null) {
-
-            int currentIndex = rack.getRackIndex();
-            
-
-            boolean success = ResourceManager.getInstance().loadRackDataFromGameState(currentState);
-            
-            if (success) {
-
-                Rack updatedRack = ResourceManager.getInstance().getRack();
-                
-
-                if (currentIndex >= 0 && currentIndex < updatedRack.getMaxRacks()) {
-                    updatedRack.setRackIndex(currentIndex);
-                    System.out.println("กลับไปที่ Rack #" + (currentIndex + 1) + " หลังจากซิงค์ข้อมูล");
-                }
-                
-
-                updateUI();
-                
-                System.out.println("ซิงค์ข้อมูล RackManagementUI กับ GameState สำเร็จ");
-                parent.pushNotification("Rack Management", "ข้อมูล Rack ได้รับการอัปเดตแล้ว");
-            } else {
-                System.out.println("ไม่สามารถซิงค์ข้อมูล RackManagementUI กับ GameState ได้");
-                parent.pushNotification("Rack Management", "ไม่สามารถอัปเดตข้อมูล Rack ได้");
-            }
-        }
-    }
 
     public synchronized void openRackInfo() {
         final boolean menuBarWasVisible = parent.getMenuBar().isVisible();
@@ -1771,22 +1693,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
         rackPane.getStylesheets().add(getClass().getResource("/css/rackinfo-pane.css").toExternalForm());
     }
 
-    private Label createStatusLabel(String text) {
-        Label label = new Label(text);
-        label.setMaxWidth(Double.MAX_VALUE);
-        label.setStyle("""
-            -fx-font-family: 'Courier New';
-            -fx-font-size: 14px;
-            -fx-text-fill: #00ffff;
-            -fx-padding: 5px;
-            -fx-background-color: #1a0033;
-            -fx-background-radius: 0px;
-            -fx-border-color: #00ffff;
-            -fx-border-width: 1px;
-            -fx-border-style: dotted;
-            """);
-        return label;
-    }
     
     private Button createPixelButton(String text, String color) {
         Button button = new Button(text);
@@ -2299,9 +2205,6 @@ public class RackManagementUI extends VBox implements RackUIUpdateListener {
         return slot;
     }
 
-    public int getMAX_SLOTS() {
-        return parent.getRack().getMaxSlotUnits();
-    }
 
 
     @Override

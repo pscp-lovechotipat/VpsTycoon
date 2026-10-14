@@ -1,6 +1,5 @@
 package com.vpstycoon.game.company;
 
-import com.vpstycoon.game.vps.enums.VPSProduct;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -138,28 +137,12 @@ public class SkillPointsSystem implements Serializable {
     }
     
     
-    public int getAvailableRackSlots() {
-        
-        return 4 + (getSkillLevel(SkillType.RACK_SLOTS) * 2);
-    }
     
     
-    public double getNetworkSpeedMultiplier() {
-        
-        return 1.0 + (getSkillLevel(SkillType.NETWORK_SPEED) * 0.2);
-    }
     
     
-    public double getServerEfficiencyMultiplier() {
-        
-        return 1.0 + (getSkillLevel(SkillType.SERVER_EFFICIENCY) * 0.15);
-    }
     
     
-    public double getMarketingBonus() {
-        
-        return 1.0 + (getSkillLevel(SkillType.MARKETING) * 0.25);
-    }
     
     
     public int getMarketDiscount() {
@@ -169,10 +152,6 @@ public class SkillPointsSystem implements Serializable {
     }
     
     
-    public double getSecurityLevel() {
-        
-        return 1.0 + (getSkillLevel(SkillType.SECURITY) * 0.5);
-    }
     
     
     public double getManagementEfficiency() {
@@ -199,21 +178,6 @@ public class SkillPointsSystem implements Serializable {
         return getSkillLevel(SkillType.SECURITY) >= 2;
     }
 
-    public boolean canUnlockVPS(VPSProduct product) {
-        int marketingLevel = getSkillLevel(SkillType.MARKETING);
-        System.out.println("Current Marketing Level: " + marketingLevel);
-
-        if (product == VPSProduct.BASIC_VPS || product == VPSProduct.STANDARD_VPS || product == VPSProduct.PREMIUM_VPS) {
-            return marketingLevel >= 1;
-        } else if (product == VPSProduct.ENTERPRISE_VPS || product == VPSProduct.BLADE_SERVER || product == VPSProduct.TOWER_SERVER) {
-            return marketingLevel >= 2;
-        } else if (product == VPSProduct.ADVANCED_CLUSTER || product == VPSProduct.SUPERCOMPUTER_NODE || product == VPSProduct.AI_TRAINING_RIG) {
-            return marketingLevel >= 3;
-        } else if (product == VPSProduct.QUANTUM_VPS || product == VPSProduct.HYBRID_CLOUD_SERVER || product == VPSProduct.GLOBAL_DATA_CENTER) {
-            return marketingLevel >= 4;
-        }
-        return false;
-    }
 
     
     public String getSkillLevelDescription(SkillType skillType, int level) {
@@ -303,10 +267,5 @@ public class SkillPointsSystem implements Serializable {
     }
     
     
-    public double getNetworkSpeedBonus() {
-        int skillLevel = getSkillLevel(SkillType.NETWORK_SPEED);
-        
-        return skillLevel > 1 ? (skillLevel - 1) * 10 : 0;
-    }
 } 
 

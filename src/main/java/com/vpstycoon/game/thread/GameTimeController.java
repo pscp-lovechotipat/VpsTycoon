@@ -73,25 +73,13 @@ public class GameTimeController {
         }
     }
 
-    public void addTimeListener(GameTimeManager.GameTimeListener listener) {
-        timeManager.addTimeListener(listener);
-    }
 
-    public void removeTimeListener(GameTimeManager.GameTimeListener listener) {
-        timeManager.removeTimeListener(listener);
-    }
 
-    public LocalDateTime getGameDateTime() {
-        return timeManager.getGameDateTime();
-    }
 
     public GameTimeManager getGameTimeManager() {
         return timeManager;
     }
 
-    public long getGameTimeMs() {
-        return timeManager.getGameTimeMs();
-    }
     
     
     public void resetTime(LocalDateTime startTime) {
@@ -112,8 +100,5 @@ public class GameTimeController {
         System.out.println("รีเซ็ตและเริ่มเวลาเกมใหม่เป็น: " + startTime);
     }
     
-    public void resetTime() {
-        resetTime(null);
-    }
 }
 

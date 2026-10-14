@@ -12,9 +12,6 @@ public class CenterNotificationController {
         this.view.setModel(model); 
     }
 
-    public void push(String title, String content) {
-        Platform.runLater(() -> view.addNotificationPane(title, content));
-    }
 
     public void push(String title, String content, String image) {
         Platform.runLater(() -> view.addNotificationPane(title, content, image));
@@ -25,8 +22,5 @@ public class CenterNotificationController {
         Platform.runLater(() -> view.addNotificationPaneAutoClose(title, content, image, autoCloseMillis));
     }
 
-    public void setView(CenterNotificationView centerNotificationView) {
-        this.view = centerNotificationView;
-    }
 }
 

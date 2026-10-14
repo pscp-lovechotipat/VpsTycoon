@@ -272,19 +272,6 @@ public class RoomObjectsLayer {
         return monitorLayer;
     }
 
-    private synchronized Pane createTableLayer() {
-        Pane tableLayer = new Pane();
-        tableLayer.setPrefWidth(1000);
-        tableLayer.setPrefHeight(1000);
-        tableLayer.setStyle("""
-            -fx-background-image: url('/images/Object/Table.png');
-            -fx-background-size: contain;
-            -fx-background-repeat: no-repeat;
-            -fx-translate-x: 100px;
-            -fx-translate-y: -200px;
-        """);
-        return tableLayer;
-    }
 
     private Pane createServerLayer() {
         Pane serverLayer = new Pane();

@@ -10,9 +10,6 @@ public class MouseNotificationModel {
         notifications.add(notification);
     }
 
-    public List<Notification> getNotifications() {
-        return notifications;
-    }
 
     public static class Notification {
         private final String content;
@@ -21,9 +18,6 @@ public class MouseNotificationModel {
             this.content = content;
         }
 
-        public String getContent() {
-            return content;
-        }
     }
 }
 

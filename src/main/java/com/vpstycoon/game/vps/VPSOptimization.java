@@ -51,20 +51,8 @@ public class VPSOptimization extends GameObject implements Serializable {
     }
     
     
-    public VPSOptimization(int vcpus, int ramInGB, VPSSize size) {
-        this();  
-        this.vcpus = vcpus;
-        this.ramInGB = ramInGB;
-        this.size = size;
-        
-        this.diskInGB = ramInGB * 10;
-    }
     
     
-    public VPSOptimization(String id, int vcpus, int ramInGB, VPSSize size) {
-        this(vcpus, ramInGB, size);
-        this.vpsId = id;
-    }
 
     public void addVM(VM vm) {
         if (vms.size() < maxVMs) {
@@ -86,37 +74,16 @@ public class VPSOptimization extends GameObject implements Serializable {
         return status.toString();
     }
 
-    public VPSStatus getVPSStatus() {
-        return status;
-    }
 
-    public void setStatus(VPSStatus status) {
-        this.status = status;
-    }
 
     public int getMaxVMs() {
         return maxVMs;
     }
 
-    public void setMaxVMs(int maxVMs) {
-        this.maxVMs = maxVMs;
-    }
 
-    public double getCpuUsage() {
-        return cpuUsage;
-    }
 
-    public double getRamUsage() {
-        return ramUsage;
-    }
 
-    public double getDiskUsage() {
-        return diskUsage;
-    }
 
-    public double getNetworkUsage() {
-        return networkUsage;
-    }
 
     public void setVCPUs(int vcpus) {
         this.vcpus = vcpus;
@@ -163,90 +130,24 @@ public class VPSOptimization extends GameObject implements Serializable {
     }
 
     
-    public double calculateOptimizationScore() {
-        
-        double cpuScore = 100 - cpuUsage;
-        double ramScore = 100 - ramUsage;
-        double diskScore = 100 - diskUsage;
-        double networkScore = 100 - networkUsage;
-        
-        
-        double baseScore = (cpuScore * 0.4) + (ramScore * 0.3) + (diskScore * 0.2) + (networkScore * 0.1);
-        
-        
-        double bonusScore = 0;
-        if (backupSystemEnabled) bonusScore += 5;
-        if (monitoringSystemEnabled) bonusScore += 5;
-        if (autoScalingEnabled) bonusScore += 5;
-        
-        
-        bonusScore += (optimizationLevel - 1) * 3;
-        
-        return Math.min(100, baseScore + bonusScore);
-    }
     
     
-    public boolean hasBackupSystem() {
-        return backupSystemEnabled;
-    }
     
     
-    public void setBackupSystem(boolean enabled) {
-        this.backupSystemEnabled = enabled;
-    }
     
     
-    public boolean hasMonitoringSystem() {
-        return monitoringSystemEnabled;
-    }
     
     
-    public void setMonitoringSystem(boolean enabled) {
-        this.monitoringSystemEnabled = enabled;
-        if (enabled) {
-            
-            this.cpuUsage = Math.max(0, cpuUsage * 0.9);
-            this.ramUsage = Math.max(0, ramUsage * 0.9);
-            this.diskUsage = Math.max(0, diskUsage * 0.9);
-        }
-    }
     
     
-    public boolean hasAutoScaling() {
-        return autoScalingEnabled;
-    }
     
     
-    public void setAutoScaling(boolean enabled) {
-        this.autoScalingEnabled = enabled;
-    }
     
     
-    public int getOptimizationLevel() {
-        return optimizationLevel;
-    }
     
     
-    public void setOptimizationLevel(int level) {
-        this.optimizationLevel = Math.max(1, Math.min(5, level));
-    }
     
     
-    public boolean optimize() {
-        if (optimizationLevel < 5) {
-            optimizationLevel++;
-            
-            
-            double optimizationFactor = 0.95 - ((optimizationLevel - 1) * 0.05);
-            this.cpuUsage = Math.max(0, cpuUsage * optimizationFactor);
-            this.ramUsage = Math.max(0, ramUsage * optimizationFactor);
-            this.diskUsage = Math.max(0, diskUsage * optimizationFactor);
-            this.networkUsage = Math.max(0, networkUsage * optimizationFactor);
-            
-            return true;
-        }
-        return false;
-    }
 
     private void updateResourceUsage() {
         Random random = new Random();
@@ -314,9 +215,6 @@ public class VPSOptimization extends GameObject implements Serializable {
             return customerName;
         }
         
-        public long getAssignedTime() {
-            return assignedTime;
-        }
 
         public String getIp() {
             return ipAddress;

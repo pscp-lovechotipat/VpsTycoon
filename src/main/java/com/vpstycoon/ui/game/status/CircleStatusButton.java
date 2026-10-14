@@ -388,20 +388,8 @@ public class CircleStatusButton {
     }
 
     
-    public int getSkillLevel() {
-        return skillLevel;
-    }
 
-    public int getSkillPoints() {
-        return skillPoints;
-    }
 
-    public SkillPointsSystem.SkillType getSkillType() {
-        return skillType;
-    }
 
-    public void setOnClickAction(Runnable action) {
-        this.onClickAction = action;
-    }
 }
 

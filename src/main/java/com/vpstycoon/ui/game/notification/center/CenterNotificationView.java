@@ -35,9 +35,6 @@ public class CenterNotificationView extends StackPane {
         showNextNotification(); 
     }
 
-    public void addNotificationPane(String title, String content) {
-        createAndShowNotification(title, content, null);
-    }
 
     public void addNotificationPane(String title, String content, String image) {
         createAndShowNotification(title, content, image);
@@ -52,9 +49,6 @@ public class CenterNotificationView extends StackPane {
     }
 
     
-    public void createAndShowTaskNotification(String title, String content, String image, Runnable onStartTask) {
-        createAndShowTaskNotification(title, content, image, onStartTask, onStartTask);
-    }
 
     
     public void createAndShowTaskNotification(String title, String content, String image, Runnable onStartTask, Runnable onAbortTask) {

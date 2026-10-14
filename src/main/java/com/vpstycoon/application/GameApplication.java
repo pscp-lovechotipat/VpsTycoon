@@ -10,17 +10,14 @@ import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameSaveManager;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
-import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.thread.RequestGenerator;
-import com.vpstycoon.game.thread.GameTimeController;
 import com.vpstycoon.screen.JavaFXScreenManager;
 import com.vpstycoon.screen.ScreenManager;
 import com.vpstycoon.ui.SceneController;
 import com.vpstycoon.ui.cutscene.CutsceneScreen;
 import com.vpstycoon.ui.game.GameplayScreen;
 import com.vpstycoon.ui.game.components.RoomObjectsLayer;
-import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
 import com.vpstycoon.ui.menu.MainMenuScreen;
 import com.vpstycoon.ui.navigation.Navigator;
 import com.vpstycoon.ui.settings.SettingsScreen;
@@ -207,47 +204,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
     }
 
 
-    private void hideLoadingScreenWithCallback(Runnable callback) {
-
-        Platform.runLater(() -> {
-            try {
-                if (loadingStage != null && loadingStage.isShowing()) {
-                    System.out.println("ปิดหน้าจอโหลด...");
-                    
-
-                    javafx.scene.layout.StackPane root = (javafx.scene.layout.StackPane) loadingStage.getScene().getRoot();
-                    javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(Duration.millis(500), root);
-                    fadeOut.setFromValue(1.0);
-                    fadeOut.setToValue(0.0);
-                    fadeOut.setOnFinished(e -> {
-                        loadingStage.close();
-                        loadingStage = null;
-                        System.out.println("ปิดหน้าจอโหลดเรียบร้อย");
-                        System.out.println("โหลดทรัพยากรเสร็จสมบูรณ์");
-                        
-
-                        if (callback != null) {
-                            callback.run();
-                        }
-                    });
-                    fadeOut.play();
-                } else {
-
-                    if (callback != null) {
-                        callback.run();
-                    }
-                }
-            } catch (Exception e) {
-                System.err.println("เกิดข้อผิดพลาดในการปิดหน้าจอโหลด: " + e.getMessage());
-                e.printStackTrace();
-                
-
-                if (callback != null) {
-                    callback.run();
-                }
-            }
-        });
-    }
 
     private GameConfig createGameConfig() {
         return DefaultGameConfig.getInstance();
@@ -308,9 +264,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
         settingsScreen.show();
     }
 
-    public void showPlayMenu() {
-        showMainMenu();
-    }
 
     @Override
     public void startNewGame() {
@@ -420,17 +373,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
     }
     
 
-    private void preloadCommonResources() {
-        try {
-
-
-            com.vpstycoon.ui.game.components.RoomObjectsLayer.preloadImages();
-            
-            System.out.println("Common resources preloaded through RoomObjectsLayer");
-        } catch (Exception e) {
-            System.err.println("Error preloading resources: " + e.getMessage());
-        }
-    }
     
 
     private void showLoadingScreen(String message) {
@@ -492,111 +434,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
         });
     }
 
-    @Override
-    public void continueGame() {
-        System.out.println("=========== CONTINUING GAME ===========");
-        
-
-        showLoadingScreen("Loading Saved Game...");
-        
-
-        new Thread(() -> {
-            try {
-
-                boolean hasSaveFile = ResourceManager.getInstance().hasSaveFile();
-                System.out.println("hasSaveFile: " + hasSaveFile);
-                
-                if (!hasSaveFile) {
-                    Platform.runLater(() -> {
-                        hideLoadingScreen();
-                        showAlert("Error", "No save file found.");
-                        showMainMenu();
-                    });
-                    return;
-                }
-                
-
-                GameManager gameManager = GameManager.getInstance();
-                GameState savedState = ResourceManager.getInstance().loadGameState();
-                
-                if (savedState != null && savedState.getCompany() != null) {
-                    
-                    if (savedState.getLocalDateTime() != null) {
-                        System.out.println("กำลังตั้งค่าเวลาเกมที่บันทึกไว้: " + savedState.getLocalDateTime() + 
-                                         " (GameTimeMs: " + savedState.getGameTimeMs() + ")");
-                        
-                        
-                        GameTimeController gameTimeController = ResourceManager.getInstance().getGameTimeController();
-                        if (gameTimeController != null) {
-                            gameTimeController.resetTime(savedState.getLocalDateTime());
-                            System.out.println("ตั้งค่าเวลาเกมเรียบร้อยแล้ว");
-                        } else {
-                            System.out.println("ไม่พบ GameTimeController ใน ResourceManager");
-                        }
-                    }
-
-                    System.out.println("กำลังโหลดข้อมูลทั้งหมดในระบบ...");
-                    gameManager.loadState();
-                    
-
-                    ChatHistoryManager.resetInstance();
-
-                    ChatHistoryManager chatManager = ChatHistoryManager.getInstance();
-                    System.out.println("โหลดข้อมูลประวัติแชทเรียบร้อยแล้ว");
-                    
-                    
-                    System.out.println("=========== สร้าง RequestGenerator ใน continueGame ===========");
-                    RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
-                    if (requestManager == null) {
-                        System.out.println("สร้าง RequestManager ใหม่ใน continueGame");
-                        requestManager = new RequestManager(ResourceManager.getInstance().getCompany());
-                        ResourceManager.getInstance().setRequestManager(requestManager);
-                    }
-                    
-                    
-                    if (ResourceManager.getInstance().getRequestGenerator() != null) {
-                        ResourceManager.getInstance().getRequestGenerator().stopGenerator();
-                    }
-                    
-                    
-                    RequestGenerator requestGenerator = new RequestGenerator(requestManager);
-                    ResourceManager.getInstance().setRequestGenerator(requestGenerator);
-                    requestGenerator.start();
-                    System.out.println("เริ่ม RequestGenerator ใน continueGame เรียบร้อยแล้ว");
-
-                    savedState = ResourceManager.getInstance().loadGameState();
-                    
-
-                    if (savedState == null || savedState.getCompany() == null) {
-                        Platform.runLater(() -> {
-                            hideLoadingScreen();
-                            showAlert("Error", "Failed to load saved game state.");
-                            showMainMenu();
-                        });
-                        return;
-                    }
-                    
-
-                    System.out.println("กำลังเริ่มต้นเกมที่บันทึกไว้...");
-                    startGame(savedState);
-                } else {
-                    Platform.runLater(() -> {
-                        hideLoadingScreen();
-                        showAlert("Error", "Failed to load saved game state.");
-                        showMainMenu();
-                    });
-                }
-            } catch (Exception e) {
-                System.err.println("Error loading game: " + e.getMessage());
-                e.printStackTrace();
-                Platform.runLater(() -> {
-                    hideLoadingScreen();
-                    showAlert("Error", "Failed to load game: " + e.getMessage());
-                    showMainMenu();
-                });
-            }
-        }).start();
-    }
 
     @Override
     public void showLoadGame() {
@@ -629,50 +466,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
         alert.showAndWait();
     }
 
-    private void loadGameState(GameState state) {
-        gameManager.loadState();
-    }
 
-    private void startGame(GameState state) {
-        if (gameplayScreen != null) {
-            gameplayScreen.release();
-        }
-        
-        
-        System.out.println("======== กำลังเริ่ม RequestGenerator ในฟังก์ชัน startGame (continue game) ========");
-        if (ResourceManager.getInstance().getRequestGenerator() != null) {
-            ResourceManager.getInstance().getRequestGenerator().stopGenerator();
-            System.out.println("หยุด RequestGenerator เดิม");
-        }
-        
-        try {
-            RequestManager requestManager = ResourceManager.getInstance().getRequestManager();
-            if (requestManager == null) {
-                System.out.println("สร้าง RequestManager ใหม่เนื่องจากไม่พบตัวเดิม");
-                requestManager = new RequestManager(ResourceManager.getInstance().getCompany());
-                ResourceManager.getInstance().setRequestManager(requestManager);
-            }
-            
-            RequestGenerator requestGenerator = new RequestGenerator(requestManager);
-            ResourceManager.getInstance().setRequestGenerator(requestGenerator);
-            requestGenerator.start();
-            System.out.println("เริ่มการทำงานของ RequestGenerator แล้ว");
-            
-            
-            if (requestGenerator.isAlive()) {
-                System.out.println("✅ RequestGenerator กำลังทำงาน (Thread ID: " + requestGenerator.getId() + ")");
-            } else {
-                System.out.println("❌ RequestGenerator ไม่ได้ทำงาน");
-            }
-        } catch (Exception e) {
-            System.err.println("เกิดข้อผิดพลาดในการสร้าง RequestGenerator: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        gameplayScreen = new GameplayScreen(gameConfig, screenManager, this, state);
-        gameplayScreen.show();
-        System.out.println("เริ่มเกมด้วย GameplayScreen ซึ่งจะเริ่มการเดินเวลาเกม");
-    }
 
     private void shutdown() {
         try {
@@ -710,18 +504,8 @@ public class GameApplication extends Application implements Navigator, ResourceM
         }
     }
 
-    private void showCutscene() {
 
 
-        System.out.println("showCutscene ถูกเรียก - ข้ามเพราะได้จัดการใน finishInitialization แล้ว");
-    }
-
-
-    private void updateLoadingProgress(String message) {
-        if (loadingDetailsLabel != null) {
-            Platform.runLater(() -> loadingDetailsLabel.setText(message));
-        }
-    }
     
     private void initializeLoadingScreen() {
         Platform.runLater(() -> {

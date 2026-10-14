@@ -10,18 +10,7 @@ public class NotificationController {
     }
 
     
-    public void push(String title, String content) {
-        NotificationModel.Notification notification = new NotificationModel.Notification(title, content);
-        model.addNotification(notification);
-        view.addNotificationPane(title, content);
-    }
 
-    public NotificationView getView() {
-        return view;
-    }
 
-    public void setView(NotificationView notificationView) {
-        this.view = notificationView;
-    }
 }
 

@@ -14,9 +14,6 @@ public class MoneyModel {
         setRating(initialRating);
     }
 
-    public long getMoney() {
-        return money.get();
-    }
 
     public void setMoney(long money) {
         this.money.set(money);
@@ -26,9 +23,6 @@ public class MoneyModel {
         return money;
     }
 
-    public double getRating() {
-        return rating.get();
-    }
 
     public void setRating(double rating) {
         this.rating.set(rating);

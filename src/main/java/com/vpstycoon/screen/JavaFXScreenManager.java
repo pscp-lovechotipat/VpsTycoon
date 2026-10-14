@@ -81,18 +81,7 @@ public class JavaFXScreenManager implements ScreenManager {
         }
     }
     
-    @Override
-    public void setResolution(ScreenResolution resolution) {
-        config.setResolution(resolution);
-    }
     
-    @Override
-    public void setFullscreen(boolean fullscreen) {
-        config.setFullscreen(fullscreen);
-        if (fullscreen) {
-            config.setResolution(ScreenResolution.getMaxSupportedResolution());
-        }
-    }
     
     @Override
     public void switchScreen(Node screen) {
@@ -142,20 +131,6 @@ public class JavaFXScreenManager implements ScreenManager {
     }
     
     
-    @Override
-    public void updateScreenResolution() {
-
-        applySettings(stage, stage.getScene());
-        
-
-        if (stage.getScene() != null && stage.getScene().getRoot() != null) {
-            StackPane root = (StackPane) stage.getScene().getRoot();
-            if (!root.getChildren().isEmpty()) {
-
-                root.requestLayout();
-            }
-        }
-    }
 
     @Override
     public void prepareScreen(Node screen) {

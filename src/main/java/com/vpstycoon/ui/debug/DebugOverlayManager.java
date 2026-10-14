@@ -68,9 +68,6 @@ public class DebugOverlayManager extends GameState {
     }
 
     
-    public void stopTimer() {
-        debugTimer.stop();
-    }
 
     
     private void updateFPS(long now) {

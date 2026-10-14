@@ -362,15 +362,5 @@ public class DesktopScreen extends StackPane {
         getChildren().add(marketWindow);
     }
 
-    private void openDashboardWindow() {
-        DashboardWindow dashboardWindow = new DashboardWindow(company, vpsManager, requestManager,
-                () -> getChildren().removeIf(node -> node instanceof DashboardWindow));
-        
-        dashboardWindow.setPrefSize(1200, 800);
-        dashboardWindow.setMaxSize(1600, 900);
-        
-        StackPane.setAlignment(dashboardWindow, Pos.CENTER);
-        getChildren().add(dashboardWindow);
-    }
 }
 

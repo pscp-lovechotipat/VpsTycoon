@@ -31,9 +31,6 @@ public class MainMenuScreen extends GameScreen {
         this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
-    public void setSettingsScreen(SettingsScreen settingsScreen) {
-        this.settingsScreen = settingsScreen;
-    }
 
     @Override
     protected Region createContent() {

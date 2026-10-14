@@ -12,9 +12,6 @@ public class NotificationModel {
     }
 
     
-    public List<Notification> getNotifications() {
-        return notifications;
-    }
 
     
     public static class Notification {
@@ -27,13 +24,7 @@ public class NotificationModel {
             this.content = content;
         }
 
-        public String getTitle() {
-            return title;
-        }
 
-        public String getContent() {
-            return content;
-        }
     }
 }
 

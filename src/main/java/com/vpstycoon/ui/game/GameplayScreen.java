@@ -43,20 +43,6 @@ public class GameplayScreen extends GameScreen {
     private GameTimeController gameTimeController;
     private GameplayContentPane contentPane; 
 
-    public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
-        super(config, screenManager);
-        this.navigator = navigator;
-        this.saveManager = new GameSaveManager();
-        this.gameObjects = new ArrayList<>();
-        this.company = ResourceManager.getInstance().getCompany(); 
-        this.chatSystem = new ChatSystem();
-        this.requestManager = ResourceManager.getInstance().getRequestManager();
-        this.vpsManager = new VPSManager();
-        this.gameFlowManager = new GameFlowManager(saveManager, gameObjects);
-        this.debugOverlayManager = new DebugOverlayManager();
-        subscribeToSettingsChanges();
-        loadGame();
-    }
 
     public GameplayScreen(GameConfig config, ScreenManager screenManager, Navigator navigator, GameState gameState) {
         super(config, screenManager);
@@ -87,22 +73,6 @@ public class GameplayScreen extends GameScreen {
         loadGame(gameState);
     }
 
-    private void loadGame() {
-        if (saveManager.saveExists()) {
-            state = saveManager.loadGame();
-            if (state != null && state.getGameObjects() != null && !state.getGameObjects().isEmpty()) {
-                this.gameObjects = new ArrayList<>(state.getGameObjects());
-                System.out.println("โหลดเกมสำเร็จ มี GameObjects จำนวน: " + state.getGameObjects().size());
-            } else {
-                System.out.println("Load failed or no objects found, initializing new game.");
-                initializeGameObjects();
-            }
-        } else {
-            System.out.println("No save file found, initializing new game.");
-            state = new GameState();
-            initializeGameObjects();
-        }
-    }
 
     private void loadGame(GameState gameState) {
         if (gameState != null) {

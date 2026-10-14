@@ -1,10 +1,6 @@
 package com.vpstycoon.screen;
 
-import javafx.stage.Screen;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public enum ScreenResolution {
     RES_1280x720(1280, 720, "1280x720 (HD)"),
@@ -34,32 +30,8 @@ public enum ScreenResolution {
         return height;
     }
 
-    public static ScreenResolution getMaxSupportedResolution() {
-        Screen primaryScreen = Screen.getPrimary();
-        double maxWidth = primaryScreen.getBounds().getWidth();
-        double maxHeight = primaryScreen.getBounds().getHeight();
-
-        ScreenResolution maxRes = RES_1280x720; 
-        for (ScreenResolution res : values()) {
-            if (res.width <= maxWidth && res.height <= maxHeight 
-                && (res.width > maxRes.width || res.height > maxRes.height)) {
-                maxRes = res;
-            }
-        }
-        return maxRes;
-    }
     
     
-    public static List<ScreenResolution> getAvailableResolutions() {
-        Screen primaryScreen = Screen.getPrimary();
-        double maxWidth = primaryScreen.getBounds().getWidth();
-        double maxHeight = primaryScreen.getBounds().getHeight();
-        
-        
-        return Arrays.stream(values())
-                .filter(res -> res.width <= maxWidth && res.height <= maxHeight)
-                .collect(Collectors.toList());
-    }
 
     @Override
     public String toString() {

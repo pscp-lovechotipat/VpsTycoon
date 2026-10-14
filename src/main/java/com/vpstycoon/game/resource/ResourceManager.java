@@ -29,11 +29,7 @@ import javafx.scene.image.Image;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -132,9 +128,6 @@ public class ResourceManager implements Serializable {
         return emergencyPerformanceMode;
     }
     
-    public void setEmergencyPerformanceMode(boolean mode) {
-        this.emergencyPerformanceMode = mode;
-    }
 
     private boolean preloadComplete = false;
     private final Object preloadLock = new Object();
@@ -250,18 +243,6 @@ public class ResourceManager implements Serializable {
         }
     }
 
-    public static Image loadImage(String name) {
-        return getInstance().imageCache.computeIfAbsent(name, k -> {
-            try (InputStream is = ResourceManager.class.getResourceAsStream(IMAGES_PATH + k)) {
-                if (is == null) {
-                    throw new RuntimeException("Image not found: " + k);
-                }
-                return new Image(is);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to load image: " + k, e);
-            }
-        });
-    }
 
     public void saveGameState(GameState state) {
         initiaizeGameTimeController();
@@ -677,10 +658,6 @@ public class ResourceManager implements Serializable {
         mouseNotificationController.addNotification(content);
     }
 
-    public void pushCenterNotification(String title, String content) {
-        initializeNotifications();
-        centerNotificationController.push(title, content);
-    }
 
     public void pushCenterNotification(String title, String content, String image) {
         initializeNotifications();
@@ -692,50 +669,26 @@ public class ResourceManager implements Serializable {
         centerNotificationController.pushAutoClose(title, content, image, autoCloseMillis);
     }
 
-    public NotificationModel getNotificationModel() {
-        initializeNotifications();
-        return notificationModel;
-    }
 
     public NotificationView getNotificationView() {
         initializeNotifications();
         return notificationView;
     }
 
-    public NotificationController getNotificationController() {
-        initializeNotifications();
-        return notificationController;
-    }
 
-    public CenterNotificationModel getCenterNotificationModel() {
-        initializeNotifications();
-        return centerNotificationModel;
-    }
 
     public CenterNotificationView getCenterNotificationView() {
         initializeNotifications();
         return centerNotificationView;
     }
 
-    public CenterNotificationController getCenterNotificationController() {
-        initializeNotifications();
-        return centerNotificationController;
-    }
 
-    public MouseNotificationModel getMouseNotificationModel() {
-        initializeNotifications();
-        return mouseNotificationModel;
-    }
 
     public MouseNotificationView getMouseNotificationView() {
         initializeNotifications();
         return mouseNotificationView;
     }
 
-    public MouseNotificationController getMouseNotificationController() {
-        initializeNotifications();
-        return mouseNotificationController;
-    }
 
     public GameEvent getGameEvent() {
         return gameEvent;
@@ -745,9 +698,6 @@ public class ResourceManager implements Serializable {
         return rack;
     }
 
-    public void setRack(Rack rack) {
-        this.rack = rack;
-    }
 
     public RequestManager getRequestManager() {
         return requestManager;
@@ -823,24 +773,8 @@ public class ResourceManager implements Serializable {
         }
     }
 
-    private void createCorruptedFileBackup(File originalFile) {
-        try {
-            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            File backupFile = new File(BACKUP_DIR + "/corrupted_save_" + timestamp + ".bak");
-            Files.copy(originalFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            System.err.println("Error backing up corrupted save: " + e.getMessage());
-        }
-    }
 
-    public void clearCache() {
-        imageCache.clear();
-        textCache.clear();
-    }
 
-    public static String getImagePath(String name) {
-        return IMAGES_PATH + name;
-    }
 
     public static String getSoundPath(String name) {
         return SOUNDS_PATH + name;
@@ -854,26 +788,8 @@ public class ResourceManager implements Serializable {
         return ResourceManager.class.getResource(path);
     }
 
-    public static String getTextPath(String name) {
-        return TEXT_PATH + name;
-    }
 
-    public static InputStream getResourceAsStream(String path) {
-        return ResourceManager.class.getResourceAsStream(path);
-    }
 
-    public String getText(String path) {
-        return textCache.computeIfAbsent(path, k -> {
-            try (InputStream is = getClass().getResourceAsStream("/text/" + k)) {
-                if (is == null) {
-                    throw new RuntimeException("Text file not found: " + k);
-                }
-                return new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to load text: " + k, e);
-            }
-        });
-    }
 
     public GameState getCurrentState() {
         if (currentState == null) {
@@ -911,9 +827,6 @@ public class ResourceManager implements Serializable {
         return ChatHistoryManager.getInstance();
     }
 
-    public GameObject createGameObject(String id, String type, int gridX, int gridY) {
-        return new GameObject(id, type, gridX, gridY);
-    }
 
     public boolean isMusicRunning() {
         return musicRunning;
@@ -1022,9 +935,6 @@ public class ResourceManager implements Serializable {
         return imageCache.get(path);
     }
     
-    public Image getPreloadedImage(String path) {
-        return imageCache.get(path);
-    }
 
     public void resetMessengerData() {
         try {
@@ -1116,12 +1026,6 @@ public class ResourceManager implements Serializable {
         }
     }
 
-    public GameManager getGameManager() {
-        if (gameManager == null) {
-            gameManager = GameManager.getInstance();
-        }
-        return gameManager;
-    }
     
     public void setGameManager(GameManager manager) {
         this.gameManager = manager;

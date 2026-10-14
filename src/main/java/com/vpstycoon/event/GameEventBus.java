@@ -20,12 +20,6 @@ public class GameEventBus {
                 .add(listener);
     }
 
-    public <T> void unsubscribe(Class<T> eventType, EventListener<T> listener) {
-        List<EventListener<?>> eventListeners = listeners.get(eventType);
-        if (eventListeners != null) {
-            eventListeners.remove(listener);
-        }
-    }
 
     @SuppressWarnings("unchecked")
     public <T> void publish(T event) {

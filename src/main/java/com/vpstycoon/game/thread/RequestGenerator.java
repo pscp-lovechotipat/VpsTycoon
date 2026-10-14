@@ -193,9 +193,6 @@ public class RequestGenerator extends Thread {
     }
     
     
-    public void setMaxPendingRequests(int maxRequests) {
-        this.maxPendingRequests = maxRequests;
-    }
 }
 
 

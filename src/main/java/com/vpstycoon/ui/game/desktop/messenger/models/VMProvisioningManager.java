@@ -116,35 +116,10 @@ public class VMProvisioningManager {
     }
     
     
-    private VPSOptimization findVPSForVM(VPSOptimization.VM targetVM) {
-        ResourceManager resourceManager = ResourceManager.getInstance();
-        for (VPSOptimization vps : resourceManager.getRack().getInstalledVPS()) {
-            for (VPSOptimization.VM vm : vps.getVms()) {
-                if (vm.getIp().equals(targetVM.getIp()) && vm.getName().equals(targetVM.getName())) {
-                    return vps;
-                }
-            }
-        }
-        return null;
-    }
     
     
-    private int parseRAMValue(String ramString) {
-        try {
-            return Integer.parseInt(ramString.split(" ")[0]);
-        } catch (Exception e) {
-            return 2; 
-        }
-    }
     
     
-    private int parseDiskValue(String diskString) {
-        try {
-            return Integer.parseInt(diskString.split(" ")[0]);
-        } catch (Exception e) {
-            return 20; 
-        }
-    }
 
     private void sendInitialMessages(CustomerRequest request) {
         chatHistoryManager.addMessage(request, new ChatMessage(MessageType.USER,

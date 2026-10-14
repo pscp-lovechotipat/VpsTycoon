@@ -29,26 +29,9 @@ public class ChatSystem {
         customerTypePoints.put(CustomerType.LARGE_BUSINESS, 50);
     }
     
-    public void unlockCustomerType(CustomerType type, int marketingPoints) {
-        if (marketingPoints >= type.getRequiredPoints() && !unlockedCustomerTypes.contains(type)) {
-            unlockedCustomerTypes.add(type);
-        }
-    }
 
-    public int getChatLevel() {
-        return chatLevel;
-    }
 
-    public void upgradeChatLevel() {
-        this.chatLevel++;
-    }
 
-    public List<CustomerType> getUnlockedCustomerTypes() {
-        return new ArrayList<>(unlockedCustomerTypes);
-    }
 
-    public int getPointsForCustomerType(CustomerType type) {
-        return customerTypePoints.getOrDefault(type, 0);
-    }
 } 
 

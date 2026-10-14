@@ -24,9 +24,6 @@ public class MouseNotificationController {
         view.addNotificationPane(content, mouseX, mouseY); 
     }
 
-    public void setView(MouseNotificationView mouseNotificationView) {
-        this.view = mouseNotificationView;
-    }
 }
 
 

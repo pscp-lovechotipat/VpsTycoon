@@ -193,10 +193,6 @@ public class ChatHistoryManager implements Serializable{
     }
     
     
-    public void clearChatHistory() {
-        customerChatHistory.clear();
-        System.out.println("Chat history cleared from memory");
-    }
     
     
     public boolean deleteChatHistoryFile() {

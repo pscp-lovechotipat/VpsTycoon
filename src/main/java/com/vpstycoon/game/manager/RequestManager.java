@@ -4,7 +4,6 @@ import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.resource.ResourceManager;
-import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.game.vps.enums.RequestType;
 import com.vpstycoon.ui.game.desktop.messenger.models.VMProvisioningManagerImpl;
 import javafx.collections.FXCollections;
@@ -14,7 +13,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 
 public class RequestManager implements Serializable {
     private final ObservableList<CustomerRequest> pendingRequests;
@@ -61,43 +59,8 @@ public class RequestManager implements Serializable {
     }
 
     
-    public CompletableFuture<VPSOptimization.VM> acceptRequest(
-            CustomerRequest request, 
-            VPSOptimization vps, 
-            int vcpus, 
-            int ramGB, 
-            int diskGB) {
-        
-        if (!pendingRequests.contains(request)) {
-            CompletableFuture<VPSOptimization.VM> future = new CompletableFuture<>();
-            future.completeExceptionally(new IllegalArgumentException("Request not found"));
-            return future;
-        }
-
-        request.activate(ResourceManager.getInstance().getGameTimeManager().getGameTimeMs());
-        
-        
-        return vmProvisioningManager.provisionVM(request, vps, vcpus, ramGB, diskGB);
-    }
 
     
-    public boolean completeRequest(CustomerRequest request, VPSOptimization vps) {
-        VPSOptimization.VM vm = vmProvisioningManager.getVMForRequest(request);
-        
-        if (vm != null) {
-            
-            boolean success = vmProvisioningManager.terminateVM(vm, vps);
-            
-            if (success) {
-                
-                completedRequests.add(request);
-                System.out.println("Completed request: " + request.getTitle());
-                return true;
-            }
-        }
-        
-        return false;
-    }
     
     
     public CustomerRequest generateRandomRequest() {
@@ -183,9 +146,6 @@ public class RequestManager implements Serializable {
     }
     
     
-    public java.util.Map<CustomerRequest, VPSOptimization.VM> getActiveRequests() {
-        return vmProvisioningManager.getActiveRequests();
-    }
     
     
     public List<CustomerRequest> getCompletedRequests() {
@@ -198,22 +158,10 @@ public class RequestManager implements Serializable {
     }
     
     
-    public static int realTimeToGameDays(long realTimeMs) {
-        return (int) (realTimeMs * 30 / GAME_MONTH_MS);
-    }
     
     
-    public static long gameDaysToRealTime(int gameDays) {
-        return gameDays * GAME_MONTH_MS / 30;
-    }
 
     
-    public void addCompletedRequests(List<CustomerRequest> requests) {
-        if (requests != null) {
-            this.completedRequests.addAll(requests);
-            System.out.println("เพิ่ม " + requests.size() + " รายการลงใน completedRequests");
-        }
-    }
 
     
     public void setRequests(List<CustomerRequest> requests) {

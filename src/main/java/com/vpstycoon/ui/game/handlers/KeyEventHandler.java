@@ -141,16 +141,7 @@ public class KeyEventHandler {
         debugOverlayManager.toggleDebug();
     }
 
-    public void setResumeScreenShowing(boolean showing) {
-        this.resumeScreenShowing = showing;
-    }
     
-    public void setSettingsScreenShowing(boolean showing) {
-        this.settingsScreenShowing = showing;
-    }
     
-    public boolean isSettingsScreenShowing() {
-        return settingsScreenShowing;
-    }
 }
 

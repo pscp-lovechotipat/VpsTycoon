@@ -29,9 +29,6 @@ public enum RackProduct {
         return price;
     }
 
-    public int getKeepUp() {
-        return keepUp;
-    }
 
     public String getDescription() {
         return slots + " slots, Monthly maintenance: $" + keepUp;
@@ -41,8 +38,5 @@ public enum RackProduct {
         return "$" + price;
     }
 
-    public String getKeepUpDisplay() {
-        return "$" + keepUp + "/month";
-    }
 } 
 

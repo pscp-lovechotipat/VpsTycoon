@@ -325,17 +325,11 @@ public class FirewallDefenseTask extends GameTask {
             }
         }
         
-        public javafx.scene.shape.Shape getShape() {
-            return shape;
-        }
         
         public StackPane getStackPane() {
             return stackPane;
         }
         
-        public String getType() {
-            return type;
-        }
         
         public boolean isNeutralized() {
             return neutralized;

@@ -1,8 +1,5 @@
 package com.vpstycoon.ui.game.rack;
 
-import com.vpstycoon.game.GameObject;
-import com.vpstycoon.game.GameState;
-import com.vpstycoon.game.vps.VPSInventory;
 import com.vpstycoon.game.vps.VPSOptimization;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,9 +13,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Rack extends StackPane implements Serializable {
 
@@ -198,49 +193,7 @@ public class Rack extends StackPane implements Serializable {
         return slot;
     }
 
-    public void addVPSToSlot(VPSOptimization vps, int slotIndex) {
-        if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
-            VBox currentRack = racks.get(currentRackIndex);
-            if (slotIndex >= 0 && slotIndex < currentRack.getChildren().size()) {
-                VBox slot = (VBox) currentRack.getChildren().get(slotIndex);
-                
-                
-                VBox vpsVisual = new VBox(5);
-                vpsVisual.setStyle("""
-                    -fx-background-color: #2a2a2a;
-                    -fx-padding: 5px;
-                    -fx-background-radius: 3px;
-                    -fx-border-color: #00ff00;
-                    -fx-border-width: 1px;
-                    -fx-border-style: solid;
-                    """);
-                vpsVisual.setAlignment(Pos.CENTER);
-                
-                
-                Label nameLabel = new Label("Server " + vps.getVCPUs() + "vCPU");
-                nameLabel.setStyle("-fx-text-fill: #00ff00; -fx-font-weight: bold;");
-                
-                Label specsLabel = new Label(vps.getRamInGB() + "GB RAM");
-                specsLabel.setStyle("-fx-text-fill: #00ff00;");
-                
-                Label sizeLabel = new Label(vps.getSize().getDisplayName());
-                sizeLabel.setStyle("-fx-text-fill: #00ff00;");
-                
-                vpsVisual.getChildren().addAll(nameLabel, specsLabel, sizeLabel);
-                slot.getChildren().add(vpsVisual);
-            }
-        }
-    }
 
-    public void removeVPSFromSlot(int slotIndex) {
-        if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
-            VBox currentRack = racks.get(currentRackIndex);
-            if (slotIndex >= 0 && slotIndex < currentRack.getChildren().size()) {
-                VBox slot = (VBox) currentRack.getChildren().get(slotIndex);
-                slot.getChildren().clear();
-            }
-        }
-    }
 
     public int getMaxRacks() {
         return racks.size();
@@ -396,12 +349,6 @@ public class Rack extends StackPane implements Serializable {
         return false;
     }
 
-    public VBox getCurrentRack() {
-        if (currentRackIndex >= 0 && currentRackIndex < racks.size()) {
-            return racks.get(currentRackIndex);
-        }
-        return null;
-    }
 
     
     public boolean installVPS(VPSOptimization vps) {
@@ -545,335 +492,15 @@ public class Rack extends StackPane implements Serializable {
     }
     
     
-    public boolean loadFromGameState(GameState gameState, VPSInventory inventory) {
-        if (gameState == null) {
-            System.out.println("ไม่สามารถโหลดข้อมูล Rack ได้: GameState เป็น null");
-            return false;
-        }
-        
-        try {
-            
-            Map<String, Object> rackConfig = gameState.getRackConfiguration();
-            if (rackConfig == null || rackConfig.isEmpty()) {
-                System.out.println("ไม่พบข้อมูลการตั้งค่า Rack ใน GameState");
-                return false;
-            }
-            
-            
-            this.racks.clear();
-            this.rackVPS.clear();
-            this.unlockedSlotUnitsList.clear();
-            this.occupiedSlotUnitsList.clear();
-            this.slotsPerRack.clear();
-            
-            
-            int maxRacks = rackConfig.containsKey("maxRacks") ? (Integer) rackConfig.get("maxRacks") : 0;
-            
-            
-            List<Integer> slotCounts = null;
-            if (rackConfig.containsKey("slotCounts")) {
-                slotCounts = (List<Integer>) rackConfig.get("slotCounts");
-            }
-            
-            
-            for (int i = 0; i < maxRacks; i++) {
-                int slotCount = 10; 
-                if (slotCounts != null && i < slotCounts.size()) {
-                    slotCount = slotCounts.get(i);
-                }
-                
-                VBox newRack = createRackUI(slotCount);
-                this.racks.add(newRack);
-                this.slotsPerRack.add(slotCount);
-                this.rackVPS.add(new ArrayList<>());
-                
-                
-                this.unlockedSlotUnitsList.add(1); 
-                this.occupiedSlotUnitsList.add(0); 
-            }
-            
-            
-            if (rackConfig.containsKey("unlockedSlotUnitsList")) {
-                List<Integer> unlockedList = (List<Integer>) rackConfig.get("unlockedSlotUnitsList");
-                if (unlockedList != null && !unlockedList.isEmpty()) {
-                    this.unlockedSlotUnitsList.clear();
-                    this.unlockedSlotUnitsList.addAll(unlockedList);
-                    System.out.println("โหลดข้อมูล unlockedSlotUnitsList: " + this.unlockedSlotUnitsList);
-                }
-            }
-            
-            
-            if (rackConfig.containsKey("currentRackIndex")) {
-                int index = (Integer) rackConfig.get("currentRackIndex");
-                if (index >= 0 && index < maxRacks) {
-                    this.currentRackIndex = index;
-                } else {
-                    this.currentRackIndex = 0;
-                }
-            } else {
-                this.currentRackIndex = 0;
-            }
-            
-            
-            if (rackConfig.containsKey("installedVpsIds")) {
-                List<String> installedVpsIds = (List<String>) rackConfig.get("installedVpsIds");
-                
-                
-                for (String vpsId : installedVpsIds) {
-                    boolean found = false;
-                    
-                    for (GameObject obj : gameState.getGameObjects()) {
-                        if (obj instanceof VPSOptimization) {
-                            VPSOptimization vps = (VPSOptimization) obj;
-                            if (vps.getVpsId().equals(vpsId)) {
-                                
-                                int rackIndex = 0; 
-                                
-                                
-                                
-                                
-                                
-                                if (rackIndex >= 0 && rackIndex < this.rackVPS.size()) {
-                                    this.rackVPS.get(rackIndex).add(vps);
-                                    
-                                    
-                                    int currentOccupied = this.occupiedSlotUnitsList.get(rackIndex);
-                                    this.occupiedSlotUnitsList.set(rackIndex, currentOccupied + vps.getSlotsRequired());
-                                    
-                                    
-                                    vps.setInstalled(true);
-                                    
-                                    found = true;
-                                    System.out.println("ติดตั้ง VPS " + vpsId + " ใน Rack #" + (rackIndex + 1));
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (!found) {
-                        System.out.println("ไม่พบ VPS " + vpsId + " ใน GameObjects");
-                    }
-                }
-            }
-            
-            
-            if (this.currentRackIndex >= 0 && this.currentRackIndex < this.unlockedSlotUnitsList.size()) {
-                this.unlockedSlotUnits = this.unlockedSlotUnitsList.get(this.currentRackIndex);
-                this.occupiedSlotUnits = this.occupiedSlotUnitsList.get(this.currentRackIndex);
-            }
-            
-            
-            if (this.currentRackIndex >= 0 && this.currentRackIndex < this.racks.size()) {
-                this.maxSlotUnits = this.racks.get(this.currentRackIndex).getChildren().size();
-            }
-            
-            
-            showCurrentRack();
-            
-            
-            navigationButtons.setVisible(this.racks.size() > 1);
-            
-            System.out.println("โหลดข้อมูล Rack สำเร็จ: " + this.racks.size() + " racks, " 
-                            + this.rackVPS.get(this.currentRackIndex).size() + " VPS ที่ติดตั้งใน rack ปัจจุบัน");
-            return true;
-            
-        } catch (Exception e) {
-            System.err.println("เกิดข้อผิดพลาดในการโหลดข้อมูล Rack: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
 
     
-    public void syncRackWithGameState(GameState gameState) {
-        if (gameState == null) {
-            System.out.println("ไม่สามารถซิงค์ข้อมูล Rack ได้: GameState เป็น null");
-            return;
-        }
-        
-        try {
-            System.out.println("กำลังซิงค์ข้อมูล Rack กับ GameState...");
-            
-            
-            for (int rackIndex = 0; rackIndex < rackVPS.size(); rackIndex++) {
-                List<VPSOptimization> installedVPS = new ArrayList<>(rackVPS.get(rackIndex));
-                
-                for (VPSOptimization vps : installedVPS) {
-                    
-                    boolean found = false;
-                    for (GameObject obj : gameState.getGameObjects()) {
-                        if (obj instanceof VPSOptimization) {
-                            VPSOptimization stateVPS = (VPSOptimization) obj;
-                            if (stateVPS.getVpsId().equals(vps.getVpsId())) {
-                                found = true;
-                                
-                                
-                                
-                                
-                                break;
-                            }
-                        }
-                    }
-                    
-                    
-                    if (!found) {
-                        System.out.println("ลบ VPS " + vps.getVpsId() + " จาก Rack เนื่องจากไม่พบใน GameState");
-                        uninstallVPS(vps);
-                    }
-                }
-            }
-            
-            
-            
-            Map<String, Object> rackConfig = gameState.getRackConfiguration();
-            if (rackConfig != null && rackConfig.containsKey("installedVpsIds")) {
-                List<String> installedVpsIds = (List<String>) rackConfig.get("installedVpsIds");
-                
-                for (String vpsId : installedVpsIds) {
-                    
-                    boolean alreadyInstalled = false;
-                    for (List<VPSOptimization> rackVPSList : rackVPS) {
-                        for (VPSOptimization vps : rackVPSList) {
-                            if (vps.getVpsId().equals(vpsId)) {
-                                alreadyInstalled = true;
-                                break;
-                            }
-                        }
-                        if (alreadyInstalled) break;
-                    }
-                    
-                    
-                    if (!alreadyInstalled) {
-                        for (GameObject obj : gameState.getGameObjects()) {
-                            if (obj instanceof VPSOptimization) {
-                                VPSOptimization vps = (VPSOptimization) obj;
-                                if (vps.getVpsId().equals(vpsId)) {
-                                    
-                                    if (getAvailableSlotUnits() >= vps.getSlotsRequired()) {
-                                        if (installVPS(vps)) {
-                                            System.out.println("ติดตั้ง VPS " + vpsId + " ใน Rack ระหว่างการซิงค์");
-                                        }
-                                    } else {
-                                        System.out.println("ไม่สามารถติดตั้ง VPS " + vpsId + 
-                                                          " ได้เนื่องจากไม่มีพื้นที่พอ (ต้องการ " + 
-                                                          vps.getSlotsRequired() + " slots, มี " + 
-                                                          getAvailableSlotUnits() + " slots)");
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-            
-            updateVPSDisplay(racks.get(currentRackIndex));
-            
-            System.out.println("ซิงค์ข้อมูล Rack กับ GameState สำเร็จ");
-            
-        } catch (Exception e) {
-            System.err.println("เกิดข้อผิดพลาดในการซิงค์ข้อมูล Rack: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     
-    public Map<Integer, Integer> getAllSlotStatus() {
-        Map<Integer, Integer> slotStatusMap = new HashMap<>();
-        
-        if (currentRackIndex < 0 || currentRackIndex >= racks.size()) {
-            return slotStatusMap; 
-        }
-        
-        VBox currentRack = racks.get(currentRackIndex);
-        int currentUnlockedSlots = unlockedSlotUnitsList.get(currentRackIndex);
-        
-        
-        int usedSlots = 0;
-        for (VPSOptimization vps : rackVPS.get(currentRackIndex)) {
-            int slotSize = vps.getSlotsRequired();
-            
-            for (int i = 0; i < slotSize; i++) {
-                if (usedSlots + i < currentRack.getChildren().size()) {
-                    slotStatusMap.put(usedSlots + i, 1); 
-                }
-            }
-            usedSlots += slotSize;
-        }
-        
-        
-        for (int i = 0; i < currentRack.getChildren().size(); i++) {
-            if (!slotStatusMap.containsKey(i)) {
-                if (i < currentUnlockedSlots) {
-                    slotStatusMap.put(i, 0); 
-                } else {
-                    slotStatusMap.put(i, -1); 
-                }
-            }
-        }
-        
-        return slotStatusMap;
-    }
     
     
-    public Map<Integer, Map<Integer, Integer>> getAllRacksSlotStatus() {
-        Map<Integer, Map<Integer, Integer>> allRacksStatus = new HashMap<>();
-        
-        
-        int savedIndex = currentRackIndex;
-        
-        
-        for (int i = 0; i < racks.size(); i++) {
-            
-            setRackIndex(i);
-            
-            
-            Map<Integer, Integer> rackSlotStatus = getAllSlotStatus();
-            
-            
-            allRacksStatus.put(i, rackSlotStatus);
-        }
-        
-        
-        setRackIndex(savedIndex);
-        
-        return allRacksStatus;
-    }
     
     
-    public List<Integer> getUninstalledSlots() {
-        List<Integer> uninstalledSlots = new ArrayList<>();
-        
-        Map<Integer, Integer> slotStatusMap = getAllSlotStatus();
-        for (Map.Entry<Integer, Integer> entry : slotStatusMap.entrySet()) {
-            if (entry.getValue() == 0) { 
-                uninstalledSlots.add(entry.getKey());
-            }
-        }
-        
-        return uninstalledSlots;
-    }
     
     
-    public Map<Integer, VPSOptimization> getInstalledSlotsWithVPS() {
-        Map<Integer, VPSOptimization> installedSlots = new HashMap<>();
-        
-        if (currentRackIndex < 0 || currentRackIndex >= rackVPS.size()) {
-            return installedSlots; 
-        }
-        
-        
-        int usedSlots = 0;
-        for (VPSOptimization vps : rackVPS.get(currentRackIndex)) {
-            int slotSize = vps.getSlotsRequired();
-            
-            installedSlots.put(usedSlots, vps);
-            usedSlots += slotSize;
-        }
-        
-        return installedSlots;
-    }
 }
 

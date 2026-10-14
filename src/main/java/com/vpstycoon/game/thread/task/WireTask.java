@@ -29,18 +29,6 @@ public class WireTask extends GameTask {
     private Circle[] rightConnectors;
     private Line[] connectionLines;
     
-    public WireTask() {
-        super(
-                "Neural Network Calibration",
-                "Connect matching colored neural pathways to calibrate the system",
-                "/images/task/wire_task.png",
-                5000, 
-                0,  
-                2,    
-                45    
-        );
-        this.wireCount = 4; 
-    }
     
     
     public WireTask(int wireCount) {

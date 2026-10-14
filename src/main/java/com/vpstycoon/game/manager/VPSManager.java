@@ -8,10 +8,6 @@ import java.util.Map;
 public class VPSManager {
     private final Map<String, VPSOptimization> vpsMap = new HashMap<>();
 
-    public void createVPS(String id) {
-        
-        System.out.println("Server created with ID: " + id);
-    }
     
     
     public void addVPS(String id, VPSOptimization vps) {
@@ -29,8 +25,5 @@ public class VPSManager {
     }
 
     
-    public java.util.List<VPSOptimization> getVPSList() {
-        return new java.util.ArrayList<>(vpsMap.values());
-    }
 }
 

@@ -63,73 +63,14 @@ public class Company implements Serializable {
     }
 
     
-    public void recordCompletedRequest(int satisfactionChange) {
-        completedRequests++;
-        
-        
-        customerSatisfaction += satisfactionChange;
-        if (customerSatisfaction < 0) customerSatisfaction = 0;
-        if (customerSatisfaction > 100) customerSatisfaction = 100;
-        
-        
-        updateRating();
-    }
     
     
-    public void recordFailedRequest() {
-        failedRequests++;
-        
-        
-        customerSatisfaction -= 5;
-        if (customerSatisfaction < 0) customerSatisfaction = 0;
-        
-        
-        updateRating();
-    }
     
     
-    private void updateRating() {
-        
-        double satisfactionRating = customerSatisfaction / 33.33; 
-        
-        
-        double completionRatio = 0;
-        if (completedRequests + failedRequests > 0) {
-            completionRatio = (double) completedRequests / (completedRequests + failedRequests);
-        }
-        
-        
-        double financialRating = 0;
-        if (totalRevenue > 0) {
-            double profitRatio = (double) (totalRevenue - totalExpenses) / totalRevenue;
-            financialRating = Math.min(1.0, Math.max(0, profitRatio));
-        }
-        
-        
-        double oldRating = this.rating;
-        
-        
-        rating = satisfactionRating + completionRatio + financialRating;
-        
-        
-        if (rating < 0) rating = 0;
-        if (rating > 5) rating = 5;
-        
-        
-        if (oldRating != this.rating) {
-            notifyRatingObservers();
-        }
-    }
 
     
     
-    public String getName() {
-        return name;
-    }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public double getRating() {
         return rating;
@@ -150,9 +91,6 @@ public class Company implements Serializable {
         return marketingPoints;
     }
 
-    public void setMarketingPoints(int marketingPoints) {
-        this.marketingPoints = marketingPoints;
-    }
 
     public long getMoney() {
         return money;
@@ -229,39 +167,14 @@ public class Company implements Serializable {
         return true;
     }
     
-    public long getTotalRevenue() {
-        return totalRevenue;
-    }
-    
-    public long getTotalExpenses() {
-        return totalExpenses;
-    }
-    
-    public long getProfit() {
-        return totalRevenue - totalExpenses;
-    }
-    
-    public int getCustomerSatisfaction() {
-        return customerSatisfaction;
-    }
-    
-    public void setCustomerSatisfaction(int customerSatisfaction) {
-        this.customerSatisfaction = Math.max(0, Math.min(100, customerSatisfaction));
-        updateRating();
-    }
-    
-    public int getCompletedRequests() {
-        return completedRequests;
-    }
-    
-    public int getFailedRequests() {
-        return failedRequests;
-    }
     
     
-    public int getStarRating() {
-        return (int) Math.ceil(rating);
-    }
+    
+    
+    
+    
+    
+    
 
     public int getAvailableVMs() {
         return availableVMs;
@@ -347,16 +260,8 @@ public class Company implements Serializable {
     }
     
     
-    public void addRatingObserver(RatingObserver observer) {
-        if (observer != null && !ratingObservers.contains(observer)) {
-            ratingObservers.add(observer);
-        }
-    }
     
     
-    public void removeRatingObserver(RatingObserver observer) {
-        ratingObservers.remove(observer);
-    }
     
     
     private void notifyRatingObservers() {
@@ -366,16 +271,8 @@ public class Company implements Serializable {
     }
     
     
-    public void addMoneyObserver(MoneyTransactionObserver observer) {
-        if (observer != null && !moneyObservers.contains(observer)) {
-            moneyObservers.add(observer);
-        }
-    }
     
     
-    public void removeMoneyObserver(MoneyTransactionObserver observer) {
-        moneyObservers.remove(observer);
-    }
     
     
     private void notifyMoneyObservers(long amount, long newBalance, boolean isIncome) {

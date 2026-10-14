@@ -17,12 +17,6 @@ public enum CustomerType {
         this.displayName = displayName;
     }
     
-    public int getRequiredPoints() {
-        return requiredPoints;
-    }
 
-    public String getDisplayName() {
-        return displayName;
-    }
 } 
 

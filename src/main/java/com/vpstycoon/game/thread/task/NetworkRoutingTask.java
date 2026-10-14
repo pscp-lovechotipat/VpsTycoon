@@ -1209,9 +1209,6 @@ public class NetworkRoutingTask extends GameTask {
             return visual;
         }
         
-        public Text getWeightText() {
-            return weightText;
-        }
         
         public Group getWeightGroup() {
             return weightGroup;

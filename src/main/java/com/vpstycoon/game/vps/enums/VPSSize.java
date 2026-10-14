@@ -35,8 +35,5 @@ public enum VPSSize {
         return slotsRequired;
     }
 
-    public double getPerformanceMultiplier() {
-        return performanceMultiplier;
-    }
 }
 

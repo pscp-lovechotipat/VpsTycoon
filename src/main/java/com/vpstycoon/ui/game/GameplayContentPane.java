@@ -39,19 +39,12 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.transform.Affine;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GameplayContentPane extends BorderPane {
@@ -450,9 +443,6 @@ public class GameplayContentPane extends BorderPane {
         resourceManager.pushMouseNotification(content);
     }
 
-    public void pushCenterNotification(String title, String content) {
-        resourceManager.pushCenterNotification(title, content);
-    }
 
     public void pushCenterNotification(String title, String content, String image) {
         resourceManager.pushCenterNotification(title, content, image);
@@ -463,9 +453,6 @@ public class GameplayContentPane extends BorderPane {
         rackManagementUI.openRackInfo();
     }
 
-    public void openCreateVPSPage() {
-        vpsCreationUI.openCreateVPSPage();
-    }
 
     public void openVPSInfoPage(VPSOptimization vps) {
         vpsInfoUI.openVPSInfoPage(vps);
@@ -829,9 +816,6 @@ public class GameplayContentPane extends BorderPane {
     }
 
     
-    private boolean checkHasParent(javafx.scene.Node node) {
-        return node.getParent() != null;
-    }
 
     
     public boolean installVPSFromInventory(String vpsId) {
@@ -911,70 +895,6 @@ public class GameplayContentPane extends BorderPane {
     }
 
     
-    public void showVMSelectionDialog() {
-        List<VPSOptimization.VM> allAvailableVMs = new ArrayList<>();
-        for (VPSOptimization vps : vpsManager.getVPSList()) {
-            allAvailableVMs.addAll(vps.getVms().stream()
-                    .filter(vm -> "Running".equals(vm.getStatus()))
-                    .collect(java.util.stream.Collectors.toList()));
-        }
-        if (allAvailableVMs.isEmpty()) {
-            pushNotification("Error", "No available VMs to assign.");
-            return;
-        }
-
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Assign VM");
-
-        VBox content = new VBox(15);
-        content.setPadding(new Insets(20));
-        content.setStyle("-fx-background-color: #2c3e50;");
-
-        Label titleLabel = new Label("Select a VM to Assign");
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: white;");
-
-        ComboBox<VPSOptimization.VM> vmComboBox = new ComboBox<>();
-        vmComboBox.setMaxWidth(Double.MAX_VALUE);
-        vmComboBox.setStyle("-fx-background-color: #34495e; -fx-text-fill: white;");
-        vmComboBox.getItems().addAll(allAvailableVMs);
-        vmComboBox.setPromptText("Select a VM");
-
-        Button confirmButton = new Button("Confirm");
-        confirmButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
-        confirmButton.setOnAction(e -> {
-            VPSOptimization.VM selectedVM = vmComboBox.getValue();
-            if (selectedVM != null) {
-                pushNotification("Success", "Assigned VM: " + selectedVM.getName());
-                dialog.close();
-            } else {
-                pushNotification("Error", "Please select a VM.");
-            }
-        });
-
-        Button cancelButton = new Button("Cancel");
-        cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
-        cancelButton.setOnAction(e -> dialog.close());
-
-        HBox buttonBox = new HBox(10);
-        buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.getChildren().addAll(confirmButton, cancelButton);
-
-        Label selectVMLabel = new Label("Select VM:");
-        selectVMLabel.setStyle("-fx-text-fill: white;");
-
-        content.getChildren().addAll(titleLabel, selectVMLabel, vmComboBox, buttonBox);
-        dialog.getDialogPane().setContent(content);
-
-        dialog.setOnShown(event -> {
-            Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-            Stage mainStage = (Stage) getScene().getWindow();
-            stage.setX(mainStage.getX() + (mainStage.getWidth() / 2) - (stage.getWidth() / 2));
-            stage.setY(mainStage.getY() + (mainStage.getHeight() / 2) - (stage.getHeight() / 2));
-        });
-
-        dialog.showAndWait();
-    }
 
     
     public StackPane getRootStack() {
@@ -1013,9 +933,6 @@ public class GameplayContentPane extends BorderPane {
         return company;
     }
 
-    public GameTimeController getGameTimeController() {
-        return gameTimeController;
-    }
 
     public ChatSystem getChatSystem() {
         return chatSystem;
@@ -1033,21 +950,9 @@ public class GameplayContentPane extends BorderPane {
         return rack;
     }
 
-    public int getOccupiedSlots() {
-        return rack.getOccupiedSlotUnits();
-    }
 
-    public int getTotalSlots() {
-        return rack.getMaxSlotUnits();
-    }
 
-    public int getAvailableSlot() {
-        return rack.getAvailableSlotUnits();
-    }
 
-    public int getAllAvailableSlots() {
-        return rack.getUnlockedSlotUnits();
-    }
 
     public boolean isShowDebug() {
         return showDebug;
@@ -1110,9 +1015,6 @@ public class GameplayContentPane extends BorderPane {
         this.showDebug = showDebug;
     }
 
-    public void setSkillPointsSystem(SkillPointsSystem skillPointsSystem) {
-        this.skillPointsSystem = skillPointsSystem;
-    }
 
     
     private void syncWithGameManager() {

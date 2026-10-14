@@ -677,119 +677,6 @@ public class MessengerController {
     }
     
     
-    private void createVirtualMachines(int vmCount, int serverCount) {
-        
-        int remainingVMs = vmCount;
-        
-        
-        if (serverCount > 0) {
-            
-            Map<String, Integer> serverCapacity = new HashMap<>();
-            int totalAvailableCapacity = 0;
-            
-            
-            for (Map.Entry<String, VPSOptimization> entry : vpsManager.getVPSMap().entrySet()) {
-                String serverId = entry.getKey();
-                VPSOptimization vps = entry.getValue();
-                
-                
-                
-                int maxVMsPerServer = vps.getVCPUs();
-                
-                
-                int existingVMs = vps.getVms().size();
-                
-                
-                int remainingCapacity = Math.max(0, maxVMsPerServer - existingVMs);
-                
-                
-                serverCapacity.put(serverId, remainingCapacity);
-                totalAvailableCapacity += remainingCapacity;
-                
-                System.out.println("เซิร์ฟเวอร์ " + serverId + " มี capacity เหลือ " + 
-                                  remainingCapacity + " VM (max: " + maxVMsPerServer + 
-                                  ", มีอยู่แล้ว: " + existingVMs + ")");
-            }
-            
-            
-            if (totalAvailableCapacity < vmCount) {
-                System.out.println("⚠️ เตือน: จำนวน VM ที่ต้องการสร้าง (" + vmCount + 
-                                 ") มากกว่า capacity รวมที่เหลืออยู่ (" + totalAvailableCapacity + 
-                                 ") จะสร้างเท่าที่ capacity เหลือ");
-                
-                
-                remainingVMs = totalAvailableCapacity;
-                
-                
-                company.setAvailableVMs(totalAvailableCapacity);
-                ResourceManager.getInstance().getCurrentState().setFreeVmCount(totalAvailableCapacity);
-                System.out.println("ปรับค่า availableVMs เป็น " + totalAvailableCapacity + " ตาม capacity จริง");
-            }
-            
-            
-            for (Map.Entry<String, VPSOptimization> entry : vpsManager.getVPSMap().entrySet()) {
-                String serverId = entry.getKey();
-                VPSOptimization vps = entry.getValue();
-                
-                
-                int availableCapacity = serverCapacity.get(serverId);
-                
-                
-                int vmsToCreate = Math.min(remainingVMs, availableCapacity);
-                
-                for (int i = 0; i < vmsToCreate; i++) {
-                    
-                    String vmName = "vm-" + System.currentTimeMillis() + "-" + i;
-                    VPSOptimization.VM newVM = new VPSOptimization.VM(
-                        vmName,
-                        1, 
-                        1, 
-                        10  
-                    );
-                    
-                    
-                    newVM.setIp(generateRandomIp());
-                    newVM.setStatus("Running");
-                    
-                    
-                    CustomerRequest assignedRequest = findAssignedCustomerFromGameState(vmName);
-                    if (assignedRequest != null) {
-                        newVM.assignToCustomer(
-                            String.valueOf(assignedRequest.getId()), 
-                            assignedRequest.getName(), 
-                            assignedRequest.getLastPaymentTime()
-                        );
-                        System.out.println("VM " + vmName + " ถูกกำหนดให้ลูกค้า " + assignedRequest.getName() + " แล้ว");
-                    }
-                    
-                    vps.addVM(newVM);
-                    System.out.println("สร้าง VM ใหม่ใน server " + vps.getVpsId() + ": " + vmName);
-                    remainingVMs--;
-                }
-                
-                if (remainingVMs <= 0) break;
-            }
-            
-            
-            if (remainingVMs > 0) {
-                System.out.println("⚠️ ไม่สามารถสร้าง VM ได้ครบตามต้องการ เนื่องจาก capacity ไม่พอ ยังเหลืออีก " + 
-                                  remainingVMs + " VM ที่ต้องการสร้าง");
-                
-                
-                int actualCreated = vmCount - remainingVMs;
-                if (company.getAvailableVMs() > actualCreated) {
-                    company.setAvailableVMs(actualCreated);
-                    ResourceManager.getInstance().getCurrentState().setFreeVmCount(actualCreated);
-                    System.out.println("ปรับค่า availableVMs เป็น " + actualCreated + " ตามที่สร้างได้จริง");
-                }
-            }
-        } else {
-            System.out.println("⚠️ ไม่สามารถสร้าง VM ได้เนื่องจากไม่มีเซิร์ฟเวอร์ในระบบ");
-            
-            company.setAvailableVMs(0);
-            ResourceManager.getInstance().getCurrentState().setFreeVmCount(0);
-        }
-    }
 
     
     private void releaseExpiredVMs() {
@@ -1351,9 +1238,6 @@ public class MessengerController {
         System.out.println("MessengerController cleanup completed");
     }
 
-    public void setOnClose(Runnable onClose) {
-        this.onClose = onClose;
-    }
 
     public void close() {
         try {
@@ -1380,14 +1264,6 @@ public class MessengerController {
         return messengerWindow;
     }
 
-    private String generateRandomIp() {
-        
-        Random random = new Random();
-        return "10." + 
-               random.nextInt(255) + "." + 
-               random.nextInt(255) + "." + 
-               (random.nextInt(254) + 1); 
-    }
 
     
     private void loadVPSFromGameState() {
@@ -1565,22 +1441,6 @@ public class MessengerController {
     }
 
     
-    private CustomerRequest findAssignedCustomerFromGameState(String vmName) {
-        
-        String[] parts = vmName.split("-");
-        if (parts.length < 3) {
-            return null; 
-        }
-        
-        
-        for (CustomerRequest request : requestManager.getRequests()) {
-            
-            if (request.isActive() && !request.isExpired() && !isRequestAssigned(request)) {
-                return request;
-            }
-        }
-        return null;
-    }
     
     
     private boolean isRequestAssigned(CustomerRequest request) {

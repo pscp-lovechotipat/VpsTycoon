@@ -20,7 +20,6 @@ import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -161,18 +160,8 @@ public abstract class GameTask {
     }
 
     
-    public static boolean isTaskActive() {
-        synchronized(taskLock) {
-            return isTaskActive;
-        }
-    }
 
     
-    protected static void setTaskActive(boolean active) {
-        synchronized(taskLock) {
-            isTaskActive = active;
-        }
-    }
 
     
     public void showTask(Runnable onComplete) {
@@ -684,13 +673,7 @@ public abstract class GameTask {
         return taskName;
     }
     
-    public String getTaskDescription() {
-        return taskDescription;
-    }
     
-    public String getTaskImage() {
-        return imagePath;
-    }
     
     public long getRewardAmount() {
         return rewardAmount;

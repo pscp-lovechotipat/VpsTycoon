@@ -293,26 +293,6 @@ public class CyberpunkEffects {
     }
     
     
-    public static Pane createDataPanel(String title) {
-        BorderPane panel = new BorderPane();
-        panel.setPadding(new Insets(15));
-        panel.setStyle(
-            "-fx-background-color: rgba(10, 20, 40, 0.8);" +
-            "-fx-border-color: #00FFFF;" +
-            "-fx-border-width: 1px;" +
-            "-fx-background-radius: 5px;" +
-            "-fx-border-radius: 5px;"
-        );
-        
-        Label titleLabel = new Label(title);
-        titleLabel.setFont(Font.font(CYBERPUNK_FONT_SECONDARY, FontWeight.BOLD, 14));
-        titleLabel.setTextFill(Color.web("#00FFFF"));
-        titleLabel.setStyle("-fx-background-color: rgba(0, 20, 40, 0.8); -fx-padding: 5 10;");
-        
-        panel.setTop(titleLabel);
-        
-        return panel;
-    }
     
     
     public static Color getRandomNeonColor() {
@@ -364,32 +344,6 @@ public class CyberpunkEffects {
     }
     
     
-    public static Pane createNotificationPopup(String title, String message, boolean success) {
-        BorderPane popup = new BorderPane();
-        popup.setPadding(new Insets(20));
-        
-        String baseColor = success ? "#00F6FF" : "#F44336";
-        
-        popup.setStyle(
-            "-fx-background-color: rgba(58, 28, 90, 0.7);" +
-            "-fx-border-color: " + baseColor + ";" +
-            "-fx-border-width: 2px;" +
-            "-fx-background-radius: 5px;" +
-            "-fx-border-radius: 5px;" +
-            "-fx-effect: dropshadow(gaussian, rgba(138, 43, 226, 0.4), 15, 0, 0, 7);"
-        );
-        
-        Label titleLabel = createGlowingLabel(">> " + title + " <<", baseColor);
-        Text messageText = new Text(message);
-        messageText.setFont(Font.font(CYBERPUNK_FONT_SECONDARY, FontWeight.NORMAL, 14));
-        messageText.setFill(Color.WHITE);
-        
-        popup.setTop(titleLabel);
-        BorderPane.setMargin(titleLabel, new Insets(0, 0, 10, 0));
-        popup.setCenter(messageText);
-        
-        return popup;
-    }
     
     
     public static VBox createCyberSection(String title) {
@@ -410,21 +364,5 @@ public class CyberpunkEffects {
     }
     
     
-    public static HBox createCyberCard(String title) {
-        HBox card = new HBox(15);
-        card.setPadding(new Insets(15));
-        card.setStyle("-fx-background-color: rgba(58, 28, 90, 0.4); -fx-background-radius: 5px; " +
-                "-fx-border-color: #00F6FF; -fx-border-width: 1px; -fx-border-radius: 5px; " +
-                "-fx-effect: dropshadow(gaussian, rgba(0, 246, 255, 0.2), 10, 0, 0, 3);");
-        
-        VBox titleBox = new VBox(5);
-        Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-text-fill: #00F6FF; -fx-font-size: 16px; -fx-font-weight: bold; " +
-                "-fx-font-family: 'Monospace';");
-        titleBox.getChildren().add(titleLabel);
-        
-        card.getChildren().add(titleBox);
-        return card;
-    }
 } 
 

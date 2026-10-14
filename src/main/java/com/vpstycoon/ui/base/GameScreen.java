@@ -21,9 +21,6 @@ public abstract class GameScreen {
         SceneController.getInstance().setContent(content);
     }
 
-    public void hide() {
-        SceneController.getInstance().setContent(null);
-    }
 
     protected abstract Region createContent();
 

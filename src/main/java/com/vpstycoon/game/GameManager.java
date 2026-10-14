@@ -1,6 +1,5 @@
 package com.vpstycoon.game;
 
-import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.manager.CustomerRequest;
 import com.vpstycoon.game.manager.RequestManager;
 import com.vpstycoon.game.resource.ResourceManager;
@@ -72,38 +71,6 @@ public class GameManager {
     }
     
     
-    public void initializeNewGame(Company company) {
-        
-        if (requestGenerator != null) {
-            try {
-                requestGenerator.stopGenerator();
-                System.out.println("Stopped existing RequestGenerator");
-            } catch (Exception e) {
-                System.err.println("Error stopping RequestGenerator: " + e.getMessage());
-            }
-        }
-
-        
-        requestManager = ResourceManager.getInstance().getRequestManager();
-        
-        
-        timeManager = ResourceManager.getInstance().getGameTimeManager();
-        
-        
-        requestGenerator = new RequestGenerator(requestManager);
-        
-        
-        vpsInventory = new VPSInventory();
-        
-        
-        installedServers = new ArrayList<>();
-        
-        
-        
-        
-        
-        saveState();
-    }
     
     
     public void saveState() {
@@ -284,106 +251,12 @@ public class GameManager {
     }
 
     
-    public void loadState() {
-        
-        boolean loadCompleted = false;
-        boolean rackLoadedSuccessfully = false;
-        
-        try {
-            GameState savedState = ResourceManager.getInstance().loadGameState();
-            
-            if (savedState != null) {
-                
-                Company company = savedState.getCompany();
-                
-                
-                initializeNewGame(company);
-                
-                
-                if (this.requestManager != null) {
-                    
-                    if (savedState.getPendingRequests() != null && !savedState.getPendingRequests().isEmpty()) {
-                        
-                        this.requestManager.getRequests().clear();
-                        
-                        
-                        this.requestManager.getRequests().addAll(savedState.getPendingRequests());
-                        System.out.println("โหลด pendingRequests: " + savedState.getPendingRequests().size() + " รายการ");
-                    }
-                    
-                    
-                    if (savedState.getCompletedRequests() != null && !savedState.getCompletedRequests().isEmpty()) {
-                        
-                        this.requestManager.addCompletedRequests(savedState.getCompletedRequests());
-                        System.out.println("โหลด completedRequests: " + savedState.getCompletedRequests().size() + " รายการ");
-                    }
-                }
-                
-                
-                try {
-                    
-                    rackLoadedSuccessfully = ResourceManager.getInstance().loadRackDataFromGameState(savedState);
-                    
-                    
-                    if (rackLoadedSuccessfully) {
-                        System.out.println("โหลดข้อมูล rack สำเร็จ (" + ResourceManager.getInstance().getRack().getInstalledVPS().size() + " VPS)");
-                    } else {
-                        System.err.println("ไม่สามารถโหลดข้อมูล rack ได้");
-                    }
-                } catch (Exception e) {
-                    System.err.println("เกิดข้อผิดพลาดในการโหลดข้อมูล rack: " + e.getMessage());
-                    e.printStackTrace();
-                }
-                
-                
-                if (requestGenerator != null) {
-                    
-                    if (!requestGenerator.isAlive()) {
-                        requestGenerator.start();
-                        System.out.println("Started RequestGenerator after loading state");
-                    } else {
-                        
-                        if (requestGenerator.isPaused()) {
-                            requestGenerator.resumeGenerator();
-                            System.out.println("Resumed existing RequestGenerator after loading state");
-                        } else {
-                            System.out.println("RequestGenerator is already running");
-                        }
-                    }
-                }
-                
-                loadCompleted = true;
-            }
-        } catch (Exception e) {
-            System.err.println("เกิดข้อผิดพลาดในการโหลดเกม: " + e.getMessage());
-            e.printStackTrace();
-            loadCompleted = false;
-        }
-        
-        
-        if (loadCompleted) {
-            System.out.println("โหลดเกมสำเร็จ");
-            gameRunning = true;
-        } else {
-            System.err.println("โหลดเกมไม่สำเร็จ");
-            gameRunning = false;
-        }
-    }
 
     
-    public GameState getCurrentState() {
-        return ResourceManager.getInstance().getCurrentState();
-    }
 
     
-    public void deleteSavedGame() {
-        ResourceManager.getInstance().deleteSaveFile();
-    }
 
     
-    public boolean hasSavedGame() {
-        return ResourceManager.getInstance().hasSaveFile();
-    }
     
     
     public boolean installServer(String serverId) {
@@ -430,48 +303,11 @@ public class GameManager {
     }
     
     
-    public boolean buyServer(int vcpus, int ramGB, int diskGB, long cost) {
-        if (requestManager == null || requestManager.getVmProvisioningManager() == null) {
-            return false;
-        }
-        
-        Company company = requestManager.getVmProvisioningManager().getCompany();
-        
-        
-        if (company.getMoney() < cost) {
-            return false;
-        }
-        
-        
-        if (!company.spendMoney(cost)) {
-            return false;
-        }
-        
-        
-        VPSOptimization server = new VPSOptimization();
-        server.setVCPUs(vcpus);
-        server.setRamInGB(ramGB);
-        server.setDiskInGB(diskGB);
-        
-        
-        vpsInventory.addVPS("server-" + System.currentTimeMillis(), server);
-        
-        return true;
-    }
     
     
     
-    public RequestManager getRequestManager() {
-        return requestManager;
-    }
     
-    public GameTimeManager getTimeManager() {
-        return timeManager;
-    }
     
-    public RequestGenerator getRequestGenerator() {
-        return requestGenerator;
-    }
     
     public VPSInventory getVpsInventory() {
         return vpsInventory;
@@ -481,8 +317,5 @@ public class GameManager {
         return new ArrayList<>(installedServers);
     }
     
-    public boolean isGameRunning() {
-        return gameRunning;
-    }
 }
 

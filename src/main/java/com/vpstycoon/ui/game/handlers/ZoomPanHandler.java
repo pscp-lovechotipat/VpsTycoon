@@ -169,9 +169,6 @@ public class ZoomPanHandler {
         }
     }
     
-    public void setShowDebug(boolean showDebug) {
-        this.showDebug = showDebug;
-    }
     
     
     public void cleanup() {
