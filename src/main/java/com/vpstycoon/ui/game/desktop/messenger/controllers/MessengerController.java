@@ -1,5 +1,10 @@
 package com.vpstycoon.ui.game.desktop.messenger.controllers;
 
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatHistoryManager;
+import com.vpstycoon.ui.game.desktop.messenger.models.ChatMessage;
+import com.vpstycoon.ui.game.desktop.messenger.models.RentalManager;
+import com.vpstycoon.ui.game.desktop.messenger.models.SkillPointsManager;
+import com.vpstycoon.ui.game.desktop.messenger.models.VMProvisioningManager;
 import com.vpstycoon.game.GameState;
 import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.company.SkillPointsSystem;
@@ -11,7 +16,6 @@ import com.vpstycoon.game.thread.GameTimeManager;
 import com.vpstycoon.game.vps.VPSOptimization;
 import com.vpstycoon.ui.game.desktop.MessengerWindow;
 import com.vpstycoon.ui.game.desktop.messenger.MessageType;
-import com.vpstycoon.ui.game.desktop.messenger.models.*;
 import com.vpstycoon.ui.game.desktop.messenger.views.ChatAreaView;
 import com.vpstycoon.ui.game.desktop.messenger.views.DashboardView;
 import com.vpstycoon.ui.game.desktop.messenger.views.RequestListView;

@@ -1,5 +1,6 @@
 package com.vpstycoon.game.resource;
 
+import com.vpstycoon.ui.game.desktop.DesktopScreen;
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.game.GameObject;
 import com.vpstycoon.game.GameState;
@@ -841,9 +842,7 @@ public class ResourceManager implements Serializable {
                 }
 
                 try {
-                    Class.forName("com.vpstycoon.ui.game.desktop.DesktopScreen")
-                         .getMethod("preloadImages")
-                         .invoke(null);
+                    DesktopScreen.preloadImages();
                 } catch (Exception e) {
                     System.err.println("Error preloading DesktopScreen images: " + e.getMessage());
                 }

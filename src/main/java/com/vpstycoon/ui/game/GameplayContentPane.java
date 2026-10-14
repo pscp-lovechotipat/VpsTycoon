@@ -1,5 +1,9 @@
 package com.vpstycoon.ui.game;
 
+import com.vpstycoon.ui.game.vps.VMCreationUI;
+import com.vpstycoon.ui.game.vps.VMEditUI;
+import com.vpstycoon.ui.game.vps.VMInfoUI;
+import com.vpstycoon.ui.game.vps.VPSInfoUI;
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.DefaultGameConfig;
 import com.vpstycoon.game.GameManager;
@@ -29,7 +33,6 @@ import com.vpstycoon.ui.game.status.date.DateView;
 import com.vpstycoon.ui.game.status.money.MoneyController;
 import com.vpstycoon.ui.game.status.money.MoneyModel;
 import com.vpstycoon.ui.game.status.money.MoneyUI;
-import com.vpstycoon.ui.game.vps.*;
 import com.vpstycoon.ui.navigation.Navigator;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
