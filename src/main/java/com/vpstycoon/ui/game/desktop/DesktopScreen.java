@@ -8,6 +8,7 @@ import com.vpstycoon.model.company.Company;
 import com.vpstycoon.persistence.ChatHistoryManager;
 import com.vpstycoon.screen.ScreenResolution;
 import com.vpstycoon.thread.GameTimeManager;
+import com.vpstycoon.ui.common.ImageCache;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import com.vpstycoon.ui.game.messenger.MessengerController;
 import com.vpstycoon.ui.game.messenger.MessengerWindow;
@@ -16,9 +17,6 @@ import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class DesktopScreen extends StackPane {
     private final RequestManager requestManager;
@@ -30,50 +28,6 @@ public class DesktopScreen extends StackPane {
 
     private MessengerWindow chatWindow;
     private MessengerController chatController;
-
-    private static Map<String, Image> imageCache = new HashMap<>();
-    private static boolean imagesPreloaded = false;
-
-    private static final String[] DESKTOP_IMAGES = {
-        "/images/wallpaper/Desktop.gif",
-        "/images/buttons/MessengerDesktop.png",
-        "/images/buttons/MarketDesktop.png",
-        "/images/buttons/RoomDesktop.gif",
-        "/images/buttons/ServerDesktop.gif"
-    };
-
-    static {
-        preloadImages();
-    }
-
-    public static synchronized void preloadImages() {
-        if (imagesPreloaded) {
-            System.out.println("Desktop images already preloaded, skipping");
-            return;
-        }
-
-        System.out.println("Preloading desktop images");
-        for (String imagePath : DESKTOP_IMAGES) {
-            loadImage(imagePath);
-        }
-
-        imagesPreloaded = true;
-        System.out.println("Desktop images preloading complete");
-    }
-
-    public static Image loadImage(String path) {
-        if (!imageCache.containsKey(path)) {
-            try {
-                Image image = new Image(path, true);
-                imageCache.put(path, image);
-                return image;
-            } catch (Exception e) {
-                System.err.println("Error loading image: " + path + " - " + e.getMessage());
-                return null;
-            }
-        }
-        return imageCache.get(path);
-    }
 
     public DesktopScreen(RequestManager requestManager, VPSManager vpsManager, Company company, GameplayContentPane parent, GameTimeManager gameTimeManager, Runnable onExit) {
         this.requestManager = requestManager;
@@ -91,7 +45,7 @@ public class DesktopScreen extends StackPane {
 
         setStyle("-fx-background-color: black;");
 
-        javafx.scene.image.Image backgroundImage = loadImage("/images/wallpaper/Desktop.gif");
+        Image backgroundImage = ImageCache.get("/images/wallpaper/Desktop.gif");
 
         Pane backgroundLayer = createBackgroundLayer(backgroundImage);
 
@@ -151,7 +105,6 @@ public class DesktopScreen extends StackPane {
         messengerButton.setTranslateY(127);
 
         String imageUrl = "/images/buttons/MessengerDesktop.png";
-        loadImage(imageUrl);
 
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
@@ -186,7 +139,6 @@ public class DesktopScreen extends StackPane {
         marketButton.setTranslateY(192);
 
         String imageUrl = "/images/buttons/MarketDesktop.png";
-        loadImage(imageUrl);
 
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
@@ -221,7 +173,6 @@ public class DesktopScreen extends StackPane {
         roomButton.setTranslateY(-290);
 
         String imageUrl = "/images/buttons/RoomDesktop.gif";
-        loadImage(imageUrl);
 
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
@@ -256,7 +207,6 @@ public class DesktopScreen extends StackPane {
         serverButton.setTranslateY(-475);
 
         String imageUrl = "/images/buttons/ServerDesktop.gif";
-        loadImage(imageUrl);
 
         String normalStyle = String.format("""
             -fx-background-image: url('%s');

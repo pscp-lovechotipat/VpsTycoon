@@ -1,6 +1,5 @@
 package com.vpstycoon.application;
 
-import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.config.DefaultGameConfig;
 import com.vpstycoon.config.GameConfig;
 import com.vpstycoon.event.GameEventBus;
@@ -17,7 +16,6 @@ import com.vpstycoon.ui.common.Navigator;
 import com.vpstycoon.ui.common.SceneController;
 import com.vpstycoon.ui.cutscene.CutsceneScreen;
 import com.vpstycoon.ui.game.GameplayScreen;
-import com.vpstycoon.ui.game.room.RoomObjectsLayer;
 import com.vpstycoon.ui.menu.MainMenuScreen;
 import com.vpstycoon.ui.settings.SettingsScreen;
 import javafx.animation.FadeTransition;
@@ -29,7 +27,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -47,9 +44,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
     private SettingsScreen settingsScreen;
     private GameplayScreen gameplayScreen;
     private Stage loadingStage;
-    private Label loadingDetailsLabel;
-    private javafx.scene.control.ProgressIndicator progressIndicator;
-    private VBox loadingDetailsPane;
     private Label statusLabel;
 
     @Override
@@ -81,8 +75,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
             try {
                 ResourceManager resourceManager = ResourceManager.getInstance();
                 resourceManager.setResourceLoadingListener(GameApplication.this);
-
-                initResourceLoadingListener();
 
                 resourceManager.preloadAssets();
 
@@ -274,8 +266,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
                     newState.setSkillLevels(resourceManager.getSkillPointsSystem().getSkillLevelsMap());
                     System.out.println("บันทึก SkillLevels ลงใน GameState เรียบร้อย");
                 }
-
-                com.vpstycoon.ui.game.room.RoomObjectsLayer.preloadImages();
 
                 if (ResourceManager.getInstance().getRequestGenerator() != null) {
                     ResourceManager.getInstance().getRequestGenerator().stopGenerator();
@@ -477,20 +467,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 Label loadingLabel = new Label("กำลังโหลดทรัพยากร...");
                 loadingLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: white;");
 
-                loadingDetailsLabel = new Label("");
-                loadingDetailsLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #aaaaaa;");
-
-                ScrollPane scrollPane = new ScrollPane();
-                scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
-                scrollPane.setFitToWidth(true);
-                scrollPane.setPrefHeight(100);
-                scrollPane.setMaxHeight(100);
-
-                loadingDetailsPane = new VBox(5);
-                loadingDetailsPane.setStyle("-fx-background-color: transparent;");
-                scrollPane.setContent(loadingDetailsPane);
-
-                progressIndicator = new javafx.scene.control.ProgressIndicator();
+                javafx.scene.control.ProgressIndicator progressIndicator = new javafx.scene.control.ProgressIndicator();
                 progressIndicator.setProgress(-1);
                 progressIndicator.setStyle("""
                     -fx-progress-color: #8A2BE2;
@@ -524,8 +501,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
                 fadeIn.setFromValue(0.0);
                 fadeIn.setToValue(1.0);
                 fadeIn.play();
-
-                initResourceLoadingListener();
             } catch (Exception e) {
                 System.err.println("Error showing loading screen: " + e.getMessage());
                 e.printStackTrace();
@@ -533,140 +508,19 @@ public class GameApplication extends Application implements Navigator, ResourceM
         });
     }
 
-    private void initResourceLoadingListener() {
-        final String[] imagesToPreload = {
-            "/images/rooms/room.gif",
-            "/images/Moniter/MoniterF2.png",
-            "/images/servers/server2.gif",
-            "/images/Object/Keroro.png",
-            "/images/Object/MusicboxOn.gif",
-            "/images/Object/MusicboxOff.png",
-            "/images/Object/Table.png",
-            "/images/wallpaper/BackgroundWindow.gif"
-        };
-
-        final String[] soundFiles = {
-            "hover.wav",
-            "click.wav",
-            "click_app.wav",
-            "server.mp3",
-            "keroro_sound.mp3"
-        };
-
-        RoomObjectsLayer.preloadImages();
-
-        Thread preloadThread = new Thread(() -> {
-            try {
-                ResourceManager resourceManager = ResourceManager.getInstance();
-                int totalPreloaded = 0;
-
-                for (String imagePath : imagesToPreload) {
-                    try {
-                        final String currentPath = imagePath;
-                        Platform.runLater(() -> {
-                            loadingDetailsLabel.setText("กำลังโหลด: " + currentPath);
-
-                            Label fileLabel = new Label("- " + currentPath);
-                            fileLabel.setStyle("-fx-text-fill: #AAAAAA;");
-                            loadingDetailsPane.getChildren().add(0, fileLabel);
-                        });
-
-                        new Image(imagePath, true);
-                        totalPreloaded++;
-                        Thread.sleep(100);
-                    } catch (Exception e) {
-                        System.err.println("ไม่สามารถโหลดรูปภาพ: " + imagePath);
-                    }
-                }
-
-                AudioManager audioManager = resourceManager.getAudioManager();
-                for (String soundFile : soundFiles) {
-                    try {
-                        final String currentSound = soundFile;
-                        Platform.runLater(() -> {
-                            loadingDetailsLabel.setText("กำลังโหลดเสียง: " + currentSound);
-                            Label fileLabel = new Label("- เสียง: " + currentSound);
-                            fileLabel.setStyle("-fx-text-fill: #AAAAAA;");
-                            loadingDetailsPane.getChildren().add(0, fileLabel);
-                        });
-
-                        audioManager.preloadSoundEffect(soundFile);
-                        totalPreloaded++;
-                        Thread.sleep(100);
-                    } catch (Exception e) {
-                        System.err.println("ไม่สามารถโหลดไฟล์เสียง: " + soundFile);
-                    }
-                }
-
-                int totalResources = totalPreloaded;
-                Thread progressMonitor = new Thread(() -> {
-                    try {
-                        Thread.sleep(500);
-
-                        while (true) {
-                            Thread.sleep(100);
-
-                            if (resourceManager.isPreloadComplete()) {
-                                Platform.runLater(() -> {
-                                    updateProgressStatus("การโหลดเสร็จสมบูรณ์! กำลังเตรียมเริ่มเกม...");
-                                });
-
-                                Thread.sleep(1000);
-                                break;
-                            }
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Error in progress monitor: " + e.getMessage());
-                    }
-                });
-
-                progressMonitor.setDaemon(true);
-                progressMonitor.start();
-
-                final int finalCount = totalResources;
-                Platform.runLater(() -> {
-                    statusLabel.setText("โหลดทรัพยากรแล้ว " + finalCount + " รายการ");
-                });
-            } catch (Exception e) {
-                System.err.println("Error in preload thread: " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
-
-        preloadThread.setDaemon(true);
-        preloadThread.start();
-    }
-
     @Override
     public void onResourceLoading(String resourcePath) {
-        if (resourcePath != null && !resourcePath.trim().isEmpty()) {
-            Platform.runLater(() -> {
-                loadingDetailsLabel.setText("กำลังโหลด: " + getSimpleFileName(resourcePath));
-
-                Label fileLabel = new Label("- " + resourcePath);
-                fileLabel.setStyle("-fx-text-fill: #AAAAAA;");
-
-                if (loadingDetailsPane != null) {
-                    loadingDetailsPane.getChildren().add(0, fileLabel);
-
-                    if (loadingDetailsPane.getChildren().size() > 100) {
-                        loadingDetailsPane.getChildren().remove(100, loadingDetailsPane.getChildren().size());
-                    }
-                }
-            });
+        if (resourcePath != null && !resourcePath.trim().isEmpty() && statusLabel != null) {
+            statusLabel.setText("กำลังโหลด: " + getSimpleFileName(resourcePath));
         }
     }
 
     @Override
     public void onResourceLoadingComplete(int totalLoaded) {
-        Platform.runLater(() -> {
-            loadingDetailsLabel.setText("โหลดทรัพยากรเสร็จสมบูรณ์");
-
-            if (statusLabel != null) {
-                statusLabel.setText("โหลดทรัพยากรครบถ้วน " + totalLoaded + " รายการ");
-                statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #2ECC71;");
-            }
-        });
+        if (statusLabel != null) {
+            statusLabel.setText("โหลดทรัพยากรครบถ้วน " + totalLoaded + " รายการ");
+            statusLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #2ECC71;");
+        }
     }
 
     private String getSimpleFileName(String path) {
@@ -676,17 +530,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
             return path.substring(lastSlash + 1);
         }
         return path;
-    }
-
-    private void updateProgressStatus(String message) {
-        if (statusLabel != null) {
-            final String statusMessage = message;
-            Platform.runLater(() -> {
-                if (statusLabel != null) {
-                    statusLabel.setText(statusMessage);
-                }
-            });
-        }
     }
 
     public static void main(String[] args) {

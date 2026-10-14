@@ -2,12 +2,10 @@ package com.vpstycoon.ui.game.room;
 
 import com.vpstycoon.audio.AudioManager;
 import com.vpstycoon.manager.ResourceManager;
+import com.vpstycoon.ui.common.ImageCache;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class RoomObjectsLayer {
     private final Pane monitorLayer;
@@ -23,79 +21,6 @@ public class RoomObjectsLayer {
     private AudioManager audioManager;
     private ResourceManager resourceManager = ResourceManager.getInstance();
     private boolean run = resourceManager.isMusicRunning();
-
-    private static Map<String, Image> imageCache = new HashMap<>();
-    private static boolean imagesPreloaded = false;
-
-    static {
-        preloadImages();
-    }
-
-    public static synchronized void preloadImages() {
-        if (imagesPreloaded) {
-            System.out.println("Room images already preloaded, skipping");
-            return;
-        }
-
-        System.out.println("Preloading room object images");
-
-        String[] imagePaths = {
-            "/images/Object/MusicboxOn.gif",
-            "/images/Object/MusicboxOff.png",
-            "/images/Object/Keroro.png",
-            "/images/Moniter/MoniterF2.png",
-            "/images/Object/Table.png",
-            "/images/servers/server2.gif",
-            "/images/wallpaper/BackgroundWindow.gif",
-            "/images/rooms/room.gif"
-        };
-
-        boolean allSuccess = true;
-
-        for (String path : imagePaths) {
-            Image img = loadImage(path);
-            if (img == null) {
-                System.err.println("ไม่สามารถโหลดรูปภาพ: " + path);
-                allSuccess = false;
-            } else {
-                System.out.println("โหลดรูปภาพสำเร็จ: " + path);
-            }
-        }
-
-        if (!allSuccess) {
-            System.err.println("มีปัญหาในการโหลดรูปภาพบางรายการ กรุณาตรวจสอบว่าไฟล์มีอยู่จริง");
-            System.err.println("หรือลองรันคำสั่ง 'mvn clean package' เพื่อสร้างไฟล์ resources ใหม่");
-        }
-
-        imagesPreloaded = true;
-        System.out.println("Room object images preloading complete" + (allSuccess ? " (all succeeded)" : " (some failed)"));
-    }
-
-    public static Image loadImage(String path) {
-        if (!imageCache.containsKey(path)) {
-            try {
-                String resourcePath = path;
-
-                java.io.InputStream resourceStream = RoomObjectsLayer.class.getResourceAsStream(resourcePath);
-
-                if (resourceStream == null) {
-                    System.err.println("ไม่พบรูปภาพ: " + path);
-                    imageCache.put(path, null);
-                    return null;
-                }
-
-                Image image = new Image(resourceStream);
-                imageCache.put(path, image);
-                return image;
-            } catch (Exception e) {
-                System.err.println("เกิดข้อผิดพลาดในการโหลดรูปภาพ " + path + ": " + e.getMessage());
-                e.printStackTrace();
-                imageCache.put(path, null);
-                return null;
-            }
-        }
-        return imageCache.get(path);
-    }
 
     public RoomObjectsLayer(Runnable onMonitorClick ,Runnable onServerClick, Runnable onKeroroClick, Runnable onMusicBoxClick, Runnable onMusicStopClick) {
         this.onMonitorClick = onMonitorClick;
@@ -261,7 +186,7 @@ public class RoomObjectsLayer {
     private Pane createServerLayer() {
         Pane serverLayer = new Pane();
 
-        Image img = loadImage("/images/servers/server2.gif");
+        Image img = ImageCache.get("/images/servers/server2.gif");
         serverLayer.setPrefWidth(img.getWidth());
         serverLayer.setPrefHeight(img.getHeight());
         serverLayer.setScaleX(0.25);

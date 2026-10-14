@@ -13,15 +13,14 @@ import com.vpstycoon.thread.GameEvent;
 import com.vpstycoon.thread.GameTimeController;
 import com.vpstycoon.thread.GameTimeManager;
 import com.vpstycoon.thread.RequestGenerator;
+import com.vpstycoon.ui.common.ImageCache;
 import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.ui.game.desktop.DesktopScreen;
 import com.vpstycoon.ui.game.notification.CenterNotificationController;
 import com.vpstycoon.ui.game.notification.CenterNotificationModel;
 import com.vpstycoon.ui.game.notification.CenterNotificationView;
 import com.vpstycoon.ui.game.notification.MouseNotificationController;
 import com.vpstycoon.ui.game.notification.MouseNotificationView;
 import com.vpstycoon.ui.game.notification.NotificationView;
-import javafx.scene.image.Image;
 
 import java.io.*;
 import java.net.URL;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ResourceManager implements Serializable {
     private static final ResourceManager instance = new ResourceManager();
@@ -40,8 +38,6 @@ public class ResourceManager implements Serializable {
     private static final String GAME_FOLDER = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "VpsTycoon";
     private static final String SAVE_FILE = GAME_FOLDER + File.separator + "savegame.dat";
     private static final String BACKUP_DIR = GAME_FOLDER + File.separator + "backups";
-
-    private final Map<String, Image> imageCache = new ConcurrentHashMap<>();
 
     private Company company = new Company();
     private GameState currentState;
@@ -811,6 +807,8 @@ public class ResourceManager implements Serializable {
             "/images/Object/MusicboxOff.png",
             "/images/Object/Table.png",
             "/images/wallpaper/Desktop.gif",
+            "/images/wallpaper/BackgroundWindow.gif",
+            "/images/wallpaper/BackgroundWindow2.gif",
             "/images/buttons/MessengerDesktop.png",
             "/images/buttons/MarketDesktop.png",
             "/images/buttons/RoomDesktop.gif",
@@ -825,25 +823,20 @@ public class ResourceManager implements Serializable {
             "hover.wav",
             "click.wav",
             "click_app.wav",
-            "server.mp3"
+            "server.mp3",
+            "keroro_sound.mp3"
         };
 
         Thread preloadThread = new Thread(() -> {
             try {
                 for (String imagePath : imagesToPreload) {
                     notifyResourceLoading(imagePath);
-                    preloadImage(imagePath);
+                    ImageCache.get(imagePath);
                 }
 
                 for (String soundPath : soundsToPreload) {
                     notifyResourceLoading("เสียง: " + soundPath);
                     audioManager.preloadSoundEffect(soundPath);
-                }
-
-                try {
-                    DesktopScreen.preloadImages();
-                } catch (Exception e) {
-                    System.err.println("Error preloading DesktopScreen images: " + e.getMessage());
                 }
 
                 int totalResources = imagesToPreload.length + soundsToPreload.length;
@@ -878,21 +871,6 @@ public class ResourceManager implements Serializable {
         }
 
         return preloadComplete;
-    }
-
-    public boolean isPreloadComplete() {
-        return preloadComplete;
-    }
-
-    private Image preloadImage(String path) {
-        if (!imageCache.containsKey(path)) {
-            try {
-                imageCache.put(path, new Image(path, true));
-            } catch (Exception e) {
-                System.err.println("Error loading image " + path + ": " + e.getMessage());
-            }
-        }
-        return imageCache.get(path);
     }
 
     public void resetMessengerData() {

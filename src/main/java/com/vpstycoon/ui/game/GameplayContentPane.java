@@ -12,6 +12,7 @@ import com.vpstycoon.model.server.VPSInventory;
 import com.vpstycoon.model.server.VPSOptimization;
 import com.vpstycoon.screen.ScreenResolution;
 import com.vpstycoon.thread.GameTimeController;
+import com.vpstycoon.ui.common.ImageCache;
 import com.vpstycoon.ui.common.Navigator;
 import com.vpstycoon.ui.debug.DebugOverlayManager;
 import com.vpstycoon.ui.game.desktop.MarketWindow;
@@ -220,8 +221,8 @@ public class GameplayContentPane extends BorderPane {
         gameArea.setMinSize(resolution.getWidth(), resolution.getHeight());
         gameArea.setMaxSize(resolution.getWidth(), resolution.getHeight());
 
-        Image backgroundImage = RoomObjectsLayer.loadImage("/images/rooms/room.gif");
-        Image windowImage = RoomObjectsLayer.loadImage("/images/wallpaper/BackgroundWindow2.gif");
+        Image backgroundImage = ImageCache.get("/images/rooms/room.gif");
+        Image windowImage = ImageCache.get("/images/wallpaper/BackgroundWindow2.gif");
 
         Pane backgroundLayer = createBackgroundLayer(backgroundImage, windowImage);
 
