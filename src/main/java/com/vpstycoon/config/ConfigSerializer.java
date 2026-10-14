@@ -8,8 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class ConfigSerializer {
+public final class ConfigSerializer {
     private static final String CONFIG_FILE = "game_config.properties";
+
+    private ConfigSerializer() {
+    }
 
     public static void saveToFile(GameConfig config) {
         Properties properties = new Properties();
@@ -35,50 +38,46 @@ public class ConfigSerializer {
         Properties properties = new Properties();
         try (FileInputStream in = new FileInputStream(configFile)) {
             properties.load(in);
-            
+
             DefaultGameConfig config = DefaultGameConfig.getInstance();
-            
+
             String resolutionStr = properties.getProperty("resolution");
             if (resolutionStr != null) {
                 try {
                     config.setResolution(ScreenResolution.valueOf(resolutionStr));
                 } catch (IllegalArgumentException e) {
-                    
                 }
             }
-            
+
             String fullscreenStr = properties.getProperty("fullscreen");
             if (fullscreenStr != null) {
                 config.setFullscreen(Boolean.parseBoolean(fullscreenStr));
             }
-            
+
             String musicVolumeStr = properties.getProperty("musicVolume");
             if (musicVolumeStr != null) {
                 try {
                     config.setMusicVolume(Double.parseDouble(musicVolumeStr));
                 } catch (NumberFormatException e) {
-                    
                 }
             }
-            
+
             String sfxVolumeStr = properties.getProperty("sfxVolume");
             if (sfxVolumeStr != null) {
                 try {
                     config.setSfxVolume(Double.parseDouble(sfxVolumeStr));
                 } catch (NumberFormatException e) {
-                    
                 }
             }
-            
+
             String vsyncEnabledStr = properties.getProperty("vsyncEnabled");
             if (vsyncEnabledStr != null) {
                 config.setVsyncEnabled(Boolean.parseBoolean(vsyncEnabledStr));
             }
-            
+
             return config;
         } catch (IOException e) {
             return DefaultGameConfig.getInstance();
         }
     }
-} 
-
+}

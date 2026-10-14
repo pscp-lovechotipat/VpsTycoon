@@ -1,3 +1,4 @@
+### Maven ###
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -11,10 +12,7 @@ target/
 *.iws
 *.iml
 *.ipr
-
-backups
-savegame.dat
-game_config.json
+out/
 
 ### Eclipse ###
 .apt_generated
@@ -38,13 +36,14 @@ build/
 ### VS Code ###
 .vscode/
 
-### Mac OS ###
+### macOS ###
 .DS_Store
-/backups
-savegame.dat
-chat_history.dat
+
+### Game data written next to the project ###
 *.dat
+*.dat.bak
 game_config.properties
-out/artifacts/vps_tycoon_jar/vps-tycoon.jar
-.idea/artifacts/vps_tycoon_jar.xml
-.idea/artifacts/vps_tycoon.xml
+/backups
+
+### JVM crash logs ###
+hs_err_pid*.log
