@@ -2,7 +2,6 @@ package com.vpstycoon.ui.game.desktop;
 
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.ui.game.GameplayContentPane;
-import com.vpstycoon.ui.game.desktop.messenger.models.VMProvisioningManagerImpl;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
@@ -26,14 +25,6 @@ public class SimulationDesktopUI {
             return;
         }
 
-        VMProvisioningManagerImpl vmProvisioningManager = parent.getRequestManager().getVmProvisioningManager();
-
-        if (vmProvisioningManager == null) {
-            System.err.println("ไม่สามารถเปิดหน้าเดสก์ท็อปได้: VMProvisioningManager เป็น null");
-            parent.pushCenterNotification("ข้อผิดพลาด", "ไม่สามารถเปิดหน้าเดสก์ท็อปได้: ระบบจัดการ VM ไม่พร้อมใช้งาน", "/images/icon/error.png");
-            return;
-        }
-
         if (parent.getVpsManager() == null || parent.getVpsManager().getVPSMap() == null) {
             System.err.println("ไม่สามารถเปิดหน้าเดสก์ท็อปได้: VPSManager หรือ VPSMap เป็น null");
             parent.pushCenterNotification("ข้อผิดพลาด", "ไม่สามารถเปิดหน้าเดสก์ท็อปได้: ระบบจัดการ VPS ไม่พร้อมใช้งาน", "/images/icon/error.png");
@@ -42,8 +33,7 @@ public class SimulationDesktopUI {
 
         for (var vps : parent.getVpsManager().getVPSMap().values()) {
             for (var vm : vps.getVms()) {
-                if ("Running".equals(vm.getStatus()) &&
-                     vmProvisioningManager.getRequestForVM(vm) == null) {
+                if ("Running".equals(vm.getStatus())) {
                     availableVMs++;
                 }
             }

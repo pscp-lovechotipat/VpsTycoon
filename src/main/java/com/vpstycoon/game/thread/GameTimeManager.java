@@ -19,7 +19,6 @@ public class GameTimeManager {
     public static final long GAME_MONTH_MS = GAME_DAY_MS * 30;
     public static final long GAME_YEAR_MS = GAME_MONTH_MS * 12;
     public static final long TICK_INTERVAL_MS = 1000;
-    private static final long OVERHEAD_INTERVAL = GAME_MONTH_MS;
     private static final double SCALE_FACTOR = 86400000.0 / GAME_DAY_MS;
 
     private final Company company;
@@ -51,9 +50,7 @@ public class GameTimeManager {
         running = true;
 
         long lastTickTime = System.currentTimeMillis();
-        long lastPaymentCheckTime = lastTickTime;
-        long lastOverheadTime = lastTickTime;
-        long lastRentalCheckTime = lastTickTime;
+        long lastDailyCheckTime = lastTickTime;
 
         System.out.println("Thread TimeManager Initializing... running=" + running);
 
@@ -79,41 +76,10 @@ public class GameTimeManager {
 
                     notifyTimeListeners();
 
-                    if (currentTime - lastPaymentCheckTime >= GAME_DAY_MS) {
-                        if (requestManager != null) {
-                            requestManager.processPayments(realTimeMs.get());
-                        } else {
-                            System.err.println("Warning: requestManager is null, cannot process payments");
-
-                            if (company != null) {
-                                try {
-                                    com.vpstycoon.game.resource.ResourceManager resourceManager =
-                                        com.vpstycoon.game.resource.ResourceManager.getInstance();
-                                    RequestManager rm = resourceManager.getRequestManager();
-
-                                    if (rm != null) {
-                                        System.out.println("พบ RequestManager จาก ResourceManager, นำมาใช้งาน");
-                                        requestManager = rm;
-                                    } else {
-                                        requestManager = new com.vpstycoon.game.manager.RequestManager(company);
-                                        resourceManager.setRequestManager(requestManager);
-                                        System.out.println("สร้าง RequestManager ใหม่สำเร็จใน GameTimeManager และตั้งค่าให้ ResourceManager");
-                                    }
-                                } catch (Exception e) {
-                                    System.err.println("ไม่สามารถสร้าง RequestManager ใน GameTimeManager: " + e.getMessage());
-                                }
-                            }
-                        }
-                        lastPaymentCheckTime = currentTime;
-                    }
-
-                    if (currentTime - lastOverheadTime >= OVERHEAD_INTERVAL) {
-                        lastOverheadTime = currentTime;
-                    }
-
-                    if (currentTime - lastRentalCheckTime >= GAME_DAY_MS) {
+                    if (currentTime - lastDailyCheckTime >= GAME_DAY_MS) {
+                        ensureRequestManager();
                         checkRentalExpirations(realTimeMs.get());
-                        lastRentalCheckTime = currentTime;
+                        lastDailyCheckTime = currentTime;
                     }
 
                     tickCounter++;
@@ -138,6 +104,28 @@ public class GameTimeManager {
         } finally {
             System.out.println("Thread TimeManager Stopped");
             running = false;
+        }
+    }
+
+    private void ensureRequestManager() {
+        if (requestManager != null || company == null) {
+            return;
+        }
+        try {
+            com.vpstycoon.game.resource.ResourceManager resourceManager =
+                com.vpstycoon.game.resource.ResourceManager.getInstance();
+            RequestManager rm = resourceManager.getRequestManager();
+
+            if (rm != null) {
+                System.out.println("พบ RequestManager จาก ResourceManager, นำมาใช้งาน");
+                requestManager = rm;
+            } else {
+                requestManager = new com.vpstycoon.game.manager.RequestManager(company);
+                resourceManager.setRequestManager(requestManager);
+                System.out.println("สร้าง RequestManager ใหม่สำเร็จใน GameTimeManager และตั้งค่าให้ ResourceManager");
+            }
+        } catch (Exception e) {
+            System.err.println("ไม่สามารถสร้าง RequestManager ใน GameTimeManager: " + e.getMessage());
         }
     }
 

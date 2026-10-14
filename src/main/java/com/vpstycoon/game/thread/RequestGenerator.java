@@ -104,7 +104,7 @@ public class RequestGenerator extends Thread {
     private void updateRequestRateMultiplier() {
         double companyRating = 1.0;
         try {
-            companyRating = requestManager.getVmProvisioningManager().getCompany().getRating();
+            companyRating = requestManager.getCompany().getRating();
         } catch (Exception e) {
             companyRating = 1.0;
         }

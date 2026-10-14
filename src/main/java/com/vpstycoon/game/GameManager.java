@@ -61,7 +61,7 @@ public class GameManager {
         GameState currentState = new GameState();
 
         if (requestManager != null) {
-            currentState.setCompany(requestManager.getVmProvisioningManager().getCompany());
+            currentState.setCompany(requestManager.getCompany());
 
             List<CustomerRequest> pendingRequests = new ArrayList<>(requestManager.getRequests());
             List<CustomerRequest> completedRequests = new ArrayList<>(requestManager.getCompletedRequests());
@@ -199,9 +199,8 @@ public class GameManager {
             System.out.println("ไม่พบข้อมูล Rack ที่จะบันทึก");
         }
 
-        if (requestManager != null && requestManager.getVmProvisioningManager() != null
-            && requestManager.getVmProvisioningManager().getCompany() != null) {
-            int freeVMCount = requestManager.getVmProvisioningManager().getCompany().getAvailableVMs();
+        if (requestManager != null && requestManager.getCompany() != null) {
+            int freeVMCount = requestManager.getCompany().getAvailableVMs();
             currentState.setFreeVmCount(freeVMCount);
             System.out.println("บันทึกจำนวน Free VM: " + freeVMCount);
         }

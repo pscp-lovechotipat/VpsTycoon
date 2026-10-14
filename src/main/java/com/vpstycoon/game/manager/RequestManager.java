@@ -5,7 +5,6 @@ import com.vpstycoon.game.company.Company;
 import com.vpstycoon.game.customer.enums.CustomerType;
 import com.vpstycoon.game.resource.ResourceManager;
 import com.vpstycoon.game.vps.enums.RequestType;
-import com.vpstycoon.ui.game.desktop.messenger.models.VMProvisioningManagerImpl;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
@@ -17,7 +16,6 @@ import java.util.Random;
 public class RequestManager implements Serializable {
     private final ObservableList<CustomerRequest> pendingRequests;
     private final List<CustomerRequest> completedRequests;
-    private final VMProvisioningManagerImpl vmProvisioningManager;
     private final Company company;
     private final Random random = new Random();
 
@@ -25,7 +23,6 @@ public class RequestManager implements Serializable {
         this.pendingRequests = FXCollections.observableArrayList();
         this.completedRequests = new ArrayList<>();
         this.company = company;
-        this.vmProvisioningManager = new VMProvisioningManagerImpl(company);
 
         GameState currentState = ResourceManager.getInstance().getCurrentState();
 
@@ -92,16 +89,12 @@ public class RequestManager implements Serializable {
         }
     }
 
-    public void processPayments(long currentTime) {
-        vmProvisioningManager.processPayments(currentTime);
-    }
-
     public List<CustomerRequest> getCompletedRequests() {
         return new ArrayList<>(completedRequests);
     }
 
-    public VMProvisioningManagerImpl getVmProvisioningManager() {
-        return vmProvisioningManager;
+    public Company getCompany() {
+        return company;
     }
 
     public void setRequests(List<CustomerRequest> requests) {
@@ -131,11 +124,6 @@ public class RequestManager implements Serializable {
         if (completedRequests != null) {
             completedRequests.clear();
             System.out.println("รีเซ็ต completedRequests เรียบร้อย");
-        }
-
-        if (vmProvisioningManager != null) {
-            vmProvisioningManager.resetAllVMs();
-            System.out.println("รีเซ็ต VMProvisioningManager เรียบร้อย");
         }
     }
 }
