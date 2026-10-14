@@ -4,17 +4,13 @@ import javafx.scene.text.Font;
 
 import java.util.Objects;
 
-public class FontLoader {
-    public static Font TITLE_FONT;
-    public static Font SUBTITLE_FONT;
-    public static Font SECTION_FONT;
-    public static Font LABEL_FONT;
+public final class FontLoader {
+    public static final Font TITLE_FONT = loadFont(50);
+    public static final Font SUBTITLE_FONT = loadFont(42);
+    public static final Font SECTION_FONT = loadFont(30);
+    public static final Font LABEL_FONT = loadFont(22);
 
-    static {
-        TITLE_FONT = loadFont(50);
-        SUBTITLE_FONT = loadFont(42);
-        SECTION_FONT = loadFont(30);
-        LABEL_FONT = loadFont(22);
+    private FontLoader() {
     }
 
     public static Font loadFont(double size) {

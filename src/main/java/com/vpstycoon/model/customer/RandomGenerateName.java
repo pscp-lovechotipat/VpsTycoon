@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class RandomGenerateName {
+public final class RandomGenerateName {
     private static final String CONSONANTS = "BCDFGHJKLMNPQRSTVWXYZ";
     private static final String VOWELS = "AEIOU";
     private static final int MIN_LENGTH = 5;
@@ -19,6 +19,9 @@ public class RandomGenerateName {
             int length = MIN_LENGTH + random.nextInt(MAX_LENGTH - MIN_LENGTH + 1);
             namePool.add(generateRealisticName(length));
         }
+    }
+
+    private RandomGenerateName() {
     }
 
     private static String generateRealisticName(int length) {

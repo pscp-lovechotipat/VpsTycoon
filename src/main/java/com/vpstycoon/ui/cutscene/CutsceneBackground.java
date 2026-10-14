@@ -18,7 +18,7 @@ import javafx.util.Duration;
 
 import java.util.Random;
 
-public class CutsceneBackground {
+public final class CutsceneBackground {
     private static final Random random = new Random();
 
     private static final Color[] THEME_COLORS = {
@@ -29,6 +29,9 @@ public class CutsceneBackground {
         Color.web("#FF00A0"),
         Color.web("#39FF14")
     };
+
+    private CutsceneBackground() {
+    }
 
     public static void applyDynamicBackground(StackPane pane) {
         Pane backgroundLayer = new Pane();

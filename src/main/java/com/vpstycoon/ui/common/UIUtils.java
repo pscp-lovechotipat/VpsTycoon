@@ -2,7 +2,10 @@ package com.vpstycoon.ui.common;
 
 import javafx.scene.control.Button;
 
-public class UIUtils {
+public final class UIUtils {
+    private UIUtils() {
+    }
+
     public static Button createModernButton(String text) {
         Button button = new Button(text);
 

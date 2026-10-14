@@ -9,6 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ImageCache {
     private static final Map<String, Image> CACHE = new ConcurrentHashMap<>();
 
+    private ImageCache() {
+    }
+
     public static Image get(String path) {
         Image cached = CACHE.get(path);
         if (cached != null) {

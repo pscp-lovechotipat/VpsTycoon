@@ -8,8 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-public class ConfigSerializer {
+public final class ConfigSerializer {
     private static final String CONFIG_FILE = "game_config.properties";
+
+    private ConfigSerializer() {
+    }
 
     public static void saveToFile(GameConfig config) {
         Properties properties = new Properties();

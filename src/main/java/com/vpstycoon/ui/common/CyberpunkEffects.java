@@ -22,7 +22,7 @@ import javafx.util.Duration;
 
 import java.util.Random;
 
-public class CyberpunkEffects {
+public final class CyberpunkEffects {
     private static final Random random = new Random();
 
     public static final Color[] NEON_COLORS = {
@@ -38,6 +38,9 @@ public class CyberpunkEffects {
 
     public static final String CYBERPUNK_FONT_PRIMARY = "Orbitron";
     public static final String CYBERPUNK_FONT_SECONDARY = "Share Tech Mono";
+
+    private CyberpunkEffects() {
+    }
 
     public static void styleTaskPane(BorderPane pane) {
         pane.setStyle(
