@@ -5,5 +5,4 @@ public interface Navigator {
     void showSettings();
     void startNewGame();
     void showLoadGame();
-    void showInGameSettings();
 }

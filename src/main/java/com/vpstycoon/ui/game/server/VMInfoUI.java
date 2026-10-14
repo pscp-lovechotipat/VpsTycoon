@@ -34,7 +34,6 @@ public class VMInfoUI {
         vmInfoPane.setStyle("-fx-background-color: linear-gradient(to bottom, #1a0033, #380066); -fx-padding: 20px; -fx-border-color: #8a2be2; -fx-border-width: 3px; -fx-border-radius: 5px;");
 
         parent.getMenuBar().setVisible(false);
-        parent.getInGameMarketMenuBar().setVisible(false);
 
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);

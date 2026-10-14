@@ -71,7 +71,6 @@ public class RackManagementUI implements RackUIUpdateListener {
             """);
 
         parent.getMenuBar().setVisible(false);
-        parent.getInGameMarketMenuBar().setVisible(false);
         parent.getMoneyUI().setVisible(false);
         parent.getDateView().setVisible(false);
 
@@ -1150,10 +1149,6 @@ public class RackManagementUI implements RackUIUpdateListener {
 
         if (parent.getMenuBar() != null) {
             parent.getMenuBar().setVisible(true);
-        }
-
-        if (parent.getInGameMarketMenuBar() != null) {
-            parent.getInGameMarketMenuBar().setVisible(true);
         }
 
         if (parent.getMoneyUI() != null) {

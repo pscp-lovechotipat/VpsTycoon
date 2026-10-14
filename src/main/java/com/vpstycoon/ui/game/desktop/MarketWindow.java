@@ -117,7 +117,6 @@ public class MarketWindow extends BorderPane {
         final boolean dateViewWasVisible = parent.getDateView().isVisible();
         final boolean moneyUIWasVisible = parent.getMoneyUI().isVisible();
         final boolean menuBarWasVisible = parent.getMenuBar().isVisible();
-        final boolean marketMenuBarWasVisible = parent.getInGameMarketMenuBar().isVisible();
 
         this.onClose = () -> {
             javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
@@ -130,7 +129,6 @@ public class MarketWindow extends BorderPane {
                 parent.getDateView().setVisible(dateViewWasVisible);
                 parent.getMoneyUI().setVisible(moneyUIWasVisible);
                 parent.getMenuBar().setVisible(menuBarWasVisible);
-                parent.getInGameMarketMenuBar().setVisible(marketMenuBarWasVisible);
 
                 javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
                     javafx.util.Duration.millis(300), parent.getGameArea());
@@ -424,7 +422,6 @@ public class MarketWindow extends BorderPane {
         onClose.run();
 
         parent.getMenuBar().setVisible(false);
-        parent.getInGameMarketMenuBar().setVisible(false);
     }
 
     private void updateMoneyDisplay() {

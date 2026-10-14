@@ -96,11 +96,7 @@ public class ResumeScreen extends StackPane {
 
             onResumeGame.run();
 
-            if (onOpenSettings != null) {
-                onOpenSettings.run();
-            } else {
-                navigator.showInGameSettings();
-            }
+            onOpenSettings.run();
         });
         styleButton(settingsButton);
 

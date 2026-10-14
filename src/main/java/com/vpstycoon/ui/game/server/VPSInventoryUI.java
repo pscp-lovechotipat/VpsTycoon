@@ -31,7 +31,6 @@ public class VPSInventoryUI {
 
         parent.getMenuBar().setVisible(false);
         parent.getMoneyUI().setVisible(false);
-        parent.getInGameMarketMenuBar().setVisible(false);
 
         HBox titleBar = new HBox(20);
         titleBar.setAlignment(Pos.CENTER_LEFT);

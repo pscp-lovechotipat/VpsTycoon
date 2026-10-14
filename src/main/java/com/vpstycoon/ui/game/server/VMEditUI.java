@@ -44,7 +44,6 @@ public class VMEditUI {
         contentContainer.getChildren().addAll(cyberGrid);
 
         parent.getMenuBar().setVisible(false);
-        parent.getInGameMarketMenuBar().setVisible(false);
 
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);

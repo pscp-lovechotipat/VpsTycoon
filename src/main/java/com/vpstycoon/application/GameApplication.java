@@ -371,10 +371,6 @@ public class GameApplication extends Application implements Navigator, ResourceM
         }
     }
 
-    @Override
-    public void showInGameSettings() {
-    }
-
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

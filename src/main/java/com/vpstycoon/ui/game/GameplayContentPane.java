@@ -28,7 +28,6 @@ import com.vpstycoon.ui.game.input.KeyEventHandler;
 import com.vpstycoon.ui.game.input.ZoomPanHandler;
 import com.vpstycoon.ui.game.rack.RackManagementUI;
 import com.vpstycoon.ui.game.room.GameMenuBar;
-import com.vpstycoon.ui.game.room.InGameMarketMenuBar;
 import com.vpstycoon.ui.game.room.RoomObjectsLayer;
 import com.vpstycoon.ui.game.server.VMCreationUI;
 import com.vpstycoon.ui.game.server.VMEditUI;
@@ -61,8 +60,6 @@ public class GameplayContentPane extends BorderPane {
     private Group worldGroup;
     private final StackPane gameArea;
     private final GameMenuBar menuBar;
-
-    private final InGameMarketMenuBar inGameMarketMenuBar;
 
     private final Navigator navigator;
 
@@ -159,8 +156,6 @@ public class GameplayContentPane extends BorderPane {
         this.dateController = new DateController(dateModel);
 
         this.menuBar = new GameMenuBar(this);
-
-        this.inGameMarketMenuBar = new InGameMarketMenuBar(this);
 
         syncWithGameManager();
 
@@ -274,7 +269,6 @@ public class GameplayContentPane extends BorderPane {
 
             rootStack.getChildren().addAll(
                     moneyUI, menuBar, dateView,
-                    inGameMarketMenuBar,
                     resourceManager.getMouseNotificationView(),
                     resourceManager.getNotificationView(),
                     resourceManager.getCenterNotificationView(),
@@ -287,9 +281,6 @@ public class GameplayContentPane extends BorderPane {
 
         menuBar.setVisible(true);
         menuBar.setPickOnBounds(false);
-
-        inGameMarketMenuBar.setVisible(true);
-        inGameMarketMenuBar.setPickOnBounds(false);
 
         resourceManager.getNotificationView().setMaxWidth(400);
         resourceManager.getNotificationView().setPickOnBounds(false);
@@ -309,8 +300,6 @@ public class GameplayContentPane extends BorderPane {
         StackPane.setAlignment(resourceManager.getNotificationView(), Pos.TOP_RIGHT);
         StackPane.setAlignment(moneyUI, Pos.TOP_LEFT);
         StackPane.setAlignment(dateView, Pos.BOTTOM_CENTER);
-        StackPane.setAlignment(inGameMarketMenuBar, Pos.TOP_CENTER);
-        StackPane.setMargin(inGameMarketMenuBar, new Insets(50, 0, 0, 0));
 
         debugOverlayManager.startTimer();
 
@@ -426,7 +415,6 @@ public class GameplayContentPane extends BorderPane {
         }
 
         final boolean menuBarWasVisible = menuBar.isVisible();
-        final boolean marketMenuBarWasVisible = inGameMarketMenuBar.isVisible();
         final boolean moneyUIWasVisible = moneyUI.isVisible();
         final boolean dateViewWasVisible = dateView.isVisible();
 
@@ -435,7 +423,6 @@ public class GameplayContentPane extends BorderPane {
                 getGameArea().getChildren().removeIf(node -> node instanceof MarketWindow);
 
                 menuBar.setVisible(menuBarWasVisible);
-                inGameMarketMenuBar.setVisible(marketMenuBarWasVisible);
                 moneyUI.setVisible(moneyUIWasVisible);
                 dateView.setVisible(dateViewWasVisible);
             }, this
@@ -520,7 +507,6 @@ public class GameplayContentPane extends BorderPane {
 
     public void hideMenus() {
         menuBar.setVisible(false);
-        inGameMarketMenuBar.setVisible(false);
         moneyUI.setVisible(false);
         dateView.setVisible(false);
     }
@@ -602,11 +588,6 @@ public class GameplayContentPane extends BorderPane {
                                         System.out.println("เพิ่ม dateView เข้า rootStack");
                                     }
 
-                                    if (!rootStack.getChildren().contains(inGameMarketMenuBar)) {
-                                        rootStack.getChildren().add(inGameMarketMenuBar);
-                                        System.out.println("เพิ่ม inGameMarketMenuBar เข้า rootStack");
-                                    }
-
                                     if (!rootStack.getChildren().contains(resourceManager.getNotificationView())) {
                                         rootStack.getChildren().add(resourceManager.getNotificationView());
                                     }
@@ -620,7 +601,6 @@ public class GameplayContentPane extends BorderPane {
                                     }
 
                                     menuBar.setVisible(true);
-                                    inGameMarketMenuBar.setVisible(true);
                                     moneyUI.setVisible(true);
                                     dateView.setVisible(true);
 
@@ -687,12 +667,7 @@ public class GameplayContentPane extends BorderPane {
                         rootStack.getChildren().add(dateView);
                     }
 
-                    if (!rootStack.getChildren().contains(inGameMarketMenuBar)) {
-                        rootStack.getChildren().add(inGameMarketMenuBar);
-                    }
-
                     menuBar.setVisible(true);
-                    inGameMarketMenuBar.setVisible(true);
                     moneyUI.setVisible(true);
                     dateView.setVisible(true);
 
@@ -701,7 +676,6 @@ public class GameplayContentPane extends BorderPane {
 
                     System.out.println("กู้คืนสถานะ UI สำเร็จ (แผนฉุกเฉิน)");
                     System.out.println("  - menuBar: " + (menuBar != null ? "ok" : "null"));
-                    System.out.println("  - inGameMarketMenuBar: " + (inGameMarketMenuBar != null ? "ok" : "null"));
                     System.out.println("  - moneyUI: " + (moneyUI != null ? "ok" : "null"));
                     System.out.println("  - dateView: " + (dateView != null ? "ok" : "null"));
                     System.out.println("  - จำนวน elements ใน rootStack: " + rootStack.getChildren().size());
@@ -798,10 +772,6 @@ public class GameplayContentPane extends BorderPane {
 
     public List<VPSOptimization> getVpsList() {
         return rack.getInstalledVPS();
-    }
-
-    public InGameMarketMenuBar getInGameMarketMenuBar() {
-        return inGameMarketMenuBar;
     }
 
     public VPSManager getVpsManager() {

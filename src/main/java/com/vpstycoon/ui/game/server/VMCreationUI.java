@@ -95,7 +95,6 @@ public class VMCreationUI {
         createVMPane.setStyle("-fx-background-color: linear-gradient(to bottom, #2A1B3D, #1A0B2E); -fx-padding: 20px;");
 
         parent.getMenuBar().setVisible(false);
-        parent.getInGameMarketMenuBar().setVisible(false);
 
         HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);

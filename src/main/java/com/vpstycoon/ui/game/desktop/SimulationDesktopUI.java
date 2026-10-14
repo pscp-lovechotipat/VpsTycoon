@@ -50,7 +50,6 @@ public class SimulationDesktopUI {
         final boolean menuBarVisible = parent.getMenuBar().isVisible();
         final boolean moneyUIVisible = parent.getMoneyUI().isVisible();
         final boolean dateViewVisible = parent.getDateView().isVisible();
-        final boolean marketMenuBarVisible = parent.getInGameMarketMenuBar().isVisible();
 
         final List<Node> originalContent = new ArrayList<>(parent.getGameArea().getChildren());
 
@@ -69,7 +68,6 @@ public class SimulationDesktopUI {
                     parent.getMenuBar().setVisible(menuBarVisible);
                     parent.getMoneyUI().setVisible(moneyUIVisible);
                     parent.getDateView().setVisible(dateViewVisible);
-                    parent.getInGameMarketMenuBar().setVisible(marketMenuBarVisible);
 
                     javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
                             javafx.util.Duration.millis(300), parent.getGameArea());
@@ -97,6 +95,5 @@ public class SimulationDesktopUI {
         parent.getMenuBar().setVisible(false);
         parent.getMoneyUI().setVisible(false);
         parent.getDateView().setVisible(false);
-        parent.getInGameMarketMenuBar().setVisible(false);
     }
 }
