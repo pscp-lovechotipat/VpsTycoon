@@ -175,48 +175,6 @@ public class PasswordCrackingTask extends GameTask {
         return descText;
     }
 
-    private Button createStyledButton(String text, boolean primary) {
-        Button button = new Button(text);
-        button.setFont(Font.font("Monospaced", FontWeight.BOLD, 14));
-
-        String baseColor, hoverColor, textColor;
-        if (primary) {
-            baseColor = "#00FFFF";
-            hoverColor = "#80FFFF";
-            textColor = "#000000";
-        } else {
-            baseColor = "#FF0066";
-            hoverColor = "#FF4D94";
-            textColor = "#FFFFFF";
-        }
-
-        String baseStyle =
-            "-fx-background-color: " + baseColor + ";" +
-            "-fx-text-fill: " + textColor + ";" +
-            "-fx-border-color: " + hoverColor + ";" +
-            "-fx-border-width: 1px;" +
-            "-fx-background-radius: 5px;" +
-            "-fx-border-radius: 5px;" +
-            "-fx-cursor: hand;";
-
-        String hoverStyle =
-            "-fx-background-color: " + hoverColor + ";" +
-            "-fx-text-fill: " + textColor + ";" +
-            "-fx-border-color: " + baseColor + ";" +
-            "-fx-border-width: 2px;" +
-            "-fx-background-radius: 5px;" +
-            "-fx-border-radius: 5px;" +
-            "-fx-cursor: hand;" +
-            "-fx-effect: dropshadow(gaussian, " + baseColor + ", 10, 0.5, 0, 0);";
-
-        button.setStyle(baseStyle);
-
-        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
-        button.setOnMouseExited(e -> button.setStyle(baseStyle));
-
-        return button;
-    }
-
     private void addHoloGridLines(Pane pane, int hSpacing, int vSpacing) {
         double width = pane.getPrefWidth();
         double height = pane.getPrefHeight();
@@ -303,7 +261,7 @@ public class PasswordCrackingTask extends GameTask {
             }
         });
 
-        Button guessButton = createStyledButton("GUESS", true);
+        Button guessButton = createActionButton("GUESS", true, "Monospaced");
         guessButton.setOnAction(e -> {
             if (!charInput.getText().isEmpty()) {
                 guessCharacter(charInput.getText().charAt(0));
@@ -312,7 +270,7 @@ public class PasswordCrackingTask extends GameTask {
             }
         });
 
-        Button revealButton = createStyledButton("DECRYPT ALL", false);
+        Button revealButton = createActionButton("DECRYPT ALL", false, "Monospaced");
         revealButton.setOnAction(e -> revealPassword());
 
         inputArea.getChildren().addAll(charInput, guessButton, revealButton);

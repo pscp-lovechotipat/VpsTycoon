@@ -2,7 +2,7 @@ package com.vpstycoon.model.market;
 
 import com.vpstycoon.model.server.VPSSize;
 
-public enum VPSProduct {
+public enum VPSProduct implements Product {
     BASIC_VPS("Basic Server (1U)", 1, 1, 20, 50, 5, VPSSize.SIZE_1U),
     STANDARD_VPS("Standard Server (1U)", 2, 4, 50, 100, 10, VPSSize.SIZE_1U),
     PREMIUM_VPS("Premium Server (2U)", 4, 8, 100, 200, 20, VPSSize.SIZE_2U),
@@ -34,6 +34,7 @@ public enum VPSProduct {
         this.size = size;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -50,6 +51,7 @@ public enum VPSProduct {
         return storage;
     }
 
+    @Override
     public int getPrice() {
         return price;
     }
@@ -62,10 +64,12 @@ public enum VPSProduct {
         return size;
     }
 
+    @Override
     public String getDescription() {
         return cpu + " CPU, " + ram + "GB RAM, " + storage + "GB SSD";
     }
 
+    @Override
     public String getPriceDisplay() {
         return "$" + price;
     }

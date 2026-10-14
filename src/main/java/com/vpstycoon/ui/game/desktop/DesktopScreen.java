@@ -50,10 +50,10 @@ public class DesktopScreen extends StackPane {
         Pane backgroundLayer = createBackgroundLayer(backgroundImage);
 
         double fixedScaleFactor = 0.3;
-        Pane messengerButton = createMessengerButton(fixedScaleFactor);
-        Pane marketButton = createMarketButton(fixedScaleFactor);
-        Pane roomButton = createRoomButton(fixedScaleFactor);
-        Pane serverButton = createServerButton(fixedScaleFactor);
+        Pane messengerButton = createDesktopIcon("/images/buttons/MessengerDesktop.png", 640, 160, -176, 127, fixedScaleFactor, this::openChatWindow);
+        Pane marketButton = createDesktopIcon("/images/buttons/MarketDesktop.png", 640, 160, -176, 192, fixedScaleFactor, this::openMarketWindow);
+        Pane roomButton = createDesktopIcon("/images/buttons/RoomDesktop.gif", 1850, 1070, -365, -290, fixedScaleFactor, onExit);
+        Pane serverButton = createDesktopIcon("/images/buttons/ServerDesktop.gif", 690, 1610, 644, -475, fixedScaleFactor, parent::openRackInfo);
 
         Group desktopGroup = new Group(backgroundLayer, messengerButton, marketButton, roomButton, serverButton);
 
@@ -95,50 +95,15 @@ public class DesktopScreen extends StackPane {
         return backgroundLayer;
     }
 
-    private Pane createMessengerButton(double fixedScaleFactor) {
-        Pane messengerButton = new Pane();
-        messengerButton.setPrefWidth(640);
-        messengerButton.setPrefHeight(160);
-        messengerButton.setScaleX(fixedScaleFactor);
-        messengerButton.setScaleY(fixedScaleFactor);
-        messengerButton.setTranslateX(-176);
-        messengerButton.setTranslateY(127);
-
-        String imageUrl = "/images/buttons/MessengerDesktop.png";
-
-        String normalStyle = String.format("""
-            -fx-background-image: url('%s');
-            -fx-background-size: contain;
-            -fx-background-repeat: no-repeat;
-            -fx-background-position: center;
-        """, imageUrl);
-
-        String hoverStyle = String.format("""
-            -fx-background-image: url('%s');
-            -fx-background-size: contain;
-            -fx-background-repeat: no-repeat;
-            -fx-background-position: center;
-            -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
-        """, imageUrl);
-
-        messengerButton.setStyle(normalStyle);
-        messengerButton.setOnMouseEntered(event -> messengerButton.setStyle(hoverStyle));
-        messengerButton.setOnMouseExited(event -> messengerButton.setStyle(normalStyle));
-        messengerButton.setOnMouseClicked(e -> this.openChatWindow());
-
-        return messengerButton;
-    }
-
-    private Pane createMarketButton(double fixedScaleFactor) {
-        Pane marketButton = new Pane();
-        marketButton.setPrefWidth(640);
-        marketButton.setPrefHeight(160);
-        marketButton.setScaleX(fixedScaleFactor);
-        marketButton.setScaleY(fixedScaleFactor);
-        marketButton.setTranslateX(-176);
-        marketButton.setTranslateY(192);
-
-        String imageUrl = "/images/buttons/MarketDesktop.png";
+    private Pane createDesktopIcon(String imageUrl, double width, double height,
+                                   double translateX, double translateY, double scale, Runnable onClick) {
+        Pane icon = new Pane();
+        icon.setPrefWidth(width);
+        icon.setPrefHeight(height);
+        icon.setScaleX(scale);
+        icon.setScaleY(scale);
+        icon.setTranslateX(translateX);
+        icon.setTranslateY(translateY);
 
         String normalStyle = String.format("""
             -fx-background-image: url('%s');
@@ -147,88 +112,14 @@ public class DesktopScreen extends StackPane {
             -fx-background-position: center;
         """, imageUrl);
 
-        String hoverStyle = String.format("""
-            -fx-background-image: url('%s');
-            -fx-background-size: contain;
-            -fx-background-repeat: no-repeat;
-            -fx-background-position: center;
-            -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
-        """, imageUrl);
+        String hoverStyle = normalStyle + "-fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);";
 
-        marketButton.setStyle(normalStyle);
-        marketButton.setOnMouseEntered(event -> marketButton.setStyle(hoverStyle));
-        marketButton.setOnMouseExited(event -> marketButton.setStyle(normalStyle));
-        marketButton.setOnMouseClicked(e -> this.openMarketWindow());
+        icon.setStyle(normalStyle);
+        icon.setOnMouseEntered(event -> icon.setStyle(hoverStyle));
+        icon.setOnMouseExited(event -> icon.setStyle(normalStyle));
+        icon.setOnMouseClicked(e -> onClick.run());
 
-        return marketButton;
-    }
-
-    private Pane createRoomButton(double fixedScaleFactor) {
-        Pane roomButton = new Pane();
-        roomButton.setPrefWidth(1850);
-        roomButton.setPrefHeight(1070);
-        roomButton.setScaleX(fixedScaleFactor);
-        roomButton.setScaleY(fixedScaleFactor);
-        roomButton.setTranslateX(-365);
-        roomButton.setTranslateY(-290);
-
-        String imageUrl = "/images/buttons/RoomDesktop.gif";
-
-        String normalStyle = String.format("""
-            -fx-background-image: url('%s');
-            -fx-background-size: contain;
-            -fx-background-repeat: no-repeat;
-            -fx-background-position: center;
-        """, imageUrl);
-
-        String hoverStyle = String.format("""
-            -fx-background-image: url('%s');
-            -fx-background-size: contain;
-            -fx-background-repeat: no-repeat;
-            -fx-background-position: center;
-            -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
-        """, imageUrl);
-
-        roomButton.setStyle(normalStyle);
-        roomButton.setOnMouseEntered(event -> roomButton.setStyle(hoverStyle));
-        roomButton.setOnMouseExited(event -> roomButton.setStyle(normalStyle));
-        roomButton.setOnMouseClicked(e -> this.onExit.run());
-
-        return roomButton;
-    }
-
-    private Pane createServerButton(double fixedScaleFactor) {
-        Pane serverButton = new Pane();
-        serverButton.setPrefWidth(690);
-        serverButton.setPrefHeight(1610);
-        serverButton.setScaleX(fixedScaleFactor);
-        serverButton.setScaleY(fixedScaleFactor);
-        serverButton.setTranslateX(644);
-        serverButton.setTranslateY(-475);
-
-        String imageUrl = "/images/buttons/ServerDesktop.gif";
-
-        String normalStyle = String.format("""
-            -fx-background-image: url('%s');
-            -fx-background-size: contain;
-            -fx-background-repeat: no-repeat;
-            -fx-background-position: center;
-        """, imageUrl);
-
-        String hoverStyle = String.format("""
-            -fx-background-image: url('%s');
-            -fx-background-size: contain;
-            -fx-background-repeat: no-repeat;
-            -fx-background-position: center;
-            -fx-effect: dropshadow(gaussian, #07edf5, 100, 0.1, 0, 0);
-        """, imageUrl);
-
-        serverButton.setStyle(normalStyle);
-        serverButton.setOnMouseEntered(event -> serverButton.setStyle(hoverStyle));
-        serverButton.setOnMouseExited(event -> serverButton.setStyle(normalStyle));
-        serverButton.setOnMouseClicked(e -> this.parent.openRackInfo());
-
-        return serverButton;
+        return icon;
     }
 
     private void openChatWindow() {

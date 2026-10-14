@@ -19,6 +19,8 @@ import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 import java.util.Random;
@@ -490,6 +492,48 @@ public abstract class GameTask {
 
     public boolean isFailed() {
         return failed;
+    }
+
+    protected Button createActionButton(String text, boolean primary, String fontFamily) {
+        Button button = new Button(text);
+        button.setFont(Font.font(fontFamily, FontWeight.BOLD, 14));
+
+        String baseColor, hoverColor, textColor;
+        if (primary) {
+            baseColor = "#00FFFF";
+            hoverColor = "#80FFFF";
+            textColor = "#000000";
+        } else {
+            baseColor = "#FF0066";
+            hoverColor = "#FF4D94";
+            textColor = "#FFFFFF";
+        }
+
+        String baseStyle =
+            "-fx-background-color: " + baseColor + ";" +
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-border-color: " + hoverColor + ";" +
+            "-fx-border-width: 1px;" +
+            "-fx-background-radius: 5px;" +
+            "-fx-border-radius: 5px;" +
+            "-fx-cursor: hand;";
+
+        String hoverStyle =
+            "-fx-background-color: " + hoverColor + ";" +
+            "-fx-text-fill: " + textColor + ";" +
+            "-fx-border-color: " + baseColor + ";" +
+            "-fx-border-width: 2px;" +
+            "-fx-background-radius: 5px;" +
+            "-fx-border-radius: 5px;" +
+            "-fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian, " + baseColor + ", 10, 0.5, 0, 0);";
+
+        button.setStyle(baseStyle);
+
+        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
+        button.setOnMouseExited(e -> button.setStyle(baseStyle));
+
+        return button;
     }
 
     protected double getManagementEfficiency() {

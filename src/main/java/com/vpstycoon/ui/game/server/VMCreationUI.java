@@ -3,6 +3,7 @@ package com.vpstycoon.ui.game.server;
 import com.vpstycoon.manager.ResourceManager;
 import com.vpstycoon.model.company.SkillPointsSystem;
 import com.vpstycoon.model.server.VPSOptimization;
+import com.vpstycoon.ui.common.CyberpunkEffects;
 import com.vpstycoon.ui.game.GameplayContentPane;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -139,7 +140,7 @@ public class VMCreationUI {
 
         resourceVisualization.getChildren().addAll(cpuVis, ramVis, diskVis);
 
-        VBox instanceSection = createCyberSection("01 INSTANCE CONFIG");
+        VBox instanceSection = CyberpunkEffects.createCyberSection("01 INSTANCE CONFIG");
 
         HBox nameBox = new HBox(15);
         nameBox.setAlignment(Pos.CENTER_LEFT);
@@ -171,7 +172,7 @@ public class VMCreationUI {
 
         instanceSection.getChildren().addAll(nameBox, osBox, ipBox);
 
-        VBox hardwareSection = createCyberSection("02 HARDWARE CONFIG");
+        VBox hardwareSection = CyberpunkEffects.createCyberSection("02 HARDWARE CONFIG");
 
         HBox presetBox = new HBox(15);
         presetBox.setAlignment(Pos.CENTER_LEFT);
@@ -263,7 +264,7 @@ public class VMCreationUI {
 
         hardwareSection.getChildren().addAll(presetBox, vcpuBox, ramBox, diskBox);
 
-        VBox networkSection = createCyberSection("03 NETWORK CONFIG");
+        VBox networkSection = CyberpunkEffects.createCyberSection("03 NETWORK CONFIG");
 
         HBox networkBox = new HBox(15);
         networkBox.setAlignment(Pos.CENTER_LEFT);
@@ -290,7 +291,7 @@ public class VMCreationUI {
         bandwidthComboBox.setValue("1 Gbps (Standard)");
         bandwidthBox.getChildren().addAll(bandwidthLabel, bandwidthComboBox);
 
-        VBox firewallSection = createCyberSection("04 FIREWALL CONFIG");
+        VBox firewallSection = CyberpunkEffects.createCyberSection("04 FIREWALL CONFIG");
 
         SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         boolean firewallUnlocked = skillPointsSystem != null &&
@@ -373,7 +374,7 @@ public class VMCreationUI {
             firewallSection.getChildren().add(lockedBox);
         }
 
-        VBox startupSection = createCyberSection("05 STARTUP CONFIG");
+        VBox startupSection = CyberpunkEffects.createCyberSection("05 STARTUP CONFIG");
 
         VBox scriptBox = new VBox(10);
         scriptBox.setAlignment(Pos.CENTER_LEFT);
@@ -546,23 +547,6 @@ public class VMCreationUI {
                 "-fx-border-color: #8A2BE2; -fx-border-width: 1px; -fx-border-radius: 3px; " +
                 "-fx-font-family: 'Monospace';");
         return textField;
-    }
-
-    private VBox createCyberSection(String title) {
-        VBox section = new VBox(15);
-        section.setPadding(new Insets(15));
-        section.setStyle("-fx-background-color: rgba(58, 28, 90, 0.4); -fx-background-radius: 5px; " +
-                "-fx-border-color: #8A2BE2; -fx-border-width: 1px; -fx-border-radius: 5px; " +
-                "-fx-effect: dropshadow(gaussian, rgba(120, 0, 255, 0.2), 10, 0, 0, 3);");
-
-        Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-text-fill: #00F6FF; -fx-font-size: 16px; -fx-font-weight: bold; " +
-                "-fx-font-family: 'Monospace'; -fx-padding: 0 0 5 0; " +
-                "-fx-border-color: #8A2BE2; -fx-border-width: 0 0 1 0;");
-        titleLabel.setPrefWidth(Double.MAX_VALUE);
-
-        section.getChildren().add(titleLabel);
-        return section;
     }
 
     private HBox createCyberCard(String title) {

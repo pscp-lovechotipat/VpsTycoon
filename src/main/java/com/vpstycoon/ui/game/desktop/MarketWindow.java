@@ -3,6 +3,7 @@ package com.vpstycoon.ui.game.desktop;
 import com.vpstycoon.manager.GameManager;
 import com.vpstycoon.manager.ResourceManager;
 import com.vpstycoon.model.company.SkillPointsSystem;
+import com.vpstycoon.model.market.Product;
 import com.vpstycoon.model.market.RackProduct;
 import com.vpstycoon.model.market.VPSProduct;
 import com.vpstycoon.model.server.VPSOptimization;
@@ -18,8 +19,91 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class MarketWindow extends BorderPane {
+    private static final String MENU_BUTTON_STYLE = """
+            -fx-background-color: #2a2a2a;
+            -fx-text-fill: #9a30fa;
+            -fx-font-size: 14px;
+            -fx-font-family: 'monospace';
+            -fx-padding: 10px;
+            -fx-background-radius: 5px;
+            -fx-border-color: #9a30fa;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
+            -fx-min-width: 150px;
+            """;
+    private static final String MENU_BUTTON_ACTIVE_STYLE = """
+            -fx-background-color: #9a30fa;
+            -fx-text-fill: #000000;
+            -fx-font-size: 14px;
+            -fx-font-family: 'monospace';
+            -fx-padding: 10px;
+            -fx-background-radius: 5px;
+            -fx-border-color: #9a30fa;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
+            -fx-min-width: 150px;
+            """;
+    private static final String SECTION_TITLE_STYLE = """
+            -fx-text-fill: #9a30fa;
+            -fx-font-size: 28px;
+            -fx-font-family: 'monospace';
+            -fx-font-weight: bold;
+            -fx-effect: dropshadow(gaussian, #9a30fa, 10, 0, 0, 0);
+            """;
+    private static final String CARD_STYLE = """
+            -fx-background-color: #1a1a1a;
+            -fx-padding: 15px;
+            -fx-background-radius: 5px;
+            -fx-border-color: #9a30fa;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
+            -fx-min-width: 250px;
+            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
+            """;
+    private static final String CARD_NAME_STYLE = """
+            -fx-text-fill: #9a30fa;
+            -fx-font-size: 18px;
+            -fx-font-family: 'monospace';
+            -fx-font-weight: bold;
+            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
+            """;
+    private static final String CARD_DESCRIPTION_STYLE = """
+            -fx-text-fill: #b19cd9;
+            -fx-font-family: 'monospace';
+            -fx-opacity: 0.9;
+            """;
+    private static final String CARD_PRICE_STYLE = """
+            -fx-text-fill: #ff00ff;
+            -fx-font-size: 16px;
+            -fx-font-family: 'monospace';
+            -fx-font-weight: bold;
+            -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
+            """;
+    private static final String BUY_BUTTON_STYLE = """
+            -fx-background-color: #1a1a1a;
+            -fx-text-fill: #9a30fa;
+            -fx-font-family: 'monospace';
+            -fx-font-weight: bold;
+            -fx-padding: 8px 16px;
+            -fx-background-radius: 5px;
+            -fx-border-color: #9a30fa;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
+            """;
+    private static final String BUY_BUTTON_HOVER_STYLE = """
+            -fx-background-color: #9a30fa;
+            -fx-text-fill: #000000;
+            -fx-font-family: 'monospace';
+            -fx-font-weight: bold;
+            -fx-padding: 8px 16px;
+            -fx-background-radius: 5px;
+            -fx-border-color: #9a30fa;
+            -fx-border-width: 1px;
+            -fx-border-style: solid;
+            """;
     private final GameplayContentPane parent;
     private final Runnable onClose;
     private Label moneyDisplay;
@@ -188,92 +272,20 @@ public class MarketWindow extends BorderPane {
     }
 
     private void styleButton(Button button) {
-        button.setStyle("""
-            -fx-background-color: #2a2a2a;
-            -fx-text-fill: #9a30fa;
-            -fx-font-size: 14px;
-            -fx-font-family: 'monospace';
-            -fx-padding: 10px;
-            -fx-background-radius: 5px;
-            -fx-border-color: #9a30fa;
-            -fx-border-width: 1px;
-            -fx-border-style: solid;
-            -fx-min-width: 150px;
-            """);
-        button.setOnMouseEntered(e ->
-            button.setStyle("""
-                -fx-background-color: #9a30fa;
-                -fx-text-fill: #000000;
-                -fx-font-size: 14px;
-                -fx-font-family: 'monospace';
-                -fx-padding: 10px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                -fx-min-width: 150px;
-                """)
+        button.setStyle(MENU_BUTTON_STYLE);
+        button.setOnMouseEntered(e -> button.setStyle(MENU_BUTTON_ACTIVE_STYLE));
+        button.setOnMouseExited(e ->
+            button.setStyle("active".equals(button.getUserData()) ? MENU_BUTTON_ACTIVE_STYLE : MENU_BUTTON_STYLE)
         );
-        button.setOnMouseExited(e -> {
-            if (button.getUserData() == "active") {
-                button.setStyle("""
-                    -fx-background-color: #9a30fa;
-                    -fx-text-fill: #000000;
-                    -fx-font-size: 14px;
-                    -fx-font-family: 'monospace';
-                    -fx-padding: 10px;
-                    -fx-background-radius: 5px;
-                    -fx-border-color: #9a30fa;
-                    -fx-border-width: 1px;
-                    -fx-border-style: solid;
-                    -fx-min-width: 150px;
-                    """);
-            } else {
-                button.setStyle("""
-                    -fx-background-color: #2a2a2a;
-                    -fx-text-fill: #9a30fa;
-                    -fx-font-size: 14px;
-                    -fx-font-family: 'monospace';
-                    -fx-padding: 10px;
-                    -fx-background-radius: 5px;
-                    -fx-border-color: #9a30fa;
-                    -fx-border-width: 1px;
-                    -fx-border-style: solid;
-                    -fx-min-width: 150px;
-                    """);
-            }
-        });
     }
 
     private void highlightActiveButton(Button activeButton, Button... otherButtons) {
         activeButton.setUserData("active");
-        activeButton.setStyle("""
-            -fx-background-color: #9a30fa;
-            -fx-text-fill: #000000;
-            -fx-font-size: 14px;
-            -fx-font-family: 'monospace';
-            -fx-padding: 10px;
-            -fx-background-radius: 5px;
-            -fx-border-color: #9a30fa;
-            -fx-border-width: 1px;
-            -fx-border-style: solid;
-            -fx-min-width: 150px;
-            """);
+        activeButton.setStyle(MENU_BUTTON_ACTIVE_STYLE);
 
         for (Button button : otherButtons) {
             button.setUserData("inactive");
-            button.setStyle("""
-                -fx-background-color: #2a2a2a;
-                -fx-text-fill: #9a30fa;
-                -fx-font-size: 14px;
-                -fx-font-family: 'monospace';
-                -fx-padding: 10px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                -fx-min-width: 150px;
-                """);
+            button.setStyle(MENU_BUTTON_STYLE);
         }
     }
 
@@ -281,96 +293,41 @@ public class MarketWindow extends BorderPane {
         mainContent.getChildren().clear();
 
         if (currentFilter.equals("ALL") || currentFilter.equals("SERVER")) {
-            Label vpsTitle = new Label("SERVER PRODUCTS");
-            vpsTitle.setStyle("""
-                -fx-text-fill: #9a30fa;
-                -fx-font-size: 28px;
-                -fx-font-family: 'monospace';
-                -fx-font-weight: bold;
-                -fx-effect: dropshadow(gaussian, #9a30fa, 10, 0, 0, 0);
-                """);
-            mainContent.getChildren().add(vpsTitle);
-
-            GridPane productsGrid = new GridPane();
-            productsGrid.setHgap(20);
-            productsGrid.setVgap(20);
-            productsGrid.setAlignment(Pos.CENTER);
-            productsGrid.setMaxWidth(Double.MAX_VALUE);
-
-            int column = 0;
-            int row = 0;
-            int columnCount = 3;
-
-            if (getWidth() > 1400) {
-                columnCount = 4;
-            }
-
-            for (VPSProduct product : VPSProduct.values()) {
-                VBox productCard = createVPSProductCard(product);
-                productsGrid.add(productCard, column, row);
-                column++;
-                if (column >= columnCount) {
-                    column = 0;
-                    row++;
-                }
-            }
-
-            mainContent.getChildren().add(productsGrid);
+            addProductSection("SERVER PRODUCTS", VPSProduct.values(), this::buyServer);
         }
 
         if (currentFilter.equals("ALL") || currentFilter.equals("RACK")) {
-            Label rackTitle = new Label("RACK PRODUCTS");
-            rackTitle.setStyle("""
-                -fx-text-fill: #9a30fa;
-                -fx-font-size: 28px;
-                -fx-font-family: 'monospace';
-                -fx-font-weight: bold;
-                -fx-effect: dropshadow(gaussian, #9a30fa, 10, 0, 0, 0);
-                """);
-            mainContent.getChildren().add(rackTitle);
-
-            GridPane rackProductsGrid = new GridPane();
-            rackProductsGrid.setHgap(20);
-            rackProductsGrid.setVgap(20);
-            rackProductsGrid.setAlignment(Pos.CENTER);
-            rackProductsGrid.setMaxWidth(Double.MAX_VALUE);
-
-            int column = 0;
-            int row = 0;
-            int columnCount = 3;
-
-            if (getWidth() > 1400) {
-                columnCount = 4;
-            }
-
-            for (RackProduct product : RackProduct.values()) {
-                VBox productCard = createRackProductCard(product);
-                rackProductsGrid.add(productCard, column, row);
-                column++;
-                if (column >= columnCount) {
-                    column = 0;
-                    row++;
-                }
-            }
-
-            mainContent.getChildren().add(rackProductsGrid);
+            addProductSection("RACK PRODUCTS", RackProduct.values(), this::buyRack);
         }
 
         contentArea.setVvalue(0);
     }
 
-    private VBox createVPSProductCard(VPSProduct product) {
+    private <T extends Product> void addProductSection(String title, T[] products, Consumer<T> onPurchase) {
+        Label sectionTitle = new Label(title);
+        sectionTitle.setStyle(SECTION_TITLE_STYLE);
+        mainContent.getChildren().add(sectionTitle);
+
+        GridPane productsGrid = new GridPane();
+        productsGrid.setHgap(20);
+        productsGrid.setVgap(20);
+        productsGrid.setAlignment(Pos.CENTER);
+        productsGrid.setMaxWidth(Double.MAX_VALUE);
+
+        int columnCount = getWidth() > 1400 ? 4 : 3;
+
+        for (int i = 0; i < products.length; i++) {
+            T product = products[i];
+            VBox productCard = createProductCard(product, () -> onPurchase.accept(product));
+            productsGrid.add(productCard, i % columnCount, i / columnCount);
+        }
+
+        mainContent.getChildren().add(productsGrid);
+    }
+
+    private VBox createProductCard(Product product, Runnable onPurchase) {
         VBox card = new VBox(10);
-        card.setStyle("""
-            -fx-background-color: #1a1a1a;
-            -fx-padding: 15px;
-            -fx-background-radius: 5px;
-            -fx-border-color: #9a30fa;
-            -fx-border-width: 1px;
-            -fx-border-style: solid;
-            -fx-min-width: 250px;
-            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
-            """);
+        card.setStyle(CARD_STYLE);
 
         SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
         int discountPercent = skillPointsSystem.getMarketDiscount();
@@ -378,20 +335,10 @@ public class MarketWindow extends BorderPane {
         double finalPrice = Math.round(product.getPrice() * discountMultiplier);
 
         Label nameLabel = new Label(product.getName());
-        nameLabel.setStyle("""
-            -fx-text-fill: #9a30fa;
-            -fx-font-size: 18px;
-            -fx-font-family: 'monospace';
-            -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
-            """);
+        nameLabel.setStyle(CARD_NAME_STYLE);
 
         Label descLabel = new Label(product.getDescription());
-        descLabel.setStyle("""
-            -fx-text-fill: #b19cd9;
-            -fx-font-family: 'monospace';
-            -fx-opacity: 0.9;
-            """);
+        descLabel.setStyle(CARD_DESCRIPTION_STYLE);
         descLabel.setWrapText(true);
 
         String priceText = discountPercent > 0
@@ -399,56 +346,16 @@ public class MarketWindow extends BorderPane {
             : product.getPriceDisplay();
 
         Label priceLabel = new Label(priceText);
-        priceLabel.setStyle("""
-            -fx-text-fill: #ff00ff;
-            -fx-font-size: 16px;
-            -fx-font-family: 'monospace';
-            -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
-            """);
+        priceLabel.setStyle(CARD_PRICE_STYLE);
 
         String buyButtonText = discountPercent > 0
             ? "BUY NOW - " + discountPercent + "%"
             : "BUY NOW";
 
         Button buyButton = new Button(buyButtonText);
-        buyButton.setStyle("""
-            -fx-background-color: #1a1a1a;
-            -fx-text-fill: #9a30fa;
-            -fx-font-family: 'monospace';
-            -fx-font-weight: bold;
-            -fx-padding: 8px 16px;
-            -fx-background-radius: 5px;
-            -fx-border-color: #9a30fa;
-            -fx-border-width: 1px;
-            -fx-border-style: solid;
-            """);
-        buyButton.setOnMouseEntered(e ->
-            buyButton.setStyle("""
-                -fx-background-color: #9a30fa;
-                -fx-text-fill: #000000;
-                -fx-font-family: 'monospace';
-                -fx-font-weight: bold;
-                -fx-padding: 8px 16px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                """)
-        );
-        buyButton.setOnMouseExited(e ->
-            buyButton.setStyle("""
-                -fx-background-color: #1a1a1a;
-                -fx-text-fill: #9a30fa;
-                -fx-font-family: 'monospace';
-                -fx-font-weight: bold;
-                -fx-padding: 8px 16px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                """)
-        );
+        buyButton.setStyle(BUY_BUTTON_STYLE);
+        buyButton.setOnMouseEntered(e -> buyButton.setStyle(BUY_BUTTON_HOVER_STYLE));
+        buyButton.setOnMouseExited(e -> buyButton.setStyle(BUY_BUTTON_STYLE));
 
         buyButton.setOnAction(e -> {
             long actualPrice = Math.round(finalPrice);
@@ -462,163 +369,62 @@ public class MarketWindow extends BorderPane {
 
             updateMoneyDisplay();
 
-            VPSOptimization vps = new VPSOptimization();
-
-            String vpsId = "vps-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
-            vps.setVpsId(vpsId);
-            vps.setName(product.getName());
-            vps.setVCPUs(product.getCpu());
-            vps.setRamInGB(product.getRam());
-            vps.setDiskInGB(product.getStorage());
-            vps.setSize(product.getSize());
-            vps.setInstalled(false);
-
-            parent.getVpsInventory().addVPS(vpsId, vps);
-            System.out.println("เพิ่ม VPS เข้า GameplayContentPane inventory: " + vpsId);
-
-            GameManager.getInstance().getVpsInventory().addVPS(vpsId, vps);
-            System.out.println("เพิ่ม VPS เข้า GameManager inventory: " + vpsId);
-
-            GameManager.getInstance().saveState();
-            System.out.println("บันทึกเกมหลังซื้อ VPS เรียบร้อย");
-
-            parent.pushNotification("PURCHASE SUCCESSFUL",
-                    "ACQUIRED " + product.getName() + " FOR " + product.getPriceDisplay() +
-                    "\nVPS added to your inventory!");
-
-            onClose.run();
-
-            parent.getMenuBar().setVisible(false);
-            parent.getInGameMarketMenuBar().setVisible(false);
-
-            parent.openVPSInventory();
+            onPurchase.run();
         });
 
         card.getChildren().addAll(nameLabel, descLabel, priceLabel, buyButton);
         return card;
     }
 
-    private VBox createRackProductCard(RackProduct product) {
-        VBox card = new VBox(10);
-        card.setStyle("""
-            -fx-background-color: #1a1a1a;
-            -fx-padding: 15px;
-            -fx-background-radius: 5px;
-            -fx-border-color: #9a30fa;
-            -fx-border-width: 1px;
-            -fx-border-style: solid;
-            -fx-min-width: 250px;
-            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
-            """);
+    private void buyServer(VPSProduct product) {
+        VPSOptimization vps = new VPSOptimization();
 
-        SkillPointsSystem skillPointsSystem = ResourceManager.getInstance().getSkillPointsSystem();
-        int discountPercent = skillPointsSystem.getMarketDiscount();
-        double discountMultiplier = 1.0 - (discountPercent / 100.0);
-        double finalPrice = Math.round(product.getPrice() * discountMultiplier);
+        String vpsId = "vps-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
+        vps.setVpsId(vpsId);
+        vps.setName(product.getName());
+        vps.setVCPUs(product.getCpu());
+        vps.setRamInGB(product.getRam());
+        vps.setDiskInGB(product.getStorage());
+        vps.setSize(product.getSize());
+        vps.setInstalled(false);
 
-        Label nameLabel = new Label(product.getName());
-        nameLabel.setStyle("""
-            -fx-text-fill: #9a30fa;
-            -fx-font-size: 18px;
-            -fx-font-family: 'monospace';
-            -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #9a30fa, 5, 0, 0, 0);
-            """);
+        parent.getVpsInventory().addVPS(vpsId, vps);
+        System.out.println("เพิ่ม VPS เข้า GameplayContentPane inventory: " + vpsId);
 
-        Label descLabel = new Label(product.getDescription());
-        descLabel.setStyle("""
-            -fx-text-fill: #b19cd9;
-            -fx-font-family: 'monospace';
-            -fx-opacity: 0.9;
-            """);
-        descLabel.setWrapText(true);
+        GameManager.getInstance().getVpsInventory().addVPS(vpsId, vps);
+        System.out.println("เพิ่ม VPS เข้า GameManager inventory: " + vpsId);
 
-        String priceText = discountPercent > 0
-            ? "$" + finalPrice + " (" + product.getPriceDisplay() + " - " + discountPercent + "%)"
-            : product.getPriceDisplay();
+        GameManager.getInstance().saveState();
+        System.out.println("บันทึกเกมหลังซื้อ VPS เรียบร้อย");
 
-        Label priceLabel = new Label(priceText);
-        priceLabel.setStyle("""
-            -fx-text-fill: #ff00ff;
-            -fx-font-size: 16px;
-            -fx-font-family: 'monospace';
-            -fx-font-weight: bold;
-            -fx-effect: dropshadow(gaussian, #ff00ff, 3, 0, 0, 0);
-            """);
+        parent.pushNotification("PURCHASE SUCCESSFUL",
+                "ACQUIRED " + product.getName() + " FOR " + product.getPriceDisplay() +
+                "\nVPS added to your inventory!");
 
-        String buyButtonText = discountPercent > 0
-            ? "BUY NOW - " + discountPercent + "%"
-            : "BUY NOW";
+        closeAndHideMenus();
 
-        Button buyButton = new Button(buyButtonText);
-        buyButton.setStyle("""
-            -fx-background-color: #1a1a1a;
-            -fx-text-fill: #9a30fa;
-            -fx-font-family: 'monospace';
-            -fx-font-weight: bold;
-            -fx-padding: 8px 16px;
-            -fx-background-radius: 5px;
-            -fx-border-color: #9a30fa;
-            -fx-border-width: 1px;
-            -fx-border-style: solid;
-            """);
-        buyButton.setOnMouseEntered(e ->
-            buyButton.setStyle("""
-                -fx-background-color: #9a30fa;
-                -fx-text-fill: #000000;
-                -fx-font-family: 'monospace';
-                -fx-font-weight: bold;
-                -fx-padding: 8px 16px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                """)
-        );
-        buyButton.setOnMouseExited(e ->
-            buyButton.setStyle("""
-                -fx-background-color: #1a1a1a;
-                -fx-text-fill: #9a30fa;
-                -fx-font-family: 'monospace';
-                -fx-font-weight: bold;
-                -fx-padding: 8px 16px;
-                -fx-background-radius: 5px;
-                -fx-border-color: #9a30fa;
-                -fx-border-width: 1px;
-                -fx-border-style: solid;
-                """)
-        );
+        parent.openVPSInventory();
+    }
 
-        buyButton.setOnAction(e -> {
-            long actualPrice = Math.round(finalPrice);
+    private void buyRack(RackProduct product) {
+        parent.getRack().addRack(product.getSlots());
 
-            if (parent.getCompany().getMoney() < actualPrice) {
-                parent.pushNotification("PURCHASE FAILED", "INSUFFICIENT FUNDS");
-                return;
-            }
+        parent.getRack().goToLatestRack();
 
-            parent.getCompany().setMoney(parent.getCompany().getMoney() - actualPrice);
+        parent.pushNotification("PURCHASE SUCCESSFUL",
+            "ACQUIRED " + product.getName() + ". NEW RACK INSTALLED WITH " +
+            product.getSlots() + " SLOTS.");
 
-            updateMoneyDisplay();
+        closeAndHideMenus();
 
-            parent.getRack().addRack(product.getSlots());
+        parent.openRackInfo();
+    }
 
-            parent.getRack().goToLatestRack();
+    private void closeAndHideMenus() {
+        onClose.run();
 
-            parent.pushNotification("PURCHASE SUCCESSFUL",
-                "ACQUIRED " + product.getName() + ". NEW RACK INSTALLED WITH " +
-                product.getSlots() + " SLOTS.");
-
-            onClose.run();
-
-            parent.getMenuBar().setVisible(false);
-            parent.getInGameMarketMenuBar().setVisible(false);
-
-            parent.openRackInfo();
-        });
-
-        card.getChildren().addAll(nameLabel, descLabel, priceLabel, buyButton);
-        return card;
+        parent.getMenuBar().setVisible(false);
+        parent.getInGameMarketMenuBar().setVisible(false);
     }
 
     private void updateMoneyDisplay() {

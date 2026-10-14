@@ -41,42 +41,16 @@ public class GameState implements Serializable {
     private Map<SkillType, Integer> skillLevels;
 
     public GameState() {
-        this.company = ResourceManager.getInstance().getCompany();
+        this(ResourceManager.getInstance().getCompany());
+    }
 
-        this.gameObjects = new ArrayList<>();
-
-        this.rackConfiguration = new HashMap<>();
-        this.vpsInventoryData = new HashMap<>();
-        this.freeVmCount = 0;
-        this.chatHistory = new HashMap<>();
-        this.pendingRequests = new ArrayList<>();
-        this.completedRequests = new ArrayList<>();
-        this.vmAssignments = new HashMap<>();
-        this.skillLevels = new HashMap<>();
-
-        this.localDateTime = new SimpleObjectProperty<>();
-        this.localDateTime.set(LocalDateTime.of(2000, 1, 1, 0, 0));
+    public GameState(Company company) {
+        this(company, null);
     }
 
     public GameState(Company company, List<GameObject> gameObjects) {
         this.company = company;
         this.gameObjects = new ArrayList<>(gameObjects != null ? gameObjects : new ArrayList<>());
-
-        this.rackConfiguration = new HashMap<>();
-        this.vpsInventoryData = new HashMap<>();
-        this.freeVmCount = 0;
-        this.chatHistory = new HashMap<>();
-        this.pendingRequests = new ArrayList<>();
-        this.completedRequests = new ArrayList<>();
-        this.vmAssignments = new HashMap<>();
-        this.skillLevels = new HashMap<>();
-
-        this.localDateTime = new SimpleObjectProperty<>(LocalDateTime.of(2000, 1, 1, 0, 0));
-    }
-
-    public GameState(Company company) {
-        this.company = company;
-        this.gameObjects = new ArrayList<>();
 
         this.rackConfiguration = new HashMap<>();
         this.vpsInventoryData = new HashMap<>();

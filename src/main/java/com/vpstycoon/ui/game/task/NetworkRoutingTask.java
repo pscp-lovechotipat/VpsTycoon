@@ -96,10 +96,10 @@ public class NetworkRoutingTask extends GameTask {
             HBox buttonBox = new HBox(20);
             buttonBox.setAlignment(Pos.CENTER);
 
-            Button resetButton = createCustomButton("RESET CONNECTIONS", false);
+            Button resetButton = createActionButton("RESET CONNECTIONS", false, "Share Tech Mono");
             resetButton.setOnAction(e -> resetConnections());
 
-            routeButton = createCustomButton("ESTABLISH ROUTE", true);
+            routeButton = createActionButton("ESTABLISH ROUTE", true, "Share Tech Mono");
             routeButton.setDisable(true);
             routeButton.setOnAction(e -> establishRoute());
 
@@ -136,48 +136,6 @@ public class NetworkRoutingTask extends GameTask {
             line.setStrokeWidth(0.5);
             pane.getChildren().add(line);
         }
-    }
-
-    private Button createCustomButton(String text, boolean primary) {
-        Button button = new Button(text);
-        button.setFont(Font.font("Share Tech Mono", FontWeight.BOLD, 14));
-
-        String baseColor, hoverColor, textColor;
-        if (primary) {
-            baseColor = "#00FFFF";
-            hoverColor = "#80FFFF";
-            textColor = "#000000";
-        } else {
-            baseColor = "#FF0066";
-            hoverColor = "#FF4D94";
-            textColor = "#FFFFFF";
-        }
-
-        String baseStyle =
-            "-fx-background-color: " + baseColor + ";" +
-            "-fx-text-fill: " + textColor + ";" +
-            "-fx-border-color: " + hoverColor + ";" +
-            "-fx-border-width: 1px;" +
-            "-fx-background-radius: 5px;" +
-            "-fx-border-radius: 5px;" +
-            "-fx-cursor: hand;";
-
-        String hoverStyle =
-            "-fx-background-color: " + hoverColor + ";" +
-            "-fx-text-fill: " + textColor + ";" +
-            "-fx-border-color: " + baseColor + ";" +
-            "-fx-border-width: 2px;" +
-            "-fx-background-radius: 5px;" +
-            "-fx-border-radius: 5px;" +
-            "-fx-cursor: hand;" +
-            "-fx-effect: dropshadow(gaussian, " + baseColor + ", 10, 0.5, 0, 0);";
-
-        button.setStyle(baseStyle);
-
-        button.setOnMouseEntered(e -> button.setStyle(hoverStyle));
-        button.setOnMouseExited(e -> button.setStyle(baseStyle));
-
-        return button;
     }
 
     private void generateNetwork() {
@@ -525,7 +483,7 @@ public class NetworkRoutingTask extends GameTask {
         resetConnections();
 
         if (optimalConnections.isEmpty()) {
-            findMinimalPath();
+            findOptimalPath();
         }
 
         if (optimalConnections.isEmpty()) {
@@ -560,75 +518,6 @@ public class NetworkRoutingTask extends GameTask {
 
         highlightTimeline.getKeyFrames().add(resetFrame);
         highlightTimeline.play();
-    }
-
-    private void findMinimalPath() {
-        Map<NetworkNode, Double> distances = new HashMap<>();
-        Map<NetworkNode, NetworkConnection> previousConnections = new HashMap<>();
-        PriorityQueue<NetworkNode> queue = new PriorityQueue<>(Comparator.comparing(distances::get));
-        Set<NetworkNode> visited = new HashSet<>();
-
-        for (NetworkNode node : nodes) {
-            distances.put(node, node == sourceNode ? 0 : Double.MAX_VALUE);
-        }
-
-        queue.add(sourceNode);
-
-        while (!queue.isEmpty()) {
-            NetworkNode current = queue.poll();
-
-            if (current == destinationNode) {
-                break;
-            }
-
-            if (visited.contains(current)) {
-                continue;
-            }
-
-            visited.add(current);
-
-            for (NetworkConnection conn : connections) {
-                NetworkNode neighbor = null;
-
-                if (conn.getNodeA() == current) {
-                    neighbor = conn.getNodeB();
-                } else if (conn.getNodeB() == current) {
-                    neighbor = conn.getNodeA();
-                } else {
-                    continue;
-                }
-
-                if (visited.contains(neighbor)) {
-                    continue;
-                }
-
-                double newDistance = distances.get(current) + conn.getDistance();
-
-                if (newDistance < distances.get(neighbor)) {
-                    distances.put(neighbor, newDistance);
-                    previousConnections.put(neighbor, conn);
-
-                    queue.remove(neighbor);
-                    queue.add(neighbor);
-                }
-            }
-        }
-
-        optimalConnections.clear();
-        NetworkNode current = destinationNode;
-
-        if (previousConnections.containsKey(destinationNode)) {
-            while (current != sourceNode) {
-                NetworkConnection conn = previousConnections.get(current);
-                optimalConnections.add(0, conn);
-
-                if (conn.getNodeA() == current) {
-                    current = conn.getNodeB();
-                } else {
-                    current = conn.getNodeA();
-                }
-            }
-        }
     }
 
     private void animateDataTransfer(List<NetworkConnection> path) {
