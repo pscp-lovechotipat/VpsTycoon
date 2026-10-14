@@ -233,7 +233,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
 
                 ResourceManager.getInstance().resetRackAndInventory();
 
-                ResourceManager.getInstance().deleteSaveFile();
+                ResourceManager.getInstance().getSaveManager().deleteSave();
                 System.out.println("ลบไฟล์เซฟเดิมเรียบร้อย");
 
                 ResourceManager.getInstance().resetMessengerData();
@@ -358,7 +358,7 @@ public class GameApplication extends Application implements Navigator, ResourceM
     @Override
     public void showLoadGame() {
         try {
-            if (!ResourceManager.getInstance().hasSaveFile()) {
+            if (!ResourceManager.getInstance().getSaveManager().saveExists()) {
                 showAlert("No saved game found", "There is no saved game to continue.");
                 return;
             }

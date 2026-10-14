@@ -25,7 +25,7 @@ public class MainMenuScreen extends GameScreen {
     public MainMenuScreen(GameConfig config, ScreenManager screenManager, Navigator navigator) {
         super(config, screenManager);
         this.navigator = navigator;
-        this.saveManager = new GameSaveManager();
+        this.saveManager = ResourceManager.getInstance().getSaveManager();
         this.audioManager = ResourceManager.getInstance().getAudioManager();
     }
 
@@ -71,8 +71,7 @@ public class MainMenuScreen extends GameScreen {
 
         MenuButton deleteButton = new MenuButton(MenuButtonType.DELETEGAME);
         deleteButton.setOnAction(e -> {
-            GameSaveManager save = new GameSaveManager();
-            save.deleteGame();
+            saveManager.deleteAllSaves();
             screenManager.switchScreen(createContent());
         });
 

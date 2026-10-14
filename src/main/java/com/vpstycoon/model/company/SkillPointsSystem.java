@@ -1,14 +1,9 @@
 package com.vpstycoon.model.company;
 
-import java.io.IOException;
-import java.io.Serial;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SkillPointsSystem implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class SkillPointsSystem {
     private final Map<SkillType, Integer> skillLevels = new HashMap<>();
     private final Company company;
 
@@ -73,11 +68,6 @@ public class SkillPointsSystem implements Serializable {
 
     public Map<SkillType, Integer> getSkillLevelsMap() {
         return new HashMap<>(skillLevels);
-    }
-
-    @Serial
-    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
     }
 
     public void addPoints(int points) {

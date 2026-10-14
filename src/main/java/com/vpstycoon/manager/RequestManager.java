@@ -8,12 +8,11 @@ import com.vpstycoon.model.customer.RequestType;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class RequestManager implements Serializable {
+public class RequestManager {
     private final ObservableList<CustomerRequest> pendingRequests;
     private final List<CustomerRequest> completedRequests;
     private final Company company;

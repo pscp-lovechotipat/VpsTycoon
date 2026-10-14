@@ -1,14 +1,11 @@
 package com.vpstycoon.model.server;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class VPSInventory implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class VPSInventory {
     private final Map<String, VPSOptimization> inventory;
 
     public VPSInventory() {

@@ -1,18 +1,24 @@
 package com.vpstycoon.persistence;
 
-import java.io.*;
+import com.vpstycoon.model.GameState;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class GameSaveManager {
-    private static final String GAME_FOLDER = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "VpsTycoon";
-    private static final String SAVE_FILE = GAME_FOLDER + File.separator + "savegame.dat";
-    private static final String CHAT_SAVE_FILE = GAME_FOLDER + File.separator + "save.dat";
-    private static final String BACKUP_DIR = GAME_FOLDER + File.separator + "backups";
+    static final String GAME_FOLDER = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "VpsTycoon";
+    static final String SAVE_FILE = GAME_FOLDER + File.separator + "savegame.dat";
+    static final String CHAT_HISTORY_FILE = GAME_FOLDER + File.separator + "save.dat";
 
     public GameSaveManager() {
-        createGameDirectory();
+        ensureGameFolder();
     }
 
-    private void createGameDirectory() {
+    static void ensureGameFolder() {
         try {
             File gameDir = new File(GAME_FOLDER);
             if (!gameDir.exists()) {
@@ -23,45 +29,52 @@ public class GameSaveManager {
                     System.err.println("ไม่สามารถสร้างโฟลเดอร์เกม: " + gameDir.getAbsolutePath());
                 }
             }
-
-            File backupDir = new File(BACKUP_DIR);
-            if (!backupDir.exists()) {
-                boolean created = backupDir.mkdirs();
-                if (created) {
-                    System.out.println("สร้างโฟลเดอร์สำรองข้อมูล: " + backupDir.getAbsolutePath());
-                } else {
-                    System.err.println("ไม่สามารถสร้างโฟลเดอร์สำรองข้อมูล: " + backupDir.getAbsolutePath());
-                }
-            }
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการสร้างโฟลเดอร์: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public void deleteGame() {
-        File saveFile = new File(SAVE_FILE);
-        if (saveFile.exists()) {
-            boolean deleted = saveFile.delete();
-            if (deleted) {
-                System.out.println("ลบไฟล์บันทึกสำเร็จ: " + saveFile.getAbsolutePath());
-            } else {
-                System.err.println("ลบไฟล์บันทึกไม่สำเร็จ: " + saveFile.getAbsolutePath());
-            }
+    public void save(GameState state) throws IOException {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
+            oos.writeObject(state);
         }
+        System.out.println("Game saved successfully to: " + SAVE_FILE);
+    }
 
-        File chatSaveFile = new File(CHAT_SAVE_FILE);
-        if (chatSaveFile.exists()) {
-            boolean deleted = chatSaveFile.delete();
-            if (deleted) {
-                System.out.println("ลบไฟล์บันทึกประวัติแชทสำเร็จ: " + chatSaveFile.getAbsolutePath());
-            } else {
-                System.err.println("ลบไฟล์บันทึกประวัติแชทไม่สำเร็จ: " + chatSaveFile.getAbsolutePath());
-            }
+    public GameState load() throws IOException, ClassNotFoundException {
+        File saveFile = new File(SAVE_FILE);
+        if (!saveFile.exists() || saveFile.length() == 0) {
+            return null;
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(saveFile))) {
+            GameState state = (GameState) ois.readObject();
+            System.out.println("โหลดข้อมูลเกมสำเร็จ จาก: " + saveFile.getAbsolutePath());
+            return state;
         }
     }
 
     public boolean saveExists() {
         return new File(SAVE_FILE).exists();
+    }
+
+    public void deleteSave() {
+        deleteFile(SAVE_FILE, "ไฟล์บันทึก");
+    }
+
+    public void deleteAllSaves() {
+        deleteSave();
+        deleteFile(CHAT_HISTORY_FILE, "ไฟล์บันทึกประวัติแชท");
+    }
+
+    private static void deleteFile(String path, String description) {
+        File file = new File(path);
+        if (file.exists()) {
+            if (file.delete()) {
+                System.out.println("ลบ" + description + "สำเร็จ: " + file.getAbsolutePath());
+            } else {
+                System.err.println("ลบ" + description + "ไม่สำเร็จ: " + file.getAbsolutePath());
+            }
+        }
     }
 }

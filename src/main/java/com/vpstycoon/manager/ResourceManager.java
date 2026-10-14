@@ -9,6 +9,7 @@ import com.vpstycoon.model.server.Rack;
 import com.vpstycoon.model.server.VPSInventory;
 import com.vpstycoon.model.server.VPSOptimization;
 import com.vpstycoon.persistence.ChatHistoryManager;
+import com.vpstycoon.persistence.GameSaveManager;
 import com.vpstycoon.thread.GameEvent;
 import com.vpstycoon.thread.GameTimeController;
 import com.vpstycoon.thread.GameTimeManager;
@@ -30,14 +31,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ResourceManager implements Serializable {
+public class ResourceManager {
     private static final ResourceManager instance = new ResourceManager();
 
     private static final String SOUNDS_PATH = "/sounds/";
     private static final String MUSIC_PATH = "/music/";
-    private static final String GAME_FOLDER = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "VpsTycoon";
-    private static final String SAVE_FILE = GAME_FOLDER + File.separator + "savegame.dat";
-    private static final String BACKUP_DIR = GAME_FOLDER + File.separator + "backups";
 
     private Company company = new Company();
     private GameState currentState;
@@ -46,6 +44,7 @@ public class ResourceManager implements Serializable {
     private RequestManager requestManager;
     private RequestGenerator requestGenerator;
     private final AudioManager audioManager;
+    private final GameSaveManager saveManager = new GameSaveManager();
     private GameTimeController gameTimeController;
 
     private SkillPointsSystem skillPointsSystem;
@@ -151,7 +150,6 @@ public class ResourceManager implements Serializable {
         this.audioManager = new AudioManager();
         this.rack = new Rack();
 
-        createBackupDirectory();
         if (currentState == null) {
             currentState = new GameState(this.company);
         }
@@ -398,9 +396,8 @@ public class ResourceManager implements Serializable {
             e.printStackTrace();
         }
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
-            oos.writeObject(state);
-            System.out.println("Game saved successfully to: " + SAVE_FILE);
+        try {
+            saveManager.save(state);
             this.currentState = state;
             this.company = state.getCompany();
         } catch (IOException e) {
@@ -410,16 +407,14 @@ public class ResourceManager implements Serializable {
     }
 
     public GameState loadGameState() {
-        GameState state = null;
-        File saveFile = new File(SAVE_FILE);
+        GameState state;
 
-        if (!saveFile.exists() || saveFile.length() == 0) {
-            System.out.println("ไม่พบไฟล์เซฟเกม หรือไฟล์เซฟว่างเปล่า");
-            return new GameState();
-        }
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(saveFile))) {
-            state = (GameState) ois.readObject();
+        try {
+            state = saveManager.load();
+            if (state == null) {
+                System.out.println("ไม่พบไฟล์เซฟเกม หรือไฟล์เซฟว่างเปล่า");
+                return new GameState();
+            }
 
             if (state.getFreeVmCount() > 0) {
                 System.out.println("โหลดข้อมูล Free VM Count: " + state.getFreeVmCount());
@@ -464,8 +459,6 @@ public class ResourceManager implements Serializable {
                     this.skillPointsSystem = new SkillPointsSystem(this.company);
                 }
             }
-
-            System.out.println("โหลดข้อมูลเกมสำเร็จ จาก: " + saveFile.getAbsolutePath());
         } catch (Exception e) {
             System.err.println("เกิดข้อผิดพลาดในการโหลดข้อมูลเกม: " + e.getMessage());
             e.printStackTrace();
@@ -695,49 +688,6 @@ public class ResourceManager implements Serializable {
         System.out.println("ตั้งค่า RequestGenerator ใหม่ใน ResourceManager");
     }
 
-    public void deleteSaveFile() {
-        File saveFile = new File(SAVE_FILE);
-        if (saveFile.exists()) {
-            boolean deleted = saveFile.delete();
-            if (deleted) {
-                System.out.println("Deleted game save: " + saveFile.getAbsolutePath());
-            } else {
-                System.err.println("Failed to delete game save: " + saveFile.getAbsolutePath());
-            }
-        }
-    }
-
-    public boolean hasSaveFile() {
-        return new File(SAVE_FILE).exists();
-    }
-
-    private void createBackupDirectory() {
-        try {
-            File gameDir = new File(GAME_FOLDER);
-            if (!gameDir.exists()) {
-                boolean created = gameDir.mkdirs();
-                if (created) {
-                    System.out.println("สร้างโฟลเดอร์เกม: " + gameDir.getAbsolutePath());
-                } else {
-                    System.err.println("ไม่สามารถสร้างโฟลเดอร์เกม: " + gameDir.getAbsolutePath());
-                }
-            }
-
-            File backupDir = new File(BACKUP_DIR);
-            if (!backupDir.exists()) {
-                boolean created = backupDir.mkdirs();
-                if (created) {
-                    System.out.println("สร้างโฟลเดอร์สำรองข้อมูล: " + backupDir.getAbsolutePath());
-                } else {
-                    System.err.println("ไม่สามารถสร้างโฟลเดอร์สำรองข้อมูล: " + backupDir.getAbsolutePath());
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("เกิดข้อผิดพลาดในการสร้างโฟลเดอร์: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     public static String getSoundPath(String name) {
         return SOUNDS_PATH + name;
     }
@@ -748,6 +698,10 @@ public class ResourceManager implements Serializable {
 
     public static URL getResource(String path) {
         return ResourceManager.class.getResource(path);
+    }
+
+    public GameSaveManager getSaveManager() {
+        return saveManager;
     }
 
     public GameState getCurrentState() {
